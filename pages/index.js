@@ -25,10 +25,14 @@ export default function Home() {
   }, []);
 
   const handleSignIn = async () => {
+    const { protocol, host } = window.location;
+    const redirectUrl = `${protocol}//${host}/api/auth/callback`;
+    console.log('Redirecting to:', redirectUrl);
+    
     await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: window.location.origin,
+        redirectTo: redirectUrl,
       },
     });
   };
