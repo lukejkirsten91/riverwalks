@@ -1,71 +1,18 @@
-import { useState, useEffect } from 'react';
-import { supabase } from '../lib/supabase';
+import AuthCard from '../components/auth/auth-card';
 
 export default function Home() {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const { data: authListener } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        setUser(session?.user || null);
-        setLoading(false);
-      }
-    );
-
-    // Initial session check
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user || null);
-      setLoading(false);
-    });
-
-    return () => {
-      authListener?.subscription.unsubscribe();
-    };
-  }, []);
-
-  const handleSignIn = async () => {
-    const { protocol, host } = window.location;
-    const redirectUrl = `${protocol}//${host}/api/auth/callback`;
-    console.log('Redirecting to:', redirectUrl);
-    
-    await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: redirectUrl,
-      },
-    });
-  };
-
-  const handleSignOut = async () => {
-    await supabase.auth.signOut();
-  };
-
   return (
-    <div className="container">
-      <h1>Riverwalks</h1>
+    <div className="min-h-screen bg-gradient-to-b from-background to-muted flex flex-col items-center justify-center p-4">
+      <div className="text-center mb-8">
+        <h1 className="text-4xl font-bold tracking-tight mb-2">Riverwalks</h1>
+        <p className="text-muted-foreground">Explore and document your river adventures</p>
+      </div>
       
-      {loading ? (
-        <p>Loading...</p>
-      ) : user ? (
-        <div className="profile">
-          <h2>Welcome, {user.email}</h2>
-          {user.user_metadata?.avatar_url && (
-            <img 
-              src={user.user_metadata.avatar_url} 
-              alt="User avatar" 
-              style={{ width: '50px', height: '50px', borderRadius: '50%' }} 
-            />
-          )}
-          <p>You are logged in with {user.app_metadata.provider}</p>
-          <button className="button" onClick={handleSignOut}>Sign Out</button>
-        </div>
-      ) : (
-        <div>
-          <p>Please sign in to continue</p>
-          <button className="button" onClick={handleSignIn}>Sign In with Google</button>
-        </div>
-      )}
+      <AuthCard />
+      
+      <footer className="mt-16 text-center text-sm text-muted-foreground">
+        <p>© 2025 Riverwalks. All rights reserved.</p>
+      </footer>
     </div>
   );
 }
