@@ -1,0 +1,262 @@
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
+import Link from 'next/link';
+import { supabase } from '../lib/supabase';
+import { getRiverWalks, createRiverWalk, updateRiverWalk, deleteRiverWalk } from '../lib/api/river-walks';
+import { formatDate } from '../lib/utils';
+
+export default function RiverWalksPage() {
+  const router = useRouter();
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [riverWalks, setRiverWalks] = useState([]);
+  const [showForm, setShowForm] = useState(false);
+  const [currentRiverWalk, setCurrentRiverWalk] = useState(null);
+  const [formData, setFormData] = useState({
+    name: '',
+    date: new Date().toISOString().split('T')[0],
+    country: 'UK',
+    county: ''
+  });
+  const [error, setError] = useState(null);
+
+  // Check if user is authenticated
+  useEffect(() => {
+    const checkUser = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        router.push('/');
+        return;
+      }
+      
+      setUser(session.user);
+      fetchRiverWalks();
+    };
+    
+    checkUser();
+  }, [router]);
+
+  // Fetch river walks
+  const fetchRiverWalks = async () => {
+    try {
+      setLoading(true);
+      const data = await getRiverWalks();
+      setRiverWalks(data);
+    } catch (err) {
+      setError('Failed to load river walks');
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Handle form input changes
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({
+      ...formData,
+      [name]: value
+    });
+  };
+
+  // Handle form submission
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      setLoading(true);
+      
+      if (currentRiverWalk) {
+        await updateRiverWalk(currentRiverWalk.id, formData);
+      } else {
+        await createRiverWalk(formData);
+      }
+      
+      // Reset form and refresh data
+      setFormData({
+        name: '',
+        date: new Date().toISOString().split('T')[0],
+        country: 'UK',
+        county: ''
+      });
+      setShowForm(false);
+      setCurrentRiverWalk(null);
+      await fetchRiverWalks();
+    } catch (err) {
+      setError('Failed to save river walk');
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Handle edit
+  const handleEdit = (riverWalk) => {
+    setCurrentRiverWalk(riverWalk);
+    setFormData({
+      name: riverWalk.name,
+      date: riverWalk.date,
+      country: riverWalk.country || 'UK',
+      county: riverWalk.county || ''
+    });
+    setShowForm(true);
+  };
+
+  // Handle delete
+  const handleDelete = async (id) => {
+    if (window.confirm('Are you sure you want to delete this river walk?')) {
+      try {
+        setLoading(true);
+        await deleteRiverWalk(id);
+        await fetchRiverWalks();
+      } catch (err) {
+        setError('Failed to delete river walk');
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
+
+  // Loading state
+  if (loading && !riverWalks.length) {
+    return (
+      <div className="p-8 max-w-4xl mx-auto">
+        <h1 className="text-2xl font-bold mb-4">River Walks</h1>
+        <p>Loading...</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="p-8 max-w-4xl mx-auto">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold">River Walks</h1>
+        <button 
+          className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
+          onClick={() => {
+            setShowForm(!showForm);
+            setCurrentRiverWalk(null);
+            setFormData({
+              name: '',
+              date: new Date().toISOString().split('T')[0],
+              country: 'UK',
+              county: ''
+            });
+          }}
+        >
+          {showForm ? 'Cancel' : 'Add River Walk'}
+        </button>
+      </div>
+
+      {error && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+          <span>{error}</span>
+          <button 
+            className="float-right"
+            onClick={() => setError(null)}
+          >
+            &times;
+          </button>
+        </div>
+      )}
+
+      {showForm && (
+        <div className="bg-gray-100 p-6 rounded-lg mb-6">
+          <h2 className="text-xl font-semibold mb-4">
+            {currentRiverWalk ? 'Edit River Walk' : 'Add New River Walk'}
+          </h2>
+          <form onSubmit={handleSubmit}>
+            <div className="mb-4">
+              <label className="block text-gray-700 mb-2">Name</label>
+              <input
+                type="text"
+                name="name"
+                value={formData.name}
+                onChange={handleInputChange}
+                className="w-full p-2 border rounded"
+                required
+              />
+            </div>
+            <div className="mb-4">
+              <label className="block text-gray-700 mb-2">Date</label>
+              <input
+                type="date"
+                name="date"
+                value={formData.date}
+                onChange={handleInputChange}
+                className="w-full p-2 border rounded"
+                required
+              />
+            </div>
+            <div className="mb-4">
+              <label className="block text-gray-700 mb-2">Country</label>
+              <input
+                type="text"
+                name="country"
+                value={formData.country}
+                onChange={handleInputChange}
+                className="w-full p-2 border rounded"
+                placeholder="UK"
+              />
+            </div>
+            <div className="mb-4">
+              <label className="block text-gray-700 mb-2">County (Optional)</label>
+              <input
+                type="text"
+                name="county"
+                value={formData.county}
+                onChange={handleInputChange}
+                className="w-full p-2 border rounded"
+              />
+            </div>
+            <button
+              type="submit"
+              className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded"
+              disabled={loading}
+            >
+              {loading ? 'Saving...' : 'Save'}
+            </button>
+          </form>
+        </div>
+      )}
+
+      {riverWalks.length === 0 ? (
+        <div className="text-center p-8 bg-gray-50 rounded-lg">
+          <p>No river walks found. Create your first one!</p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {riverWalks.map(riverWalk => (
+            <div key={riverWalk.id} className="border rounded-lg p-4 bg-white shadow-sm">
+              <div className="flex justify-between">
+                <div>
+                  <h2 className="text-xl font-semibold">{riverWalk.name}</h2>
+                  <p className="text-gray-600">{formatDate(riverWalk.date)}</p>
+                  <p className="text-gray-600">
+                    {riverWalk.county ? `${riverWalk.county}, ` : ''}
+                    {riverWalk.country || 'UK'}
+                  </p>
+                </div>
+                <div className="space-x-2">
+                  <button
+                    onClick={() => handleEdit(riverWalk)}
+                    className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => handleDelete(riverWalk.id)}
+                    className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
