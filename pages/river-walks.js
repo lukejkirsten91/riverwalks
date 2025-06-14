@@ -139,6 +139,11 @@ export default function RiverWalksPage() {
       <div className="flex justify-between items-center mb-6">
         <div className="flex items-center space-x-4">
           <h1 className="text-2xl font-bold">River Walks</h1>
+          {user && (
+            <div className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">
+              ✓ Logged in as {user.email}
+            </div>
+          )}
           <div className="flex space-x-2">
             <Link href="/">
               <button className="flex items-center text-gray-600 hover:text-gray-800 px-3 py-1 rounded">
