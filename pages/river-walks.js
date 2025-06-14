@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { supabase } from '../lib/supabase';
 import { getRiverWalks, createRiverWalk, updateRiverWalk, deleteRiverWalk } from '../lib/api/river-walks';
-import { getSitesForRiverWalk, createSite } from '../lib/api/sites';
+import { getSitesForRiverWalk, createSite, createMeasurementPoints, deleteMeasurementPointsForSite } from '../lib/api/sites';
 import { formatDate } from '../lib/utils';
 import { Home, LogOut, MapPin } from 'lucide-react';
 
@@ -28,6 +28,9 @@ export default function RiverWalksPage() {
     site_name: '',
     river_width: ''
   });
+  const [editingMeasurements, setEditingMeasurements] = useState(null);
+  const [numMeasurements, setNumMeasurements] = useState(3);
+  const [measurementData, setMeasurementData] = useState([]);
 
   // Check if user is authenticated
   useEffect(() => {
@@ -153,6 +156,9 @@ export default function RiverWalksPage() {
     setSites([]);
     setShowSiteForm(false);
     setSiteFormData({ site_name: '', river_width: '' });
+    setEditingMeasurements(null);
+    setMeasurementData([]);
+    setNumMeasurements(3);
   };
 
   // Handle site form input changes
@@ -194,6 +200,105 @@ export default function RiverWalksPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Handle starting measurement editing for a site
+  const handleEditMeasurements = (site) => {
+    setEditingMeasurements(site);
+    
+    // Initialize measurement data based on existing points or defaults
+    if (site.measurement_points && site.measurement_points.length > 0) {
+      setNumMeasurements(site.measurement_points.length);
+      setMeasurementData(site.measurement_points.map(point => ({
+        distance_from_bank: point.distance_from_bank,
+        depth: point.depth
+      })));
+    } else {
+      // Create default evenly spaced measurements
+      const defaultMeasurements = [];
+      const riverWidth = parseFloat(site.river_width);
+      for (let i = 0; i < numMeasurements; i++) {
+        defaultMeasurements.push({
+          distance_from_bank: (riverWidth / (numMeasurements - 1)) * i,
+          depth: 0
+        });
+      }
+      setMeasurementData(defaultMeasurements);
+    }
+  };
+
+  // Handle changing number of measurements
+  const handleNumMeasurementsChange = (newNum) => {
+    const site = editingMeasurements;
+    const riverWidth = parseFloat(site.river_width);
+    
+    setNumMeasurements(newNum);
+    
+    // Create new measurement data array
+    const newMeasurementData = [];
+    for (let i = 0; i < newNum; i++) {
+      if (i < measurementData.length) {
+        // Keep existing data
+        newMeasurementData.push(measurementData[i]);
+      } else {
+        // Add new default point
+        newMeasurementData.push({
+          distance_from_bank: (riverWidth / (newNum - 1)) * i,
+          depth: 0
+        });
+      }
+    }
+    setMeasurementData(newMeasurementData);
+  };
+
+  // Handle measurement point data change
+  const handleMeasurementChange = (index, field, value) => {
+    const newData = [...measurementData];
+    newData[index] = {
+      ...newData[index],
+      [field]: parseFloat(value) || 0
+    };
+    setMeasurementData(newData);
+  };
+
+  // Handle saving measurement points
+  const handleSaveMeasurements = async () => {
+    try {
+      setLoading(true);
+      
+      // Delete existing measurement points for this site
+      await deleteMeasurementPointsForSite(editingMeasurements.id);
+      
+      // Create new measurement points
+      const points = measurementData.map((point, index) => ({
+        point_number: index + 1,
+        distance_from_bank: point.distance_from_bank,
+        depth: point.depth
+      }));
+      
+      await createMeasurementPoints(editingMeasurements.id, points);
+      
+      // Refresh sites data
+      const sitesData = await getSitesForRiverWalk(selectedRiverWalk.id);
+      setSites(sitesData);
+      
+      // Close measurement editing
+      setEditingMeasurements(null);
+      setMeasurementData([]);
+      
+    } catch (err) {
+      setError('Failed to save measurement points');
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Cancel measurement editing
+  const handleCancelMeasurements = () => {
+    setEditingMeasurements(null);
+    setMeasurementData([]);
+    setNumMeasurements(3);
   };
 
   // Loading state
@@ -387,7 +492,82 @@ export default function RiverWalksPage() {
               </p>
             </div>
 
-            {showSiteForm ? (
+            {editingMeasurements ? (
+              <div className="bg-blue-50 p-6 rounded-lg mb-6">
+                <h3 className="text-xl font-semibold mb-4">
+                  Add Measurements - {editingMeasurements.site_name}
+                </h3>
+                <p className="text-gray-600 mb-4">
+                  River Width: {editingMeasurements.river_width}m
+                </p>
+                
+                <div className="mb-4">
+                  <label className="block text-gray-700 mb-2">Number of Measurement Points</label>
+                  <input
+                    type="number"
+                    value={numMeasurements}
+                    onChange={(e) => handleNumMeasurementsChange(parseInt(e.target.value) || 3)}
+                    className="w-32 p-2 border rounded"
+                    min="2"
+                    max="20"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                  <div>
+                    <h4 className="font-medium text-gray-700 mb-2">Distance from Bank (m)</h4>
+                    {measurementData.map((point, index) => (
+                      <div key={index} className="mb-2">
+                        <label className="text-sm text-gray-600">Point {index + 1}:</label>
+                        <input
+                          type="number"
+                          value={point.distance_from_bank}
+                          onChange={(e) => handleMeasurementChange(index, 'distance_from_bank', e.target.value)}
+                          className="w-full p-2 border rounded"
+                          step="0.1"
+                          min="0"
+                          max={editingMeasurements.river_width}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                  
+                  <div>
+                    <h4 className="font-medium text-gray-700 mb-2">Depth (m)</h4>
+                    {measurementData.map((point, index) => (
+                      <div key={index} className="mb-2">
+                        <label className="text-sm text-gray-600">Point {index + 1}:</label>
+                        <input
+                          type="number"
+                          value={point.depth}
+                          onChange={(e) => handleMeasurementChange(index, 'depth', e.target.value)}
+                          className="w-full p-2 border rounded"
+                          step="0.1"
+                          min="0"
+                          max="10"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="space-x-2">
+                  <button
+                    onClick={handleSaveMeasurements}
+                    className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded"
+                    disabled={loading}
+                  >
+                    {loading ? 'Saving...' : 'Save Measurements'}
+                  </button>
+                  <button
+                    onClick={handleCancelMeasurements}
+                    className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            ) : showSiteForm ? (
               <div className="bg-gray-50 p-6 rounded-lg mb-6">
                 <h3 className="text-xl font-semibold mb-4">Add New Site</h3>
                 <form onSubmit={handleCreateSite}>
@@ -468,6 +648,12 @@ export default function RiverWalksPage() {
                         </p>
                       </div>
                       <div className="space-x-2">
+                        <button 
+                          onClick={() => handleEditMeasurements(site)}
+                          className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm"
+                        >
+                          Measurements
+                        </button>
                         <button className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded text-sm">
                           Edit
                         </button>
