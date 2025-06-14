@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { supabase } from '../lib/supabase';
 import { getRiverWalks, createRiverWalk, updateRiverWalk, deleteRiverWalk } from '../lib/api/river-walks';
-import { getSitesForRiverWalk, createSite, updateSite, createMeasurementPoints, deleteMeasurementPointsForSite } from '../lib/api/sites';
+import { getSitesForRiverWalk, createSite, updateSite, deleteSite, createMeasurementPoints, deleteMeasurementPointsForSite } from '../lib/api/sites';
 import { formatDate } from '../lib/utils';
 import { Home, LogOut, MapPin } from 'lucide-react';
 
@@ -32,6 +32,11 @@ export default function RiverWalksPage() {
   const [numMeasurements, setNumMeasurements] = useState(3);
   const [measurementData, setMeasurementData] = useState([]);
   const [currentRiverWidth, setCurrentRiverWidth] = useState(0);
+  const [editingSite, setEditingSite] = useState(null);
+  const [editSiteData, setEditSiteData] = useState({
+    site_name: '',
+    river_width: ''
+  });
 
   // Check if user is authenticated
   useEffect(() => {
@@ -161,6 +166,8 @@ export default function RiverWalksPage() {
     setMeasurementData([]);
     setNumMeasurements(3);
     setCurrentRiverWidth(0);
+    setEditingSite(null);
+    setEditSiteData({ site_name: '', river_width: '' });
   };
 
   // Handle site form input changes
@@ -325,6 +332,78 @@ export default function RiverWalksPage() {
     setMeasurementData([]);
     setNumMeasurements(3);
     setCurrentRiverWidth(0);
+  };
+
+  // Handle site edit
+  const handleEditSite = (site) => {
+    setEditingSite(site);
+    setEditSiteData({
+      site_name: site.site_name,
+      river_width: site.river_width.toString()
+    });
+  };
+
+  // Handle site edit form change
+  const handleEditSiteChange = (e) => {
+    const { name, value } = e.target;
+    setEditSiteData({
+      ...editSiteData,
+      [name]: value
+    });
+  };
+
+  // Handle site update
+  const handleUpdateSite = async (e) => {
+    e.preventDefault();
+    try {
+      setLoading(true);
+      
+      await updateSite(editingSite.id, {
+        site_name: editSiteData.site_name,
+        river_width: parseFloat(editSiteData.river_width)
+      });
+      
+      // Refresh sites list
+      const sitesData = await getSitesForRiverWalk(selectedRiverWalk.id);
+      setSites(sitesData);
+      
+      // Close edit form
+      setEditingSite(null);
+      setEditSiteData({ site_name: '', river_width: '' });
+      
+    } catch (err) {
+      setError('Failed to update site');
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Handle site delete
+  const handleDeleteSite = async (site) => {
+    if (window.confirm(`Are you sure you want to delete "${site.site_name}"? This will also delete all measurement points for this site.`)) {
+      try {
+        setLoading(true);
+        
+        await deleteSite(site.id);
+        
+        // Refresh sites list
+        const sitesData = await getSitesForRiverWalk(selectedRiverWalk.id);
+        setSites(sitesData);
+        
+      } catch (err) {
+        setError('Failed to delete site');
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
+
+  // Cancel site edit
+  const handleCancelSiteEdit = () => {
+    setEditingSite(null);
+    setEditSiteData({ site_name: '', river_width: '' });
   };
 
   // Loading state
@@ -518,7 +597,55 @@ export default function RiverWalksPage() {
               </p>
             </div>
 
-            {editingMeasurements ? (
+            {editingSite ? (
+              <div className="bg-yellow-50 p-6 rounded-lg mb-6">
+                <h3 className="text-xl font-semibold mb-4">Edit Site</h3>
+                <form onSubmit={handleUpdateSite}>
+                  <div className="mb-4">
+                    <label className="block text-gray-700 mb-2">Site Name</label>
+                    <input
+                      type="text"
+                      name="site_name"
+                      value={editSiteData.site_name}
+                      onChange={handleEditSiteChange}
+                      className="w-full p-2 border rounded"
+                      placeholder="e.g., Upstream, Meander, Confluence"
+                      required
+                    />
+                  </div>
+                  <div className="mb-4">
+                    <label className="block text-gray-700 mb-2">River Width (meters)</label>
+                    <input
+                      type="number"
+                      name="river_width"
+                      value={editSiteData.river_width}
+                      onChange={handleEditSiteChange}
+                      className="w-full p-2 border rounded"
+                      placeholder="e.g., 3.5"
+                      step="0.1"
+                      min="0.1"
+                      required
+                    />
+                  </div>
+                  <div className="space-x-2">
+                    <button
+                      type="submit"
+                      className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded"
+                      disabled={loading}
+                    >
+                      {loading ? 'Updating...' : 'Update Site'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleCancelSiteEdit}
+                      className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </form>
+              </div>
+            ) : editingMeasurements ? (
               <div className="bg-blue-50 p-6 rounded-lg mb-6">
                 <h3 className="text-xl font-semibold mb-4">
                   Add Measurements - {editingMeasurements.site_name}
@@ -695,10 +822,16 @@ export default function RiverWalksPage() {
                         >
                           Measurements
                         </button>
-                        <button className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded text-sm">
+                        <button 
+                          onClick={() => handleEditSite(site)}
+                          className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded text-sm"
+                        >
                           Edit
                         </button>
-                        <button className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm">
+                        <button 
+                          onClick={() => handleDeleteSite(site)}
+                          className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm"
+                        >
                           Delete
                         </button>
                       </div>
