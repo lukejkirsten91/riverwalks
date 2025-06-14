@@ -1,7 +1,7 @@
 # Riverwalks - Project Status & Documentation
 
 ## 🎯 Project Overview
-Riverwalks is a personal web application for tracking and managing river walk adventures. Users can log their river walks with details like date, location, and eventually sites visited.
+Riverwalks is a web application designed primarily for GCSE Geography students to document river studies and generate professional coursework reports. The platform allows users to log river walks and conduct detailed site measurements with advanced visualization and analysis tools.
 
 ## 🚀 Live Application
 - **Production URL**: https://riverwalks.vercel.app
@@ -111,24 +111,112 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 6. Data persists between sessions
 7. Can navigate home or sign out
 
-## 🔮 Future Features (Planned)
-- **Sites Management**: Add specific sites to each river walk
-- **Photo Uploads**: Attach images to river walks
-- **Map Integration**: Show river walk locations on maps
-- **Search & Filtering**: Find river walks by location/date
-- **Export**: Download river walk data
-- **Social Sharing**: Share favorite river walks
+## 🚀 Next Phase: GCSE River Study Integration
+
+### 📊 Streamlit App Analysis (app.py)
+A comprehensive Streamlit application exists with the following features:
+- **Multi-site measurement input**: Width and depth measurements across multiple river sections
+- **Real-time visualization**: 2D cross-sections with live preview as data is entered
+- **3D river profile**: Professional 3D visualization with realistic banks and terrain
+- **Data export**: CSV download functionality for coursework submission
+- **GCSE-focused interface**: Designed specifically for Geography student needs
+
+### 🛠️ Integration Plan (4-Phase Approach)
+
+**Phase 1: Sites Foundation** 
+- Add Sites data model to existing River Walks
+- Create basic site input forms within river walk details  
+- Implement measurement points storage in Supabase
+- Simple data display without visualizations
+
+**Phase 2: 2D Visualization**
+- Integrate Plotly.js for client-side charts
+- Implement 2D cross-section visualizations  
+- Add measurement point editing capabilities
+- Data validation and error handling
+
+**Phase 3: Advanced Features**
+- 3D river profile visualization (matching Streamlit quality)
+- Professional report generation (PDF export)
+- CSV/Excel export functionality
+- Print-friendly layouts for GCSE coursework
+
+**Phase 4: GCSE Enhancement**
+- AI-generated river analysis descriptions
+- Educational templates and guidance text
+- Calculation helpers (flow rate, wetted perimeter, etc.)
+- Comparison tools between different river walks
+
+### 🗄️ Planned Database Extensions
+
+```sql
+-- Sites table (extends river_walks)
+CREATE TABLE sites (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  river_walk_id UUID NOT NULL REFERENCES river_walks(id) ON DELETE CASCADE,
+  site_number INTEGER NOT NULL,
+  site_name TEXT NOT NULL,
+  river_width DECIMAL(8,2) NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Measurement points within each site  
+CREATE TABLE measurement_points (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  site_id UUID NOT NULL REFERENCES sites(id) ON DELETE CASCADE,
+  point_number INTEGER NOT NULL,
+  distance_from_bank DECIMAL(8,2) NOT NULL,
+  depth DECIMAL(8,2) NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+```
+
+### 🎯 Target Users (Updated)
+- **Primary**: GCSE Geography students creating coursework
+- **Secondary**: Teachers and educators  
+- **Tertiary**: General river enthusiasts and citizen scientists
+
+### 💡 Key Value Propositions
+- Professional coursework-ready reports with charts and analysis
+- No software installation required - fully web-based
+- Cloud-based data persistence across sessions
+- Export capabilities for assignment submission
+- Educational guidance and GCSE-specific templates
+
+### 🔄 Implementation Strategy
+- **Rollback-friendly**: Each phase on separate feature branches
+- **Incremental testing**: Deploy and test each phase on main before proceeding
+- **User feedback**: Test with GCSE students/teachers during development
+- **Performance focus**: Ensure visualizations work well on school devices
+
+### 📚 Technical Dependencies (Planned)
+```json
+{
+  "plotly.js": "^2.26.0",
+  "react-plotly.js": "^2.6.0", 
+  "jspdf": "^2.5.1",
+  "html2canvas": "^1.4.1",
+  "papaparse": "^5.4.1"
+}
+```
 
 ## 🚨 Known Issues & Limitations
 - Preview deployments may have OAuth redirect issues (resolved by using main branch)
-- No photo upload functionality yet
-- No bulk operations (delete multiple walks)
-- No data export feature
+- Streamlit app.py functionality not yet integrated into web app
+- No measurement sites or visualization features yet
+- No report generation or data export beyond basic CSV
 
 ## 🔄 Git Branches
 - **main**: Production-ready code, deployed to Vercel
 - **feature/river-walks-crud**: Development branch (merged to main)
 - **temp/clean-river-walks**: Rollback point before CRUD implementation
+
+### 🚀 Planned Feature Branches
+- **feature/sites-basic**: Phase 1 - Basic site management and measurement input
+- **feature/visualization**: Phase 2 - 2D charts and cross-section visualization
+- **feature/3d-profile**: Phase 3 - 3D river profile and report generation
+- **feature/gcse-enhancement**: Phase 4 - AI analysis and educational features
 
 ## 📝 Development Notes for Future Sessions
 
@@ -137,6 +225,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 2. Check current branch and recent commits
 3. Verify Supabase connection and table structure
 4. Test live application at https://riverwalks.vercel.app
+5. Review app.py Streamlit functionality for integration context
 
 ### Common Tasks:
 - **Add new features**: Create feature branch, implement, test, merge to main
@@ -159,4 +248,5 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 
 ---
 *Last Updated: June 14, 2025*
-*Status: ✅ Production Ready*
+*Status: ✅ Basic River Walk CRUD Complete - Ready for GCSE Integration*
+*Next Phase: Sites Foundation (Phase 1)*
