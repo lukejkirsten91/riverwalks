@@ -3,8 +3,9 @@ import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { supabase } from '../lib/supabase';
 import { getRiverWalks, createRiverWalk, updateRiverWalk, deleteRiverWalk } from '../lib/api/river-walks';
+import { getSitesForRiverWalk } from '../lib/api/sites';
 import { formatDate } from '../lib/utils';
-import { Home, LogOut } from 'lucide-react';
+import { Home, LogOut, MapPin } from 'lucide-react';
 
 export default function RiverWalksPage() {
   const router = useRouter();
@@ -20,6 +21,8 @@ export default function RiverWalksPage() {
     county: ''
   });
   const [error, setError] = useState(null);
+  const [selectedRiverWalk, setSelectedRiverWalk] = useState(null);
+  const [sites, setSites] = useState([]);
 
   // Check if user is authenticated
   useEffect(() => {
@@ -122,6 +125,27 @@ export default function RiverWalksPage() {
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     router.push('/');
+  };
+
+  // Handle manage sites
+  const handleManageSites = async (riverWalk) => {
+    try {
+      setSelectedRiverWalk(riverWalk);
+      setLoading(true);
+      const sitesData = await getSitesForRiverWalk(riverWalk.id);
+      setSites(sitesData);
+    } catch (err) {
+      setError('Failed to load sites');
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Close sites management
+  const closeSitesManagement = () => {
+    setSelectedRiverWalk(null);
+    setSites([]);
   };
 
   // Loading state
@@ -268,6 +292,13 @@ export default function RiverWalksPage() {
                 </div>
                 <div className="space-x-2">
                   <button
+                    onClick={() => handleManageSites(riverWalk)}
+                    className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded"
+                  >
+                    <MapPin className="inline w-4 h-4 mr-1" />
+                    Sites
+                  </button>
+                  <button
                     onClick={() => handleEdit(riverWalk)}
                     className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded"
                   >
@@ -283,6 +314,88 @@ export default function RiverWalksPage() {
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Sites Management Modal */}
+      {selectedRiverWalk && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-2xl font-bold">
+                Manage Sites - {selectedRiverWalk.name}
+              </h2>
+              <button
+                onClick={closeSitesManagement}
+                className="text-gray-500 hover:text-gray-700 text-2xl"
+              >
+                &times;
+              </button>
+            </div>
+            
+            <div className="mb-4">
+              <p className="text-gray-600">
+                {formatDate(selectedRiverWalk.date)} • {selectedRiverWalk.county ? `${selectedRiverWalk.county}, ` : ''}{selectedRiverWalk.country || 'UK'}
+              </p>
+            </div>
+
+            {sites.length === 0 ? (
+              <div className="text-center p-8 bg-gray-50 rounded-lg">
+                <p className="text-gray-600 mb-4">No measurement sites added yet.</p>
+                <button className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">
+                  Add First Site
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <h3 className="text-lg font-semibold">Measurement Sites ({sites.length})</h3>
+                  <button className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">
+                    Add New Site
+                  </button>
+                </div>
+                
+                {sites.map((site, index) => (
+                  <div key={site.id} className="border rounded-lg p-4 bg-gray-50">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h4 className="font-semibold">Site {site.site_number}: {site.site_name}</h4>
+                        <p className="text-gray-600">River Width: {site.river_width}m</p>
+                        <p className="text-sm text-gray-500">
+                          {site.measurement_points?.length || 0} measurement points
+                        </p>
+                      </div>
+                      <div className="space-x-2">
+                        <button className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded text-sm">
+                          Edit
+                        </button>
+                        <button className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm">
+                          Delete
+                        </button>
+                      </div>
+                    </div>
+                    
+                    {site.measurement_points && site.measurement_points.length > 0 && (
+                      <div className="mt-3 pt-3 border-t">
+                        <h5 className="text-sm font-medium text-gray-700 mb-2">Measurement Points:</h5>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
+                          {site.measurement_points.map((point, pointIndex) => (
+                            <div key={point.id} className="bg-white p-2 rounded border">
+                              <span className="font-medium">Point {point.point_number}:</span>
+                              <br />
+                              <span className="text-gray-600">
+                                {point.distance_from_bank}m, {point.depth}m depth
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>
