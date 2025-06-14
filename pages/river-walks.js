@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { supabase } from '../lib/supabase';
 import { getRiverWalks, createRiverWalk, updateRiverWalk, deleteRiverWalk } from '../lib/api/river-walks';
-import { getSitesForRiverWalk, createSite, createMeasurementPoints, deleteMeasurementPointsForSite } from '../lib/api/sites';
+import { getSitesForRiverWalk, createSite, updateSite, createMeasurementPoints, deleteMeasurementPointsForSite } from '../lib/api/sites';
 import { formatDate } from '../lib/utils';
 import { Home, LogOut, MapPin } from 'lucide-react';
 
@@ -31,6 +31,7 @@ export default function RiverWalksPage() {
   const [editingMeasurements, setEditingMeasurements] = useState(null);
   const [numMeasurements, setNumMeasurements] = useState(3);
   const [measurementData, setMeasurementData] = useState([]);
+  const [currentRiverWidth, setCurrentRiverWidth] = useState(0);
 
   // Check if user is authenticated
   useEffect(() => {
@@ -159,6 +160,7 @@ export default function RiverWalksPage() {
     setEditingMeasurements(null);
     setMeasurementData([]);
     setNumMeasurements(3);
+    setCurrentRiverWidth(0);
   };
 
   // Handle site form input changes
@@ -202,9 +204,19 @@ export default function RiverWalksPage() {
     }
   };
 
+  // Generate evenly spaced distances based on river width and number of measurements
+  const generateEvenlySpacedDistances = (riverWidth, numPoints) => {
+    const distances = [];
+    for (let i = 0; i < numPoints; i++) {
+      distances.push(numPoints === 1 ? riverWidth / 2 : (riverWidth / (numPoints - 1)) * i);
+    }
+    return distances;
+  };
+
   // Handle starting measurement editing for a site
   const handleEditMeasurements = (site) => {
     setEditingMeasurements(site);
+    setCurrentRiverWidth(parseFloat(site.river_width));
     
     // Initialize measurement data based on existing points or defaults
     if (site.measurement_points && site.measurement_points.length > 0) {
@@ -215,39 +227,44 @@ export default function RiverWalksPage() {
       })));
     } else {
       // Create default evenly spaced measurements
-      const defaultMeasurements = [];
       const riverWidth = parseFloat(site.river_width);
-      for (let i = 0; i < numMeasurements; i++) {
-        defaultMeasurements.push({
-          distance_from_bank: (riverWidth / (numMeasurements - 1)) * i,
-          depth: 0
-        });
-      }
+      const distances = generateEvenlySpacedDistances(riverWidth, numMeasurements);
+      const defaultMeasurements = distances.map(distance => ({
+        distance_from_bank: distance,
+        depth: 0
+      }));
       setMeasurementData(defaultMeasurements);
     }
   };
 
   // Handle changing number of measurements
   const handleNumMeasurementsChange = (newNum) => {
-    const site = editingMeasurements;
-    const riverWidth = parseFloat(site.river_width);
-    
     setNumMeasurements(newNum);
     
-    // Create new measurement data array
+    // Generate new evenly spaced distances
+    const newDistances = generateEvenlySpacedDistances(currentRiverWidth, newNum);
+    
+    // Create new measurement data array, preserving depths where possible
     const newMeasurementData = [];
     for (let i = 0; i < newNum; i++) {
-      if (i < measurementData.length) {
-        // Keep existing data
-        newMeasurementData.push(measurementData[i]);
-      } else {
-        // Add new default point
-        newMeasurementData.push({
-          distance_from_bank: (riverWidth / (newNum - 1)) * i,
-          depth: 0
-        });
-      }
+      newMeasurementData.push({
+        distance_from_bank: newDistances[i],
+        depth: i < measurementData.length ? measurementData[i].depth : 0
+      });
     }
+    setMeasurementData(newMeasurementData);
+  };
+
+  // Handle river width change
+  const handleRiverWidthChange = (newWidth) => {
+    setCurrentRiverWidth(newWidth);
+    
+    // Update distances but preserve depths
+    const newDistances = generateEvenlySpacedDistances(newWidth, numMeasurements);
+    const newMeasurementData = measurementData.map((point, index) => ({
+      distance_from_bank: newDistances[index] || 0,
+      depth: point.depth
+    }));
     setMeasurementData(newMeasurementData);
   };
 
@@ -265,6 +282,14 @@ export default function RiverWalksPage() {
   const handleSaveMeasurements = async () => {
     try {
       setLoading(true);
+      
+      // Update site river width if it changed
+      if (currentRiverWidth !== parseFloat(editingMeasurements.river_width)) {
+        await updateSite(editingMeasurements.id, {
+          site_name: editingMeasurements.site_name,
+          river_width: currentRiverWidth
+        });
+      }
       
       // Delete existing measurement points for this site
       await deleteMeasurementPointsForSite(editingMeasurements.id);
@@ -299,6 +324,7 @@ export default function RiverWalksPage() {
     setEditingMeasurements(null);
     setMeasurementData([]);
     setNumMeasurements(3);
+    setCurrentRiverWidth(0);
   };
 
   // Loading state
@@ -497,9 +523,21 @@ export default function RiverWalksPage() {
                 <h3 className="text-xl font-semibold mb-4">
                   Add Measurements - {editingMeasurements.site_name}
                 </h3>
-                <p className="text-gray-600 mb-4">
-                  River Width: {editingMeasurements.river_width}m
-                </p>
+                
+                <div className="mb-4">
+                  <label className="block text-gray-700 mb-2">River Width (meters)</label>
+                  <input
+                    type="number"
+                    value={currentRiverWidth}
+                    onChange={(e) => handleRiverWidthChange(parseFloat(e.target.value) || 0)}
+                    className="w-32 p-2 border rounded"
+                    step="0.1"
+                    min="0.1"
+                  />
+                  <span className="text-sm text-gray-500 ml-2">
+                    Distances will auto-update when changed
+                  </span>
+                </div>
                 
                 <div className="mb-4">
                   <label className="block text-gray-700 mb-2">Number of Measurement Points</label>
@@ -511,6 +549,9 @@ export default function RiverWalksPage() {
                     min="2"
                     max="20"
                   />
+                  <span className="text-sm text-gray-500 ml-2">
+                    Distances will auto-space evenly
+                  </span>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
@@ -526,7 +567,7 @@ export default function RiverWalksPage() {
                           className="w-full p-2 border rounded"
                           step="0.1"
                           min="0"
-                          max={editingMeasurements.river_width}
+                          max={currentRiverWidth}
                         />
                       </div>
                     ))}
