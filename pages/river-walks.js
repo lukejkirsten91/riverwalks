@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { supabase } from '../lib/supabase';
 import { getRiverWalks, createRiverWalk, updateRiverWalk, deleteRiverWalk } from '../lib/api/river-walks';
-import { getSitesForRiverWalk } from '../lib/api/sites';
+import { getSitesForRiverWalk, createSite } from '../lib/api/sites';
 import { formatDate } from '../lib/utils';
 import { Home, LogOut, MapPin } from 'lucide-react';
 
@@ -23,6 +23,11 @@ export default function RiverWalksPage() {
   const [error, setError] = useState(null);
   const [selectedRiverWalk, setSelectedRiverWalk] = useState(null);
   const [sites, setSites] = useState([]);
+  const [showSiteForm, setShowSiteForm] = useState(false);
+  const [siteFormData, setSiteFormData] = useState({
+    site_name: '',
+    river_width: ''
+  });
 
   // Check if user is authenticated
   useEffect(() => {
@@ -146,6 +151,49 @@ export default function RiverWalksPage() {
   const closeSitesManagement = () => {
     setSelectedRiverWalk(null);
     setSites([]);
+    setShowSiteForm(false);
+    setSiteFormData({ site_name: '', river_width: '' });
+  };
+
+  // Handle site form input changes
+  const handleSiteFormChange = (e) => {
+    const { name, value } = e.target;
+    setSiteFormData({
+      ...siteFormData,
+      [name]: value
+    });
+  };
+
+  // Handle site creation
+  const handleCreateSite = async (e) => {
+    e.preventDefault();
+    try {
+      setLoading(true);
+      
+      const nextSiteNumber = sites.length + 1;
+      const newSite = {
+        river_walk_id: selectedRiverWalk.id,
+        site_number: nextSiteNumber,
+        site_name: siteFormData.site_name,
+        river_width: parseFloat(siteFormData.river_width)
+      };
+      
+      await createSite(newSite);
+      
+      // Refresh sites list
+      const sitesData = await getSitesForRiverWalk(selectedRiverWalk.id);
+      setSites(sitesData);
+      
+      // Reset form
+      setShowSiteForm(false);
+      setSiteFormData({ site_name: '', river_width: '' });
+      
+    } catch (err) {
+      setError('Failed to create site');
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   // Loading state
@@ -339,10 +387,61 @@ export default function RiverWalksPage() {
               </p>
             </div>
 
-            {sites.length === 0 ? (
+            {showSiteForm ? (
+              <div className="bg-gray-50 p-6 rounded-lg mb-6">
+                <h3 className="text-xl font-semibold mb-4">Add New Site</h3>
+                <form onSubmit={handleCreateSite}>
+                  <div className="mb-4">
+                    <label className="block text-gray-700 mb-2">Site Name</label>
+                    <input
+                      type="text"
+                      name="site_name"
+                      value={siteFormData.site_name}
+                      onChange={handleSiteFormChange}
+                      className="w-full p-2 border rounded"
+                      placeholder="e.g., Upstream, Meander, Confluence"
+                      required
+                    />
+                  </div>
+                  <div className="mb-4">
+                    <label className="block text-gray-700 mb-2">River Width (meters)</label>
+                    <input
+                      type="number"
+                      name="river_width"
+                      value={siteFormData.river_width}
+                      onChange={handleSiteFormChange}
+                      className="w-full p-2 border rounded"
+                      placeholder="e.g., 3.5"
+                      step="0.1"
+                      min="0.1"
+                      required
+                    />
+                  </div>
+                  <div className="space-x-2">
+                    <button
+                      type="submit"
+                      className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded"
+                      disabled={loading}
+                    >
+                      {loading ? 'Creating...' : 'Create Site'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowSiteForm(false)}
+                      className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </form>
+              </div>
+            ) : sites.length === 0 ? (
               <div className="text-center p-8 bg-gray-50 rounded-lg">
                 <p className="text-gray-600 mb-4">No measurement sites added yet.</p>
-                <button className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">
+                <button 
+                  onClick={() => setShowSiteForm(true)}
+                  className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
+                >
                   Add First Site
                 </button>
               </div>
@@ -350,7 +449,10 @@ export default function RiverWalksPage() {
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
                   <h3 className="text-lg font-semibold">Measurement Sites ({sites.length})</h3>
-                  <button className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">
+                  <button 
+                    onClick={() => setShowSiteForm(true)}
+                    className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
+                  >
                     Add New Site
                   </button>
                 </div>
