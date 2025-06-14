@@ -22,6 +22,6 @@ export default async function handler(req, res) {
     }
   }
 
-  // Redirect to the home page of the current domain
-  res.redirect('/');
+  // Redirect to the river walks page after successful authentication
+  res.redirect('/river-walks');
 }
