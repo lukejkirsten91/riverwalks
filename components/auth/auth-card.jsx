@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
 import { supabase } from '../../lib/supabase';
 import { Button } from '../ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '../ui/card';
-import { LogIn, LogOut } from 'lucide-react';
+import { LogIn, LogOut, MapPin } from 'lucide-react';
 
 export default function AuthCard() {
+  const router = useRouter();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -76,7 +78,10 @@ export default function AuthCard() {
             <p><strong>Email:</strong> {user.email}</p>
           </div>
         </CardContent>
-        <CardFooter>
+        <CardFooter className="flex flex-col space-y-2">
+          <Button onClick={() => router.push('/river-walks')} className="w-full">
+            <MapPin className="mr-2 h-4 w-4" /> View River Walks
+          </Button>
           <Button onClick={handleSignOut} variant="outline" className="w-full">
             <LogOut className="mr-2 h-4 w-4" /> Sign Out
           </Button>

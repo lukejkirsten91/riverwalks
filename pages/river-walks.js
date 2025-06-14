@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { supabase } from '../lib/supabase';
 import { getRiverWalks, createRiverWalk, updateRiverWalk, deleteRiverWalk } from '../lib/api/river-walks';
 import { formatDate } from '../lib/utils';
+import { Home, LogOut } from 'lucide-react';
 
 export default function RiverWalksPage() {
   const router = useRouter();
@@ -118,6 +119,11 @@ export default function RiverWalksPage() {
     }
   };
 
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    router.push('/');
+  };
+
   // Loading state
   if (loading && !riverWalks.length) {
     return (
@@ -131,7 +137,24 @@ export default function RiverWalksPage() {
   return (
     <div className="p-8 max-w-4xl mx-auto">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">River Walks</h1>
+        <div className="flex items-center space-x-4">
+          <h1 className="text-2xl font-bold">River Walks</h1>
+          <div className="flex space-x-2">
+            <Link href="/">
+              <button className="flex items-center text-gray-600 hover:text-gray-800 px-3 py-1 rounded">
+                <Home className="w-4 h-4 mr-1" />
+                Home
+              </button>
+            </Link>
+            <button 
+              onClick={handleSignOut}
+              className="flex items-center text-gray-600 hover:text-gray-800 px-3 py-1 rounded"
+            >
+              <LogOut className="w-4 h-4 mr-1" />
+              Sign Out
+            </button>
+          </div>
+        </div>
         <button 
           className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
           onClick={() => {
