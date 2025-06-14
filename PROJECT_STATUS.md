@@ -5,7 +5,7 @@ Riverwalks is a web application designed primarily for GCSE Geography students t
 
 ## 🚀 Live Application
 - **Production URL**: https://riverwalks.vercel.app
-- **Current Status**: ✅ Fully functional River Walk CRUD with authentication
+- **Current Status**: ✅ River Walk CRUD + Phase 1 Sites Management Complete
 
 ## 🏗️ Technical Stack
 - **Frontend**: Next.js 14 with React 18
@@ -43,6 +43,13 @@ Riverwalks is a web application designed primarily for GCSE Geography students t
 - Automatic user_id assignment on creation
 - Secure API endpoints with authentication checks
 
+### ✅ Sites Management (Phase 1 - COMPLETED)
+- **Database Schema**: Sites and measurement_points tables with full RLS
+- **Site Creation**: Add sites to river walks with name and width
+- **Sites Listing**: View all sites for a river walk in modal interface
+- **Basic UI**: Clean modal interface with form validation
+- **API Layer**: Complete CRUD operations for sites management
+
 ## 🗄️ Database Schema
 
 ### river_walks table
@@ -59,8 +66,34 @@ CREATE TABLE river_walks (
 );
 ```
 
+### sites table (Phase 1)
+```sql
+CREATE TABLE sites (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  river_walk_id UUID NOT NULL REFERENCES river_walks(id) ON DELETE CASCADE,
+  site_number INTEGER NOT NULL,
+  site_name TEXT NOT NULL,
+  river_width DECIMAL(8,2) NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+```
+
+### measurement_points table (Phase 1)
+```sql
+CREATE TABLE measurement_points (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  site_id UUID NOT NULL REFERENCES sites(id) ON DELETE CASCADE,
+  point_number INTEGER NOT NULL,
+  distance_from_bank DECIMAL(8,2) NOT NULL,
+  depth DECIMAL(8,2) NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+```
+
 ### RLS Policies
 - Users can SELECT, INSERT, UPDATE, DELETE only their own river walks
+- Sites and measurement points inherit user access through river_walks relationship
 - All operations filtered by `auth.uid() = user_id`
 
 ## 📁 Project Structure
@@ -72,7 +105,8 @@ riverwalks/
 │   └── ui/                        # shadcn/ui components
 ├── lib/
 │   ├── api/
-│   │   └── river-walks.js         # CRUD operations
+│   │   ├── river-walks.js         # River Walk CRUD operations
+│   │   └── sites.js               # Sites CRUD operations (Phase 1)
 │   ├── supabase.js                # Supabase client config
 │   └── utils.js                   # Helper functions
 ├── pages/
@@ -81,7 +115,8 @@ riverwalks/
 │   ├── index.js                   # Home page with auth
 │   └── river-walks.js             # Main River Walk interface
 ├── supabase/
-│   └── cleanup.sql                # Database setup script
+│   ├── cleanup.sql                # Initial database setup script
+│   └── sites-schema.sql           # Sites and measurement points schema (Phase 1)
 └── styles/
 ```
 
@@ -95,7 +130,9 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 
 ### Supabase Setup
 1. **OAuth Configuration**: Google OAuth enabled with proper redirect URLs
-2. **Database**: Run `supabase/cleanup.sql` to create tables and RLS policies
+2. **Database**: 
+   - Run `supabase/cleanup.sql` to create river_walks table and RLS policies
+   - Run `supabase/sites-schema.sql` to create sites and measurement_points tables
 3. **Authentication**: Users table automatically managed by Supabase Auth
 
 ### Google Cloud Console
@@ -123,11 +160,11 @@ A comprehensive Streamlit application exists with the following features:
 
 ### 🛠️ Integration Plan (4-Phase Approach)
 
-**Phase 1: Sites Foundation** 
-- Add Sites data model to existing River Walks
-- Create basic site input forms within river walk details  
-- Implement measurement points storage in Supabase
-- Simple data display without visualizations
+**Phase 1: Sites Foundation** ✅ COMPLETED
+- ✅ Add Sites data model to existing River Walks
+- ✅ Create basic site input forms within river walk details  
+- ✅ Implement measurement points storage in Supabase
+- ✅ Simple data display without visualizations
 
 **Phase 2: 2D Visualization**
 - Integrate Plotly.js for client-side charts
@@ -227,6 +264,16 @@ CREATE TABLE measurement_points (
 4. Test live application at https://riverwalks.vercel.app
 5. Review app.py Streamlit functionality for integration context
 
+### ⚠️ IMPORTANT: Update This Document
+**ALWAYS update PROJECT_STATUS.md after completing any significant development step:**
+- Mark phases as completed with ✅
+- Update current status section
+- Add new database schema or API changes
+- Update project structure if files are added/moved
+- Record any new configuration requirements
+- Update known issues/limitations section
+- This ensures future chat sessions have accurate context
+
 ### Common Tasks:
 - **Add new features**: Create feature branch, implement, test, merge to main
 - **Database changes**: Update `supabase/cleanup.sql` and run in Supabase dashboard
@@ -248,5 +295,5 @@ CREATE TABLE measurement_points (
 
 ---
 *Last Updated: June 14, 2025*
-*Status: ✅ Basic River Walk CRUD Complete - Ready for GCSE Integration*
-*Next Phase: Sites Foundation (Phase 1)*
+*Status: ✅ Phase 1 Sites Foundation Complete - Ready for Phase 2 Visualization*
+*Next Phase: 2D Visualization (Phase 2)*
