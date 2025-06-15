@@ -72,9 +72,20 @@ export default function RiverWalksPage() {
     setCurrentRiverWalk(null);
   };
 
-  const handleEdit = (riverWalk: RiverWalk) => {
-    setCurrentRiverWalk(riverWalk);
-    setShowForm(true);
+  const handleUpdateField = async (id: string, field: keyof RiverWalk, value: string) => {
+    // Find the existing river walk to get current values
+    const existingRiverWalk = riverWalks.find(rw => rw.id === id);
+    if (!existingRiverWalk) return;
+    
+    // Create complete update data with current values plus the changed field
+    const updateData: RiverWalkFormData = {
+      name: field === 'name' ? value : existingRiverWalk.name,
+      date: field === 'date' ? value : existingRiverWalk.date,
+      country: field === 'country' ? value : existingRiverWalk.country,
+      county: field === 'county' ? value : (existingRiverWalk.county || ''),
+    };
+    
+    await handleUpdateRiverWalk(id, updateData);
   };
 
   const handleDelete = async (id: string) => {
@@ -196,7 +207,7 @@ export default function RiverWalksPage() {
         {/* River walks list */}
         <RiverWalkList
           riverWalks={riverWalks}
-          onEdit={handleEdit}
+          onUpdateField={handleUpdateField}
           onDelete={handleDelete}
           onManageSites={handleManageSites}
         />

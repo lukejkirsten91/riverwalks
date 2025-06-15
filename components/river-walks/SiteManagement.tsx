@@ -46,7 +46,6 @@ export function SiteManagement({ riverWalk, onClose }: SiteManagementProps) {
   } = useMeasurements();
 
   const [showSiteForm, setShowSiteForm] = useState(false);
-  const [editingSite, setEditingSite] = useState<Site | null>(null);
   const [editingMeasurements, setEditingMeasurements] = useState<Site | null>(
     null
   );
@@ -69,18 +68,21 @@ export function SiteManagement({ riverWalk, onClose }: SiteManagementProps) {
     setShowSiteForm(false);
   };
 
-  const handleUpdateSiteSubmit = async (formData: SiteFormData) => {
-    if (!editingSite) return;
+  const handleUpdateSiteField = async (id: string, field: 'site_name' | 'river_width', value: string | number) => {
+    const updateData = field === 'site_name' 
+      ? { site_name: value as string, river_width: 0 } // We'll get river_width from existing data
+      : { site_name: '', river_width: value as number }; // We'll get site_name from existing data
+    
+    // Find the existing site to get the other field value
+    const existingSite = sites.find(site => site.id === id);
+    if (!existingSite) return;
+    
+    const completeUpdateData = {
+      site_name: field === 'site_name' ? value as string : existingSite.site_name,
+      river_width: field === 'river_width' ? value as number : parseFloat(existingSite.river_width.toString()),
+    };
 
-    await handleUpdateSite(
-      editingSite.id,
-      {
-        site_name: formData.site_name,
-        river_width: parseFloat(formData.river_width),
-      },
-      riverWalk.id
-    );
-    setEditingSite(null);
+    await handleUpdateSite(id, completeUpdateData, riverWalk.id);
   };
 
   const handleEditMeasurements = (site: Site) => {
@@ -194,14 +196,7 @@ export function SiteManagement({ riverWalk, onClose }: SiteManagementProps) {
             </div>
           )}
 
-          {editingSite ? (
-            <SiteForm
-              editingSite={editingSite}
-              onSubmit={handleUpdateSiteSubmit}
-              onCancel={() => setEditingSite(null)}
-              loading={loading}
-            />
-          ) : editingMeasurements ? (
+          {editingMeasurements ? (
             <MeasurementEditor
               site={editingMeasurements}
               measurementData={measurementData}
@@ -224,7 +219,7 @@ export function SiteManagement({ riverWalk, onClose }: SiteManagementProps) {
             <SiteList
               sites={sites}
               onEditMeasurements={handleEditMeasurements}
-              onEditSite={setEditingSite}
+              onUpdateSite={handleUpdateSiteField}
               onDeleteSite={handleDeleteSiteWithConfirm}
               onAddNewSite={() => setShowSiteForm(true)}
             />

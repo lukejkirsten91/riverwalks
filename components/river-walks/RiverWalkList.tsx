@@ -1,17 +1,18 @@
-import { MapPin, Calendar, Globe, Edit, Trash2 } from 'lucide-react';
+import { MapPin, Calendar, Globe, Trash2 } from 'lucide-react';
 import { formatDate } from '../../lib/utils';
+import { InlineEdit } from '../ui/InlineEdit';
 import type { RiverWalk } from '../../types';
 
 interface RiverWalkListProps {
   riverWalks: RiverWalk[];
-  onEdit: (riverWalk: RiverWalk) => void;
+  onUpdateField: (id: string, field: keyof RiverWalk, value: string) => Promise<void>;
   onDelete: (id: string) => void;
   onManageSites: (riverWalk: RiverWalk) => void;
 }
 
 export function RiverWalkList({
   riverWalks,
-  onEdit,
+  onUpdateField,
   onDelete,
   onManageSites,
 }: RiverWalkListProps) {
@@ -34,24 +35,44 @@ export function RiverWalkList({
           key={riverWalk.id}
           className="card-modern-xl p-6 hover:scale-[1.02] transition-transform duration-200"
         >
-          {/* Header */}
+          {/* Header with inline editing */}
           <div className="flex-1 min-w-0 mb-4">
-            <h2 className="text-xl sm:text-2xl font-semibold text-foreground truncate mb-3">
-              {riverWalk.name}
-            </h2>
+            <InlineEdit
+              value={riverWalk.name}
+              onSave={(value) => onUpdateField(riverWalk.id, 'name', value)}
+              className="text-xl sm:text-2xl font-semibold text-foreground mb-3"
+              inputClassName="text-xl sm:text-2xl font-semibold"
+              placeholder="River walk name"
+            />
             
-            {/* Metadata */}
-            <div className="flex flex-wrap items-center gap-4 text-muted-foreground">
-              <div className="flex items-center gap-2">
-                <Calendar className="w-4 h-4" />
-                <span className="text-sm">{formatDate(riverWalk.date)}</span>
+            {/* Metadata with inline editing */}
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <Calendar className="w-4 h-4 shrink-0" />
+                <InlineEdit
+                  value={riverWalk.date}
+                  onSave={(value) => onUpdateField(riverWalk.id, 'date', value)}
+                  type="date"
+                  className="text-sm"
+                />
               </div>
-              <div className="flex items-center gap-2">
-                <Globe className="w-4 h-4" />
-                <span className="text-sm">
-                  {riverWalk.county ? `${riverWalk.county}, ` : ''}
-                  {riverWalk.country || 'UK'}
-                </span>
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <Globe className="w-4 h-4 shrink-0" />
+                <div className="flex items-center gap-1 text-sm">
+                  <InlineEdit
+                    value={riverWalk.county || ''}
+                    onSave={(value) => onUpdateField(riverWalk.id, 'county', value)}
+                    placeholder="County (optional)"
+                    className="text-sm"
+                  />
+                  <span>,</span>
+                  <InlineEdit
+                    value={riverWalk.country || 'UK'}
+                    onSave={(value) => onUpdateField(riverWalk.id, 'country', value)}
+                    placeholder="Country"
+                    className="text-sm"
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -60,17 +81,10 @@ export function RiverWalkList({
           <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-border">
             <button
               onClick={() => onManageSites(riverWalk)}
-              className="bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-3 rounded-lg font-medium transition-all duration-200 shadow-modern hover:shadow-modern-lg touch-manipulation flex-1 sm:flex-none"
+              className="btn-primary touch-manipulation flex-1 sm:flex-none"
             >
               <MapPin className="w-5 h-5 mr-2" />
               Sites & Measurements
-            </button>
-            <button
-              onClick={() => onEdit(riverWalk)}
-              className="bg-muted hover:bg-muted/80 text-foreground px-4 py-3 rounded-lg font-medium transition-all duration-200 border border-border shadow-modern hover:shadow-modern-lg touch-manipulation flex-1 sm:flex-none"
-            >
-              <Edit className="w-5 h-5 mr-2" />
-              Edit Details
             </button>
             <button
               onClick={() => onDelete(riverWalk.id)}

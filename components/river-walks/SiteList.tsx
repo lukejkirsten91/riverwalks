@@ -1,10 +1,12 @@
-import { MapPin, Edit, Trash2, Plus, Ruler } from 'lucide-react';
+import { MapPin, Trash2, Plus, Ruler } from 'lucide-react';
+import { InlineEdit } from '../ui/InlineEdit';
+import { InlineNumberEdit } from '../ui/InlineNumberEdit';
 import type { Site } from '../../types';
 
 interface SiteListProps {
   sites: Site[];
   onEditMeasurements: (site: Site) => void;
-  onEditSite: (site: Site) => void;
+  onUpdateSite: (id: string, field: 'site_name' | 'river_width', value: string | number) => Promise<void>;
   onDeleteSite: (site: Site) => void;
   onAddNewSite: () => void;
 }
@@ -12,7 +14,7 @@ interface SiteListProps {
 export function SiteList({
   sites,
   onEditMeasurements,
-  onEditSite,
+  onUpdateSite,
   onDeleteSite,
   onAddNewSite,
 }: SiteListProps) {
@@ -65,15 +67,28 @@ export function SiteList({
                 <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
                   <span className="text-sm font-bold text-primary">{site.site_number}</span>
                 </div>
-                <h4 className="text-lg font-semibold text-foreground truncate">
-                  {site.site_name}
-                </h4>
+                <InlineEdit
+                  value={site.site_name}
+                  onSave={(value) => onUpdateSite(site.id, 'site_name', value)}
+                  className="text-lg font-semibold text-foreground"
+                  inputClassName="text-lg font-semibold"
+                  placeholder="Site name"
+                />
               </div>
               
               <div className="flex items-center gap-4 text-muted-foreground text-sm">
                 <div className="flex items-center gap-2">
                   <Ruler className="w-4 h-4" />
-                  <span>Width: {site.river_width}m</span>
+                  <span>Width: </span>
+                  <InlineNumberEdit
+                    value={parseFloat(site.river_width.toString())}
+                    onSave={(value) => onUpdateSite(site.id, 'river_width', value)}
+                    suffix="m"
+                    min={0.1}
+                    step={0.1}
+                    decimals={1}
+                    className="text-sm"
+                  />
                 </div>
                 <div className="flex items-center gap-2">
                   <MapPin className="w-4 h-4" />
@@ -86,17 +101,10 @@ export function SiteList({
             <div className="flex flex-col sm:flex-row gap-3">
               <button
                 onClick={() => onEditMeasurements(site)}
-                className="bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-lg font-medium transition-all duration-200 shadow-modern hover:shadow-modern-lg touch-manipulation"
+                className="btn-primary touch-manipulation"
               >
                 <Ruler className="w-4 h-4 mr-2" />
                 Measurements
-              </button>
-              <button
-                onClick={() => onEditSite(site)}
-                className="bg-muted hover:bg-muted/80 text-foreground px-4 py-2 rounded-lg font-medium transition-all duration-200 border border-border shadow-modern hover:shadow-modern-lg touch-manipulation"
-              >
-                <Edit className="w-4 h-4 mr-2" />
-                Edit
               </button>
               <button
                 onClick={() => onDeleteSite(site)}
