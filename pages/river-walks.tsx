@@ -134,8 +134,8 @@ export default function RiverWalksPage() {
               </div>
               
               {user && (
-                <div className="flex items-center gap-2 bg-success/10 text-success-foreground px-4 py-2 rounded-full text-sm border border-success/20">
-                  <div className="w-2 h-2 bg-success rounded-full"></div>
+                <div className="flex items-center gap-2 bg-primary/10 text-foreground px-4 py-2 rounded-full text-sm border border-primary/20">
+                  <div className="w-2 h-2 bg-primary rounded-full"></div>
                   {user.email}
                 </div>
               )}
