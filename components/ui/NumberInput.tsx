@@ -104,13 +104,13 @@ export function NumberInput({
         onChange={handleChange}
         onBlur={handleBlur}
         placeholder={placeholder}
-        className={className}
+        className={className || "input-modern"}
         required={required}
         disabled={disabled}
       />
       {/* Show "0" as a visual hint when field is empty */}
       {internalValue === '' && (
-        <div className="absolute inset-0 flex items-center px-3 pointer-events-none text-gray-400">
+        <div className="absolute inset-0 flex items-center px-4 pointer-events-none text-muted-foreground">
           0
         </div>
       )}

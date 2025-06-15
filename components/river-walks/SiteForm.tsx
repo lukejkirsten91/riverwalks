@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { MapPin, Ruler } from 'lucide-react';
 import { NumberInput } from '../ui/NumberInput';
 import type { Site, SiteFormData } from '../../types';
 
@@ -33,34 +34,51 @@ export function SiteForm({
     await onSubmit(formData);
   };
 
-  const bgColor = editingSite ? 'bg-yellow-50' : 'bg-gray-50';
   const title = editingSite ? 'Edit Site' : 'Add New Site';
   const buttonText = editingSite ? 'Update Site' : 'Create Site';
   const loadingText = editingSite ? 'Updating...' : 'Creating...';
+  const bgColor = editingSite ? 'bg-warning/5 border-warning/20' : 'bg-card';
 
   return (
-    <div className={`${bgColor} p-4 sm:p-6 rounded-lg mb-6 border`}>
-      <h3 className="text-xl font-semibold mb-4">{title}</h3>
-      <form onSubmit={handleSubmit}>
-        {/* Use grid for better mobile layout */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+    <div className={`card-modern-xl p-6 ${bgColor}`}>
+      <div className="flex items-center gap-3 mb-6">
+        <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+          editingSite ? 'bg-warning text-warning-foreground' : 'gradient-primary text-white'
+        }`}>
+          <MapPin className="w-5 h-5" />
+        </div>
+        <div>
+          <h3 className="text-xl font-semibold text-foreground">{title}</h3>
+          <p className="text-muted-foreground text-sm">
+            {editingSite ? 'Update site measurement details' : 'Add a new measurement site to this river walk'}
+          </p>
+        </div>
+      </div>
+      
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <div>
-            <label className="block text-gray-700 mb-2 font-medium">
-              Site Name
-            </label>
+            <label className="block text-foreground mb-3 font-medium">Site Name</label>
             <input
               type="text"
               name="site_name"
               value={formData.site_name}
               onChange={handleInputChange}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base"
+              className="input-modern"
               placeholder="e.g., Upstream, Meander, Confluence"
               required
             />
+            <p className="text-muted-foreground text-xs mt-2">
+              Choose a descriptive name for this measurement location
+            </p>
           </div>
+          
           <div>
-            <label className="block text-gray-700 mb-2 font-medium">
-              River Width (meters)
+            <label className="block text-foreground mb-3 font-medium">
+              <span className="flex items-center gap-2">
+                <Ruler className="w-4 h-4" />
+                River Width (meters)
+              </span>
             </label>
             <NumberInput
               value={formData.river_width}
@@ -69,20 +87,21 @@ export function SiteForm({
                   target: { name: 'river_width', value },
                 } as any)
               }
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base"
               placeholder="e.g., 3.5"
               step={0.1}
               min={0.1}
               required
             />
+            <p className="text-muted-foreground text-xs mt-2">
+              Measurement points will be evenly distributed across this width
+            </p>
           </div>
         </div>
 
-        {/* Mobile-first button layout */}
-        <div className="flex flex-col sm:flex-row gap-3 sm:gap-2">
+        <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-border">
           <button
             type="submit"
-            className="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-lg font-medium touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed"
+            className="btn-success touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed"
             disabled={loading}
           >
             {loading ? loadingText : buttonText}
@@ -90,7 +109,7 @@ export function SiteForm({
           <button
             type="button"
             onClick={onCancel}
-            className="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-lg font-medium touch-manipulation"
+            className="btn-secondary touch-manipulation"
           >
             Cancel
           </button>

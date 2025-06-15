@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { MapPin } from 'lucide-react';
 import type { RiverWalk, RiverWalkFormData } from '../../types';
 
 interface RiverWalkFormProps {
@@ -35,80 +36,91 @@ export function RiverWalkForm({
   };
 
   return (
-    <div className="bg-gray-50 p-4 sm:p-6 rounded-lg mb-6 border">
-      <h2 className="text-lg sm:text-xl font-semibold mb-4">
-        {currentRiverWalk ? 'Edit River Walk' : 'Add New River Walk'}
-      </h2>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Use grid for better mobile layout */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+    <div className="card-modern-xl p-6 sm:p-8">
+      <div className="flex items-center gap-3 mb-6">
+        <div className="w-10 h-10 rounded-lg gradient-primary flex items-center justify-center">
+          <MapPin className="w-5 h-5 text-white" />
+        </div>
+        <div>
+          <h2 className="text-xl sm:text-2xl font-semibold text-foreground">
+            {currentRiverWalk ? 'Edit River Walk' : 'Add New River Walk'}
+          </h2>
+          <p className="text-muted-foreground text-sm">
+            {currentRiverWalk ? 'Update your river study details' : 'Create a new river study documentation'}
+          </p>
+        </div>
+      </div>
+      
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Primary details */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <div>
-            <label className="block text-gray-700 mb-2 font-medium">Name</label>
+            <label className="block text-foreground mb-3 font-medium">Study Name</label>
             <input
               type="text"
               name="name"
               value={formData.name}
               onChange={handleInputChange}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base"
+              className="input-modern"
               placeholder="e.g., River Thames Study"
               required
             />
           </div>
           <div>
-            <label className="block text-gray-700 mb-2 font-medium">Date</label>
+            <label className="block text-foreground mb-3 font-medium">Study Date</label>
             <input
               type="date"
               name="date"
               value={formData.date}
               onChange={handleInputChange}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base"
+              className="input-modern"
               required
             />
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {/* Location details */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <div>
-            <label className="block text-gray-700 mb-2 font-medium">
-              Country
-            </label>
+            <label className="block text-foreground mb-3 font-medium">Country</label>
             <input
               type="text"
               name="country"
               value={formData.country}
               onChange={handleInputChange}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base"
-              placeholder="UK"
+              className="input-modern"
+              placeholder="e.g., United Kingdom"
             />
           </div>
           <div>
-            <label className="block text-gray-700 mb-2 font-medium">
-              County <span className="text-gray-500 text-sm">(Optional)</span>
+            <label className="block text-foreground mb-3 font-medium">
+              County 
+              <span className="text-muted-foreground text-sm font-normal ml-2">(Optional)</span>
             </label>
             <input
               type="text"
               name="county"
               value={formData.county}
               onChange={handleInputChange}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base"
+              className="input-modern"
               placeholder="e.g., Devon, Yorkshire"
             />
           </div>
         </div>
 
-        {/* Mobile-first button layout */}
-        <div className="flex flex-col sm:flex-row gap-3 sm:gap-2 pt-2">
+        {/* Actions */}
+        <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-border">
           <button
             type="submit"
-            className="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-lg font-medium touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed"
+            className="btn-success touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed"
             disabled={loading}
           >
-            {loading ? 'Saving...' : 'Save'}
+            {loading ? 'Saving...' : currentRiverWalk ? 'Update Study' : 'Create Study'}
           </button>
           <button
             type="button"
             onClick={onCancel}
-            className="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-lg font-medium touch-manipulation"
+            className="btn-secondary touch-manipulation"
           >
             Cancel
           </button>

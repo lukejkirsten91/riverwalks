@@ -1,4 +1,4 @@
-import { MapPin } from 'lucide-react';
+import { MapPin, Calendar, Globe, Edit, Trash2 } from 'lucide-react';
 import { formatDate } from '../../lib/utils';
 import type { RiverWalk } from '../../types';
 
@@ -17,56 +17,77 @@ export function RiverWalkList({
 }: RiverWalkListProps) {
   if (riverWalks.length === 0) {
     return (
-      <div className="text-center p-8 bg-gray-50 rounded-lg">
-        <p>No river walks found. Create your first one!</p>
+      <div className="card-modern-xl p-12 text-center">
+        <div className="w-16 h-16 rounded-xl gradient-muted flex items-center justify-center mx-auto mb-6">
+          <MapPin className="w-8 h-8 text-muted-foreground" />
+        </div>
+        <h3 className="text-xl font-semibold text-foreground mb-2">No River Walks Yet</h3>
+        <p className="text-muted-foreground">Create your first river study to get started with documentation and analysis.</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {riverWalks.map((riverWalk) => (
         <div
           key={riverWalk.id}
-          className="border rounded-lg p-4 bg-white shadow-sm"
+          className="card-modern-xl p-6 hover:scale-[1.02] transition-transform duration-200"
         >
-          {/* Mobile-first layout: stack on small screens, side-by-side on larger screens */}
-          <div className="flex flex-col sm:flex-row sm:justify-between gap-4">
+          {/* Header */}
+          <div className="flex flex-col sm:flex-row sm:justify-between gap-4 mb-4">
             <div className="flex-1 min-w-0">
-              <h2 className="text-lg sm:text-xl font-semibold truncate">
+              <h2 className="text-xl sm:text-2xl font-semibold text-foreground truncate mb-2">
                 {riverWalk.name}
               </h2>
-              <p className="text-gray-600 text-sm sm:text-base">
-                {formatDate(riverWalk.date)}
-              </p>
-              <p className="text-gray-600 text-sm sm:text-base">
-                {riverWalk.county ? `${riverWalk.county}, ` : ''}
-                {riverWalk.country || 'UK'}
-              </p>
+              
+              {/* Metadata */}
+              <div className="flex flex-wrap items-center gap-4 text-muted-foreground">
+                <div className="flex items-center gap-2">
+                  <Calendar className="w-4 h-4" />
+                  <span className="text-sm">{formatDate(riverWalk.date)}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Globe className="w-4 h-4" />
+                  <span className="text-sm">
+                    {riverWalk.county ? `${riverWalk.county}, ` : ''}
+                    {riverWalk.country || 'UK'}
+                  </span>
+                </div>
+              </div>
             </div>
 
-            {/* Action buttons - stack on mobile, horizontal on desktop */}
-            <div className="flex flex-col sm:flex-row gap-2 sm:space-x-2 sm:gap-0">
-              <button
-                onClick={() => onManageSites(riverWalk)}
-                className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded-lg font-medium touch-manipulation flex items-center justify-center"
-              >
-                <MapPin className="w-4 h-4 mr-2" />
-                Sites
-              </button>
-              <button
-                onClick={() => onEdit(riverWalk)}
-                className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-2 rounded-lg font-medium touch-manipulation"
-              >
-                Edit
-              </button>
-              <button
-                onClick={() => onDelete(riverWalk.id)}
-                className="bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded-lg font-medium touch-manipulation"
-              >
-                Delete
-              </button>
+            {/* Quick status */}
+            <div className="flex items-center">
+              <div className="bg-primary/10 text-primary px-3 py-1 rounded-full text-sm font-medium">
+                Study Active
+              </div>
             </div>
+          </div>
+
+          {/* Action buttons */}
+          <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-border">
+            <button
+              onClick={() => onManageSites(riverWalk)}
+              className="btn-primary touch-manipulation flex-1 sm:flex-none"
+            >
+              <MapPin className="w-4 h-4 mr-2" />
+              Manage Sites
+            </button>
+            <button
+              onClick={() => onEdit(riverWalk)}
+              className="btn-secondary touch-manipulation flex-1 sm:flex-none"
+            >
+              <Edit className="w-4 h-4 mr-2" />
+              Edit
+            </button>
+            <button
+              onClick={() => onDelete(riverWalk.id)}
+              className="btn-destructive touch-manipulation flex-1 sm:flex-none"
+            >
+              <Trash2 className="w-4 h-4 mr-2" />
+              Delete
+            </button>
           </div>
         </div>
       ))}
