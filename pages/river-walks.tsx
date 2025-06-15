@@ -130,9 +130,26 @@ export default function RiverWalksPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-muted/30 to-background">
       <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
+        {/* Top navigation */}
+        <div className="flex justify-end gap-3 mb-6">
+          <Link href="/">
+            <button className="flex items-center text-muted-foreground hover:text-foreground px-4 py-2 rounded-lg bg-white/50 hover:bg-white/80 transition-all duration-200 touch-manipulation border border-white/30">
+              <Home className="w-4 h-4 mr-2" />
+              Home
+            </button>
+          </Link>
+          <button
+            onClick={handleSignOut}
+            className="flex items-center text-muted-foreground hover:text-foreground px-4 py-2 rounded-lg bg-white/50 hover:bg-white/80 transition-all duration-200 touch-manipulation border border-white/30"
+          >
+            <LogOut className="w-4 h-4 mr-2" />
+            Sign Out
+          </button>
+        </div>
+
         {/* Modern header with glassmorphism */}
         <div className="glass rounded-2xl p-6 mb-8 border border-white/20">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6">
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 rounded-xl gradient-primary flex items-center justify-center">
@@ -158,23 +175,6 @@ export default function RiverWalksPage() {
               onClick={handleAddNewRiverWalk}
             >
               {showForm ? 'Cancel' : '+ Add River Walk'}
-            </button>
-          </div>
-
-          {/* Modern navigation */}
-          <div className="flex flex-wrap gap-3">
-            <Link href="/">
-              <button className="flex items-center text-muted-foreground hover:text-foreground px-4 py-2 rounded-lg bg-white/50 hover:bg-white/80 transition-all duration-200 touch-manipulation border border-white/30">
-                <Home className="w-4 h-4 mr-2" />
-                Home
-              </button>
-            </Link>
-            <button
-              onClick={handleSignOut}
-              className="flex items-center text-muted-foreground hover:text-foreground px-4 py-2 rounded-lg bg-white/50 hover:bg-white/80 transition-all duration-200 touch-manipulation border border-white/30"
-            >
-              <LogOut className="w-4 h-4 mr-2" />
-              Sign Out
             </button>
           </div>
         </div>

@@ -88,7 +88,7 @@ export function RiverWalkList({
             </button>
             <button
               onClick={() => onDelete(riverWalk.id)}
-              className="bg-destructive/10 hover:bg-destructive/20 text-destructive px-4 py-3 rounded-lg font-medium transition-all duration-200 border border-destructive/20 shadow-modern hover:shadow-modern-lg touch-manipulation flex-1 sm:flex-none"
+              className="bg-destructive/10 hover:bg-destructive/20 text-destructive px-4 py-3 rounded-lg font-medium transition-all duration-200 border border-destructive/20 shadow-modern hover:shadow-modern-lg touch-manipulation flex-1 sm:flex-none flex items-center justify-center"
             >
               <Trash2 className="w-5 h-5 mr-2" />
               Delete

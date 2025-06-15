@@ -108,7 +108,7 @@ export function SiteList({
               </button>
               <button
                 onClick={() => onDeleteSite(site)}
-                className="bg-destructive/10 hover:bg-destructive/20 text-destructive px-4 py-2 rounded-lg font-medium transition-all duration-200 border border-destructive/20 shadow-modern hover:shadow-modern-lg touch-manipulation"
+                className="bg-destructive/10 hover:bg-destructive/20 text-destructive px-4 py-2 rounded-lg font-medium transition-all duration-200 border border-destructive/20 shadow-modern hover:shadow-modern-lg touch-manipulation flex items-center justify-center"
               >
                 <Trash2 className="w-4 h-4 mr-2" />
                 Delete
