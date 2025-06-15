@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { supabase } from '../lib/supabase';
-import { LogOut, MapPin, User } from 'lucide-react';
+import { LogOut, MapPin, User as UserIcon } from 'lucide-react';
 import {
   RiverWalkForm,
   RiverWalkList,
@@ -155,7 +155,7 @@ export default function RiverWalksPage() {
                 title="Profile menu"
               >
                 <div className="w-8 h-8 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center">
-                  <User className="w-4 h-4 text-primary" />
+                  <UserIcon className="w-4 h-4 text-primary" />
                 </div>
                 <span className="hidden sm:block text-sm">{user.email}</span>
               </button>
