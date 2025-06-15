@@ -134,78 +134,102 @@ export function SiteManagement({ riverWalk, onClose }: SiteManagementProps) {
   const loading = sitesLoading || measurementsLoading;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-2xl font-bold">
-            Manage Sites - {riverWalk.name}
-          </h2>
-          <button
-            onClick={onClose}
-            className="text-gray-500 hover:text-gray-700 text-2xl"
-          >
-            &times;
-          </button>
-        </div>
-
-        <div className="mb-4">
-          <p className="text-gray-600">
-            {formatDate(riverWalk.date)} •{' '}
-            {riverWalk.county ? `${riverWalk.county}, ` : ''}
-            {riverWalk.country || 'UK'}
-          </p>
-        </div>
-
-        {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-            <span>{error}</span>
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-start sm:items-center justify-center p-2 sm:p-4 z-50">
+      <div className="bg-white rounded-lg w-full max-w-6xl max-h-[98vh] sm:max-h-[90vh] overflow-y-auto mt-2 sm:mt-0">
+        {/* Mobile-optimized header */}
+        <div className="sticky top-0 bg-white border-b p-4 sm:p-6">
+          <div className="flex items-start sm:items-center justify-between gap-3">
+            <div className="flex-1 min-w-0">
+              <h2 className="text-lg sm:text-2xl font-bold truncate">
+                Manage Sites
+              </h2>
+              <p className="text-sm sm:text-base text-gray-600 truncate">
+                {riverWalk.name}
+              </p>
+            </div>
             <button
-              className="float-right"
-              onClick={() => {
-                setSitesError(null);
-                setMeasurementsError(null);
-              }}
+              onClick={onClose}
+              className="text-gray-500 hover:text-gray-700 p-1 touch-manipulation"
+              aria-label="Close"
             >
-              &times;
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
             </button>
           </div>
-        )}
+        </div>
 
-        {editingSite ? (
-          <SiteForm
-            editingSite={editingSite}
-            onSubmit={handleUpdateSiteSubmit}
-            onCancel={() => setEditingSite(null)}
-            loading={loading}
-          />
-        ) : editingMeasurements ? (
-          <MeasurementEditor
-            site={editingMeasurements}
-            measurementData={measurementData}
-            numMeasurements={numMeasurements}
-            currentRiverWidth={currentRiverWidth}
-            loading={loading}
-            onNumMeasurementsChange={handleNumMeasurementsChange}
-            onRiverWidthChange={handleRiverWidthChange}
-            onMeasurementChange={handleMeasurementChange}
-            onSave={handleSaveMeasurements}
-            onCancel={handleCancelMeasurements}
-          />
-        ) : showSiteForm ? (
-          <SiteForm
-            onSubmit={handleCreateSiteSubmit}
-            onCancel={() => setShowSiteForm(false)}
-            loading={loading}
-          />
-        ) : (
-          <SiteList
-            sites={sites}
-            onEditMeasurements={handleEditMeasurements}
-            onEditSite={setEditingSite}
-            onDeleteSite={handleDeleteSiteWithConfirm}
-            onAddNewSite={() => setShowSiteForm(true)}
-          />
-        )}
+        {/* Content area with proper mobile padding */}
+        <div className="p-4 sm:p-6">
+          <div className="mb-4">
+            <p className="text-gray-600">
+              {formatDate(riverWalk.date)} •{' '}
+              {riverWalk.county ? `${riverWalk.county}, ` : ''}
+              {riverWalk.country || 'UK'}
+            </p>
+          </div>
+
+          {error && (
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+              <span>{error}</span>
+              <button
+                className="float-right"
+                onClick={() => {
+                  setSitesError(null);
+                  setMeasurementsError(null);
+                }}
+              >
+                &times;
+              </button>
+            </div>
+          )}
+
+          {editingSite ? (
+            <SiteForm
+              editingSite={editingSite}
+              onSubmit={handleUpdateSiteSubmit}
+              onCancel={() => setEditingSite(null)}
+              loading={loading}
+            />
+          ) : editingMeasurements ? (
+            <MeasurementEditor
+              site={editingMeasurements}
+              measurementData={measurementData}
+              numMeasurements={numMeasurements}
+              currentRiverWidth={currentRiverWidth}
+              loading={loading}
+              onNumMeasurementsChange={handleNumMeasurementsChange}
+              onRiverWidthChange={handleRiverWidthChange}
+              onMeasurementChange={handleMeasurementChange}
+              onSave={handleSaveMeasurements}
+              onCancel={handleCancelMeasurements}
+            />
+          ) : showSiteForm ? (
+            <SiteForm
+              onSubmit={handleCreateSiteSubmit}
+              onCancel={() => setShowSiteForm(false)}
+              loading={loading}
+            />
+          ) : (
+            <SiteList
+              sites={sites}
+              onEditMeasurements={handleEditMeasurements}
+              onEditSite={setEditingSite}
+              onDeleteSite={handleDeleteSiteWithConfirm}
+              onAddNewSite={() => setShowSiteForm(true)}
+            />
+          )}
+        </div>
       </div>
     </div>
   );

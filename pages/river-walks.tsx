@@ -112,37 +112,45 @@ export default function RiverWalksPage() {
   }
 
   return (
-    <div className="p-8 max-w-4xl mx-auto">
-      <div className="flex justify-between items-center mb-6">
-        <div className="flex items-center space-x-4">
-          <h1 className="text-2xl font-bold">River Walks</h1>
-          {user && (
-            <div className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">
-              ✓ Logged in as {user.email}
-            </div>
-          )}
-          <div className="flex space-x-2">
-            <Link href="/">
-              <button className="flex items-center text-gray-600 hover:text-gray-800 px-3 py-1 rounded">
-                <Home className="w-4 h-4 mr-1" />
-                Home
-              </button>
-            </Link>
-            <button
-              onClick={handleSignOut}
-              className="flex items-center text-gray-600 hover:text-gray-800 px-3 py-1 rounded"
-            >
-              <LogOut className="w-4 h-4 mr-1" />
-              Sign Out
-            </button>
+    <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
+      {/* Mobile-first header */}
+      <div className="space-y-4 mb-6">
+        {/* Title and user status */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+            <h1 className="text-2xl sm:text-3xl font-bold">River Walks</h1>
+            {user && (
+              <div className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm w-fit">
+                ✓ Logged in as {user.email}
+              </div>
+            )}
           </div>
+
+          {/* Add River Walk button - prominent on mobile */}
+          <button
+            className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-3 sm:py-2 rounded-lg font-medium touch-manipulation"
+            onClick={handleAddNewRiverWalk}
+          >
+            {showForm ? 'Cancel' : 'Add River Walk'}
+          </button>
         </div>
-        <button
-          className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
-          onClick={handleAddNewRiverWalk}
-        >
-          {showForm ? 'Cancel' : 'Add River Walk'}
-        </button>
+
+        {/* Navigation - horizontal on mobile, inline on desktop */}
+        <div className="flex flex-wrap gap-2 sm:gap-3">
+          <Link href="/">
+            <button className="flex items-center text-gray-600 hover:text-gray-800 px-3 py-2 rounded-lg border border-gray-200 hover:border-gray-300 transition-colors touch-manipulation">
+              <Home className="w-4 h-4 mr-2" />
+              Home
+            </button>
+          </Link>
+          <button
+            onClick={handleSignOut}
+            className="flex items-center text-gray-600 hover:text-gray-800 px-3 py-2 rounded-lg border border-gray-200 hover:border-gray-300 transition-colors touch-manipulation"
+          >
+            <LogOut className="w-4 h-4 mr-2" />
+            Sign Out
+          </button>
+        </div>
       </div>
 
       {error && (

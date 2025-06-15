@@ -38,41 +38,48 @@ export function SiteForm({
   const loadingText = editingSite ? 'Updating...' : 'Creating...';
 
   return (
-    <div className={`${bgColor} p-6 rounded-lg mb-6`}>
+    <div className={`${bgColor} p-4 sm:p-6 rounded-lg mb-6 border`}>
       <h3 className="text-xl font-semibold mb-4">{title}</h3>
       <form onSubmit={handleSubmit}>
-        <div className="mb-4">
-          <label className="block text-gray-700 mb-2">Site Name</label>
-          <input
-            type="text"
-            name="site_name"
-            value={formData.site_name}
-            onChange={handleInputChange}
-            className="w-full p-2 border rounded"
-            placeholder="e.g., Upstream, Meander, Confluence"
-            required
-          />
+        {/* Use grid for better mobile layout */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+          <div>
+            <label className="block text-gray-700 mb-2 font-medium">
+              Site Name
+            </label>
+            <input
+              type="text"
+              name="site_name"
+              value={formData.site_name}
+              onChange={handleInputChange}
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base"
+              placeholder="e.g., Upstream, Meander, Confluence"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-gray-700 mb-2 font-medium">
+              River Width (meters)
+            </label>
+            <input
+              type="number"
+              name="river_width"
+              value={formData.river_width}
+              onChange={handleInputChange}
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base"
+              placeholder="e.g., 3.5"
+              step="0.1"
+              min="0.1"
+              required
+            />
+          </div>
         </div>
-        <div className="mb-4">
-          <label className="block text-gray-700 mb-2">
-            River Width (meters)
-          </label>
-          <input
-            type="number"
-            name="river_width"
-            value={formData.river_width}
-            onChange={handleInputChange}
-            className="w-full p-2 border rounded"
-            placeholder="e.g., 3.5"
-            step="0.1"
-            min="0.1"
-            required
-          />
-        </div>
-        <div className="space-x-2">
+
+        {/* Mobile-first button layout */}
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-2">
           <button
             type="submit"
-            className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded"
+            className="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-lg font-medium touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed"
             disabled={loading}
           >
             {loading ? loadingText : buttonText}
@@ -80,7 +87,7 @@ export function SiteForm({
           <button
             type="button"
             onClick={onCancel}
-            className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded"
+            className="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-lg font-medium touch-manipulation"
           >
             Cancel
           </button>

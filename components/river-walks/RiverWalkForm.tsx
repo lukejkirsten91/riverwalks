@@ -35,58 +35,72 @@ export function RiverWalkForm({
   };
 
   return (
-    <div className="bg-gray-100 p-6 rounded-lg mb-6">
-      <h2 className="text-xl font-semibold mb-4">
+    <div className="bg-gray-50 p-4 sm:p-6 rounded-lg mb-6 border">
+      <h2 className="text-lg sm:text-xl font-semibold mb-4">
         {currentRiverWalk ? 'Edit River Walk' : 'Add New River Walk'}
       </h2>
-      <form onSubmit={handleSubmit}>
-        <div className="mb-4">
-          <label className="block text-gray-700 mb-2">Name</label>
-          <input
-            type="text"
-            name="name"
-            value={formData.name}
-            onChange={handleInputChange}
-            className="w-full p-2 border rounded"
-            required
-          />
+      <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Use grid for better mobile layout */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-gray-700 mb-2 font-medium">Name</label>
+            <input
+              type="text"
+              name="name"
+              value={formData.name}
+              onChange={handleInputChange}
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base"
+              placeholder="e.g., River Thames Study"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-gray-700 mb-2 font-medium">Date</label>
+            <input
+              type="date"
+              name="date"
+              value={formData.date}
+              onChange={handleInputChange}
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base"
+              required
+            />
+          </div>
         </div>
-        <div className="mb-4">
-          <label className="block text-gray-700 mb-2">Date</label>
-          <input
-            type="date"
-            name="date"
-            value={formData.date}
-            onChange={handleInputChange}
-            className="w-full p-2 border rounded"
-            required
-          />
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-gray-700 mb-2 font-medium">
+              Country
+            </label>
+            <input
+              type="text"
+              name="country"
+              value={formData.country}
+              onChange={handleInputChange}
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base"
+              placeholder="UK"
+            />
+          </div>
+          <div>
+            <label className="block text-gray-700 mb-2 font-medium">
+              County <span className="text-gray-500 text-sm">(Optional)</span>
+            </label>
+            <input
+              type="text"
+              name="county"
+              value={formData.county}
+              onChange={handleInputChange}
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base"
+              placeholder="e.g., Devon, Yorkshire"
+            />
+          </div>
         </div>
-        <div className="mb-4">
-          <label className="block text-gray-700 mb-2">Country</label>
-          <input
-            type="text"
-            name="country"
-            value={formData.country}
-            onChange={handleInputChange}
-            className="w-full p-2 border rounded"
-            placeholder="UK"
-          />
-        </div>
-        <div className="mb-4">
-          <label className="block text-gray-700 mb-2">County (Optional)</label>
-          <input
-            type="text"
-            name="county"
-            value={formData.county}
-            onChange={handleInputChange}
-            className="w-full p-2 border rounded"
-          />
-        </div>
-        <div className="space-x-2">
+
+        {/* Mobile-first button layout */}
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-2 pt-2">
           <button
             type="submit"
-            className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded"
+            className="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-lg font-medium touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed"
             disabled={loading}
           >
             {loading ? 'Saving...' : 'Save'}
@@ -94,7 +108,7 @@ export function RiverWalkForm({
           <button
             type="button"
             onClick={onCancel}
-            className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded"
+            className="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-lg font-medium touch-manipulation"
           >
             Cancel
           </button>

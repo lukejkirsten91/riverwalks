@@ -30,108 +30,120 @@ export function MeasurementEditor({
   onCancel,
 }: MeasurementEditorProps) {
   return (
-    <div className="bg-blue-50 p-6 rounded-lg mb-6">
-      <h3 className="text-xl font-semibold mb-4">
+    <div className="bg-blue-50 p-4 sm:p-6 rounded-lg mb-6 border">
+      <h3 className="text-lg sm:text-xl font-semibold mb-4">
         Add Measurements - {site.site_name}
       </h3>
 
-      <div className="mb-4">
-        <label className="block text-gray-700 mb-2">River Width (meters)</label>
-        <input
-          type="number"
-          value={currentRiverWidth}
-          onChange={(e) => onRiverWidthChange(parseFloat(e.target.value) || 0)}
-          className="w-32 p-2 border rounded"
-          step="0.1"
-          min="0.1"
-        />
-        <span className="text-sm text-gray-500 ml-2">
-          Distances will auto-update when changed
-        </span>
+      {/* Mobile-first controls */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+        <div>
+          <label className="block text-gray-700 mb-2 font-medium">
+            River Width (meters)
+          </label>
+          <input
+            type="number"
+            value={currentRiverWidth}
+            onChange={(e) =>
+              onRiverWidthChange(parseFloat(e.target.value) || 0)
+            }
+            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base"
+            step="0.1"
+            min="0.1"
+          />
+          <p className="text-xs text-gray-500 mt-1">
+            Distances will auto-update when changed
+          </p>
+        </div>
+
+        <div>
+          <label className="block text-gray-700 mb-2 font-medium">
+            Number of Measurement Points
+          </label>
+          <input
+            type="number"
+            value={numMeasurements}
+            onChange={(e) =>
+              onNumMeasurementsChange(parseInt(e.target.value) || 3)
+            }
+            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base"
+            min="2"
+            max="20"
+          />
+          <p className="text-xs text-gray-500 mt-1">
+            Distances will auto-space evenly
+          </p>
+        </div>
       </div>
 
-      <div className="mb-4">
-        <label className="block text-gray-700 mb-2">
-          Number of Measurement Points
-        </label>
-        <input
-          type="number"
-          value={numMeasurements}
-          onChange={(e) =>
-            onNumMeasurementsChange(parseInt(e.target.value) || 3)
-          }
-          className="w-32 p-2 border rounded"
-          min="2"
-          max="20"
-        />
-        <span className="text-sm text-gray-500 ml-2">
-          Distances will auto-space evenly
-        </span>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-6">
         <div>
           <h4 className="font-medium text-gray-700 mb-2">
             Distance from Bank (m)
           </h4>
-          {measurementData.map((point, index) => (
-            <div key={index} className="mb-2">
-              <label className="text-sm text-gray-600">
-                Point {index + 1}:
-              </label>
-              <input
-                type="number"
-                value={point.distance_from_bank}
-                onChange={(e) =>
-                  onMeasurementChange(
-                    index,
-                    'distance_from_bank',
-                    e.target.value
-                  )
-                }
-                className="w-full p-2 border rounded"
-                step="0.1"
-                min="0"
-                max={currentRiverWidth}
-              />
-            </div>
-          ))}
+          <div className="space-y-3">
+            {measurementData.map((point, index) => (
+              <div key={index}>
+                <label className="block text-sm text-gray-600 mb-1">
+                  Point {index + 1}:
+                </label>
+                <input
+                  type="number"
+                  value={point.distance_from_bank}
+                  onChange={(e) =>
+                    onMeasurementChange(
+                      index,
+                      'distance_from_bank',
+                      e.target.value
+                    )
+                  }
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base"
+                  step="0.1"
+                  min="0"
+                  max={currentRiverWidth}
+                />
+              </div>
+            ))}
+          </div>
         </div>
 
         <div>
           <h4 className="font-medium text-gray-700 mb-2">Depth (m)</h4>
-          {measurementData.map((point, index) => (
-            <div key={index} className="mb-2">
-              <label className="text-sm text-gray-600">
-                Point {index + 1}:
-              </label>
-              <input
-                type="number"
-                value={point.depth}
-                onChange={(e) =>
-                  onMeasurementChange(index, 'depth', e.target.value)
-                }
-                className="w-full p-2 border rounded"
-                step="0.1"
-                min="0"
-                max="10"
-              />
-            </div>
-          ))}
+          <div className="space-y-3">
+            {measurementData.map((point, index) => (
+              <div key={index}>
+                <label className="block text-sm text-gray-600 mb-1">
+                  Point {index + 1}:
+                </label>
+                <input
+                  type="number"
+                  value={point.depth}
+                  onChange={(e) =>
+                    onMeasurementChange(index, 'depth', e.target.value)
+                  }
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base"
+                  step="0.1"
+                  min="0"
+                  max="10"
+                />
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 
-      <div className="space-x-2">
+      {/* Mobile-first button layout */}
+      <div className="flex flex-col sm:flex-row gap-3 sm:gap-2">
         <button
           onClick={onSave}
-          className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded"
+          className="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-lg font-medium touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed"
           disabled={loading}
         >
           {loading ? 'Saving...' : 'Save Measurements'}
         </button>
         <button
           onClick={onCancel}
-          className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded"
+          className="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-lg font-medium touch-manipulation"
         >
           Cancel
         </button>
