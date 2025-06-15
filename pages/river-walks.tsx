@@ -22,6 +22,7 @@ export default function RiverWalksPage() {
   const [selectedRiverWalk, setSelectedRiverWalk] = useState<RiverWalk | null>(
     null
   );
+  const [showProfileDropdown, setShowProfileDropdown] = useState(false);
 
   const {
     riverWalks,
@@ -50,6 +51,19 @@ export default function RiverWalksPage() {
 
     checkUser();
   }, [router]);
+
+  // Close profile dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Element;
+      if (showProfileDropdown && !target.closest('[data-profile-dropdown]')) {
+        setShowProfileDropdown(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showProfileDropdown]);
 
   const handleFormSubmit = async (formData: RiverWalkFormData) => {
     try {
@@ -131,26 +145,42 @@ export default function RiverWalksPage() {
     <div className="min-h-screen bg-gradient-to-br from-muted/30 to-background">
       <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
         {/* Top navigation with profile */}
-        <div className="flex justify-end items-center gap-3 mb-6">
+        <div className="flex justify-end items-center mb-6">
           {user && (
-            <div className="flex items-center gap-3">
-              {/* Compact profile indicator */}
-              <div className="flex items-center gap-2 text-muted-foreground text-sm">
+            <div className="relative" data-profile-dropdown>
+              {/* Profile button */}
+              <button
+                onClick={() => setShowProfileDropdown(!showProfileDropdown)}
+                className="flex items-center gap-2 text-muted-foreground hover:text-foreground px-3 py-2 rounded-lg bg-white/50 hover:bg-white/80 transition-all duration-200 touch-manipulation border border-white/30"
+                title="Profile menu"
+              >
                 <div className="w-8 h-8 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center">
                   <User className="w-4 h-4 text-primary" />
                 </div>
-                <span className="hidden sm:block">{user.email}</span>
-              </div>
-              
-              {/* Sign out button */}
-              <button
-                onClick={handleSignOut}
-                className="flex items-center text-muted-foreground hover:text-foreground px-3 py-2 rounded-lg bg-white/50 hover:bg-white/80 transition-all duration-200 touch-manipulation border border-white/30"
-                title="Sign Out"
-              >
-                <LogOut className="w-4 h-4 sm:mr-2" />
-                <span className="hidden sm:block">Sign Out</span>
+                <span className="hidden sm:block text-sm">{user.email}</span>
               </button>
+
+              {/* Dropdown menu */}
+              {showProfileDropdown && (
+                <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-modern border border-white/30 py-2 z-50">
+                  <div className="px-4 py-2 text-sm text-muted-foreground border-b border-border">
+                    Signed in as
+                  </div>
+                  <div className="px-4 py-2 text-sm font-medium text-foreground border-b border-border">
+                    {user.email}
+                  </div>
+                  <button
+                    onClick={() => {
+                      setShowProfileDropdown(false);
+                      handleSignOut();
+                    }}
+                    className="w-full text-left px-4 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors flex items-center gap-2"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    Sign Out
+                  </button>
+                </div>
+              )}
             </div>
           )}
         </div>
