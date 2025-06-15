@@ -29,21 +29,21 @@ export default function Home() {
           {/* Feature highlights */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-12 max-w-3xl mx-auto">
             <div className="glass rounded-xl p-6 text-center">
-              <MapPin className="w-8 h-8 text-accent mx-auto mb-3" />
-              <h3 className="font-semibold text-white mb-2">Site Mapping</h3>
-              <p className="text-white/80 text-sm">Document multiple measurement sites with precise location data</p>
+              <MapPin className="w-8 h-8 text-primary mx-auto mb-3" />
+              <h3 className="font-semibold text-foreground mb-2">Site Mapping</h3>
+              <p className="text-muted-foreground text-sm">Document multiple measurement sites with precise location data</p>
             </div>
             
             <div className="glass rounded-xl p-6 text-center">
-              <BarChart3 className="w-8 h-8 text-accent mx-auto mb-3" />
-              <h3 className="font-semibold text-white mb-2">Data Visualization</h3>
-              <p className="text-white/80 text-sm">Generate professional 2D and 3D river profile charts</p>
+              <BarChart3 className="w-8 h-8 text-primary mx-auto mb-3" />
+              <h3 className="font-semibold text-foreground mb-2">Data Visualization</h3>
+              <p className="text-muted-foreground text-sm">Generate professional 2D and 3D river profile charts</p>
             </div>
             
             <div className="glass rounded-xl p-6 text-center">
-              <Users className="w-8 h-8 text-accent mx-auto mb-3" />
-              <h3 className="font-semibold text-white mb-2">GCSE Ready</h3>
-              <p className="text-white/80 text-sm">Export publication-ready reports for coursework submission</p>
+              <Users className="w-8 h-8 text-primary mx-auto mb-3" />
+              <h3 className="font-semibold text-foreground mb-2">GCSE Ready</h3>
+              <p className="text-muted-foreground text-sm">Export publication-ready reports for coursework submission</p>
             </div>
           </div>
         </div>
