@@ -7,7 +7,7 @@ Riverwalks is a web application designed primarily for GCSE Geography students t
 ## 🚀 Live Application
 
 - **Production URL**: https://riverwalks.vercel.app
-- **Current Status**: ✅ River Walk CRUD + Phase 1 Sites Management Complete
+- **Current Status**: ✅ Modern Design System + River Walk CRUD + Phase 1 Sites Management Complete
 
 ## 🏗️ Technical Stack
 
@@ -85,6 +85,19 @@ Riverwalks is a web application designed primarily for GCSE Geography students t
 - **Sites Listing**: View all sites for a river walk in modal interface
 - **Basic UI**: Clean modal interface with form validation
 - **API Layer**: Complete CRUD operations for sites management
+
+### ✅ Modern Design System (COMPLETED)
+
+- **Professional Color Palette**: Modern blue-primary with teal accents, success/warning/error states
+- **Glassmorphism Effects**: Backdrop blur and transparency for modern aesthetic
+- **Enhanced Shadows**: Multiple depth levels with modern shadow system
+- **Gradient Backgrounds**: Hero gradients and accent gradients throughout
+- **Card-Based Layouts**: Professional card components with hover effects and visual hierarchy
+- **Custom CSS Utilities**: Reusable design pattern classes for consistency
+- **Typography System**: Improved font hierarchy and spacing
+- **Icon Integration**: Consistent Lucide React icons throughout interface
+- **Landing Page Redesign**: Professional hero section with feature highlights
+- **Component Modernization**: All river walk components updated with new design language
 
 ## 🗄️ Database Schema
 
@@ -395,20 +408,20 @@ CREATE TABLE measurement_points (
 ### Common Tasks (Following Mandatory Principles):
 
 - **Add new features**:
-  - Create feature branch
   - Design mobile-first, then enhance for desktop
   - Separate business logic into custom hooks
   - Break UI into modular, single-responsibility components
-  - Use proper TypeScript interfaces
-  - Test on mobile and desktop
-  - Merge to main
+  - Use proper TypeScript interfaces and design system classes
+  - Test TypeScript compilation (`npx tsc --noEmit`)
+  - Commit and push directly to main
 - **Database changes**: Update `supabase/cleanup.sql` and run in Supabase dashboard
 - **UI changes**:
-  - Use existing shadcn/ui components and Tailwind responsive classes
+  - Follow the design system and style guide above
+  - Use custom CSS classes (btn-primary, card-modern-xl, etc.)
   - Ensure 44px+ touch targets for all interactive elements
   - Apply responsive breakpoints consistently
 - **Component refactoring**: Always apply separation of concerns and modularization principles
-- **Deployment**: Push to main branch triggers automatic Vercel deployment
+- **Deployment**: Push to main branch triggers automatic Vercel deployment (see workflow above)
 
 ### Code Conventions & Development Principles:
 
@@ -442,6 +455,183 @@ CREATE TABLE measurement_points (
 - **Component organization**: Clear folder structure under `components/` and `hooks/`
 - **Type safety**: Proper interfaces for all props and data structures
 
+## 🎨 Design System & Style Guide
+
+### **Color Palette**
+
+Our modern design system uses a professional blue-teal palette optimized for educational use:
+
+```css
+/* Primary Colors */
+--primary: 221.2 83.2% 53.3%        /* Modern blue */
+--accent: 180 83% 55%                /* Teal accent */
+--success: 142.1 76.2% 36.3%         /* Modern green */
+--warning: 47.9 95.8% 53.1%          /* Warm amber */
+--destructive: 0 84.2% 60.2%         /* Error red */
+
+/* Neutral Colors */
+--background: 0 0% 100%              /* Pure white */
+--foreground: 222.2 84% 4.9%         /* Dark text */
+--muted: 220 14.3% 95.9%             /* Cool gray backgrounds */
+--muted-foreground: 220 8.9% 46.1%   /* Muted text */
+--border: 220 13% 91%                /* Subtle borders */
+```
+
+### **Component Classes**
+
+**Modern Button System:**
+```css
+.btn-primary     /* Primary actions - blue gradient with shadow */
+.btn-success     /* Success actions - green with confirmation feel */
+.btn-warning     /* Warning actions - amber for cautionary actions */
+.btn-destructive /* Delete/remove actions - red for danger */
+.btn-secondary   /* Secondary actions - subtle gray with border */
+```
+
+**Card System:**
+```css
+.card-modern     /* Standard cards with modern shadow */
+.card-modern-xl  /* Large cards with enhanced shadow and rounded corners */
+```
+
+**Effects:**
+```css
+.glass           /* Glassmorphism - backdrop blur with transparency */
+.gradient-primary /* Blue to teal gradient */
+.gradient-hero   /* Complex hero gradient for landing */
+.shadow-modern   /* Subtle modern shadow */
+.shadow-modern-lg /* Enhanced shadow for important elements */
+```
+
+**Form Elements:**
+```css
+.input-modern    /* Consistent input styling with focus states */
+```
+
+### **Typography Scale**
+
+- **Hero Text**: `text-4xl sm:text-5xl lg:text-6xl` - Landing page headlines
+- **Page Titles**: `text-2xl sm:text-3xl` - Main page headings  
+- **Section Titles**: `text-xl sm:text-2xl` - Component headings
+- **Body Text**: `text-base` - Standard content
+- **Small Text**: `text-sm` - Metadata and helper text
+- **Micro Text**: `text-xs` - Form hints and fine print
+
+### **Spacing & Layout**
+
+- **Container Max Width**: `max-w-7xl mx-auto` for main content areas
+- **Card Padding**: `p-6 sm:p-8` for important content, `p-4 sm:p-6` for secondary
+- **Section Spacing**: `space-y-6` for forms, `space-y-4` for lists
+- **Button Spacing**: `gap-3` on mobile, `gap-2` on desktop
+- **Touch Targets**: Minimum `44px` height for all interactive elements
+
+### **Responsive Breakpoints**
+
+- **Mobile First**: Always design for mobile (320px+)
+- **sm**: 640px+ (tablet portrait)
+- **md**: 768px+ (tablet landscape) 
+- **lg**: 1024px+ (desktop)
+- **xl**: 1280px+ (large desktop)
+
+### **Animation Standards**
+
+- **Transitions**: `transition-all duration-200` for interactive elements
+- **Hover Transforms**: `hover:scale-[1.02]` for cards
+- **Loading States**: `animate-pulse` for loading indicators
+- **Easing**: CSS default ease for smooth, natural feeling
+
+### **Icon Usage**
+
+- **Primary Icons**: Lucide React icon library
+- **Sizes**: `w-4 h-4` (small), `w-5 h-5` (medium), `w-6 h-6` (large), `w-8 h-8` (hero)
+- **Color**: Match text color (`text-foreground`, `text-muted-foreground`, etc.)
+- **Spacing**: `mr-2` for icon-text combinations
+
+## 🚀 Deployment & Git Workflow
+
+### **Main Branch Strategy**
+
+**ALWAYS push directly to main** - we use a simplified workflow for rapid iteration:
+
+```bash
+# Standard workflow
+git add .
+git commit -m "Descriptive commit message"
+git push origin main
+```
+
+**Automatic Deployment:**
+- Every push to `main` triggers automatic Vercel deployment
+- Live at https://riverwalks.vercel.app within 2-3 minutes
+- No manual deployment steps required
+
+### **Rollback Strategy**
+
+If a deployment breaks the application, we can quickly rollback:
+
+**Option 1: Git Revert (Recommended)**
+```bash
+# Revert the last commit
+git revert HEAD
+git push origin main
+
+# Revert specific commit
+git revert <commit-hash>
+git push origin main
+```
+
+**Option 2: Vercel Dashboard Rollback**
+1. Visit Vercel dashboard → riverwalks project
+2. Go to "Deployments" tab
+3. Find the last known good deployment
+4. Click "Promote to Production"
+
+**Option 3: Reset to Previous Commit (Nuclear Option)**
+```bash
+# Only use in emergencies - rewrites history
+git reset --hard <previous-commit-hash>
+git push --force origin main
+```
+
+### **Branch References**
+
+Keep these branches for rollback points:
+- **main**: Current production code
+- **temp/clean-river-walks**: Pre-CRUD rollback point
+- Create new temp branches before major changes:
+  ```bash
+  git checkout -b temp/before-major-feature
+  git push origin temp/before-major-feature
+  ```
+
+### **Commit Message Guidelines**
+
+Use descriptive commit messages that explain the "why":
+
+```bash
+# Good examples
+git commit -m "Fix sign out functionality and improve text contrast"
+git commit -m "Implement modern design system with glassmorphism effects"
+git commit -m "Add NumberInput component for better UX"
+
+# Include Claude Code attribution
+git commit -m "Your changes here
+
+🤖 Generated with [Claude Code](https://claude.ai/code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>"
+```
+
+### **Development Process**
+
+1. **Start**: Always read this PROJECT_STATUS.md first
+2. **Develop**: Code changes following style guide and mandatory principles
+3. **Test**: TypeScript compilation (`npx tsc --noEmit`)
+4. **Commit**: Descriptive message with changes summary
+5. **Push**: Direct to main (`git push origin main`)
+6. **Verify**: Check live deployment at https://riverwalks.vercel.app
+7. **Update**: Mark completed items in this document
+
 ## 📞 Support & Resources
 
 - **Supabase Docs**: https://supabase.com/docs
@@ -452,5 +642,5 @@ CREATE TABLE measurement_points (
 ---
 
 _Last Updated: June 15, 2025_
-_Status: ✅ Mobile-First Responsive Design + Component Modularization + TypeScript Migration + Phase 1 Sites Foundation_
+_Status: ✅ Modern Design System + Mobile-First Responsive Design + Component Modularization + TypeScript Migration + Phase 1 Sites Foundation_
 _Next Phase: 2D Visualization (Phase 2)_
