@@ -60,6 +60,14 @@ Riverwalks is a web application designed primarily for GCSE Geography students t
 - **Prettier formatting**: Consistent code style across the project
 - **Build verification**: TypeScript compilation passes without errors
 
+### ✅ Component Modularization & Architecture
+
+- **Separation of concerns**: Clear separation between presentation, business logic, and data access
+- **Custom hooks**: Business logic extracted into reusable hooks (`useRiverWalks`, `useSites`, `useMeasurements`)
+- **Modular components**: Large monolithic component broken into focused, single-responsibility components
+- **Component structure**: Organized under `components/river-walks/` with proper TypeScript interfaces
+- **Maintainable codebase**: Improved readability, testability, and future extensibility
+
 ### ✅ Sites Management (Phase 1 - COMPLETED)
 
 - **Database Schema**: Sites and measurement_points tables with full RLS
@@ -125,7 +133,19 @@ riverwalks/
 ├── components/
 │   ├── auth/
 │   │   └── auth-card.tsx          # Google OAuth login/logout
+│   ├── river-walks/               # Modular river-walks components
+│   │   ├── index.ts               # Component exports
+│   │   ├── RiverWalkForm.tsx      # River walk creation/editing form
+│   │   ├── RiverWalkList.tsx      # River walks display component
+│   │   ├── SiteManagement.tsx     # Site management modal container
+│   │   ├── SiteForm.tsx           # Site creation/editing form
+│   │   ├── SiteList.tsx           # Sites display component
+│   │   └── MeasurementEditor.tsx  # Measurement points editor
 │   └── ui/                        # shadcn/ui components (TypeScript)
+├── hooks/                         # Custom React hooks for business logic
+│   ├── useRiverWalks.ts          # River walks data management
+│   ├── useSites.ts               # Sites data management
+│   └── useMeasurements.ts        # Measurement points logic
 ├── lib/
 │   ├── api/
 │   │   ├── river-walks.ts         # River Walk CRUD operations
@@ -136,7 +156,7 @@ riverwalks/
 │   ├── api/auth/
 │   │   └── callback.ts            # OAuth callback handler
 │   ├── index.tsx                  # Home page with auth
-│   └── river-walks.tsx            # Main River Walk interface
+│   └── river-walks.tsx            # Main page (now orchestrates components)
 ├── supabase/
 │   ├── cleanup.sql                # Initial database setup script
 │   └── sites-schema.sql           # Sites and measurement points schema (Phase 1)
@@ -334,6 +354,9 @@ CREATE TABLE measurement_points (
 - TypeScript with strict mode enabled
 - React functional components with hooks and proper typing
 - Comprehensive type definitions for all data models
+- **Separation of concerns**: Presentation components, business logic hooks, and data access layers
+- **Single responsibility principle**: Each component has one clear purpose
+- **Custom hooks pattern**: Business logic extracted into reusable hooks
 - Tailwind CSS for styling
 - Error handling with try/catch and user feedback
 - Supabase client for all database operations with TypeScript types
@@ -350,5 +373,5 @@ CREATE TABLE measurement_points (
 ---
 
 _Last Updated: June 15, 2025_
-_Status: ✅ TypeScript Migration Complete + Phase 1 Sites Foundation Complete_
+_Status: ✅ Component Modularization Complete + TypeScript Migration + Phase 1 Sites Foundation_
 _Next Phase: 2D Visualization (Phase 2)_
