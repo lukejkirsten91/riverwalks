@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { supabase } from '../lib/supabase';
-import { Home, LogOut, MapPin } from 'lucide-react';
+import { LogOut, MapPin, User } from 'lucide-react';
 import {
   RiverWalkForm,
   RiverWalkList,
@@ -130,43 +130,42 @@ export default function RiverWalksPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-muted/30 to-background">
       <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
-        {/* Top navigation */}
-        <div className="flex justify-end gap-3 mb-6">
-          <Link href="/">
-            <button className="flex items-center text-muted-foreground hover:text-foreground px-4 py-2 rounded-lg bg-white/50 hover:bg-white/80 transition-all duration-200 touch-manipulation border border-white/30">
-              <Home className="w-4 h-4 mr-2" />
-              Home
-            </button>
-          </Link>
-          <button
-            onClick={handleSignOut}
-            className="flex items-center text-muted-foreground hover:text-foreground px-4 py-2 rounded-lg bg-white/50 hover:bg-white/80 transition-all duration-200 touch-manipulation border border-white/30"
-          >
-            <LogOut className="w-4 h-4 mr-2" />
-            Sign Out
-          </button>
+        {/* Top navigation with profile */}
+        <div className="flex justify-end items-center gap-3 mb-6">
+          {user && (
+            <div className="flex items-center gap-3">
+              {/* Compact profile indicator */}
+              <div className="flex items-center gap-2 text-muted-foreground text-sm">
+                <div className="w-8 h-8 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center">
+                  <User className="w-4 h-4 text-primary" />
+                </div>
+                <span className="hidden sm:block">{user.email}</span>
+              </div>
+              
+              {/* Sign out button */}
+              <button
+                onClick={handleSignOut}
+                className="flex items-center text-muted-foreground hover:text-foreground px-3 py-2 rounded-lg bg-white/50 hover:bg-white/80 transition-all duration-200 touch-manipulation border border-white/30"
+                title="Sign Out"
+              >
+                <LogOut className="w-4 h-4 sm:mr-2" />
+                <span className="hidden sm:block">Sign Out</span>
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Modern header with glassmorphism */}
         <div className="glass rounded-2xl p-6 mb-8 border border-white/20">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl gradient-primary flex items-center justify-center">
-                  <MapPin className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h1 className="text-2xl sm:text-3xl font-bold text-foreground">River Walks</h1>
-                  <p className="text-muted-foreground text-sm">Manage your river study documentation</p>
-                </div>
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-xl gradient-primary flex items-center justify-center">
+                <MapPin className="w-6 h-6 text-white" />
               </div>
-              
-              {user && (
-                <div className="flex items-center gap-2 bg-primary/10 text-foreground px-4 py-2 rounded-full text-sm border border-primary/20">
-                  <div className="w-2 h-2 bg-primary rounded-full"></div>
-                  {user.email}
-                </div>
-              )}
+              <div>
+                <h1 className="text-2xl sm:text-3xl font-bold text-foreground">River Walks</h1>
+                <p className="text-muted-foreground text-sm">Manage your river study documentation</p>
+              </div>
             </div>
 
             {/* Add River Walk button */}
