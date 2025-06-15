@@ -1,7 +1,8 @@
 import { supabase } from '../supabase';
+import type { Site, CreateSiteData, UpdateSiteData, CreateMeasurementPointData } from '../../types';
 
 // Get all sites for a specific river walk
-export async function getSitesForRiverWalk(riverWalkId) {
+export async function getSitesForRiverWalk(riverWalkId: string): Promise<Site[]> {
   const { data, error } = await supabase
     .from('sites')
     .select(`
@@ -20,7 +21,7 @@ export async function getSitesForRiverWalk(riverWalkId) {
 }
 
 // Get a single site by ID with its measurement points
-export async function getSiteById(siteId) {
+export async function getSiteById(siteId: string): Promise<Site> {
   const { data, error } = await supabase
     .from('sites')
     .select(`
@@ -39,7 +40,7 @@ export async function getSiteById(siteId) {
 }
 
 // Create a new site
-export async function createSite(siteData) {
+export async function createSite(siteData: CreateSiteData): Promise<Site> {
   const { data, error } = await supabase
     .from('sites')
     .insert([{
@@ -58,7 +59,7 @@ export async function createSite(siteData) {
 }
 
 // Update an existing site
-export async function updateSite(siteId, siteData) {
+export async function updateSite(siteId: string, siteData: UpdateSiteData): Promise<Site> {
   const { data, error } = await supabase
     .from('sites')
     .update({
@@ -78,7 +79,7 @@ export async function updateSite(siteId, siteData) {
 }
 
 // Delete a site (this will also delete all associated measurement points due to CASCADE)
-export async function deleteSite(siteId) {
+export async function deleteSite(siteId: string): Promise<boolean> {
   const { error } = await supabase
     .from('sites')
     .delete()
@@ -93,7 +94,7 @@ export async function deleteSite(siteId) {
 }
 
 // Create a measurement point for a site
-export async function createMeasurementPoint(pointData) {
+export async function createMeasurementPoint(pointData: CreateMeasurementPointData & { site_id: string }): Promise<any> {
   const { data, error } = await supabase
     .from('measurement_points')
     .insert([pointData])
@@ -109,7 +110,7 @@ export async function createMeasurementPoint(pointData) {
 }
 
 // Update a measurement point
-export async function updateMeasurementPoint(pointId, pointData) {
+export async function updateMeasurementPoint(pointId: string, pointData: Partial<CreateMeasurementPointData>): Promise<any> {
   const { data, error } = await supabase
     .from('measurement_points')
     .update(pointData)
@@ -126,7 +127,7 @@ export async function updateMeasurementPoint(pointId, pointData) {
 }
 
 // Delete a measurement point
-export async function deleteMeasurementPoint(pointId) {
+export async function deleteMeasurementPoint(pointId: string): Promise<boolean> {
   const { error } = await supabase
     .from('measurement_points')
     .delete()
@@ -141,7 +142,7 @@ export async function deleteMeasurementPoint(pointId) {
 }
 
 // Bulk create measurement points for a site
-export async function createMeasurementPoints(siteId, points) {
+export async function createMeasurementPoints(siteId: string, points: CreateMeasurementPointData[]): Promise<any[]> {
   const pointsWithSiteId = points.map(point => ({
     ...point,
     site_id: siteId
@@ -161,7 +162,7 @@ export async function createMeasurementPoints(siteId, points) {
 }
 
 // Delete all measurement points for a site
-export async function deleteMeasurementPointsForSite(siteId) {
+export async function deleteMeasurementPointsForSite(siteId: string): Promise<boolean> {
   const { error } = await supabase
     .from('measurement_points')
     .delete()

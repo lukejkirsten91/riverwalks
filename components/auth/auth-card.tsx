@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
+import { User } from '@supabase/supabase-js';
 import { supabase } from '../../lib/supabase';
 import { Button } from '../ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '../ui/card';
@@ -7,8 +8,8 @@ import { LogIn, LogOut, MapPin } from 'lucide-react';
 
 export default function AuthCard() {
   const router = useRouter();
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
     const { data: authListener } = supabase.auth.onAuthStateChange(

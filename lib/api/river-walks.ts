@@ -1,7 +1,8 @@
 import { supabase } from '../supabase';
+import type { RiverWalk, RiverWalkFormData } from '../../types';
 
 // Get all river walks for the current user
-export async function getRiverWalks() {
+export async function getRiverWalks(): Promise<RiverWalk[]> {
   const { data, error } = await supabase
     .from('river_walks')
     .select('*')
@@ -16,7 +17,7 @@ export async function getRiverWalks() {
 }
 
 // Get a single river walk by ID
-export async function getRiverWalkById(id) {
+export async function getRiverWalkById(id: string): Promise<RiverWalk> {
   const { data, error } = await supabase
     .from('river_walks')
     .select('*')
@@ -32,7 +33,7 @@ export async function getRiverWalkById(id) {
 }
 
 // Create a new river walk
-export async function createRiverWalk(riverWalkData) {
+export async function createRiverWalk(riverWalkData: RiverWalkFormData): Promise<RiverWalk> {
   // Get the current user ID
   const { data: { session } } = await supabase.auth.getSession();
   
@@ -63,7 +64,7 @@ export async function createRiverWalk(riverWalkData) {
 }
 
 // Update an existing river walk
-export async function updateRiverWalk(id, riverWalkData) {
+export async function updateRiverWalk(id: string, riverWalkData: RiverWalkFormData): Promise<RiverWalk> {
   const { data, error } = await supabase
     .from('river_walks')
     .update({
@@ -83,7 +84,7 @@ export async function updateRiverWalk(id, riverWalkData) {
 }
 
 // Delete a river walk
-export async function deleteRiverWalk(id) {
+export async function deleteRiverWalk(id: string): Promise<boolean> {
   const { error } = await supabase
     .from('river_walks')
     .delete()
