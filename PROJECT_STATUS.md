@@ -1,15 +1,20 @@
 # Riverwalks - Project Status & Documentation
 
 ## 🎯 Project Overview
+
 Riverwalks is a web application designed primarily for GCSE Geography students to document river studies and generate professional coursework reports. The platform allows users to log river walks and conduct detailed site measurements with advanced visualization and analysis tools.
 
 ## 🚀 Live Application
+
 - **Production URL**: https://riverwalks.vercel.app
 - **Current Status**: ✅ River Walk CRUD + Phase 1 Sites Management Complete
 
 ## 🏗️ Technical Stack
+
 - **Frontend**: Next.js 14 with React 18
+- **Language**: TypeScript with strict mode enabled
 - **Styling**: Tailwind CSS 3.3.0 + shadcn/ui components
+- **Code Quality**: ESLint + Prettier with Next.js recommended settings
 - **Authentication**: Supabase Auth with Google OAuth
 - **Database**: Supabase PostgreSQL with Row Level Security
 - **Deployment**: Vercel with continuous deployment from GitHub
@@ -18,12 +23,14 @@ Riverwalks is a web application designed primarily for GCSE Geography students t
 ## 📊 Current Features (Completed)
 
 ### ✅ Authentication System
+
 - Google OAuth integration via Supabase
 - Session management with persistent login
 - Secure user profile display
 - OAuth callback handling for all domains
 
 ### ✅ River Walk Management (Full CRUD)
+
 - **Create**: Add new river walks with form validation
 - **Read**: View all user's river walks, sorted by date (newest first)
 - **Update**: Edit existing river walks inline
@@ -31,6 +38,7 @@ Riverwalks is a web application designed primarily for GCSE Geography students t
 - **Fields**: Name, Date, Country (default: UK), County (optional)
 
 ### ✅ User Experience
+
 - Clear login status indicator ("✓ Logged in as [email]")
 - Navigation between home and river-walks pages
 - Responsive design for mobile/desktop
@@ -38,12 +46,22 @@ Riverwalks is a web application designed primarily for GCSE Geography students t
 - Google logo on sign-in button
 
 ### ✅ Security & Data Isolation
+
 - Row Level Security (RLS) policies in Supabase
 - Users can only see/modify their own river walks
 - Automatic user_id assignment on creation
 - Secure API endpoints with authentication checks
 
+### ✅ TypeScript Migration & Code Standards
+
+- **Complete TypeScript conversion**: All .js/.jsx files migrated to .ts/.tsx
+- **Type safety**: Comprehensive type definitions for all data models
+- **ESLint integration**: Next.js and React plugins with strict rules
+- **Prettier formatting**: Consistent code style across the project
+- **Build verification**: TypeScript compilation passes without errors
+
 ### ✅ Sites Management (Phase 1 - COMPLETED)
+
 - **Database Schema**: Sites and measurement_points tables with full RLS
 - **Site Creation**: Add sites to river walks with name and width
 - **Sites Listing**: View all sites for a river walk in modal interface
@@ -53,6 +71,7 @@ Riverwalks is a web application designed primarily for GCSE Geography students t
 ## 🗄️ Database Schema
 
 ### river_walks table
+
 ```sql
 CREATE TABLE river_walks (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -67,6 +86,7 @@ CREATE TABLE river_walks (
 ```
 
 ### sites table (Phase 1)
+
 ```sql
 CREATE TABLE sites (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -80,6 +100,7 @@ CREATE TABLE sites (
 ```
 
 ### measurement_points table (Phase 1)
+
 ```sql
 CREATE TABLE measurement_points (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -92,54 +113,65 @@ CREATE TABLE measurement_points (
 ```
 
 ### RLS Policies
+
 - Users can SELECT, INSERT, UPDATE, DELETE only their own river walks
 - Sites and measurement points inherit user access through river_walks relationship
 - All operations filtered by `auth.uid() = user_id`
 
 ## 📁 Project Structure
+
 ```
 riverwalks/
 ├── components/
 │   ├── auth/
-│   │   └── auth-card.jsx          # Google OAuth login/logout
-│   └── ui/                        # shadcn/ui components
+│   │   └── auth-card.tsx          # Google OAuth login/logout
+│   └── ui/                        # shadcn/ui components (TypeScript)
 ├── lib/
 │   ├── api/
-│   │   ├── river-walks.js         # River Walk CRUD operations
-│   │   └── sites.js               # Sites CRUD operations (Phase 1)
-│   ├── supabase.js                # Supabase client config
-│   └── utils.js                   # Helper functions
+│   │   ├── river-walks.ts         # River Walk CRUD operations
+│   │   └── sites.ts               # Sites CRUD operations (Phase 1)
+│   ├── supabase.ts                # Supabase client config
+│   └── utils.ts                   # Helper functions
 ├── pages/
 │   ├── api/auth/
-│   │   └── callback.js            # OAuth callback handler
-│   ├── index.js                   # Home page with auth
-│   └── river-walks.js             # Main River Walk interface
+│   │   └── callback.ts            # OAuth callback handler
+│   ├── index.tsx                  # Home page with auth
+│   └── river-walks.tsx            # Main River Walk interface
 ├── supabase/
 │   ├── cleanup.sql                # Initial database setup script
 │   └── sites-schema.sql           # Sites and measurement points schema (Phase 1)
+├── types/
+│   └── index.ts                   # TypeScript type definitions
+├── .eslintrc.json                 # ESLint configuration
+├── .prettierrc                    # Prettier configuration
+├── tsconfig.json                  # TypeScript configuration
 └── styles/
 ```
 
 ## 🔧 Configuration Required
 
 ### Environment Variables (.env.local)
+
 ```
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 ```
 
 ### Supabase Setup
+
 1. **OAuth Configuration**: Google OAuth enabled with proper redirect URLs
-2. **Database**: 
+2. **Database**:
    - Run `supabase/cleanup.sql` to create river_walks table and RLS policies
    - Run `supabase/sites-schema.sql` to create sites and measurement_points tables
 3. **Authentication**: Users table automatically managed by Supabase Auth
 
 ### Google Cloud Console
+
 - OAuth 2.0 client configured for Supabase redirect URLs
 - Authorized domains include Vercel deployment URLs
 
 ## 🎭 User Flow
+
 1. User visits https://riverwalks.vercel.app
 2. Clicks "Sign In with Google" (with Google logo)
 3. Completes OAuth flow, redirected to `/river-walks`
@@ -151,7 +183,9 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 ## 🚀 Next Phase: GCSE River Study Integration
 
 ### 📊 Streamlit App Analysis (app.py)
+
 A comprehensive Streamlit application exists with the following features:
+
 - **Multi-site measurement input**: Width and depth measurements across multiple river sections
 - **Real-time visualization**: 2D cross-sections with live preview as data is entered
 - **3D river profile**: Professional 3D visualization with realistic banks and terrain
@@ -161,24 +195,28 @@ A comprehensive Streamlit application exists with the following features:
 ### 🛠️ Integration Plan (4-Phase Approach)
 
 **Phase 1: Sites Foundation** ✅ COMPLETED
+
 - ✅ Add Sites data model to existing River Walks
-- ✅ Create basic site input forms within river walk details  
+- ✅ Create basic site input forms within river walk details
 - ✅ Implement measurement points storage in Supabase
 - ✅ Simple data display without visualizations
 
 **Phase 2: 2D Visualization**
+
 - Integrate Plotly.js for client-side charts
-- Implement 2D cross-section visualizations  
+- Implement 2D cross-section visualizations
 - Add measurement point editing capabilities
 - Data validation and error handling
 
 **Phase 3: Advanced Features**
+
 - 3D river profile visualization (matching Streamlit quality)
 - Professional report generation (PDF export)
 - CSV/Excel export functionality
 - Print-friendly layouts for GCSE coursework
 
 **Phase 4: GCSE Enhancement**
+
 - AI-generated river analysis descriptions
 - Educational templates and guidance text
 - Calculation helpers (flow rate, wetted perimeter, etc.)
@@ -198,7 +236,7 @@ CREATE TABLE sites (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Measurement points within each site  
+-- Measurement points within each site
 CREATE TABLE measurement_points (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   site_id UUID NOT NULL REFERENCES sites(id) ON DELETE CASCADE,
@@ -210,11 +248,13 @@ CREATE TABLE measurement_points (
 ```
 
 ### 🎯 Target Users (Updated)
+
 - **Primary**: GCSE Geography students creating coursework
-- **Secondary**: Teachers and educators  
+- **Secondary**: Teachers and educators
 - **Tertiary**: General river enthusiasts and citizen scientists
 
 ### 💡 Key Value Propositions
+
 - Professional coursework-ready reports with charts and analysis
 - No software installation required - fully web-based
 - Cloud-based data persistence across sessions
@@ -222,16 +262,18 @@ CREATE TABLE measurement_points (
 - Educational guidance and GCSE-specific templates
 
 ### 🔄 Implementation Strategy
+
 - **Rollback-friendly**: Each phase on separate feature branches
 - **Incremental testing**: Deploy and test each phase on main before proceeding
 - **User feedback**: Test with GCSE students/teachers during development
 - **Performance focus**: Ensure visualizations work well on school devices
 
 ### 📚 Technical Dependencies (Planned)
+
 ```json
 {
   "plotly.js": "^2.26.0",
-  "react-plotly.js": "^2.6.0", 
+  "react-plotly.js": "^2.6.0",
   "jspdf": "^2.5.1",
   "html2canvas": "^1.4.1",
   "papaparse": "^5.4.1"
@@ -239,17 +281,20 @@ CREATE TABLE measurement_points (
 ```
 
 ## 🚨 Known Issues & Limitations
+
 - Preview deployments may have OAuth redirect issues (resolved by using main branch)
 - Streamlit app.py functionality not yet integrated into web app
 - No measurement sites or visualization features yet
 - No report generation or data export beyond basic CSV
 
 ## 🔄 Git Branches
+
 - **main**: Production-ready code, deployed to Vercel
 - **feature/river-walks-crud**: Development branch (merged to main)
 - **temp/clean-river-walks**: Rollback point before CRUD implementation
 
 ### 🚀 Planned Feature Branches
+
 - **feature/sites-basic**: Phase 1 - Basic site management and measurement input
 - **feature/visualization**: Phase 2 - 2D charts and cross-section visualization
 - **feature/3d-profile**: Phase 3 - 3D river profile and report generation
@@ -258,6 +303,7 @@ CREATE TABLE measurement_points (
 ## 📝 Development Notes for Future Sessions
 
 ### When Starting New Sessions:
+
 1. Read this PROJECT_STATUS.md file first
 2. Check current branch and recent commits
 3. Verify Supabase connection and table structure
@@ -265,7 +311,9 @@ CREATE TABLE measurement_points (
 5. Review app.py Streamlit functionality for integration context
 
 ### ⚠️ IMPORTANT: Update This Document
+
 **ALWAYS update PROJECT_STATUS.md after completing any significant development step:**
+
 - Mark phases as completed with ✅
 - Update current status section
 - Add new database schema or API changes
@@ -275,25 +323,32 @@ CREATE TABLE measurement_points (
 - This ensures future chat sessions have accurate context
 
 ### Common Tasks:
+
 - **Add new features**: Create feature branch, implement, test, merge to main
 - **Database changes**: Update `supabase/cleanup.sql` and run in Supabase dashboard
 - **UI changes**: Use existing shadcn/ui components and Tailwind classes
 - **Deployment**: Push to main branch triggers automatic Vercel deployment
 
 ### Code Conventions:
-- React functional components with hooks
+
+- TypeScript with strict mode enabled
+- React functional components with hooks and proper typing
+- Comprehensive type definitions for all data models
 - Tailwind CSS for styling
 - Error handling with try/catch and user feedback
-- Supabase client for all database operations
+- Supabase client for all database operations with TypeScript types
 - Next.js file-based routing
+- ESLint + Prettier for code quality and formatting
 
 ## 📞 Support & Resources
+
 - **Supabase Docs**: https://supabase.com/docs
 - **Next.js Docs**: https://nextjs.org/docs
 - **Tailwind CSS**: https://tailwindcss.com/docs
 - **shadcn/ui**: https://ui.shadcn.com/docs
 
 ---
-*Last Updated: June 14, 2025*
-*Status: ✅ Phase 1 Sites Foundation Complete - Ready for Phase 2 Visualization*
-*Next Phase: 2D Visualization (Phase 2)*
+
+_Last Updated: June 15, 2025_
+_Status: ✅ TypeScript Migration Complete + Phase 1 Sites Foundation Complete_
+_Next Phase: 2D Visualization (Phase 2)_

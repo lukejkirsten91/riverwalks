@@ -33,10 +33,14 @@ export async function getRiverWalkById(id: string): Promise<RiverWalk> {
 }
 
 // Create a new river walk
-export async function createRiverWalk(riverWalkData: RiverWalkFormData): Promise<RiverWalk> {
+export async function createRiverWalk(
+  riverWalkData: RiverWalkFormData
+): Promise<RiverWalk> {
   // Get the current user ID
-  const { data: { session } } = await supabase.auth.getSession();
-  
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
   if (!session) {
     throw new Error('You must be logged in to create a river walk');
   }
@@ -64,12 +68,15 @@ export async function createRiverWalk(riverWalkData: RiverWalkFormData): Promise
 }
 
 // Update an existing river walk
-export async function updateRiverWalk(id: string, riverWalkData: RiverWalkFormData): Promise<RiverWalk> {
+export async function updateRiverWalk(
+  id: string,
+  riverWalkData: RiverWalkFormData
+): Promise<RiverWalk> {
   const { data, error } = await supabase
     .from('river_walks')
     .update({
       ...riverWalkData,
-      updated_at: new Date().toISOString()
+      updated_at: new Date().toISOString(),
     })
     .eq('id', id)
     .select()
@@ -85,10 +92,7 @@ export async function updateRiverWalk(id: string, riverWalkData: RiverWalkFormDa
 
 // Delete a river walk
 export async function deleteRiverWalk(id: string): Promise<boolean> {
-  const { error } = await supabase
-    .from('river_walks')
-    .delete()
-    .eq('id', id);
+  const { error } = await supabase.from('river_walks').delete().eq('id', id);
 
   if (error) {
     console.error(`Error deleting river walk with id ${id}:`, error);
