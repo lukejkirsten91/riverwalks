@@ -7,7 +7,7 @@ Riverwalks is a web application designed primarily for GCSE Geography students t
 ## 🚀 Live Application
 
 - **Production URL**: https://riverwalks.vercel.app
-- **Current Status**: ✅ Modern Design System + UI/UX Refinements + River Walk CRUD + Phase 1 Sites Management Complete
+- **Current Status**: ✅ Inline Editing System + Modern Design System + UI/UX Refinements + River Walk CRUD + Phase 1 Sites Management Complete
 
 ## 🏗️ Technical Stack
 
@@ -110,6 +110,19 @@ Riverwalks is a web application designed primarily for GCSE Geography students t
 - **Touch-Friendly Interface**: All interactive elements maintain 44px+ touch targets
 - **Improved Empty States**: Better messaging and calls-to-action throughout the application
 
+### ✅ Inline Editing System (COMPLETED)
+
+- **macOS Finder-Style Editing**: Click-to-edit functionality for all text and number fields
+- **Reusable Components**: InlineEdit and InlineNumberEdit components with TypeScript safety
+- **Keyboard Shortcuts**: Enter to save, Escape to cancel, auto-focus and text selection
+- **Interface Simplification**: Removed "Edit Details" and "Edit" buttons throughout the application
+- **River Walk Editing**: Inline editing for names, dates, countries, and counties
+- **Site Management**: Click-to-edit site names and river widths with proper validation
+- **Number Field Validation**: Constraints, decimal precision, and unit suffixes (e.g., "3.5m")
+- **Error Handling**: Graceful fallbacks, loading states, and data preservation
+- **Mobile Optimization**: Touch-friendly controls with responsive design maintained
+- **Professional UX**: Reduced cognitive load and faster editing workflow for users
+
 ## 🗄️ Database Schema
 
 ### river_walks table
@@ -170,12 +183,15 @@ riverwalks/
 │   ├── river-walks/               # Modular river-walks components
 │   │   ├── index.ts               # Component exports
 │   │   ├── RiverWalkForm.tsx      # River walk creation/editing form
-│   │   ├── RiverWalkList.tsx      # River walks display component
+│   │   ├── RiverWalkList.tsx      # River walks display component with inline editing
 │   │   ├── SiteManagement.tsx     # Site management modal container
 │   │   ├── SiteForm.tsx           # Site creation/editing form
-│   │   ├── SiteList.tsx           # Sites display component
+│   │   ├── SiteList.tsx           # Sites display component with inline editing
 │   │   └── MeasurementEditor.tsx  # Measurement points editor
-│   └── ui/                        # shadcn/ui components (TypeScript)
+│   └── ui/                        # shadcn/ui + custom components (TypeScript)
+│   │   ├── InlineEdit.tsx         # Click-to-edit text component
+│   │   ├── InlineNumberEdit.tsx   # Click-to-edit number component
+│   │   └── NumberInput.tsx        # Enhanced number input with zero handling
 ├── hooks/                         # Custom React hooks for business logic
 │   ├── useRiverWalks.ts          # River walks data management
 │   ├── useSites.ts               # Sites data management
@@ -359,6 +375,9 @@ CREATE TABLE measurement_points (
 - Ensure accessibility and ease of use on school devices
 - Maintain consistent, intuitive user interface patterns
 - Focus on functionality that serves educational purposes
+- **Apply inline editing philosophy**: Prefer click-to-edit over edit buttons
+- **Minimize interface clutter**: Remove unnecessary buttons and forms
+- **Make editing feel natural**: Like macOS Finder or modern desktop apps
 
 ### 📚 Technical Dependencies (Planned)
 
@@ -519,6 +538,25 @@ Our modern design system uses a professional blue-teal palette optimized for edu
 .input-modern    /* Consistent input styling with focus states */
 ```
 
+**Inline Editing:**
+```typescript
+// Text field inline editing
+<InlineEdit
+  value={data.field}
+  onSave={(value) => updateField('field', value)}
+  placeholder="Click to edit"
+/>
+
+// Number field inline editing
+<InlineNumberEdit
+  value={data.number}
+  onSave={(value) => updateField('number', value)}
+  suffix="m"
+  min={0.1}
+  decimals={1}
+/>
+```
+
 ### **Typography Scale**
 
 - **Hero Text**: `text-4xl sm:text-5xl lg:text-6xl` - Landing page headlines
@@ -653,5 +691,5 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 ---
 
 _Last Updated: June 15, 2025_
-_Status: ✅ Modern Design System + UI/UX Refinements + Mobile-First Responsive Design + Component Modularization + TypeScript Migration + Phase 1 Sites Foundation_
+_Status: ✅ Inline Editing System + Modern Design System + UI/UX Refinements + Mobile-First Responsive Design + Component Modularization + TypeScript Migration + Phase 1 Sites Foundation_
 _Next Phase: 2D Visualization (Phase 2)_
