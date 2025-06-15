@@ -125,23 +125,23 @@
 
   /* Modern button styles */
   .btn-primary {
-    @apply bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-3 rounded-lg font-medium transition-all duration-200 shadow-modern hover:shadow-modern-lg;
+    @apply bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-3 rounded-lg font-medium transition-all duration-200 shadow-modern hover:shadow-modern-lg flex items-center justify-center;
   }
   
   .btn-success {
-    @apply bg-success hover:bg-success/90 text-success-foreground px-6 py-3 rounded-lg font-medium transition-all duration-200 shadow-modern hover:shadow-modern-lg;
+    @apply bg-success hover:bg-success/90 text-success-foreground px-6 py-3 rounded-lg font-medium transition-all duration-200 shadow-modern hover:shadow-modern-lg flex items-center justify-center;
   }
   
   .btn-warning {
-    @apply bg-warning hover:bg-warning/90 text-warning-foreground px-6 py-3 rounded-lg font-medium transition-all duration-200 shadow-modern hover:shadow-modern-lg;
+    @apply bg-warning hover:bg-warning/90 text-warning-foreground px-6 py-3 rounded-lg font-medium transition-all duration-200 shadow-modern hover:shadow-modern-lg flex items-center justify-center;
   }
   
   .btn-destructive {
-    @apply bg-destructive hover:bg-destructive/90 text-destructive-foreground px-6 py-3 rounded-lg font-medium transition-all duration-200 shadow-modern hover:shadow-modern-lg;
+    @apply bg-destructive hover:bg-destructive/90 text-destructive-foreground px-6 py-3 rounded-lg font-medium transition-all duration-200 shadow-modern hover:shadow-modern-lg flex items-center justify-center;
   }
   
   .btn-secondary {
-    @apply bg-secondary hover:bg-secondary/80 text-secondary-foreground px-6 py-3 rounded-lg font-medium transition-all duration-200 border border-border shadow-modern hover:shadow-modern-lg;
+    @apply bg-secondary hover:bg-secondary/80 text-secondary-foreground px-6 py-3 rounded-lg font-medium transition-all duration-200 border border-border shadow-modern hover:shadow-modern-lg flex items-center justify-center;
   }
 
   /* Modern card styles */
