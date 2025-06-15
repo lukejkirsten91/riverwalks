@@ -17,7 +17,7 @@ export function SiteForm({
 }: SiteFormProps) {
   const [formData, setFormData] = useState<SiteFormData>({
     site_name: editingSite?.site_name || '',
-    river_width: editingSite?.river_width.toString() || '',
+    river_width: editingSite ? editingSite.river_width.toString() : '',
   });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {

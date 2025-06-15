@@ -27,7 +27,13 @@ export function NumberInput({
 
   // Update internal value when external value changes
   useEffect(() => {
-    setInternalValue(value.toString());
+    // If the value is empty string, keep it empty
+    // For numeric values, display them normally unless they're exactly 0 and we want to show empty
+    if (value === '') {
+      setInternalValue('');
+    } else {
+      setInternalValue(value.toString());
+    }
   }, [value]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -73,35 +79,40 @@ export function NumberInput({
   };
 
   const handleBlur = () => {
-    // On blur, ensure we have a valid number or empty string
+    // On blur, clean up partial inputs but allow empty values
     if (
-      internalValue === '' ||
       internalValue === '.' ||
       internalValue === '-' ||
       internalValue === '-.'
     ) {
-      if (required) {
-        // Reset to 0 if required and empty
-        setInternalValue('0');
-        onChange('0');
-      } else {
-        setInternalValue('');
-        onChange('');
-      }
+      // Clean up partial inputs to empty
+      setInternalValue('');
+      onChange('0'); // Empty means 0 for calculations
+    } else if (internalValue === '') {
+      // Empty field means 0 for calculations but shows as empty
+      onChange('0');
     }
   };
 
   return (
-    <input
-      type="text"
-      inputMode="decimal"
-      value={internalValue}
-      onChange={handleChange}
-      onBlur={handleBlur}
-      placeholder={placeholder}
-      className={className}
-      required={required}
-      disabled={disabled}
-    />
+    <div className="relative">
+      <input
+        type="text"
+        inputMode="decimal"
+        value={internalValue}
+        onChange={handleChange}
+        onBlur={handleBlur}
+        placeholder={placeholder}
+        className={className}
+        required={required}
+        disabled={disabled}
+      />
+      {/* Show "0" as a visual hint when field is empty */}
+      {internalValue === '' && (
+        <div className="absolute inset-0 flex items-center px-3 pointer-events-none text-gray-400">
+          0
+        </div>
+      )}
+    </div>
   );
 }

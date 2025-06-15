@@ -104,7 +104,7 @@ export function useMeasurements() {
     const newData = [...measurementData];
     newData[index] = {
       ...newData[index],
-      [field]: value === '' ? 0 : parseFloat(value) || 0,
+      [field]: parseFloat(value) || 0,
     };
     setMeasurementData(newData);
   };
