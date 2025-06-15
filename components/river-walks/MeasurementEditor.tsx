@@ -107,7 +107,7 @@ export function MeasurementEditor({
                   Point {index + 1}:
                 </label>
                 <NumberInput
-                  value={point.depth === 0 ? '' : point.depth}
+                  value={point.depth}
                   onChange={(value) =>
                     onMeasurementChange(index, 'depth', value)
                   }

@@ -23,13 +23,14 @@ export function NumberInput({
   required = false,
   disabled = false,
 }: NumberInputProps) {
-  const [internalValue, setInternalValue] = useState(value.toString());
+  const [internalValue, setInternalValue] = useState(
+    value === '' || value === 0 || value === '0' ? '' : value.toString()
+  );
 
   // Update internal value when external value changes
   useEffect(() => {
-    // If the value is empty string, keep it empty
-    // For numeric values, display them normally unless they're exactly 0 and we want to show empty
-    if (value === '') {
+    // Always show zeros as empty fields with visual hint
+    if (value === '' || value === 0 || value === '0') {
       setInternalValue('');
     } else {
       setInternalValue(value.toString());
