@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { NumberInput } from '../ui/NumberInput';
 import type { Site, SiteFormData } from '../../types';
 
 interface SiteFormProps {
@@ -61,15 +62,17 @@ export function SiteForm({
             <label className="block text-gray-700 mb-2 font-medium">
               River Width (meters)
             </label>
-            <input
-              type="number"
-              name="river_width"
+            <NumberInput
               value={formData.river_width}
-              onChange={handleInputChange}
+              onChange={(value) =>
+                handleInputChange({
+                  target: { name: 'river_width', value },
+                } as any)
+              }
               className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base"
               placeholder="e.g., 3.5"
-              step="0.1"
-              min="0.1"
+              step={0.1}
+              min={0.1}
               required
             />
           </div>

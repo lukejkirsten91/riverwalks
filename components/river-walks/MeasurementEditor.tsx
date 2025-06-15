@@ -1,3 +1,4 @@
+import { NumberInput } from '../ui/NumberInput';
 import type { Site, MeasurementPointFormData } from '../../types';
 
 interface MeasurementEditorProps {
@@ -41,15 +42,12 @@ export function MeasurementEditor({
           <label className="block text-gray-700 mb-2 font-medium">
             River Width (meters)
           </label>
-          <input
-            type="number"
+          <NumberInput
             value={currentRiverWidth}
-            onChange={(e) =>
-              onRiverWidthChange(parseFloat(e.target.value) || 0)
-            }
+            onChange={(value) => onRiverWidthChange(parseFloat(value) || 0)}
             className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base"
-            step="0.1"
-            min="0.1"
+            step={0.1}
+            min={0.1}
           />
           <p className="text-xs text-gray-500 mt-1">
             Distances will auto-update when changed
@@ -60,15 +58,13 @@ export function MeasurementEditor({
           <label className="block text-gray-700 mb-2 font-medium">
             Number of Measurement Points
           </label>
-          <input
-            type="number"
+          <NumberInput
             value={numMeasurements}
-            onChange={(e) =>
-              onNumMeasurementsChange(parseInt(e.target.value) || 3)
-            }
+            onChange={(value) => onNumMeasurementsChange(parseInt(value) || 3)}
             className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base"
-            min="2"
-            max="20"
+            min={2}
+            max={20}
+            step={1}
           />
           <p className="text-xs text-gray-500 mt-1">
             Distances will auto-space evenly
@@ -87,19 +83,14 @@ export function MeasurementEditor({
                 <label className="block text-sm text-gray-600 mb-1">
                   Point {index + 1}:
                 </label>
-                <input
-                  type="number"
+                <NumberInput
                   value={point.distance_from_bank}
-                  onChange={(e) =>
-                    onMeasurementChange(
-                      index,
-                      'distance_from_bank',
-                      e.target.value
-                    )
+                  onChange={(value) =>
+                    onMeasurementChange(index, 'distance_from_bank', value)
                   }
                   className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base"
-                  step="0.1"
-                  min="0"
+                  step={0.1}
+                  min={0}
                   max={currentRiverWidth}
                 />
               </div>
@@ -115,16 +106,15 @@ export function MeasurementEditor({
                 <label className="block text-sm text-gray-600 mb-1">
                   Point {index + 1}:
                 </label>
-                <input
-                  type="number"
+                <NumberInput
                   value={point.depth}
-                  onChange={(e) =>
-                    onMeasurementChange(index, 'depth', e.target.value)
+                  onChange={(value) =>
+                    onMeasurementChange(index, 'depth', value)
                   }
                   className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base"
-                  step="0.1"
-                  min="0"
-                  max="10"
+                  step={0.1}
+                  min={0}
+                  max={10}
                 />
               </div>
             ))}

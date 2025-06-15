@@ -298,6 +298,44 @@ CREATE TABLE measurement_points (
 - **User feedback**: Test with GCSE students/teachers during development
 - **Performance focus**: Ensure visualizations work well on school devices
 
+### 🎯 **MANDATORY PRINCIPLES FOR ALL FUTURE DEVELOPMENT:**
+
+**1. Separation of Concerns (Always Apply):**
+
+- Presentation components should only handle UI rendering
+- Business logic must be extracted into custom hooks
+- Data access should remain in dedicated API layer functions
+- Never mix these concerns in the same file/component
+
+**2. Mobile-First Responsive Design (Non-Negotiable):**
+
+- Design and code for mobile screens first, then enhance for larger screens
+- All interactive elements must have 44px+ touch targets
+- Use responsive breakpoints consistently: `sm:` (640px+), `md:` (768px+), `lg:` (1024px+), `xl:` (1280px+)
+- Test all new features on mobile devices/responsive design tools
+- Stack content vertically on mobile, flow horizontally on desktop
+
+**3. Component Modularization (Required):**
+
+- Break down large components into smaller, focused pieces
+- Each component should have a single, clear responsibility
+- Reusable components should be properly abstracted
+- Avoid monolithic components with multiple concerns
+
+**4. TypeScript Best Practices (Enforced):**
+
+- All new code must use proper TypeScript with strict mode
+- Define interfaces for all props, data structures, and API responses
+- Use proper typing for event handlers and function parameters
+- Leverage TypeScript for better developer experience and error catching
+
+**5. User Experience Priority:**
+
+- Prioritize GCSE student needs (primary users)
+- Ensure accessibility and ease of use on school devices
+- Maintain consistent, intuitive user interface patterns
+- Focus on functionality that serves educational purposes
+
 ### 📚 Technical Dependencies (Planned)
 
 ```json
@@ -334,11 +372,13 @@ CREATE TABLE measurement_points (
 
 ### When Starting New Sessions:
 
-1. Read this PROJECT_STATUS.md file first
-2. Check current branch and recent commits
-3. Verify Supabase connection and table structure
-4. Test live application at https://riverwalks.vercel.app
-5. Review app.py Streamlit functionality for integration context
+1. **FIRST**: Read this PROJECT_STATUS.md file completely
+2. **APPLY**: All mandatory principles listed above to any new development
+3. Check current branch and recent commits
+4. Verify Supabase connection and table structure
+5. Test live application at https://riverwalks.vercel.app on both mobile and desktop
+6. Review app.py Streamlit functionality for integration context
+7. **REMEMBER**: Mobile-first, separation of concerns, and component modularization for ALL new work
 
 ### ⚠️ IMPORTANT: Update This Document
 
@@ -352,14 +392,27 @@ CREATE TABLE measurement_points (
 - Update known issues/limitations section
 - This ensures future chat sessions have accurate context
 
-### Common Tasks:
+### Common Tasks (Following Mandatory Principles):
 
-- **Add new features**: Create feature branch, implement, test, merge to main
+- **Add new features**:
+  - Create feature branch
+  - Design mobile-first, then enhance for desktop
+  - Separate business logic into custom hooks
+  - Break UI into modular, single-responsibility components
+  - Use proper TypeScript interfaces
+  - Test on mobile and desktop
+  - Merge to main
 - **Database changes**: Update `supabase/cleanup.sql` and run in Supabase dashboard
-- **UI changes**: Use existing shadcn/ui components and Tailwind classes
+- **UI changes**:
+  - Use existing shadcn/ui components and Tailwind responsive classes
+  - Ensure 44px+ touch targets for all interactive elements
+  - Apply responsive breakpoints consistently
+- **Component refactoring**: Always apply separation of concerns and modularization principles
 - **Deployment**: Push to main branch triggers automatic Vercel deployment
 
-### Code Conventions:
+### Code Conventions & Development Principles:
+
+**🏗️ Architecture Standards:**
 
 - TypeScript with strict mode enabled
 - React functional components with hooks and proper typing
@@ -367,14 +420,27 @@ CREATE TABLE measurement_points (
 - **Separation of concerns**: Presentation components, business logic hooks, and data access layers
 - **Single responsibility principle**: Each component has one clear purpose
 - **Custom hooks pattern**: Business logic extracted into reusable hooks
+- **Modular components**: No monolithic components - break into focused, reusable pieces
+
+**📱 Mobile-First Design Standards:**
+
 - **Mobile-first responsive design**: All layouts start with mobile and scale up
 - **Touch-friendly UI**: Minimum 44px touch targets, proper spacing for fingers
-- **Responsive breakpoints**: Consistent use of Tailwind's responsive utilities
+- **Responsive breakpoints**: Consistent use of Tailwind's responsive utilities (sm:, md:, lg:, xl:)
+- **Content stacking**: Vertical layouts on mobile, horizontal on desktop
+- **Modal optimization**: Full-screen modals on mobile, centered on desktop
+- **Form improvements**: Grid layouts that adapt to screen size
+- **Typography scaling**: Responsive text sizes for readability across devices
+
+**🛠️ Technical Standards:**
+
 - Tailwind CSS for styling with responsive utilities
 - Error handling with try/catch and user feedback
 - Supabase client for all database operations with TypeScript types
-- Next.js file-based routing
+- Next.js file-based routing and recommended settings
 - ESLint + Prettier for code quality and formatting
+- **Component organization**: Clear folder structure under `components/` and `hooks/`
+- **Type safety**: Proper interfaces for all props and data structures
 
 ## 📞 Support & Resources
 
