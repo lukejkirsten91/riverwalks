@@ -27,9 +27,12 @@ export function FileUpload({
   const handleFileSelect = (file: File) => {
     setError(null);
 
-    // Validate file type
-    if (!file.type.startsWith('image/')) {
-      setError('Please select an image file');
+    // List of supported image types
+    const supportedTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp'];
+    
+    // Validate file type more specifically
+    if (!supportedTypes.includes(file.type.toLowerCase())) {
+      setError('Please select a PNG, JPEG, JPG, or WEBP image file');
       return;
     }
 
@@ -139,7 +142,7 @@ export function FileUpload({
                 Click to browse or drag and drop
               </p>
               <p className="text-muted-foreground text-xs mt-1">
-                PNG, JPG up to {Math.round(maxSizeBytes / (1024 * 1024))}MB
+                PNG, JPEG, JPG, WEBP up to {Math.round(maxSizeBytes / (1024 * 1024))}MB
               </p>
             </div>
           </div>

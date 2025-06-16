@@ -104,9 +104,14 @@ export function SiteManagement({ riverWalk, onClose }: SiteManagementProps) {
         console.error('Error uploading photo:', error);
         setSitesError(`Photo upload failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
         // Site was created successfully, just photo upload failed
+        setShowSiteForm(false);
+        return;
       }
     }
     
+    // Clear any errors on successful create (only if we get here without errors)
+    setSitesError(null);
+    setMeasurementsError(null);
     setShowSiteForm(false);
   };
 
@@ -171,11 +176,17 @@ export function SiteManagement({ riverWalk, onClose }: SiteManagementProps) {
     console.log('Updating site with data:', updateData);
     await handleUpdateSite(editingSite.id, updateData, riverWalk.id);
     console.log('Site update completed, closing edit form');
+    // Clear any errors on successful update
+    setSitesError(null);
+    setMeasurementsError(null);
     setEditingSite(null);
   };
 
   const handleEditSite = (site: Site) => {
     console.log('handleEditSite called for site:', site.id, site.site_name);
+    // Clear any existing errors when starting a new edit
+    setSitesError(null);
+    setMeasurementsError(null);
     setEditingSite(site);
   };
 
