@@ -198,10 +198,9 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
 
       const pageWidth = 210; // A4 width in mm
       const pageHeight = 295; // A4 height in mm
-      let isFirstPage = true;
 
-      // Get the header section
-      const headerElement = reportRef.current.querySelector('.text-center') as HTMLElement;
+      // First, add the header and summary section as the first page
+      const headerElement = reportRef.current.querySelector('[data-summary-section]') as HTMLElement;
       if (headerElement) {
         const headerCanvas = await html2canvas(headerElement, {
           scale: 2,
@@ -212,7 +211,7 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
         const headerImgData = headerCanvas.toDataURL('image/png');
         const headerHeight = (headerCanvas.height * pageWidth) / headerCanvas.width;
         
-        pdf.addImage(headerImgData, 'PNG', 0, 10, pageWidth, headerHeight);
+        pdf.addImage(headerImgData, 'PNG', 0, 10, pageWidth, Math.min(headerHeight, pageHeight - 20));
       }
 
       // Get each site section and add as separate pages
@@ -221,11 +220,8 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
       for (let i = 0; i < siteElements.length; i++) {
         const siteElement = siteElements[i] as HTMLElement;
         
-        if (!isFirstPage) {
-          pdf.addPage();
-        } else {
-          isFirstPage = false;
-        }
+        // Add new page for each site
+        pdf.addPage();
 
         const siteCanvas = await html2canvas(siteElement, {
           scale: 2,
@@ -240,10 +236,10 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
         if (siteImgHeight > pageHeight - 20) {
           let yPosition = 10;
           let remainingHeight = siteImgHeight;
+          let isFirstSitePage = true;
           
           while (remainingHeight > 0) {
             const currentPageHeight = Math.min(remainingHeight, pageHeight - 20);
-            const sourceY = (siteImgHeight - remainingHeight) * siteCanvas.height / siteImgHeight;
             
             pdf.addImage(siteImgData, 'PNG', 0, yPosition, pageWidth, currentPageHeight);
             
@@ -287,10 +283,19 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
               <button
                 onClick={exportToPDF}
                 disabled={isExporting}
-                className="btn-primary flex items-center gap-2"
+                className="btn-primary flex items-center gap-2 disabled:opacity-50"
               >
-                <Download className="w-4 h-4" />
-                {isExporting ? 'Exporting...' : 'Export PDF'}
+                {isExporting ? (
+                  <>
+                    <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full"></div>
+                    Generating PDF...
+                  </>
+                ) : (
+                  <>
+                    <Download className="w-4 h-4" />
+                    Export PDF
+                  </>
+                )}
               </button>
               <button
                 onClick={onClose}
@@ -313,41 +318,44 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
               }
             }
           `}</style>
-          {/* Report header */}
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
-              River Study Report
-            </h1>
-            <h2 className="text-xl text-gray-700 mb-4">{riverWalk.name}</h2>
-            <div className="text-gray-600">
-              <p>Study Date: {formatDate(riverWalk.date)}</p>
-              <p>Location: {riverWalk.county ? `${riverWalk.county}, ` : ''}{riverWalk.country || 'UK'}</p>
-              {riverWalk.notes && <p className="mt-2 italic">"{riverWalk.notes}"</p>}
+          {/* Summary section (header + summary stats) */}
+          <div data-summary-section className="mb-8">
+            {/* Report header */}
+            <div className="text-center mb-8">
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                River Study Report
+              </h1>
+              <h2 className="text-xl text-gray-700 mb-4">{riverWalk.name}</h2>
+              <div className="text-gray-600">
+                <p>Study Date: {formatDate(riverWalk.date)}</p>
+                <p>Location: {riverWalk.county ? `${riverWalk.county}, ` : ''}{riverWalk.country || 'UK'}</p>
+                {riverWalk.notes && <p className="mt-2 italic">"{riverWalk.notes}"</p>}
+              </div>
             </div>
-          </div>
 
-          {/* Summary section */}
-          <div className="mb-8">
-            <h3 className="text-xl font-semibold mb-4 border-b pb-2">Study Summary</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="bg-blue-50 p-4 rounded-lg">
-                <h4 className="font-semibold text-blue-800">Total Sites</h4>
-                <p className="text-2xl font-bold text-blue-600">{sites.length}</p>
-              </div>
-              <div className="bg-green-50 p-4 rounded-lg">
-                <h4 className="font-semibold text-green-800">Measurements</h4>
-                <p className="text-2xl font-bold text-green-600">
-                  {sites.reduce((total, site) => total + (site.measurement_points?.length || 0), 0)}
-                </p>
-              </div>
-              <div className="bg-purple-50 p-4 rounded-lg">
-                <h4 className="font-semibold text-purple-800">Avg Width</h4>
-                <p className="text-2xl font-bold text-purple-600">
-                  {sites.length > 0 
-                    ? (sites.reduce((sum, site) => sum + site.river_width, 0) / sites.length).toFixed(1)
-                    : '0'
-                  }m
-                </p>
+            {/* Summary statistics */}
+            <div>
+              <h3 className="text-xl font-semibold mb-4 border-b pb-2">Study Summary</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="bg-blue-50 p-4 rounded-lg">
+                  <h4 className="font-semibold text-blue-800">Total Sites</h4>
+                  <p className="text-2xl font-bold text-blue-600">{sites.length}</p>
+                </div>
+                <div className="bg-green-50 p-4 rounded-lg">
+                  <h4 className="font-semibold text-green-800">Measurements</h4>
+                  <p className="text-2xl font-bold text-green-600">
+                    {sites.reduce((total, site) => total + (site.measurement_points?.length || 0), 0)}
+                  </p>
+                </div>
+                <div className="bg-purple-50 p-4 rounded-lg">
+                  <h4 className="font-semibold text-purple-800">Avg Width</h4>
+                  <p className="text-2xl font-bold text-purple-600">
+                    {sites.length > 0 
+                      ? (sites.reduce((sum, site) => sum + site.river_width, 0) / sites.length).toFixed(1)
+                      : '0'
+                    }m
+                  </p>
+                </div>
               </div>
             </div>
           </div>
@@ -361,28 +369,36 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
                 <div className="border rounded-lg p-6">
                   {/* Site header */}
                   <div className="mb-6">
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="flex-1">
-                        <h3 className="text-xl font-semibold text-gray-900">
-                          Site {site.site_number}: {site.site_name}
-                        </h3>
-                        <div className="mt-2 space-y-1 text-sm text-gray-600">
-                          <p><strong>River Width:</strong> {site.river_width}m</p>
-                          {site.latitude && site.longitude && (
-                            <p><strong>Coordinates:</strong> {site.latitude.toFixed(6)}, {site.longitude.toFixed(6)}</p>
-                          )}
-                          {site.notes && <p><strong>Notes:</strong> {site.notes}</p>}
-                        </div>
+                    <h3 className="text-xl font-semibold text-gray-900 mb-4">
+                      {site.site_name === `Site ${site.site_number}` 
+                        ? `Site ${site.site_number}`
+                        : `Site ${site.site_number}: ${site.site_name}`
+                      }
+                    </h3>
+                    
+                    {/* Site photo - prominent placement */}
+                    {site.photo_url && (
+                      <div className="mb-6">
+                        <img
+                          src={site.photo_url}
+                          alt={`Photo of ${site.site_name}`}
+                          className="w-full max-w-md mx-auto h-64 object-cover rounded-lg border shadow-lg"
+                        />
+                        <p className="text-center text-sm text-gray-500 mt-2">Site photograph</p>
                       </div>
-                      {site.photo_url && (
-                        <div className="ml-4 shrink-0">
-                          <img
-                            src={site.photo_url}
-                            alt={`Photo of ${site.site_name}`}
-                            className="w-32 h-24 object-cover rounded-lg border"
-                          />
-                        </div>
-                      )}
+                    )}
+                    
+                    {/* Site details */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-600">
+                      <div>
+                        <p><strong>River Width:</strong> {site.river_width}m</p>
+                        {site.latitude && site.longitude && (
+                          <p><strong>Coordinates:</strong> {site.latitude.toFixed(6)}, {site.longitude.toFixed(6)}</p>
+                        )}
+                      </div>
+                      <div>
+                        {site.notes && <p><strong>Notes:</strong> {site.notes}</p>}
+                      </div>
                     </div>
                   </div>
 

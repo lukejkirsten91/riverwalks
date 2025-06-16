@@ -319,9 +319,17 @@ export default function RiverWalksPage() {
         {/* Loading indicator for report generation */}
         {loadingReport && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg p-6 max-w-sm mx-auto text-center">
-              <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
-              <p className="text-gray-600">Loading report data...</p>
+            <div className="bg-white rounded-lg p-8 max-w-md mx-auto text-center">
+              <div className="mb-6">
+                <div className="animate-spin w-12 h-12 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
+                <div className="flex space-x-1 justify-center">
+                  <div className="w-2 h-2 bg-primary rounded-full animate-pulse delay-0"></div>
+                  <div className="w-2 h-2 bg-primary rounded-full animate-pulse delay-75"></div>
+                  <div className="w-2 h-2 bg-primary rounded-full animate-pulse delay-150"></div>
+                </div>
+              </div>
+              <h3 className="text-lg font-semibold text-gray-800 mb-2">Generating Report</h3>
+              <p className="text-gray-600">Loading site data and preparing visualizations...</p>
             </div>
           </div>
         )}
