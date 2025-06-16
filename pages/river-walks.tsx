@@ -26,11 +26,16 @@ export default function RiverWalksPage() {
 
   const {
     riverWalks,
+    archivedRiverWalks,
+    showArchived,
+    setShowArchived,
     loading,
     error,
     setError,
     handleCreateRiverWalk,
     handleUpdateRiverWalk,
+    handleArchiveRiverWalk,
+    handleRestoreRiverWalk,
     handleDeleteRiverWalk,
   } = useRiverWalks();
 
@@ -102,8 +107,18 @@ export default function RiverWalksPage() {
     await handleUpdateRiverWalk(id, updateData);
   };
 
+  const handleArchive = async (id: string) => {
+    if (window.confirm('Are you sure you want to archive this river walk? You can restore it later.')) {
+      await handleArchiveRiverWalk(id);
+    }
+  };
+
+  const handleRestore = async (id: string) => {
+    await handleRestoreRiverWalk(id);
+  };
+
   const handleDelete = async (id: string) => {
-    if (window.confirm('Are you sure you want to delete this river walk?')) {
+    if (window.confirm('Are you sure you want to permanently delete this river walk? This cannot be undone.')) {
       await handleDeleteRiverWalk(id);
     }
   };
@@ -129,7 +144,7 @@ export default function RiverWalksPage() {
   // Loading state
   if (loading && !riverWalks.length) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-muted/30 to-background flex items-center justify-center p-8">
+      <div className="min-h-screen bg-gradient-to-br from-muted/50 to-slate-100 flex items-center justify-center p-8">
         <div className="glass rounded-2xl p-8 max-w-md mx-auto text-center">
           <div className="w-16 h-16 rounded-xl gradient-primary flex items-center justify-center mx-auto mb-4 animate-pulse">
             <MapPin className="w-8 h-8 text-white" />
@@ -142,7 +157,7 @@ export default function RiverWalksPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-muted/30 to-background">
+    <div className="min-h-screen bg-gradient-to-br from-muted/50 to-slate-100">
       <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
         {/* Top navigation with profile */}
         <div className="flex justify-end items-center mb-6">
@@ -193,18 +208,30 @@ export default function RiverWalksPage() {
                 <MapPin className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h1 className="text-2xl sm:text-3xl font-bold text-foreground">River Walks</h1>
+                <h1 className="text-3xl sm:text-4xl font-bold text-foreground">Your River Walks</h1>
                 <p className="text-muted-foreground text-sm">Manage your river study documentation</p>
               </div>
             </div>
 
-            {/* Add River Walk button */}
-            <button
-              className={showForm ? "btn-secondary touch-manipulation" : "btn-primary touch-manipulation"}
-              onClick={handleAddNewRiverWalk}
-            >
-              {showForm ? 'Cancel' : '+ Add River Walk'}
-            </button>
+            <div className="flex flex-col sm:flex-row gap-3">
+              {/* Archive toggle button */}
+              <button
+                className={showArchived ? "btn-secondary touch-manipulation" : "btn-warning touch-manipulation"}
+                onClick={() => setShowArchived(!showArchived)}
+              >
+                {showArchived ? `Active (${riverWalks.length})` : `Archived (${archivedRiverWalks.length})`}
+              </button>
+
+              {/* Add River Walk button - only show when not viewing archived */}
+              {!showArchived && (
+                <button
+                  className={showForm ? "btn-secondary touch-manipulation" : "btn-primary touch-manipulation"}
+                  onClick={handleAddNewRiverWalk}
+                >
+                  {showForm ? 'Cancel' : '+ Add River Walk'}
+                </button>
+              )}
+            </div>
           </div>
         </div>
 
@@ -221,8 +248,8 @@ export default function RiverWalksPage() {
           </div>
         )}
 
-        {/* Form section */}
-        {showForm && (
+        {/* Form section - only show when not viewing archived */}
+        {showForm && !showArchived && (
           <div className="mb-8">
             <RiverWalkForm
               currentRiverWalk={currentRiverWalk}
@@ -235,10 +262,13 @@ export default function RiverWalksPage() {
 
         {/* River walks list */}
         <RiverWalkList
-          riverWalks={riverWalks}
+          riverWalks={showArchived ? archivedRiverWalks : riverWalks}
           onUpdateField={handleUpdateField}
+          onArchive={handleArchive}
+          onRestore={handleRestore}
           onDelete={handleDelete}
           onManageSites={handleManageSites}
+          showArchived={showArchived}
         />
 
         {/* Site management modal */}

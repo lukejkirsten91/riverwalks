@@ -10,6 +10,7 @@ interface NumberInputProps {
   className?: string;
   required?: boolean;
   disabled?: boolean;
+  id?: string;
 }
 
 export function NumberInput({
@@ -22,6 +23,7 @@ export function NumberInput({
   className = '',
   required = false,
   disabled = false,
+  id,
 }: NumberInputProps) {
   const [internalValue, setInternalValue] = useState(
     value === '' || value === 0 || value === '0' ? '' : value.toString()
@@ -98,6 +100,7 @@ export function NumberInput({
   return (
     <div className="relative">
       <input
+        id={id}
         type="text"
         inputMode="decimal"
         value={internalValue}

@@ -39,10 +39,14 @@ export function MeasurementEditor({
       {/* Mobile-first controls */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
         <div>
-          <label className="block text-gray-700 mb-2 font-medium">
+          <label 
+            className="block text-gray-700 mb-2 font-medium cursor-pointer hover:text-blue-600 transition-colors"
+            onClick={() => document.getElementById('river-width-input')?.focus()}
+          >
             River Width (meters)
           </label>
           <NumberInput
+            id="river-width-input"
             value={currentRiverWidth}
             onChange={(value) => onRiverWidthChange(parseFloat(value) || 0)}
             className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base"
@@ -80,10 +84,14 @@ export function MeasurementEditor({
           <div className="space-y-3">
             {measurementData.map((point, index) => (
               <div key={index}>
-                <label className="block text-sm text-gray-600 mb-1">
+                <label 
+                  className="block text-sm text-gray-600 mb-1 cursor-pointer hover:text-blue-600 transition-colors"
+                  onClick={() => document.getElementById(`distance-${index}`)?.focus()}
+                >
                   Point {index + 1}:
                 </label>
                 <NumberInput
+                  id={`distance-${index}`}
                   value={point.distance_from_bank}
                   onChange={(value) =>
                     onMeasurementChange(index, 'distance_from_bank', value)
@@ -103,10 +111,14 @@ export function MeasurementEditor({
           <div className="space-y-3">
             {measurementData.map((point, index) => (
               <div key={index}>
-                <label className="block text-sm text-gray-600 mb-1">
+                <label 
+                  className="block text-sm text-gray-600 mb-1 cursor-pointer hover:text-blue-600 transition-colors"
+                  onClick={() => document.getElementById(`depth-${index}`)?.focus()}
+                >
                   Point {index + 1}:
                 </label>
                 <NumberInput
+                  id={`depth-${index}`}
                   value={point.depth}
                   onChange={(value) =>
                     onMeasurementChange(index, 'depth', value)

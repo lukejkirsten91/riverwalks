@@ -8,6 +8,7 @@ export interface RiverWalk {
   country: string;
   county: string | null;
   user_id: string;
+  archived: boolean;
 }
 
 export interface Site {

@@ -1,15 +1,36 @@
 import { supabase } from '../supabase';
 import type { RiverWalk, RiverWalkFormData } from '../../types';
 
-// Get all river walks for the current user
-export async function getRiverWalks(): Promise<RiverWalk[]> {
-  const { data, error } = await supabase
+// Get all river walks for the current user (excluding archived by default)
+export async function getRiverWalks(includeArchived = false): Promise<RiverWalk[]> {
+  let query = supabase
     .from('river_walks')
-    .select('*')
-    .order('date', { ascending: false });
+    .select('*');
+
+  if (!includeArchived) {
+    query = query.eq('archived', false);
+  }
+
+  const { data, error } = await query.order('date', { ascending: false });
 
   if (error) {
     console.error('Error fetching river walks:', error);
+    throw error;
+  }
+
+  return data || [];
+}
+
+// Get only archived river walks for the current user
+export async function getArchivedRiverWalks(): Promise<RiverWalk[]> {
+  const { data, error } = await supabase
+    .from('river_walks')
+    .select('*')
+    .eq('archived', true)
+    .order('date', { ascending: false });
+
+  if (error) {
+    console.error('Error fetching archived river walks:', error);
     throw error;
   }
 
@@ -90,7 +111,43 @@ export async function updateRiverWalk(
   return data;
 }
 
-// Delete a river walk
+// Archive a river walk (soft delete)
+export async function archiveRiverWalk(id: string): Promise<boolean> {
+  const { error } = await supabase
+    .from('river_walks')
+    .update({ 
+      archived: true,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', id);
+
+  if (error) {
+    console.error(`Error archiving river walk with id ${id}:`, error);
+    throw error;
+  }
+
+  return true;
+}
+
+// Restore a river walk from archive
+export async function restoreRiverWalk(id: string): Promise<boolean> {
+  const { error } = await supabase
+    .from('river_walks')
+    .update({ 
+      archived: false,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', id);
+
+  if (error) {
+    console.error(`Error restoring river walk with id ${id}:`, error);
+    throw error;
+  }
+
+  return true;
+}
+
+// Delete a river walk permanently
 export async function deleteRiverWalk(id: string): Promise<boolean> {
   const { error } = await supabase.from('river_walks').delete().eq('id', id);
 
