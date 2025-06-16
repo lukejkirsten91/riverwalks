@@ -42,14 +42,17 @@ export function MeasurementEditor({
           <label className="block text-gray-700 mb-2 font-medium">
             River Width (meters)
           </label>
-          <InlineNumberEdit
-            value={currentRiverWidth}
-            onSave={(value) => onRiverWidthChange(value)}
-            suffix="m"
-            min={0.1}
-            decimals={1}
-            className="text-base font-medium"
-          />
+          <div className="flex items-center gap-2">
+            <span className="text-gray-600">Width:</span>
+            <InlineNumberEdit
+              value={currentRiverWidth}
+              onSave={(value) => onRiverWidthChange(value)}
+              suffix="m"
+              min={0.1}
+              decimals={1}
+              className="text-base font-medium border border-border min-w-[80px]"
+            />
+          </div>
           <p className="text-xs text-gray-500 mt-1">
             Distances will auto-update when changed
           </p>
@@ -59,14 +62,17 @@ export function MeasurementEditor({
           <label className="block text-gray-700 mb-2 font-medium">
             Number of Measurement Points
           </label>
-          <InlineNumberEdit
-            value={numMeasurements}
-            onSave={(value) => onNumMeasurementsChange(Math.round(value))}
-            min={2}
-            max={20}
-            decimals={0}
-            className="text-base font-medium"
-          />
+          <div className="flex items-center gap-2">
+            <span className="text-gray-600">Points:</span>
+            <InlineNumberEdit
+              value={numMeasurements}
+              onSave={(value) => onNumMeasurementsChange(Math.round(value))}
+              min={2}
+              max={20}
+              decimals={0}
+              className="text-base font-medium border border-border min-w-[60px]"
+            />
+          </div>
           <p className="text-xs text-gray-500 mt-1">
             Distances will auto-space evenly
           </p>
@@ -93,7 +99,7 @@ export function MeasurementEditor({
                   min={0}
                   max={currentRiverWidth}
                   decimals={1}
-                  className="flex-1"
+                  className="flex-1 border border-border min-w-[80px]"
                 />
               </div>
             ))}
@@ -117,7 +123,7 @@ export function MeasurementEditor({
                   min={0}
                   max={10}
                   decimals={1}
-                  className="flex-1"
+                  className="flex-1 bg-muted/30 hover:bg-muted/50 px-3 py-2 rounded-lg border border-border"
                 />
               </div>
             ))}
