@@ -7,7 +7,7 @@ Riverwalks is a web application designed primarily for GCSE Geography students t
 ## 🚀 Live Application
 
 - **Production URL**: https://riverwalks.vercel.app
-- **Current Status**: ✅ Navigation Optimization + Complete Inline Editing System + Brand Color Scheme + Logo Integration + Enhanced Site Management + Archive System + Notes & Coordinates (Photo Upload In Progress)
+- **Current Status**: ✅ Navigation Optimization + Complete Inline Editing System + Brand Color Scheme + Logo Integration + Enhanced Site Management + Archive System + Notes & Coordinates + Photo Upload System
 
 ## 🏗️ Technical Stack
 
@@ -155,6 +155,17 @@ Riverwalks is a web application designed primarily for GCSE Geography students t
 - **Click-Outside-to-Close**: All modals and popups now close when clicking outside
 - **Database Schema**: Migration ready for coordinates, notes, and photo functionality
 
+### ✅ Photo Upload System (COMPLETED)
+
+- **Supabase Storage Integration**: Full photo upload functionality with secure storage
+- **Drag-and-Drop Interface**: Modern FileUpload component with visual feedback
+- **Photo Management**: Upload, replace, and delete photos with automatic cleanup
+- **Photo Display**: Site photos appear as thumbnails in site headers with fallback to number badges
+- **File Validation**: Size limits (5MB), file type checking, and error handling
+- **Database Integration**: Photo URLs stored in sites table with proper TypeScript types
+- **UI Enhancements**: Photo upload button, Edit Site button color matching, and seamless workflow
+- **Error Handling**: Graceful fallbacks ensure site creation succeeds even if photo upload fails
+
 ## 🗄️ Database Schema
 
 ### river_walks table
@@ -169,11 +180,12 @@ CREATE TABLE river_walks (
   country TEXT NOT NULL DEFAULT 'UK',
   county TEXT,
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  archived BOOLEAN DEFAULT FALSE
+  archived BOOLEAN DEFAULT FALSE,
+  notes TEXT
 );
 ```
 
-### sites table (Phase 1)
+### sites table (Enhanced)
 
 ```sql
 CREATE TABLE sites (
@@ -182,6 +194,10 @@ CREATE TABLE sites (
   site_number INTEGER NOT NULL,
   site_name TEXT NOT NULL,
   river_width DECIMAL(8,2) NOT NULL,
+  latitude DECIMAL(10,8),
+  longitude DECIMAL(11,8),
+  photo_url TEXT,
+  notes TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -224,7 +240,8 @@ riverwalks/
 │   └── ui/                        # shadcn/ui + custom components (TypeScript)
 │   │   ├── InlineEdit.tsx         # Click-to-edit text component
 │   │   ├── InlineNumberEdit.tsx   # Click-to-edit number component
-│   │   └── NumberInput.tsx        # Enhanced number input with zero handling
+│   │   ├── NumberInput.tsx        # Enhanced number input with zero handling
+│   │   └── FileUpload.tsx         # Photo upload component with drag-and-drop
 ├── hooks/                         # Custom React hooks for business logic
 │   ├── useRiverWalks.ts          # River walks data management
 │   ├── useSites.ts               # Sites data management
@@ -232,7 +249,8 @@ riverwalks/
 ├── lib/
 │   ├── api/
 │   │   ├── river-walks.ts         # River Walk CRUD operations
-│   │   └── sites.ts               # Sites CRUD operations (Phase 1)
+│   │   ├── sites.ts               # Sites CRUD operations
+│   │   └── storage.ts             # Photo upload/storage operations
 │   ├── supabase.ts                # Supabase client config
 │   └── utils.ts                   # Helper functions
 ├── pages/
@@ -242,7 +260,8 @@ riverwalks/
 │   └── river-walks.tsx            # Main page (now orchestrates components)
 ├── supabase/
 │   ├── cleanup.sql                # Initial database setup script
-│   └── sites-schema.sql           # Sites and measurement points schema (Phase 1)
+│   ├── sites-schema.sql           # Sites and measurement points schema
+│   └── add-photos-coordinates-notes.sql # Photo upload and enhanced fields migration
 ├── types/
 │   └── index.ts                   # TypeScript type definitions
 ├── .eslintrc.json                 # ESLint configuration
@@ -267,6 +286,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
    - Run `supabase/cleanup.sql` to create river_walks table and RLS policies
    - Run `supabase/sites-schema.sql` to create sites and measurement_points tables
    - Run `supabase/add-archive-field.sql` to add archive functionality
+   - Run `supabase/add-photos-coordinates-notes.sql` to add photo upload, coordinates, and notes
 3. **Authentication**: Users table automatically managed by Supabase Auth
 
 ### Google Cloud Console
@@ -429,8 +449,9 @@ CREATE TABLE measurement_points (
 
 - Preview deployments may have OAuth redirect issues (resolved by using main branch)
 - Streamlit app.py functionality not yet integrated into web app
-- No measurement sites or visualization features yet
+- No 2D/3D visualization features yet
 - No report generation or data export beyond basic CSV
+- Logo sizing and placement needs optimization
 
 ## 🔄 Git Branches
 
@@ -725,5 +746,5 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 ---
 
 _Last Updated: June 16, 2025_
-_Status: ✅ Navigation Optimization + Complete Inline Editing System + Modern Design System + UI/UX Refinements + Mobile-First Responsive Design + Component Modularization + TypeScript Migration + Phase 1 Sites Foundation + Archive System_
+_Status: ✅ Navigation Optimization + Complete Inline Editing System + Modern Design System + UI/UX Refinements + Mobile-First Responsive Design + Component Modularization + TypeScript Migration + Phase 1 Sites Foundation + Archive System + Brand Integration + Photo Upload System_
 _Next Phase: 2D Visualization (Phase 2)_
