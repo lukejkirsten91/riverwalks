@@ -173,6 +173,7 @@ export function SiteManagement({ riverWalk, onClose }: SiteManagementProps) {
   };
 
   const handleEditSite = (site: Site) => {
+    console.log('handleEditSite called for site:', site.id, site.site_name);
     setEditingSite(site);
   };
 

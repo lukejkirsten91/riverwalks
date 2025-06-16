@@ -115,7 +115,15 @@ export function DiagnosticPanel() {
                 <span className="font-medium">Upload Test</span>
               </div>
               {!results.upload.success ? (
-                <p className="text-red-600">Upload failed: {results.upload.error}</p>
+                <div>
+                  <p className="text-red-600">Upload failed: {results.upload.error}</p>
+                  {results.upload.error?.includes('row-level security') && (
+                    <div className="mt-2 p-2 bg-red-50 rounded text-xs">
+                      <p className="font-medium text-red-800">RLS Policy Fix Needed:</p>
+                      <p className="text-red-700">Run the SQL script in /supabase/fix-storage-rls.sql</p>
+                    </div>
+                  )}
+                </div>
               ) : (
                 <p className="text-green-600">Upload successful</p>
               )}
