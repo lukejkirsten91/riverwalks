@@ -112,7 +112,7 @@ export function SiteManagement({ riverWalk, onClose }: SiteManagementProps) {
       throw new Error('You must be logged in to upload photos');
     }
 
-    let photoUrl: string | undefined = editingSite.photo_url;
+    let photoUrl: string | undefined = editingSite.photo_url || undefined;
 
     // Handle photo upload/replacement
     if (photoFile) {
