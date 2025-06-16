@@ -20,9 +20,10 @@ export function RiverWalkForm({
     date: currentRiverWalk?.date || new Date().toISOString().split('T')[0],
     country: currentRiverWalk?.country || 'UK',
     county: currentRiverWalk?.county || '',
+    notes: currentRiverWalk?.notes || '',
   });
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData({
       ...formData,
@@ -106,6 +107,22 @@ export function RiverWalkForm({
               placeholder="e.g., Devon, Yorkshire"
             />
           </div>
+        </div>
+
+        {/* Notes */}
+        <div>
+          <label className="block text-foreground mb-3 font-medium">
+            Notes 
+            <span className="text-muted-foreground text-sm font-normal ml-2">(Optional)</span>
+          </label>
+          <textarea
+            name="notes"
+            value={formData.notes || ''}
+            onChange={handleInputChange}
+            className="input-modern min-h-[100px] resize-y"
+            placeholder="Add any additional notes about this river walk..."
+            rows={4}
+          />
         </div>
 
         {/* Actions */}

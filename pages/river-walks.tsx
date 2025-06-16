@@ -204,9 +204,11 @@ export default function RiverWalksPage() {
         <div className="glass rounded-2xl p-6 mb-8 border border-white/20">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-xl gradient-primary flex items-center justify-center">
-                <MapPin className="w-6 h-6 text-white" />
-              </div>
+              <img 
+                src="/logo.png" 
+                alt="Riverwalks Logo" 
+                className="h-12 w-12 rounded-xl object-contain"
+              />
               <div>
                 <h1 className="text-3xl sm:text-4xl font-bold text-foreground">Your River Walks</h1>
                 <p className="text-muted-foreground text-sm">Manage your river study documentation</p>

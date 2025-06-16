@@ -17,9 +17,16 @@ export default function Home() {
             </span>
           </div>
           
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight mb-6 text-white">
-            Riverwalks
-          </h1>
+          <div className="flex flex-col items-center mb-6">
+            <img 
+              src="/logo.png" 
+              alt="Riverwalks Logo" 
+              className="h-16 sm:h-20 lg:h-24 mb-4 drop-shadow-lg"
+            />
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-white">
+              Riverwalks
+            </h1>
+          </div>
           
           <p className="text-lg sm:text-xl text-white/90 mb-8 max-w-2xl mx-auto leading-relaxed">
             Professional river study documentation and analysis for students and educators. 

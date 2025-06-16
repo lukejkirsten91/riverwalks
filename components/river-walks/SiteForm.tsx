@@ -19,9 +19,12 @@ export function SiteForm({
   const [formData, setFormData] = useState<SiteFormData>({
     site_name: editingSite?.site_name || '',
     river_width: editingSite ? editingSite.river_width.toString() : '',
+    latitude: editingSite?.latitude ? editingSite.latitude.toString() : '',
+    longitude: editingSite?.longitude ? editingSite.longitude.toString() : '',
+    notes: editingSite?.notes || '',
   });
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData({
       ...formData,
@@ -96,6 +99,70 @@ export function SiteForm({
               Measurement points will be evenly distributed across this width
             </p>
           </div>
+        </div>
+
+        {/* Coordinates */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div>
+            <label className="block text-foreground mb-3 font-medium">
+              Latitude 
+              <span className="text-muted-foreground text-sm font-normal ml-2">(Optional)</span>
+            </label>
+            <input
+              type="number"
+              name="latitude"
+              value={formData.latitude}
+              onChange={handleInputChange}
+              className="input-modern"
+              placeholder="e.g., 51.4545"
+              step="any"
+              min="-90"
+              max="90"
+            />
+            <p className="text-muted-foreground text-xs mt-2">
+              GPS latitude coordinate (-90 to 90)
+            </p>
+          </div>
+          
+          <div>
+            <label className="block text-foreground mb-3 font-medium">
+              Longitude 
+              <span className="text-muted-foreground text-sm font-normal ml-2">(Optional)</span>
+            </label>
+            <input
+              type="number"
+              name="longitude"
+              value={formData.longitude}
+              onChange={handleInputChange}
+              className="input-modern"
+              placeholder="e.g., -2.5879"
+              step="any"
+              min="-180"
+              max="180"
+            />
+            <p className="text-muted-foreground text-xs mt-2">
+              GPS longitude coordinate (-180 to 180)
+            </p>
+          </div>
+        </div>
+
+        {/* Notes */}
+        <div>
+          <label className="block text-foreground mb-3 font-medium">
+            Notes 
+            <span className="text-muted-foreground text-sm font-normal ml-2">(Optional)</span>
+          </label>
+          <textarea
+            name="notes"
+            value={formData.notes}
+            onChange={handleInputChange}
+            className="input-modern min-h-[100px] resize-y"
+            placeholder="Add notes about this site's location, conditions, or characteristics..."
+            rows={4}
+          />
+          <p className="text-muted-foreground text-xs mt-2">
+            Document any observations about this measurement site
+          </p>
         </div>
 
         <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-border">
