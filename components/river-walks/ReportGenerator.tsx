@@ -36,52 +36,105 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
       .sort((a, b) => a.point_number - b.point_number)
       .map(point => -point.depth); // Negative for downward direction
 
+    const data = [
+      // Left bank
+      {
+        x: [-0.5, 0],
+        y: [0.5, 0],
+        mode: 'lines',
+        fill: 'tozeroy',
+        line: { color: 'brown', width: 0 },
+        fillcolor: 'peru',
+        name: 'Left Bank',
+        showlegend: false,
+      },
+      // Right bank
+      {
+        x: [site.river_width, site.river_width + 0.5],
+        y: [0, 0.5],
+        mode: 'lines',
+        fill: 'tozeroy',
+        line: { color: 'brown', width: 0 },
+        fillcolor: 'peru',
+        name: 'Right Bank',
+        showlegend: false,
+      },
+      // River bed
+      {
+        x: distances,
+        y: depths,
+        mode: 'lines+markers',
+        fill: 'tozeroy',
+        line: { color: 'royalblue', width: 2 },
+        marker: { size: 8, color: 'darkblue', symbol: 'circle' },
+        fillcolor: 'lightblue',
+        name: 'River Bed',
+        showlegend: false,
+      },
+      // Water surface
+      {
+        x: [0, site.river_width],
+        y: [0, 0],
+        mode: 'lines',
+        line: { color: 'lightblue', width: 2 },
+        name: 'Water Surface',
+        showlegend: false,
+      },
+    ];
+
+    // Add measurement point labels as annotations
+    const annotations = site.measurement_points
+      .sort((a, b) => a.point_number - b.point_number)
+      .map((point) => ({
+        x: point.distance_from_bank,
+        y: -point.depth - 0.1,
+        text: `${point.depth}m`,
+        showarrow: false,
+        yshift: -10,
+        font: { size: 10 },
+      }));
+
+    // Add width label annotation
+    annotations.push({
+      x: site.river_width / 2,
+      y: 0.3,
+      text: `${site.river_width}m`,
+      showarrow: false,
+      yshift: 0,
+      font: { size: 10 },
+    });
+
+    const shapes = [
+      // Width indicator line above the river
+      {
+        type: 'line',
+        x0: 0,
+        y0: 0.2,
+        x1: site.river_width,
+        y1: 0.2,
+        line: { color: 'black', width: 2 },
+      },
+      // Small vertical lines at the ends of the width line
+      {
+        type: 'line',
+        x0: 0,
+        y0: 0.2,
+        x1: 0,
+        y1: 0.1,
+        line: { color: 'black', width: 2 },
+      },
+      {
+        type: 'line',
+        x0: site.river_width,
+        y0: 0.2,
+        x1: site.river_width,
+        y1: 0.1,
+        line: { color: 'black', width: 2 },
+      },
+    ];
+
     return {
-      data: [
-        // Left bank
-        {
-          x: [-0.5, 0],
-          y: [0.5, 0],
-          mode: 'lines',
-          fill: 'tozeroy',
-          line: { color: 'brown', width: 0 },
-          fillcolor: 'peru',
-          name: 'Left Bank',
-          showlegend: false,
-        },
-        // Right bank
-        {
-          x: [site.river_width, site.river_width + 0.5],
-          y: [0, 0.5],
-          mode: 'lines',
-          fill: 'tozeroy',
-          line: { color: 'brown', width: 0 },
-          fillcolor: 'peru',
-          name: 'Right Bank',
-          showlegend: false,
-        },
-        // River bed
-        {
-          x: distances,
-          y: depths,
-          mode: 'lines+markers',
-          fill: 'tozeroy',
-          line: { color: 'royalblue', width: 2 },
-          marker: { size: 8, color: 'darkblue', symbol: 'circle' },
-          fillcolor: 'lightblue',
-          name: 'River Bed',
-          showlegend: false,
-        },
-        // Water surface
-        {
-          x: [0, site.river_width],
-          y: [0, 0],
-          mode: 'lines',
-          line: { color: 'lightblue', width: 2 },
-          name: 'Water Surface',
-          showlegend: false,
-        },
-      ],
+      data,
       layout: {
         title: {
           text: `Cross-Section: ${site.site_name}`,
@@ -92,17 +145,21 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
           range: [-0.5, site.river_width + 0.5],
           showgrid: true,
           gridcolor: 'lightgray',
+          zeroline: false, // Remove the zero line
         },
         yaxis: {
           title: 'Depth (m)',
           autorange: true,
           showgrid: true,
           gridcolor: 'lightgray',
+          zeroline: false, // Remove the zero line
         },
         plot_bgcolor: 'lightcyan',
         paper_bgcolor: 'white',
         height: 400,
         margin: { l: 60, r: 40, t: 60, b: 60 },
+        annotations,
+        shapes,
       },
     };
   };
