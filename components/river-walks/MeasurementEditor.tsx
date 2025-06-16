@@ -85,7 +85,7 @@ export function MeasurementEditor({
                   Point {index + 1}:
                 </label>
                 <InlineNumberEdit
-                  value={parseFloat(point.distance_from_bank) || 0}
+                  value={point.distance_from_bank || 0}
                   onSave={(value) =>
                     onMeasurementChange(index, 'distance_from_bank', value.toString())
                   }
@@ -109,7 +109,7 @@ export function MeasurementEditor({
                   Point {index + 1}:
                 </label>
                 <InlineNumberEdit
-                  value={parseFloat(point.depth) || 0}
+                  value={point.depth || 0}
                   onSave={(value) =>
                     onMeasurementChange(index, 'depth', value.toString())
                   }
