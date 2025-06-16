@@ -10,14 +10,28 @@ export async function uploadSitePhoto(
   userId: string
 ): Promise<string> {
   try {
-    // Ensure bucket exists
-    await ensureBucketExists();
+    console.log('Starting photo upload for site:', siteId);
+    console.log('File details:', {
+      name: file.name,
+      size: file.size,
+      type: file.type
+    });
+
+    // Check if bucket exists (don't try to create it)
+    console.log('Checking if bucket exists...');
+    const bucketExists = await checkBucketExists();
+    if (!bucketExists) {
+      throw new Error('STORAGE_SETUP_REQUIRED: Storage bucket does not exist. Please set up storage in Supabase dashboard.');
+    }
+    console.log('Bucket exists and is accessible');
     
     // Create a unique filename
     const fileExt = file.name.split('.').pop();
     const fileName = `${userId}/${siteId}-${Date.now()}.${fileExt}`;
+    console.log('Generated filename:', fileName);
 
     // Upload the file
+    console.log('Starting file upload...');
     const { data, error } = await supabase.storage
       .from(BUCKET_NAME)
       .upload(fileName, file, {
@@ -26,49 +40,45 @@ export async function uploadSitePhoto(
       });
 
     if (error) {
-      console.error('Error uploading file:', error);
-      throw error;
+      console.error('Supabase storage error:', error);
+      throw new Error(`Storage upload failed: ${error.message}`);
     }
+
+    console.log('File uploaded successfully:', data);
 
     // Get the public URL
     const { data: urlData } = supabase.storage
       .from(BUCKET_NAME)
       .getPublicUrl(data.path);
 
+    console.log('Generated public URL:', urlData.publicUrl);
     return urlData.publicUrl;
   } catch (error) {
-    console.error('Upload failed:', error);
-    throw new Error('Failed to upload photo');
+    console.error('Upload failed with error:', error);
+    if (error instanceof Error) {
+      throw new Error(`Photo upload failed: ${error.message}`);
+    }
+    throw new Error('Failed to upload photo: Unknown error');
   }
 }
 
-// Ensure the storage bucket exists
-async function ensureBucketExists(): Promise<void> {
+// Check if the storage bucket exists
+async function checkBucketExists(): Promise<boolean> {
   try {
-    // First check if bucket exists by trying to list files
-    const { error: listError } = await supabase.storage
+    console.log('Checking if bucket exists...');
+    
+    // Try to list files in the bucket
+    const { data: listData, error: listError } = await supabase.storage
       .from(BUCKET_NAME)
       .list('', { limit: 1 });
 
-    // If no error, bucket exists
-    if (!listError) {
-      return;
-    }
+    console.log('List attempt result:', { listData, listError });
 
-    // If bucket doesn't exist, create it
-    const { error: createError } = await supabase.storage.createBucket(BUCKET_NAME, {
-      public: true,
-      allowedMimeTypes: ['image/png', 'image/jpeg', 'image/jpg', 'image/webp'],
-      fileSizeLimit: 5 * 1024 * 1024, // 5MB
-    });
-
-    if (createError && createError.message !== 'Bucket already exists') {
-      console.error('Error creating bucket:', createError);
-      throw createError;
-    }
+    // If no error, bucket exists and is accessible
+    return !listError;
   } catch (error) {
-    console.error('Error ensuring bucket exists:', error);
-    // Don't throw here - let the upload try and provide more specific error
+    console.error('Error checking bucket:', error);
+    return false;
   }
 }
 

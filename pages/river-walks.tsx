@@ -9,6 +9,7 @@ import {
   SiteManagement,
 } from '../components/river-walks';
 import { DiagnosticPanel } from '../components/DiagnosticPanel';
+import { StorageSetupHelper } from '../components/StorageSetupHelper';
 import { useRiverWalks } from '../hooks/useRiverWalks';
 import type { RiverWalk, RiverWalkFormData } from '../types';
 import type { User } from '@supabase/supabase-js';
@@ -285,6 +286,9 @@ export default function RiverWalksPage() {
       
       {/* Diagnostic Panel for debugging photo uploads */}
       <DiagnosticPanel />
+      
+      {/* Storage Setup Helper */}
+      <StorageSetupHelper />
     </div>
   );
 }
