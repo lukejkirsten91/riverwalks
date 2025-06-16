@@ -10,6 +10,9 @@ export async function uploadSitePhoto(
   userId: string
 ): Promise<string> {
   try {
+    // Ensure bucket exists
+    await ensureBucketExists();
+    
     // Create a unique filename
     const fileExt = file.name.split('.').pop();
     const fileName = `${userId}/${siteId}-${Date.now()}.${fileExt}`;
@@ -36,6 +39,36 @@ export async function uploadSitePhoto(
   } catch (error) {
     console.error('Upload failed:', error);
     throw new Error('Failed to upload photo');
+  }
+}
+
+// Ensure the storage bucket exists
+async function ensureBucketExists(): Promise<void> {
+  try {
+    // First check if bucket exists by trying to list files
+    const { error: listError } = await supabase.storage
+      .from(BUCKET_NAME)
+      .list('', { limit: 1 });
+
+    // If no error, bucket exists
+    if (!listError) {
+      return;
+    }
+
+    // If bucket doesn't exist, create it
+    const { error: createError } = await supabase.storage.createBucket(BUCKET_NAME, {
+      public: true,
+      allowedMimeTypes: ['image/png', 'image/jpeg', 'image/jpg', 'image/webp'],
+      fileSizeLimit: 5 * 1024 * 1024, // 5MB
+    });
+
+    if (createError && createError.message !== 'Bucket already exists') {
+      console.error('Error creating bucket:', createError);
+      throw createError;
+    }
+  } catch (error) {
+    console.error('Error ensuring bucket exists:', error);
+    // Don't throw here - let the upload try and provide more specific error
   }
 }
 

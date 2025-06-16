@@ -8,6 +8,7 @@ import {
   RiverWalkList,
   SiteManagement,
 } from '../components/river-walks';
+import { DiagnosticPanel } from '../components/DiagnosticPanel';
 import { useRiverWalks } from '../hooks/useRiverWalks';
 import type { RiverWalk, RiverWalkFormData } from '../types';
 import type { User } from '@supabase/supabase-js';
@@ -281,6 +282,9 @@ export default function RiverWalksPage() {
           />
         )}
       </div>
+      
+      {/* Diagnostic Panel for debugging photo uploads */}
+      <DiagnosticPanel />
     </div>
   );
 }

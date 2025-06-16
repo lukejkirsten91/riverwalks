@@ -85,17 +85,24 @@ export function SiteManagement({ riverWalk, onClose }: SiteManagementProps) {
     // Upload photo if provided
     if (photoFile && createdSite) {
       try {
+        console.log('Uploading photo for site:', createdSite.id);
         photoUrl = await uploadSitePhoto(createdSite.id, photoFile, session.user.id);
+        console.log('Photo uploaded successfully, URL:', photoUrl);
+        
         // Update the site with the photo URL
         await updateSite(createdSite.id, {
           site_name: createdSite.site_name,
           river_width: createdSite.river_width,
           photo_url: photoUrl,
         });
+        console.log('Site updated with photo URL');
+        
         // Refresh the sites list to show the updated photo
         await fetchSites(riverWalk.id);
+        console.log('Sites list refreshed');
       } catch (error) {
         console.error('Error uploading photo:', error);
+        setSitesError(`Photo upload failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
         // Site was created successfully, just photo upload failed
       }
     }
@@ -117,14 +124,19 @@ export function SiteManagement({ riverWalk, onClose }: SiteManagementProps) {
     // Handle photo upload/replacement
     if (photoFile) {
       try {
+        console.log('Handling photo upload for existing site:', editingSite.id);
         // Delete old photo if exists
         if (editingSite.photo_url) {
+          console.log('Deleting old photo:', editingSite.photo_url);
           await deleteSitePhoto(editingSite.photo_url);
         }
         // Upload new photo
+        console.log('Uploading new photo...');
         photoUrl = await uploadSitePhoto(editingSite.id, photoFile, session.user.id);
+        console.log('New photo uploaded successfully, URL:', photoUrl);
       } catch (error) {
         console.error('Error handling photo:', error);
+        setMeasurementsError(`Photo upload failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
         // Continue with update even if photo operation fails
       }
     }
