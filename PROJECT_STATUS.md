@@ -7,7 +7,7 @@ Riverwalks is a web application designed primarily for GCSE Geography students t
 ## 🚀 Live Application
 
 - **Production URL**: https://riverwalks.vercel.app
-- **Current Status**: ✅ Navigation Optimization + Complete Inline Editing System + Brand Color Scheme + Logo Integration + Enhanced Site Management + Archive System + Notes & Coordinates + Photo Upload System
+- **Current Status**: ✅ Complete Photo Upload System + Camera Emoji UX + Inline Editing + Brand Integration + Archive System + Mobile-First Design + Comprehensive Site Management
 
 ## 🏗️ Technical Stack
 
@@ -17,6 +17,7 @@ Riverwalks is a web application designed primarily for GCSE Geography students t
 - **Code Quality**: ESLint + Prettier with Next.js recommended settings
 - **Authentication**: Supabase Auth with Google OAuth
 - **Database**: Supabase PostgreSQL with Row Level Security
+- **Storage**: Supabase Storage for photo uploads with RLS policies
 - **Deployment**: Vercel with continuous deployment from GitHub
 - **Repository**: https://github.com/lukejkirsten91/riverwalks
 
@@ -155,16 +156,17 @@ Riverwalks is a web application designed primarily for GCSE Geography students t
 - **Click-Outside-to-Close**: All modals and popups now close when clicking outside
 - **Database Schema**: Migration ready for coordinates, notes, and photo functionality
 
-### ✅ Photo Upload System (COMPLETED)
+### ✅ Complete Photo Upload System (COMPLETED)
 
-- **Supabase Storage Integration**: Full photo upload functionality with secure storage
-- **Drag-and-Drop Interface**: Modern FileUpload component with visual feedback
-- **Photo Management**: Upload, replace, and delete photos with automatic cleanup
-- **Photo Display**: Site photos appear as thumbnails in site headers with fallback to number badges
-- **File Validation**: Size limits (5MB), file type checking, and error handling
-- **Database Integration**: Photo URLs stored in sites table with proper TypeScript types
-- **UI Enhancements**: Photo upload button, Edit Site button color matching, and seamless workflow
-- **Error Handling**: Graceful fallbacks ensure site creation succeeds even if photo upload fails
+- **Supabase Storage Integration**: Full photo upload functionality with secure storage and RLS policies
+- **Camera Emoji UX**: Intuitive 📷 camera emoji interface for sites without photos, clickable photos for sites with photos
+- **Drag-and-Drop Interface**: Modern FileUpload component with visual feedback and proper validation
+- **Photo Management**: Upload, replace, and delete photos with automatic cleanup from both storage and database
+- **File Format Support**: PNG, JPEG, JPG, WEBP files up to 5MB with specific validation
+- **Photo Display**: Site photos appear as attractive thumbnails in headers with hover "Edit" overlay
+- **Error Handling**: Comprehensive error management, persistent error fixes, and graceful fallbacks
+- **Database Integration**: Photo URLs properly stored/cleared in sites table with null handling
+- **UI Polish**: Enhanced click handlers, event propagation fixes, and seamless edit workflow
 
 ## 🗄️ Database Schema
 
@@ -261,7 +263,9 @@ riverwalks/
 ├── supabase/
 │   ├── cleanup.sql                # Initial database setup script
 │   ├── sites-schema.sql           # Sites and measurement points schema
-│   └── add-photos-coordinates-notes.sql # Photo upload and enhanced fields migration
+│   ├── add-photos-coordinates-notes.sql # Photo upload and enhanced fields migration
+│   ├── complete-storage-reset.sql # Complete storage bucket and RLS policy setup
+│   └── fix-storage-rls.sql        # Storage RLS policy fixes (alternative approach)
 ├── types/
 │   └── index.ts                   # TypeScript type definitions
 ├── .eslintrc.json                 # ESLint configuration
@@ -286,7 +290,8 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
    - Run `supabase/cleanup.sql` to create river_walks table and RLS policies
    - Run `supabase/sites-schema.sql` to create sites and measurement_points tables
    - Run `supabase/add-archive-field.sql` to add archive functionality
-   - Run `supabase/add-photos-coordinates-notes.sql` to add photo upload, coordinates, and notes
+   - Run `supabase/complete-storage-reset.sql` to set up complete photo upload system (database + storage + RLS)
+   - Alternative: Use individual migration files if preferred
 3. **Authentication**: Users table automatically managed by Supabase Auth
 
 ### Google Cloud Console
@@ -394,14 +399,42 @@ CREATE TABLE measurement_points (
 
 ### 🎯 **MANDATORY PRINCIPLES FOR ALL FUTURE DEVELOPMENT:**
 
-**1. Separation of Concerns (Always Apply):**
+**⚠️ CRITICAL LESSONS LEARNED FROM PHOTO UPLOAD IMPLEMENTATION:**
+
+**1. Storage & RLS Policy Management (Essential):**
+- Always test storage policies with actual user uploads, not just theoretical access
+- Use simple `auth.role() = 'authenticated'` policies unless user-specific folders are absolutely required
+- Implement comprehensive SQL reset scripts that drop ALL conflicting policies before creating new ones
+- Test file upload end-to-end including storage permissions, not just database operations
+- Create storage bucket configuration as part of the setup documentation
+
+**2. Error State Management (Critical):**
+- Clear errors when starting new operations to prevent persistent error states
+- Clear errors on successful operations, but preserve them when operations partially fail
+- Implement proper error boundaries and don't let component errors persist incorrectly
+- Add detailed console logging for debugging complex workflows (especially storage operations)
+
+**3. File Upload UX Patterns (Best Practices):**
+- Validate file types to match exactly what storage backend supports
+- Use intuitive visual indicators (📷 camera emoji) rather than text-heavy interfaces
+- Implement proper event handling with preventDefault() and stopPropagation() for complex click interactions
+- Handle image loading errors gracefully with fallbacks and user feedback
+- Provide clear file format requirements upfront to users
+
+**4. TypeScript Type Safety for Database Operations:**
+- Define nullable fields explicitly (e.g., `photo_url?: string | null`) when fields can be cleared
+- Ensure database update operations properly handle null values for field clearing
+- Test that `undefined` vs `null` handling works correctly with your database layer
+- Use proper TypeScript interfaces that match actual database schema capabilities
+
+**5. Separation of Concerns (Always Apply):**
 
 - Presentation components should only handle UI rendering
 - Business logic must be extracted into custom hooks
 - Data access should remain in dedicated API layer functions
 - Never mix these concerns in the same file/component
 
-**2. Mobile-First Responsive Design (Non-Negotiable):**
+**6. Mobile-First Responsive Design (Non-Negotiable):**
 
 - Design and code for mobile screens first, then enhance for larger screens
 - All interactive elements must have 44px+ touch targets
@@ -409,21 +442,21 @@ CREATE TABLE measurement_points (
 - Test all new features on mobile devices/responsive design tools
 - Stack content vertically on mobile, flow horizontally on desktop
 
-**3. Component Modularization (Required):**
+**7. Component Modularization (Required):**
 
 - Break down large components into smaller, focused pieces
 - Each component should have a single, clear responsibility
 - Reusable components should be properly abstracted
 - Avoid monolithic components with multiple concerns
 
-**4. TypeScript Best Practices (Enforced):**
+**8. TypeScript Best Practices (Enforced):**
 
 - All new code must use proper TypeScript with strict mode
 - Define interfaces for all props, data structures, and API responses
 - Use proper typing for event handlers and function parameters
 - Leverage TypeScript for better developer experience and error catching
 
-**5. User Experience Priority:**
+**9. User Experience Priority:**
 
 - Prioritize GCSE student needs (primary users)
 - Ensure accessibility and ease of use on school devices
@@ -432,6 +465,7 @@ CREATE TABLE measurement_points (
 - **Apply inline editing philosophy**: Prefer click-to-edit over edit buttons
 - **Minimize interface clutter**: Remove unnecessary buttons and forms
 - **Make editing feel natural**: Like macOS Finder or modern desktop apps
+- **Use intuitive visual cues**: Camera emoji for photo upload, hover states for interactions
 
 ### 📚 Technical Dependencies (Planned)
 
@@ -452,6 +486,15 @@ CREATE TABLE measurement_points (
 - No 2D/3D visualization features yet
 - No report generation or data export beyond basic CSV
 - Logo sizing and placement needs optimization
+
+## ✅ Recently Resolved Issues
+
+- ✅ **Photo Upload System**: Complete implementation with storage, RLS policies, and intuitive UX
+- ✅ **Storage RLS Policy Violations**: Resolved with comprehensive policy reset and simple auth approach
+- ✅ **Persistent Error Messages**: Fixed error state management throughout application
+- ✅ **Photo Deletion Issues**: Fixed UI refresh and database null handling
+- ✅ **File Type Validation**: Proper validation matching Supabase storage configuration
+- ✅ **Camera Emoji UX**: Intuitive photo interface replacing site number badges
 
 ## 🔄 Git Branches
 

@@ -8,9 +8,11 @@ import {
   RiverWalkList,
   SiteManagement,
 } from '../components/river-walks';
+import { ReportGenerator } from '../components/river-walks/ReportGenerator';
 import { DiagnosticPanel } from '../components/DiagnosticPanel';
 import { useRiverWalks } from '../hooks/useRiverWalks';
-import type { RiverWalk, RiverWalkFormData } from '../types';
+import type { RiverWalk, RiverWalkFormData, Site } from '../types';
+import { getSitesForRiverWalk } from '../lib/api/sites';
 import type { User } from '@supabase/supabase-js';
 
 export default function RiverWalksPage() {
@@ -23,6 +25,9 @@ export default function RiverWalksPage() {
   const [selectedRiverWalk, setSelectedRiverWalk] = useState<RiverWalk | null>(
     null
   );
+  const [reportRiverWalk, setReportRiverWalk] = useState<RiverWalk | null>(null);
+  const [reportSites, setReportSites] = useState<Site[]>([]);
+  const [loadingReport, setLoadingReport] = useState(false);
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
 
   const {
@@ -130,6 +135,25 @@ export default function RiverWalksPage() {
 
   const handleCloseSiteManagement = () => {
     setSelectedRiverWalk(null);
+  };
+
+  const handleGenerateReport = async (riverWalk: RiverWalk) => {
+    setLoadingReport(true);
+    try {
+      const sites = await getSitesForRiverWalk(riverWalk.id);
+      setReportSites(sites);
+      setReportRiverWalk(riverWalk);
+    } catch (error) {
+      console.error('Error loading sites for report:', error);
+      setError('Failed to load sites for report. Please try again.');
+    } finally {
+      setLoadingReport(false);
+    }
+  };
+
+  const handleCloseReport = () => {
+    setReportRiverWalk(null);
+    setReportSites([]);
   };
 
   const handleSignOut = async () => {
@@ -271,6 +295,7 @@ export default function RiverWalksPage() {
           onRestore={handleRestore}
           onDelete={handleDelete}
           onManageSites={handleManageSites}
+          onGenerateReport={handleGenerateReport}
           showArchived={showArchived}
         />
 
@@ -280,6 +305,25 @@ export default function RiverWalksPage() {
             riverWalk={selectedRiverWalk}
             onClose={handleCloseSiteManagement}
           />
+        )}
+
+        {/* Report generator modal */}
+        {reportRiverWalk && (
+          <ReportGenerator
+            riverWalk={reportRiverWalk}
+            sites={reportSites}
+            onClose={handleCloseReport}
+          />
+        )}
+
+        {/* Loading indicator for report generation */}
+        {loadingReport && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 max-w-sm mx-auto text-center">
+              <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
+              <p className="text-gray-600">Loading report data...</p>
+            </div>
+          </div>
         )}
       </div>
       

@@ -1,4 +1,4 @@
-import { MapPin, Calendar, Globe, Trash2, Archive, RotateCcw } from 'lucide-react';
+import { MapPin, Calendar, Globe, Trash2, Archive, RotateCcw, BarChart3 } from 'lucide-react';
 import { formatDate } from '../../lib/utils';
 import { InlineEdit } from '../ui/InlineEdit';
 import type { RiverWalk } from '../../types';
@@ -10,6 +10,7 @@ interface RiverWalkListProps {
   onRestore: (id: string) => void;
   onDelete: (id: string) => void;
   onManageSites: (riverWalk: RiverWalk) => void;
+  onGenerateReport: (riverWalk: RiverWalk) => void;
   showArchived: boolean;
 }
 
@@ -20,6 +21,7 @@ export function RiverWalkList({
   onRestore,
   onDelete,
   onManageSites,
+  onGenerateReport,
   showArchived,
 }: RiverWalkListProps) {
   if (riverWalks.length === 0) {
@@ -113,6 +115,16 @@ export function RiverWalkList({
               <MapPin className="w-5 h-5 mr-2" />
               Sites & Measurements
             </button>
+            
+            {!showArchived && (
+              <button
+                onClick={() => onGenerateReport(riverWalk)}
+                className="bg-accent/10 hover:bg-accent/20 text-accent px-4 py-3 rounded-lg font-medium transition-all duration-200 border border-accent/20 shadow-modern hover:shadow-modern-lg touch-manipulation flex-1 sm:flex-none flex items-center justify-center"
+              >
+                <BarChart3 className="w-5 h-5 mr-2" />
+                Visualize Report
+              </button>
+            )}
             
             {showArchived ? (
               // Archived view: Restore and Delete buttons
