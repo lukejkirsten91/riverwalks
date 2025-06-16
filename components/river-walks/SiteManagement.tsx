@@ -59,7 +59,7 @@ export function SiteManagement({ riverWalk, onClose }: SiteManagementProps) {
     fetchSites(riverWalk.id);
   }, [riverWalk.id]);
 
-  const handleCreateSiteSubmit = async (formData: SiteFormData, photoFile?: File) => {
+  const handleCreateSiteSubmit = async (formData: SiteFormData, photoFile?: File, removePhoto?: boolean) => {
     const nextSiteNumber = sites.length + 1;
     let photoUrl: string | undefined;
 
@@ -110,7 +110,7 @@ export function SiteManagement({ riverWalk, onClose }: SiteManagementProps) {
     setShowSiteForm(false);
   };
 
-  const handleEditSiteSubmit = async (formData: SiteFormData, photoFile?: File) => {
+  const handleEditSiteSubmit = async (formData: SiteFormData, photoFile?: File, removePhoto?: boolean) => {
     if (!editingSite) return;
     
     // Get current user for photo upload
@@ -121,8 +121,26 @@ export function SiteManagement({ riverWalk, onClose }: SiteManagementProps) {
 
     let photoUrl: string | undefined = editingSite.photo_url || undefined;
 
+    // Handle photo removal
+    if (removePhoto) {
+      try {
+        console.log('Removing photo for site:', editingSite.id);
+        // Delete old photo from storage if exists
+        if (editingSite.photo_url) {
+          console.log('Deleting photo from storage:', editingSite.photo_url);
+          await deleteSitePhoto(editingSite.photo_url);
+        }
+        // Set photo URL to null
+        photoUrl = undefined;
+        console.log('Photo removed successfully');
+      } catch (error) {
+        console.error('Error removing photo:', error);
+        setMeasurementsError(`Photo removal failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        // Continue with update even if photo removal fails
+      }
+    } 
     // Handle photo upload/replacement
-    if (photoFile) {
+    else if (photoFile) {
       try {
         console.log('Handling photo upload for existing site:', editingSite.id);
         // Delete old photo if exists

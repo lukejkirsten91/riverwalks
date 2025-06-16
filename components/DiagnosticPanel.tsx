@@ -66,7 +66,7 @@ export function DiagnosticPanel() {
             {/* Database Schema Check */}
             <div className="border rounded p-3">
               <div className="flex items-center gap-2 mb-2">
-                {results.schema.error ? (
+                {results.schema.error || (!results.schema.sitesColumnsOk || !results.schema.riverWalksColumnsOk) ? (
                   <AlertTriangle className="w-4 h-4 text-red-500" />
                 ) : (
                   <CheckCircle className="w-4 h-4 text-green-500" />
@@ -77,9 +77,11 @@ export function DiagnosticPanel() {
                 <p className="text-red-600">{results.schema.error}</p>
               ) : (
                 <div>
-                  <p className="text-green-600">Sites table has {results.schema.sitesColumns.length} columns</p>
                   <p className="text-xs text-gray-600">
-                    Photo URL column: {results.schema.sitesColumns.some((c: any) => c.column_name === 'photo_url') ? '✅' : '❌'}
+                    Sites columns: {results.schema.sitesColumnsOk ? '✅' : '❌'}
+                  </p>
+                  <p className="text-xs text-gray-600">
+                    River walks columns: {results.schema.riverWalksColumnsOk ? '✅' : '❌'}
                   </p>
                 </div>
               )}

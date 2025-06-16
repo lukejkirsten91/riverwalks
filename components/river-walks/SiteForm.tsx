@@ -6,7 +6,7 @@ import type { Site, SiteFormData } from '../../types';
 
 interface SiteFormProps {
   editingSite?: Site | null;
-  onSubmit: (formData: SiteFormData, photoFile?: File) => Promise<void>;
+  onSubmit: (formData: SiteFormData, photoFile?: File, removePhoto?: boolean) => Promise<void>;
   onCancel: () => void;
   loading: boolean;
 }
@@ -27,6 +27,7 @@ export function SiteForm({
 
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(editingSite?.photo_url || null);
+  const [removePhoto, setRemovePhoto] = useState(false);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -38,6 +39,7 @@ export function SiteForm({
 
   const handlePhotoSelect = (file: File) => {
     setPhotoFile(file);
+    setRemovePhoto(false); // Reset remove flag when new photo is selected
     // Create preview URL
     const previewUrl = URL.createObjectURL(file);
     setPhotoPreview(previewUrl);
@@ -46,11 +48,12 @@ export function SiteForm({
   const handlePhotoRemove = () => {
     setPhotoFile(null);
     setPhotoPreview(null);
+    setRemovePhoto(true); // Flag that photo should be removed
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await onSubmit(formData, photoFile || undefined);
+    await onSubmit(formData, photoFile || undefined, removePhoto);
   };
 
   const title = editingSite ? 'Edit Site' : 'Add New Site';

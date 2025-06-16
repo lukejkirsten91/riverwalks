@@ -3,41 +3,32 @@ import { supabase } from '../supabase';
 // Diagnostic functions to help debug setup issues
 
 export async function checkDatabaseSchema(): Promise<{
-  sitesColumns: any[];
-  riverWalksColumns: any[];
+  sitesColumnsOk: boolean;
+  riverWalksColumnsOk: boolean;
   error?: string;
 }> {
   try {
-    // Check sites table columns
-    const { data: sitesColumns, error: sitesError } = await supabase
-      .from('information_schema.columns')
-      .select('column_name, data_type, is_nullable')
-      .eq('table_name', 'sites')
-      .eq('table_schema', 'public');
+    // Test if we can select from sites table with new columns
+    const { data: siteTest, error: siteError } = await supabase
+      .from('sites')
+      .select('id, photo_url, latitude, longitude, notes')
+      .limit(1);
 
-    // Check river_walks table columns  
-    const { data: riverWalksColumns, error: riverWalksError } = await supabase
-      .from('information_schema.columns')
-      .select('column_name, data_type, is_nullable')
-      .eq('table_name', 'river_walks')
-      .eq('table_schema', 'public');
-
-    if (sitesError || riverWalksError) {
-      return {
-        sitesColumns: [],
-        riverWalksColumns: [],
-        error: sitesError?.message || riverWalksError?.message || 'Unknown error'
-      };
-    }
+    // Test if we can select from river_walks table with new columns
+    const { data: riverWalkTest, error: riverWalkError } = await supabase
+      .from('river_walks')
+      .select('id, notes')
+      .limit(1);
 
     return {
-      sitesColumns: sitesColumns || [],
-      riverWalksColumns: riverWalksColumns || []
+      sitesColumnsOk: !siteError,
+      riverWalksColumnsOk: !riverWalkError,
+      error: siteError?.message || riverWalkError?.message
     };
   } catch (error) {
     return {
-      sitesColumns: [],
-      riverWalksColumns: [],
+      sitesColumnsOk: false,
+      riverWalksColumnsOk: false,
       error: error instanceof Error ? error.message : 'Unknown error'
     };
   }
@@ -79,9 +70,20 @@ export async function testPhotoUpload(): Promise<{
   error?: string;
 }> {
   try {
-    // Create a test blob
-    const testBlob = new Blob(['test'], { type: 'text/plain' });
-    const testFile = new File([testBlob], 'test.txt', { type: 'text/plain' });
+    // Create a minimal 1x1 PNG image as test data
+    const pngData = new Uint8Array([
+      0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A,
+      0x00, 0x00, 0x00, 0x0D, 0x49, 0x48, 0x44, 0x52,
+      0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01,
+      0x08, 0x02, 0x00, 0x00, 0x00, 0x90, 0x77, 0x53,
+      0xDE, 0x00, 0x00, 0x00, 0x0C, 0x49, 0x44, 0x41,
+      0x54, 0x08, 0xD7, 0x63, 0xF8, 0x00, 0x00, 0x00,
+      0x00, 0x01, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00,
+      0x00, 0x0A, 0x2D, 0xB4, 0x09, 0x49, 0x45, 0x4E,
+      0x44, 0xAE, 0x42, 0x60, 0x82
+    ]);
+    const testBlob = new Blob([pngData], { type: 'image/png' });
+    const testFile = new File([testBlob], 'test.png', { type: 'image/png' });
 
     // Get current user
     const { data: { session } } = await supabase.auth.getSession();
@@ -93,7 +95,7 @@ export async function testPhotoUpload(): Promise<{
     }
 
     // Try to upload
-    const fileName = `test/${Date.now()}.txt`;
+    const fileName = `test/${Date.now()}.png`;
     const { data, error } = await supabase.storage
       .from('site-photos')
       .upload(fileName, testFile);
