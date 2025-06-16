@@ -11,6 +11,7 @@ import type {
   Site,
   SiteFormData,
   CreateSiteData,
+  UpdateSiteData,
 } from '../../types';
 
 interface SiteManagementProps {
@@ -46,6 +47,7 @@ export function SiteManagement({ riverWalk, onClose }: SiteManagementProps) {
   } = useMeasurements();
 
   const [showSiteForm, setShowSiteForm] = useState(false);
+  const [editingSite, setEditingSite] = useState<Site | null>(null);
   const [editingMeasurements, setEditingMeasurements] = useState<Site | null>(
     null
   );
@@ -55,17 +57,41 @@ export function SiteManagement({ riverWalk, onClose }: SiteManagementProps) {
     fetchSites(riverWalk.id);
   }, [riverWalk.id]);
 
-  const handleCreateSiteSubmit = async (formData: SiteFormData) => {
+  const handleCreateSiteSubmit = async (formData: SiteFormData, photoFile?: File) => {
     const nextSiteNumber = sites.length + 1;
     const newSite: CreateSiteData = {
       river_walk_id: riverWalk.id,
       site_number: nextSiteNumber,
       site_name: formData.site_name,
       river_width: parseFloat(formData.river_width),
+      latitude: formData.latitude ? parseFloat(formData.latitude) : undefined,
+      longitude: formData.longitude ? parseFloat(formData.longitude) : undefined,
+      notes: formData.notes || undefined,
     };
 
     await handleCreateSite(newSite);
+    // TODO: Handle photo upload here when Supabase storage is set up
     setShowSiteForm(false);
+  };
+
+  const handleEditSiteSubmit = async (formData: SiteFormData, photoFile?: File) => {
+    if (!editingSite) return;
+    
+    const updateData: UpdateSiteData = {
+      site_name: formData.site_name,
+      river_width: parseFloat(formData.river_width),
+      latitude: formData.latitude ? parseFloat(formData.latitude) : undefined,
+      longitude: formData.longitude ? parseFloat(formData.longitude) : undefined,
+      notes: formData.notes || undefined,
+    };
+
+    await handleUpdateSite(editingSite.id, updateData, riverWalk.id);
+    // TODO: Handle photo upload here when Supabase storage is set up
+    setEditingSite(null);
+  };
+
+  const handleEditSite = (site: Site) => {
+    setEditingSite(site);
   };
 
   const handleUpdateSiteField = async (id: string, field: 'site_name' | 'river_width', value: string | number) => {
@@ -215,6 +241,13 @@ export function SiteManagement({ riverWalk, onClose }: SiteManagementProps) {
               onSave={handleSaveMeasurements}
               onCancel={handleCancelMeasurements}
             />
+          ) : editingSite ? (
+            <SiteForm
+              editingSite={editingSite}
+              onSubmit={handleEditSiteSubmit}
+              onCancel={() => setEditingSite(null)}
+              loading={loading}
+            />
           ) : showSiteForm ? (
             <SiteForm
               onSubmit={handleCreateSiteSubmit}
@@ -225,6 +258,7 @@ export function SiteManagement({ riverWalk, onClose }: SiteManagementProps) {
             <SiteList
               sites={sites}
               onEditMeasurements={handleEditMeasurements}
+              onEditSite={handleEditSite}
               onUpdateSite={handleUpdateSiteField}
               onDeleteSite={handleDeleteSiteWithConfirm}
               onAddNewSite={() => setShowSiteForm(true)}

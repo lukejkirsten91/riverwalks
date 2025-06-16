@@ -1,4 +1,4 @@
-import { MapPin, Trash2, Plus, Ruler } from 'lucide-react';
+import { MapPin, Trash2, Plus, Ruler, Edit } from 'lucide-react';
 import { InlineEdit } from '../ui/InlineEdit';
 import { InlineNumberEdit } from '../ui/InlineNumberEdit';
 import type { Site } from '../../types';
@@ -6,6 +6,7 @@ import type { Site } from '../../types';
 interface SiteListProps {
   sites: Site[];
   onEditMeasurements: (site: Site) => void;
+  onEditSite: (site: Site) => void;
   onUpdateSite: (id: string, field: 'site_name' | 'river_width', value: string | number) => Promise<void>;
   onDeleteSite: (site: Site) => void;
   onAddNewSite: () => void;
@@ -14,6 +15,7 @@ interface SiteListProps {
 export function SiteList({
   sites,
   onEditMeasurements,
+  onEditSite,
   onUpdateSite,
   onDeleteSite,
   onAddNewSite,
@@ -105,6 +107,13 @@ export function SiteList({
               >
                 <Ruler className="w-4 h-4 mr-2" />
                 Measurements
+              </button>
+              <button
+                onClick={() => onEditSite(site)}
+                className="btn-secondary touch-manipulation"
+              >
+                <Edit className="w-4 h-4 mr-2" />
+                Edit Site
               </button>
               <button
                 onClick={() => onDeleteSite(site)}
