@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { MapPin, Ruler } from 'lucide-react';
 import { NumberInput } from '../ui/NumberInput';
+import { FileUpload } from '../ui/FileUpload';
 import type { Site, SiteFormData } from '../../types';
 
 interface SiteFormProps {
   editingSite?: Site | null;
-  onSubmit: (formData: SiteFormData) => Promise<void>;
+  onSubmit: (formData: SiteFormData, photoFile?: File) => Promise<void>;
   onCancel: () => void;
   loading: boolean;
 }
@@ -24,6 +25,9 @@ export function SiteForm({
     notes: editingSite?.notes || '',
   });
 
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(editingSite?.photo_url || null);
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData({
@@ -32,9 +36,21 @@ export function SiteForm({
     });
   };
 
+  const handlePhotoSelect = (file: File) => {
+    setPhotoFile(file);
+    // Create preview URL
+    const previewUrl = URL.createObjectURL(file);
+    setPhotoPreview(previewUrl);
+  };
+
+  const handlePhotoRemove = () => {
+    setPhotoFile(null);
+    setPhotoPreview(null);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await onSubmit(formData);
+    await onSubmit(formData, photoFile || undefined);
   };
 
   const title = editingSite ? 'Edit Site' : 'Add New Site';
@@ -144,6 +160,23 @@ export function SiteForm({
               GPS longitude coordinate (-180 to 180)
             </p>
           </div>
+        </div>
+
+        {/* Photo Upload */}
+        <div>
+          <label className="block text-foreground mb-3 font-medium">
+            Site Photo 
+            <span className="text-muted-foreground text-sm font-normal ml-2">(Optional)</span>
+          </label>
+          <FileUpload
+            onFileSelect={handlePhotoSelect}
+            onFileRemove={handlePhotoRemove}
+            currentImageUrl={photoPreview}
+            disabled={loading}
+          />
+          <p className="text-muted-foreground text-xs mt-2">
+            Add a photo of this measurement site for reference
+          </p>
         </div>
 
         {/* Notes */}
