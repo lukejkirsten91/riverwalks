@@ -255,9 +255,28 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
         }
       }
 
-      // Save the PDF
+      // Save the PDF with mobile-friendly approach
       const fileName = `${riverWalk.name.replace(/[^a-z0-9]/gi, '_')}_report.pdf`;
-      pdf.save(fileName);
+      
+      // For mobile devices, use a different approach
+      if (/Mobi|Android/i.test(navigator.userAgent)) {
+        const pdfBlob = pdf.output('blob');
+        const url = URL.createObjectURL(pdfBlob);
+        
+        // Create a temporary link for download
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = fileName;
+        link.style.display = 'none';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        // Clean up the URL object
+        setTimeout(() => URL.revokeObjectURL(url), 100);
+      } else {
+        pdf.save(fileName);
+      }
     } catch (error) {
       console.error('Error generating PDF:', error);
       alert('Error generating PDF. Please try again.');
@@ -267,39 +286,41 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-start justify-center p-4 z-50 overflow-y-auto">
-      <div className="bg-white rounded-lg w-full max-w-6xl min-h-[90vh] mt-4 mb-8">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-start justify-center p-2 sm:p-4 z-50 overflow-y-auto">
+      <div className="bg-white rounded-lg w-full max-w-6xl min-h-[95vh] sm:min-h-[90vh] mt-2 sm:mt-4 mb-4 sm:mb-8 overflow-hidden flex flex-col">
         {/* Header with controls */}
-        <div className="sticky top-0 bg-white border-b p-4 sm:p-6 z-10 rounded-t-lg">
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <FileText className="w-6 h-6 text-primary" />
-              <div>
-                <h2 className="text-xl font-bold">River Walk Report</h2>
-                <p className="text-sm text-muted-foreground">{riverWalk.name}</p>
+        <div className="sticky top-0 bg-white border-b p-4 sm:p-6 z-50 rounded-t-lg shadow-sm">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-3 min-w-0 flex-1">
+              <FileText className="w-5 h-5 sm:w-6 sm:h-6 text-primary shrink-0" />
+              <div className="min-w-0 flex-1">
+                <h2 className="text-lg sm:text-xl font-bold truncate">River Walk Report</h2>
+                <p className="text-xs sm:text-sm text-muted-foreground truncate">{riverWalk.name}</p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 shrink-0">
               <button
                 onClick={exportToPDF}
                 disabled={isExporting}
-                className="btn-primary flex items-center gap-2 disabled:opacity-50"
+                className="btn-primary flex items-center gap-2 disabled:opacity-50 text-sm sm:text-base px-3 py-2 sm:px-4 sm:py-3"
               >
                 {isExporting ? (
                   <>
                     <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full"></div>
-                    Generating PDF...
+                    <span className="hidden sm:inline">Generating PDF...</span>
+                    <span className="sm:hidden">PDF...</span>
                   </>
                 ) : (
                   <>
                     <Download className="w-4 h-4" />
-                    Export PDF
+                    <span className="hidden sm:inline">Export PDF</span>
+                    <span className="sm:hidden">PDF</span>
                   </>
                 )}
               </button>
               <button
                 onClick={onClose}
-                className="text-gray-500 hover:text-gray-700 p-2"
+                className="text-gray-500 hover:text-gray-700 p-2 touch-manipulation"
                 aria-label="Close"
               >
                 <X className="w-5 h-5" />
@@ -309,7 +330,8 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
         </div>
 
         {/* Report content */}
-        <div ref={reportRef} className="p-6 sm:p-8 bg-white">
+        <div className="flex-1 overflow-y-auto">
+          <div ref={reportRef} className="p-4 sm:p-6 lg:p-8 bg-white">
           <style>{`
             @media print {
               .page-break-before {
@@ -335,21 +357,21 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
 
             {/* Summary statistics */}
             <div>
-              <h3 className="text-xl font-semibold mb-4 border-b pb-2">Study Summary</h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="bg-blue-50 p-4 rounded-lg">
-                  <h4 className="font-semibold text-blue-800">Total Sites</h4>
-                  <p className="text-2xl font-bold text-blue-600">{sites.length}</p>
+              <h3 className="text-lg sm:text-xl font-semibold mb-4 border-b pb-2">Study Summary</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+                <div className="bg-blue-50 p-3 sm:p-4 rounded-lg">
+                  <h4 className="font-semibold text-blue-800 text-sm sm:text-base">Total Sites</h4>
+                  <p className="text-xl sm:text-2xl font-bold text-blue-600">{sites.length}</p>
                 </div>
-                <div className="bg-green-50 p-4 rounded-lg">
-                  <h4 className="font-semibold text-green-800">Measurements</h4>
-                  <p className="text-2xl font-bold text-green-600">
+                <div className="bg-green-50 p-3 sm:p-4 rounded-lg">
+                  <h4 className="font-semibold text-green-800 text-sm sm:text-base">Measurements</h4>
+                  <p className="text-xl sm:text-2xl font-bold text-green-600">
                     {sites.reduce((total, site) => total + (site.measurement_points?.length || 0), 0)}
                   </p>
                 </div>
-                <div className="bg-purple-50 p-4 rounded-lg">
-                  <h4 className="font-semibold text-purple-800">Avg Width</h4>
-                  <p className="text-2xl font-bold text-purple-600">
+                <div className="bg-purple-50 p-3 sm:p-4 rounded-lg">
+                  <h4 className="font-semibold text-purple-800 text-sm sm:text-base">Avg Width</h4>
+                  <p className="text-xl sm:text-2xl font-bold text-purple-600">
                     {sites.length > 0 
                       ? (sites.reduce((sum, site) => sum + site.river_width, 0) / sites.length).toFixed(1)
                       : '0'
@@ -366,10 +388,10 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
             
             return (
               <div key={site.id} className={`${index > 0 ? 'page-break-before' : ''} mb-8`} data-site-section>
-                <div className="border rounded-lg p-6">
+                <div className="border rounded-lg p-4 sm:p-6">
                   {/* Site header */}
-                  <div className="mb-6">
-                    <h3 className="text-xl font-semibold text-gray-900 mb-4">
+                  <div className="mb-4 sm:mb-6">
+                    <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-3 sm:mb-4">
                       {site.site_name === `Site ${site.site_number}` 
                         ? `Site ${site.site_number}`
                         : `Site ${site.site_number}: ${site.site_name}`
@@ -382,7 +404,7 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
                         <img
                           src={site.photo_url}
                           alt={`Photo of ${site.site_name}`}
-                          className="w-full max-w-md mx-auto h-64 object-cover rounded-lg border shadow-lg"
+                          className="w-full max-w-md mx-auto h-48 sm:h-64 object-cover rounded-lg border shadow-lg"
                         />
                         <p className="text-center text-sm text-gray-500 mt-2">Site photograph</p>
                       </div>
@@ -406,13 +428,13 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
                   {site.measurement_points && site.measurement_points.length > 0 && (
                     <div className="mb-6">
                       <h4 className="font-semibold mb-3">Measurement Data</h4>
-                      <div className="overflow-x-auto">
-                        <table className="w-full border-collapse border border-gray-300 text-sm">
+                      <div className="overflow-x-auto -mx-2 sm:mx-0">
+                        <table className="w-full border-collapse border border-gray-300 text-xs sm:text-sm min-w-full">
                           <thead>
                             <tr className="bg-gray-50">
-                              <th className="border border-gray-300 px-3 py-2 text-left">Point</th>
-                              <th className="border border-gray-300 px-3 py-2 text-left">Distance from Bank (m)</th>
-                              <th className="border border-gray-300 px-3 py-2 text-left">Depth (m)</th>
+                              <th className="border border-gray-300 px-2 sm:px-3 py-2 text-left">Point</th>
+                              <th className="border border-gray-300 px-2 sm:px-3 py-2 text-left">Distance (m)</th>
+                              <th className="border border-gray-300 px-2 sm:px-3 py-2 text-left">Depth (m)</th>
                             </tr>
                           </thead>
                           <tbody>
@@ -420,9 +442,9 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
                               .sort((a, b) => a.point_number - b.point_number)
                               .map((point, idx) => (
                                 <tr key={point.id} className={idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                                  <td className="border border-gray-300 px-3 py-2">{point.point_number}</td>
-                                  <td className="border border-gray-300 px-3 py-2">{point.distance_from_bank.toFixed(1)}</td>
-                                  <td className="border border-gray-300 px-3 py-2">{point.depth.toFixed(1)}</td>
+                                  <td className="border border-gray-300 px-2 sm:px-3 py-2">{point.point_number}</td>
+                                  <td className="border border-gray-300 px-2 sm:px-3 py-2">{point.distance_from_bank.toFixed(1)}</td>
+                                  <td className="border border-gray-300 px-2 sm:px-3 py-2">{point.depth.toFixed(1)}</td>
                                 </tr>
                               ))
                             }
@@ -439,12 +461,32 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
                       <div className="bg-white border rounded-lg p-4">
                         <Plot
                           data={chartData.data as any}
-                          layout={chartData.layout as any}
+                          layout={{
+                            ...chartData.layout,
+                            height: typeof window !== 'undefined' && window.innerWidth < 768 ? 300 : 400,
+                            autosize: true,
+                            responsive: true,
+                            margin: typeof window !== 'undefined' && window.innerWidth < 768 
+                              ? { l: 40, r: 20, t: 40, b: 40 } 
+                              : { l: 60, r: 40, t: 60, b: 60 },
+                          } as any}
                           config={{
                             displayModeBar: false,
                             staticPlot: true,
+                            responsive: true,
+                            toImageButtonOptions: {
+                              format: 'png',
+                              filename: 'river_cross_section',
+                              height: 400,
+                              width: 600,
+                              scale: 1
+                            }
                           }}
-                          style={{ width: '100%', height: '400px' }}
+                          style={{ 
+                            width: '100%', 
+                            height: typeof window !== 'undefined' && window.innerWidth < 768 ? '300px' : '400px' 
+                          }}
+                          useResizeHandler={true}
                         />
                       </div>
                     </div>
@@ -452,14 +494,14 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
 
                   {/* Analysis section */}
                   {site.measurement_points && site.measurement_points.length > 0 && (
-                    <div className="bg-gray-50 p-4 rounded-lg">
-                      <h4 className="font-semibold mb-2">Site Analysis</h4>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                        <div>
+                    <div className="bg-gray-50 p-3 sm:p-4 rounded-lg">
+                      <h4 className="font-semibold mb-2 text-sm sm:text-base">Site Analysis</h4>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 text-xs sm:text-sm">
+                        <div className="space-y-1">
                           <p><strong>Maximum Depth:</strong> {Math.max(...site.measurement_points.map(p => p.depth)).toFixed(1)}m</p>
                           <p><strong>Average Depth:</strong> {(site.measurement_points.reduce((sum, p) => sum + p.depth, 0) / site.measurement_points.length).toFixed(1)}m</p>
                         </div>
-                        <div>
+                        <div className="space-y-1">
                           <p><strong>Measurement Points:</strong> {site.measurement_points.length}</p>
                           <p><strong>Width Coverage:</strong> {((Math.max(...site.measurement_points.map(p => p.distance_from_bank)) / site.river_width) * 100).toFixed(0)}%</p>
                         </div>
@@ -475,6 +517,7 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
           <div className="mt-8 pt-4 border-t text-center text-sm text-gray-500">
             <p>Generated on {new Date().toLocaleDateString()} using Riverwalks GCSE Geography Tool</p>
             <p className="mt-1">This report contains {sites.length} measurement sites with detailed cross-section analysis</p>
+          </div>
           </div>
         </div>
       </div>
