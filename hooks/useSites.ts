@@ -26,11 +26,12 @@ export function useSites() {
     }
   };
 
-  const handleCreateSite = async (siteData: CreateSiteData) => {
+  const handleCreateSite = async (siteData: CreateSiteData): Promise<Site> => {
     try {
       setLoading(true);
-      await createSite(siteData);
+      const createdSite = await createSite(siteData);
       await fetchSites(siteData.river_walk_id);
+      return createdSite;
     } catch (err) {
       setError('Failed to create site');
       console.error(err);

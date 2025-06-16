@@ -1,4 +1,4 @@
-import { MapPin, Trash2, Plus, Ruler, Edit } from 'lucide-react';
+import { MapPin, Trash2, Plus, Ruler, Edit, Camera } from 'lucide-react';
 import { InlineEdit } from '../ui/InlineEdit';
 import { InlineNumberEdit } from '../ui/InlineNumberEdit';
 import type { Site } from '../../types';
@@ -66,9 +66,18 @@ export function SiteList({
           <div className="flex flex-col sm:flex-row sm:justify-between gap-4 mb-4">
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-3 mb-2">
-                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <span className="text-sm font-bold text-primary">{site.site_number}</span>
-                </div>
+                {/* Site photo or number badge */}
+                {site.photo_url ? (
+                  <img
+                    src={site.photo_url}
+                    alt={`${site.site_name} photo`}
+                    className="w-12 h-12 rounded-lg object-cover border border-border shadow-modern"
+                  />
+                ) : (
+                  <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <span className="text-sm font-bold text-primary">{site.site_number}</span>
+                  </div>
+                )}
                 <InlineEdit
                   value={site.site_name}
                   onSave={(value) => onUpdateSite(site.id, 'site_name', value)}
@@ -96,6 +105,14 @@ export function SiteList({
                   <MapPin className="w-4 h-4" />
                   <span>{site.measurement_points?.length || 0} points</span>
                 </div>
+                <button
+                  onClick={() => onEditSite(site)}
+                  className="flex items-center gap-1 text-muted-foreground hover:text-primary transition-colors text-sm touch-manipulation"
+                  title="Upload photo"
+                >
+                  <Camera className="w-4 h-4" />
+                  <span>Photo</span>
+                </button>
               </div>
             </div>
 
@@ -110,7 +127,7 @@ export function SiteList({
               </button>
               <button
                 onClick={() => onEditSite(site)}
-                className="btn-secondary touch-manipulation"
+                className="btn-primary touch-manipulation"
               >
                 <Edit className="w-4 h-4 mr-2" />
                 Edit Site

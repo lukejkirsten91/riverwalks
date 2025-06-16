@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { formatDate } from '../../lib/utils';
 import { updateSite } from '../../lib/api/sites';
+import { uploadSitePhoto, deleteSitePhoto } from '../../lib/api/storage';
 import { SiteForm } from './SiteForm';
 import { SiteList } from './SiteList';
 import { MeasurementEditor } from './MeasurementEditor';
 import { useSites } from '../../hooks/useSites';
 import { useMeasurements } from '../../hooks/useMeasurements';
+import { supabase } from '../../lib/supabase';
 import type {
   RiverWalk,
   Site,
@@ -59,6 +61,14 @@ export function SiteManagement({ riverWalk, onClose }: SiteManagementProps) {
 
   const handleCreateSiteSubmit = async (formData: SiteFormData, photoFile?: File) => {
     const nextSiteNumber = sites.length + 1;
+    let photoUrl: string | undefined;
+
+    // Get current user for photo upload
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      throw new Error('You must be logged in to upload photos');
+    }
+
     const newSite: CreateSiteData = {
       river_walk_id: riverWalk.id,
       site_number: nextSiteNumber,
@@ -69,13 +79,55 @@ export function SiteManagement({ riverWalk, onClose }: SiteManagementProps) {
       notes: formData.notes || undefined,
     };
 
-    await handleCreateSite(newSite);
-    // TODO: Handle photo upload here when Supabase storage is set up
+    // Create the site first to get the ID
+    const createdSite = await handleCreateSite(newSite);
+    
+    // Upload photo if provided
+    if (photoFile && createdSite) {
+      try {
+        photoUrl = await uploadSitePhoto(createdSite.id, photoFile, session.user.id);
+        // Update the site with the photo URL
+        await updateSite(createdSite.id, {
+          site_name: createdSite.site_name,
+          river_width: createdSite.river_width,
+          photo_url: photoUrl,
+        });
+        // Refresh the sites list to show the updated photo
+        await fetchSites(riverWalk.id);
+      } catch (error) {
+        console.error('Error uploading photo:', error);
+        // Site was created successfully, just photo upload failed
+      }
+    }
+    
     setShowSiteForm(false);
   };
 
   const handleEditSiteSubmit = async (formData: SiteFormData, photoFile?: File) => {
     if (!editingSite) return;
+    
+    // Get current user for photo upload
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      throw new Error('You must be logged in to upload photos');
+    }
+
+    let photoUrl: string | undefined = editingSite.photo_url;
+
+    // Handle photo upload/replacement
+    if (photoFile) {
+      try {
+        // Delete old photo if exists
+        if (editingSite.photo_url) {
+          await deleteSitePhoto(editingSite.photo_url);
+        }
+        // Upload new photo
+        photoUrl = await uploadSitePhoto(editingSite.id, photoFile, session.user.id);
+      } catch (error) {
+        console.error('Error handling photo:', error);
+        // Continue with update even if photo operation fails
+      }
+    }
     
     const updateData: UpdateSiteData = {
       site_name: formData.site_name,
@@ -83,10 +135,10 @@ export function SiteManagement({ riverWalk, onClose }: SiteManagementProps) {
       latitude: formData.latitude ? parseFloat(formData.latitude) : undefined,
       longitude: formData.longitude ? parseFloat(formData.longitude) : undefined,
       notes: formData.notes || undefined,
+      photo_url: photoUrl,
     };
 
     await handleUpdateSite(editingSite.id, updateData, riverWalk.id);
-    // TODO: Handle photo upload here when Supabase storage is set up
     setEditingSite(null);
   };
 
