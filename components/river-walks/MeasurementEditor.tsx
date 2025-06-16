@@ -1,4 +1,4 @@
-import { NumberInput } from '../ui/NumberInput';
+import { InlineNumberEdit } from '../ui/InlineNumberEdit';
 import type { Site, MeasurementPointFormData } from '../../types';
 
 interface MeasurementEditorProps {
@@ -39,19 +39,16 @@ export function MeasurementEditor({
       {/* Mobile-first controls */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
         <div>
-          <label 
-            className="block text-gray-700 mb-2 font-medium cursor-pointer hover:text-blue-600 transition-colors"
-            onClick={() => document.getElementById('river-width-input')?.focus()}
-          >
+          <label className="block text-gray-700 mb-2 font-medium">
             River Width (meters)
           </label>
-          <NumberInput
-            id="river-width-input"
+          <InlineNumberEdit
             value={currentRiverWidth}
-            onChange={(value) => onRiverWidthChange(parseFloat(value) || 0)}
-            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base"
-            step={0.1}
+            onSave={(value) => onRiverWidthChange(value)}
+            suffix="m"
             min={0.1}
+            decimals={1}
+            className="text-base font-medium"
           />
           <p className="text-xs text-gray-500 mt-1">
             Distances will auto-update when changed
@@ -62,13 +59,13 @@ export function MeasurementEditor({
           <label className="block text-gray-700 mb-2 font-medium">
             Number of Measurement Points
           </label>
-          <NumberInput
+          <InlineNumberEdit
             value={numMeasurements}
-            onChange={(value) => onNumMeasurementsChange(parseInt(value) || 3)}
-            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base"
+            onSave={(value) => onNumMeasurementsChange(Math.round(value))}
             min={2}
             max={20}
-            step={1}
+            decimals={0}
+            className="text-base font-medium"
           />
           <p className="text-xs text-gray-500 mt-1">
             Distances will auto-space evenly
@@ -83,23 +80,20 @@ export function MeasurementEditor({
           </h4>
           <div className="space-y-3">
             {measurementData.map((point, index) => (
-              <div key={index}>
-                <label 
-                  className="block text-sm text-gray-600 mb-1 cursor-pointer hover:text-blue-600 transition-colors"
-                  onClick={() => document.getElementById(`distance-${index}`)?.focus()}
-                >
+              <div key={index} className="flex items-center gap-3">
+                <label className="text-sm text-gray-600 min-w-[60px]">
                   Point {index + 1}:
                 </label>
-                <NumberInput
-                  id={`distance-${index}`}
-                  value={point.distance_from_bank}
-                  onChange={(value) =>
-                    onMeasurementChange(index, 'distance_from_bank', value)
+                <InlineNumberEdit
+                  value={parseFloat(point.distance_from_bank) || 0}
+                  onSave={(value) =>
+                    onMeasurementChange(index, 'distance_from_bank', value.toString())
                   }
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base"
-                  step={0.1}
+                  suffix="m"
                   min={0}
                   max={currentRiverWidth}
+                  decimals={1}
+                  className="flex-1"
                 />
               </div>
             ))}
@@ -110,23 +104,20 @@ export function MeasurementEditor({
           <h4 className="font-medium text-gray-700 mb-2">Depth (m)</h4>
           <div className="space-y-3">
             {measurementData.map((point, index) => (
-              <div key={index}>
-                <label 
-                  className="block text-sm text-gray-600 mb-1 cursor-pointer hover:text-blue-600 transition-colors"
-                  onClick={() => document.getElementById(`depth-${index}`)?.focus()}
-                >
+              <div key={index} className="flex items-center gap-3">
+                <label className="text-sm text-gray-600 min-w-[60px]">
                   Point {index + 1}:
                 </label>
-                <NumberInput
-                  id={`depth-${index}`}
-                  value={point.depth}
-                  onChange={(value) =>
-                    onMeasurementChange(index, 'depth', value)
+                <InlineNumberEdit
+                  value={parseFloat(point.depth) || 0}
+                  onSave={(value) =>
+                    onMeasurementChange(index, 'depth', value.toString())
                   }
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base"
-                  step={0.1}
+                  suffix="m"
                   min={0}
                   max={10}
+                  decimals={1}
+                  className="flex-1"
                 />
               </div>
             ))}
