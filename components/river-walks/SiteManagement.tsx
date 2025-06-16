@@ -119,7 +119,7 @@ export function SiteManagement({ riverWalk, onClose }: SiteManagementProps) {
       throw new Error('You must be logged in to upload photos');
     }
 
-    let photoUrl: string | undefined = editingSite.photo_url || undefined;
+    let photoUrl: string | null | undefined = editingSite.photo_url || undefined;
 
     // Handle photo removal
     if (removePhoto) {
@@ -131,7 +131,7 @@ export function SiteManagement({ riverWalk, onClose }: SiteManagementProps) {
           await deleteSitePhoto(editingSite.photo_url);
         }
         // Set photo URL to null
-        photoUrl = undefined;
+        photoUrl = null;
         console.log('Photo removed successfully');
       } catch (error) {
         console.error('Error removing photo:', error);
@@ -168,7 +168,9 @@ export function SiteManagement({ riverWalk, onClose }: SiteManagementProps) {
       photo_url: photoUrl,
     };
 
+    console.log('Updating site with data:', updateData);
     await handleUpdateSite(editingSite.id, updateData, riverWalk.id);
+    console.log('Site update completed, closing edit form');
     setEditingSite(null);
   };
 

@@ -69,7 +69,7 @@ export interface UpdateSiteData {
   river_width: number;
   latitude?: number;
   longitude?: number;
-  photo_url?: string;
+  photo_url?: string | null;
   notes?: string;
 }
 
