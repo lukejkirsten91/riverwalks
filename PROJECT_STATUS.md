@@ -7,7 +7,7 @@ Riverwalks is a web application designed primarily for GCSE Geography students t
 ## 🚀 Live Application
 
 - **Production URL**: https://riverwalks.vercel.app
-- **Current Status**: ✅ Navigation Optimization + Inline Editing System + Modern Design System + UI/UX Refinements + River Walk CRUD + Phase 1 Sites Management Complete
+- **Current Status**: ✅ Navigation Optimization + Inline Editing System + Modern Design System + UI/UX Refinements + River Walk CRUD + Phase 1 Sites Management + Archive System + Complete Inline Editing Implementation
 
 ## 🏗️ Technical Stack
 
@@ -121,10 +121,23 @@ Riverwalks is a web application designed primarily for GCSE Geography students t
 - **Interface Simplification**: Removed "Edit Details" and "Edit" buttons throughout the application
 - **River Walk Editing**: Inline editing for names, dates, countries, and counties
 - **Site Management**: Click-to-edit site names and river widths with proper validation
+- **Measurement Point Editing**: Complete inline editing for river width, distance, and depth measurements
 - **Number Field Validation**: Constraints, decimal precision, and unit suffixes (e.g., "3.5m")
 - **Error Handling**: Graceful fallbacks, loading states, and data preservation
 - **Mobile Optimization**: Touch-friendly controls with responsive design maintained
 - **Professional UX**: Reduced cognitive load and faster editing workflow for users
+
+### ✅ Archive System (COMPLETED)
+
+- **Microsoft To-Do Style Archive**: Soft delete functionality with archive/restore capability
+- **Toggle Interface**: Switch between active and archived river walks with count display
+- **Archive Button**: Replace delete with archive for non-destructive removal
+- **Restore Functionality**: Easily restore archived items back to active state
+- **Permanent Delete**: Option to permanently delete archived items only
+- **Database Migration**: Added archived boolean field with proper indexing
+- **Read-Only Archived Items**: Disable editing for archived river walks to prevent confusion
+- **Visual Indicators**: Clear distinction between active and archived states
+- **Improved User Safety**: Prevents accidental data loss with reversible archiving
 
 ## 🗄️ Database Schema
 
@@ -139,7 +152,8 @@ CREATE TABLE river_walks (
   date DATE NOT NULL,
   country TEXT NOT NULL DEFAULT 'UK',
   county TEXT,
-  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  archived BOOLEAN DEFAULT FALSE
 );
 ```
 
@@ -236,6 +250,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 2. **Database**:
    - Run `supabase/cleanup.sql` to create river_walks table and RLS policies
    - Run `supabase/sites-schema.sql` to create sites and measurement_points tables
+   - Run `supabase/add-archive-field.sql` to add archive functionality
 3. **Authentication**: Users table automatically managed by Supabase Auth
 
 ### Google Cloud Console
@@ -693,6 +708,6 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 
 ---
 
-_Last Updated: June 15, 2025_
-_Status: ✅ Navigation Optimization + Inline Editing System + Modern Design System + UI/UX Refinements + Mobile-First Responsive Design + Component Modularization + TypeScript Migration + Phase 1 Sites Foundation_
+_Last Updated: June 16, 2025_
+_Status: ✅ Navigation Optimization + Complete Inline Editing System + Modern Design System + UI/UX Refinements + Mobile-First Responsive Design + Component Modularization + TypeScript Migration + Phase 1 Sites Foundation + Archive System_
 _Next Phase: 2D Visualization (Phase 2)_
