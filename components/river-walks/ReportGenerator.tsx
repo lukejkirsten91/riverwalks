@@ -36,7 +36,22 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
       .sort((a, b) => a.point_number - b.point_number)
       .map(point => -point.depth); // Negative for downward direction
 
+    // Find the minimum depth to determine how deep to fill the brown area
+    const minDepth = Math.min(...depths);
+    const brownFillDepth = minDepth - 0.5; // Extend brown fill below the deepest point
+
     const data = [
+      // Brown underground area (full width)
+      {
+        x: [-0.5, site.river_width + 0.5, site.river_width + 0.5, -0.5, -0.5],
+        y: [brownFillDepth, brownFillDepth, 0, 0, brownFillDepth],
+        mode: 'lines',
+        fill: 'toself',
+        line: { color: 'brown', width: 0 },
+        fillcolor: 'peru',
+        name: 'Underground',
+        showlegend: false,
+      },
       // Left bank
       {
         x: [-0.5, 0],
@@ -94,10 +109,10 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
         font: { size: 10 },
       }));
 
-    // Add width label annotation
+    // Add width label annotation (positioned higher to avoid overlap)
     annotations.push({
       x: site.river_width / 2,
-      y: 0.3,
+      y: 0.4,
       text: `${site.river_width}m`,
       showarrow: false,
       yshift: 0,
@@ -171,41 +186,77 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
     setIsExporting(true);
 
     try {
-      // Wait a bit for any dynamic content to render
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Wait for charts to render fully
+      await new Promise(resolve => setTimeout(resolve, 2000));
 
-      const canvas = await html2canvas(reportRef.current, {
-        scale: 2,
-        useCORS: true,
-        allowTaint: true,
-        height: reportRef.current.scrollHeight,
-        width: reportRef.current.scrollWidth,
-      });
-
-      const imgData = canvas.toDataURL('image/png');
+      // Capture individual sections for better page control
       const pdf = new jsPDF({
         orientation: 'portrait',
         unit: 'mm',
         format: 'a4',
       });
 
-      const imgWidth = 210; // A4 width in mm
+      const pageWidth = 210; // A4 width in mm
       const pageHeight = 295; // A4 height in mm
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      let heightLeft = imgHeight;
+      let isFirstPage = true;
 
-      let position = 0;
+      // Get the header section
+      const headerElement = reportRef.current.querySelector('.text-center') as HTMLElement;
+      if (headerElement) {
+        const headerCanvas = await html2canvas(headerElement, {
+          scale: 2,
+          useCORS: true,
+          allowTaint: true,
+        });
+        
+        const headerImgData = headerCanvas.toDataURL('image/png');
+        const headerHeight = (headerCanvas.height * pageWidth) / headerCanvas.width;
+        
+        pdf.addImage(headerImgData, 'PNG', 0, 10, pageWidth, headerHeight);
+      }
 
-      // Add first page
-      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-      heightLeft -= pageHeight;
+      // Get each site section and add as separate pages
+      const siteElements = reportRef.current.querySelectorAll('[data-site-section]');
+      
+      for (let i = 0; i < siteElements.length; i++) {
+        const siteElement = siteElements[i] as HTMLElement;
+        
+        if (!isFirstPage) {
+          pdf.addPage();
+        } else {
+          isFirstPage = false;
+        }
 
-      // Add additional pages if needed
-      while (heightLeft >= 0) {
-        position = heightLeft - imgHeight;
-        pdf.addPage();
-        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-        heightLeft -= pageHeight;
+        const siteCanvas = await html2canvas(siteElement, {
+          scale: 2,
+          useCORS: true,
+          allowTaint: true,
+        });
+
+        const siteImgData = siteCanvas.toDataURL('image/png');
+        const siteImgHeight = (siteCanvas.height * pageWidth) / siteCanvas.width;
+        
+        // If site content is too tall for one page, split it
+        if (siteImgHeight > pageHeight - 20) {
+          let yPosition = 10;
+          let remainingHeight = siteImgHeight;
+          
+          while (remainingHeight > 0) {
+            const currentPageHeight = Math.min(remainingHeight, pageHeight - 20);
+            const sourceY = (siteImgHeight - remainingHeight) * siteCanvas.height / siteImgHeight;
+            
+            pdf.addImage(siteImgData, 'PNG', 0, yPosition, pageWidth, currentPageHeight);
+            
+            remainingHeight -= currentPageHeight;
+            
+            if (remainingHeight > 0) {
+              pdf.addPage();
+              yPosition = 10;
+            }
+          }
+        } else {
+          pdf.addImage(siteImgData, 'PNG', 0, 10, pageWidth, siteImgHeight);
+        }
       }
 
       // Save the PDF
@@ -254,6 +305,14 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
 
         {/* Report content */}
         <div ref={reportRef} className="p-6 sm:p-8 bg-white">
+          <style>{`
+            @media print {
+              .page-break-before {
+                page-break-before: always;
+                break-before: page;
+              }
+            }
+          `}</style>
           {/* Report header */}
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold text-gray-900 mb-2">
@@ -298,7 +357,7 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
             const chartData = generateCrossSectionData(site);
             
             return (
-              <div key={site.id} className="mb-8 break-inside-avoid">
+              <div key={site.id} className={`${index > 0 ? 'page-break-before' : ''} mb-8`} data-site-section>
                 <div className="border rounded-lg p-6">
                   {/* Site header */}
                   <div className="mb-6">
