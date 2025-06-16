@@ -73,15 +73,31 @@ export function SiteList({
                       src={site.photo_url}
                       alt={`${site.site_name} photo`}
                       className="w-12 h-12 rounded-lg object-cover border border-border shadow-modern cursor-pointer"
-                      onClick={() => onEditSite(site)}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        console.log('Photo clicked for site:', site.id, site.site_name);
+                        onEditSite(site);
+                      }}
+                      onError={(e) => {
+                        console.error('Image failed to load:', site.photo_url);
+                        e.currentTarget.style.display = 'none';
+                      }}
                     />
-                    <div className="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
+                    <div 
+                      className="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center pointer-events-none"
+                    >
                       <span className="text-white text-xs">Edit</span>
                     </div>
                   </div>
                 ) : (
                   <button
-                    onClick={() => onEditSite(site)}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      console.log('Camera emoji clicked for site:', site.id, site.site_name);
+                      onEditSite(site);
+                    }}
                     className="w-12 h-12 rounded-lg bg-muted/50 hover:bg-primary/10 border border-border hover:border-primary/30 flex items-center justify-center transition-all duration-200 shadow-modern hover:shadow-modern-lg"
                     title="Add photo"
                   >
