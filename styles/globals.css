@@ -4,37 +4,39 @@
 
 @layer base {
   :root {
-    /* Modern blue-slate color scheme */
+    /* Nature-inspired brand color scheme */
+    /* Based on logo colors: 98CCDC, FCF0C1, 1A625D, 4F9F6B, 7CB455, 70B8CF */
+    
     --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --foreground: 181 56% 24%; /* #1A625D - Dark teal for text */
 
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 181 56% 24%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 181 56% 24%;
 
-    /* Primary: Modern blue */
-    --primary: 221.2 83.2% 53.3%;
-    --primary-foreground: 210 40% 98%;
+    /* Primary: Sky blue from logo */
+    --primary: 196 52% 70%; /* #70B8CF - Sky blue */
+    --primary-foreground: 0 0% 100%;
 
-    /* Secondary: Soft slate */
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    /* Secondary: Light blue from logo */
+    --secondary: 194 47% 71%; /* #98CCDC - Light blue */
+    --secondary-foreground: 181 56% 24%;
 
-    /* Muted: Cool gray */
-    --muted: 220 14.3% 95.9%;
-    --muted-foreground: 220 8.9% 46.1%;
+    /* Muted: Cream from logo */
+    --muted: 51 77% 88%; /* #FCF0C1 - Cream */
+    --muted-foreground: 181 56% 24%;
 
-    /* Accent: Teal accent */
-    --accent: 180 83% 55%;
-    --accent-foreground: 210 40% 98%;
+    /* Accent: Medium green from logo */
+    --accent: 149 34% 47%; /* #4F9F6B - Medium green */
+    --accent-foreground: 0 0% 100%;
 
-    /* Success: Modern green */
-    --success: 142.1 76.2% 36.3%;
-    --success-foreground: 210 40% 98%;
+    /* Success: Light green from logo */
+    --success: 86 46% 57%; /* #7CB455 - Light green */
+    --success-foreground: 0 0% 100%;
 
-    /* Warning: Warm amber */
+    /* Warning: Warm amber (keeping original as it works well) */
     --warning: 47.9 95.8% 53.1%;
     --warning-foreground: 26 83.3% 14.1%;
 
@@ -42,9 +44,9 @@
     --destructive-foreground: 210 40% 98%;
 
     /* Borders and inputs */
-    --border: 220 13% 91%;
-    --input: 220 13% 91%;
-    --ring: 221.2 83.2% 53.3%;
+    --border: 194 47% 85%; /* Lighter version of secondary */
+    --input: 194 47% 85%;
+    --ring: 196 52% 70%; /* Primary color */
 
     --radius: 0.75rem;
   }

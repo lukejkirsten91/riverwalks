@@ -9,6 +9,7 @@ export interface RiverWalk {
   county: string | null;
   user_id: string;
   archived: boolean;
+  notes: string | null;
 }
 
 export interface Site {
@@ -17,6 +18,10 @@ export interface Site {
   site_number: number;
   site_name: string;
   river_width: number;
+  latitude: number | null;
+  longitude: number | null;
+  photo_url: string | null;
+  notes: string | null;
   created_at: string;
   updated_at: string;
   measurement_points?: MeasurementPoint[];
@@ -37,11 +42,15 @@ export interface RiverWalkFormData {
   date: string;
   country: string;
   county: string;
+  notes?: string;
 }
 
 export interface SiteFormData {
   site_name: string;
   river_width: string;
+  latitude?: string;
+  longitude?: string;
+  notes?: string;
 }
 
 export interface CreateSiteData {
@@ -49,11 +58,28 @@ export interface CreateSiteData {
   site_number: number;
   site_name: string;
   river_width: number;
+  latitude?: number;
+  longitude?: number;
+  notes?: string;
 }
 
 export interface UpdateSiteData {
   site_name: string;
   river_width: number;
+  latitude?: number;
+  longitude?: number;
+  notes?: string;
+}
+
+// Photo-related types
+export interface SitePhoto {
+  id: string;
+  site_id: string;
+  photo_url: string;
+  filename: string | null;
+  file_size: number | null;
+  content_type: string | null;
+  uploaded_at: string;
 }
 
 export interface CreateMeasurementPointData {
