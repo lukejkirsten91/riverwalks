@@ -93,6 +93,7 @@ export function EnhancedSiteForm({
     }
   }, [numMeasurements, riverWidth, editingSite]);
 
+
   // Initialize sedimentation data
   useEffect(() => {
     if (editingSite?.sedimentation_data?.measurements) {
@@ -139,14 +140,19 @@ export function EnhancedSiteForm({
   };
 
   const handleRiverWidthChange = (width: number) => {
+    console.log('River width changing from', riverWidth, 'to', width);
     setRiverWidth(width);
     
-    // Auto-update measurement distances
-    const newMeasurements = measurementData.map((measurement, index) => ({
-      ...measurement,
-      distance_from_bank: (index * width) / (measurementData.length - 1),
-    }));
-    setMeasurementData(newMeasurements);
+    // Auto-update measurement distances based on current number of measurements
+    const currentNumMeasurements = measurementData.length;
+    if (currentNumMeasurements > 0) {
+      const newMeasurements = measurementData.map((measurement, index) => ({
+        ...measurement,
+        distance_from_bank: currentNumMeasurements === 1 ? 0 : (index * width) / (currentNumMeasurements - 1),
+      }));
+      console.log('Updating measurement distances:', newMeasurements);
+      setMeasurementData(newMeasurements);
+    }
   };
 
   const handleSitePhotoSelect = (file: File) => {
