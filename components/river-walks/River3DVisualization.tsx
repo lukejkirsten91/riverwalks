@@ -247,7 +247,7 @@ export function River3DVisualization({ sites, height = 600, title = "3D River Pr
       height: height,
       margin: { l: 0, r: 0, b: 0, t: 40 },
       showlegend: false,
-      hovermode: 'closest'
+      hovermode: 'closest' as const
     };
 
     return { data: traces, layout };
