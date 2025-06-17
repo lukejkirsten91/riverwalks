@@ -219,21 +219,21 @@ export function River3DVisualization({ sites, height = 600, title = "3D River Pr
       },
       scene: {
         xaxis: {
-          title: 'Width (m)',
+          title: { text: 'Width (m)' },
           showgrid: true,
           gridcolor: 'lightgray',
           range: [-bankExtension * 0.2, maxWidth + bankExtension + 1]
         },
         yaxis: {
-          title: 'River Sites',
+          title: { text: 'River Sites' },
           showgrid: true,
           gridcolor: 'lightgray',
-          tickmode: 'array',
+          tickmode: 'array' as const,
           tickvals: validSites.map((_, i) => i),
           ticktext: validSites.map((site, i) => `Site ${i + 1}`)
         },
         zaxis: {
-          title: 'Elevation (m)',
+          title: { text: 'Elevation (m)' },
           showgrid: true,
           gridcolor: 'lightgray',
           range: [zMin * 1.1, Math.max(bankHeight + 0.2, zMax * 1.1)]
