@@ -135,24 +135,48 @@ export function EnhancedSiteForm({
     setSedimentationMeasurements(newData);
   };
 
+  // Generate evenly spaced distances based on river width and number of measurements
+  const generateEvenlySpacedDistances = (riverWidth: number, numPoints: number): number[] => {
+    const distances: number[] = [];
+    for (let i = 0; i < numPoints; i++) {
+      distances.push(
+        numPoints === 1 ? riverWidth / 2 : (riverWidth / (numPoints - 1)) * i
+      );
+    }
+    return distances;
+  };
+
   const handleNumMeasurementsChange = (num: number) => {
+    console.log('Number of measurements changing from', numMeasurements, 'to', num);
     setNumMeasurements(num);
+
+    // Generate new evenly spaced distances
+    const newDistances = generateEvenlySpacedDistances(riverWidth, num);
+
+    // Create new measurement data array, preserving depths where possible
+    const newMeasurementData: MeasurementPointFormData[] = [];
+    for (let i = 0; i < num; i++) {
+      newMeasurementData.push({
+        distance_from_bank: newDistances[i],
+        depth: i < measurementData.length ? measurementData[i].depth : 0,
+      });
+    }
+    console.log('New measurement data:', newMeasurementData);
+    setMeasurementData(newMeasurementData);
   };
 
   const handleRiverWidthChange = (width: number) => {
     console.log('River width changing from', riverWidth, 'to', width);
     setRiverWidth(width);
-    
-    // Auto-update measurement distances based on current number of measurements
-    const currentNumMeasurements = measurementData.length;
-    if (currentNumMeasurements > 0) {
-      const newMeasurements = measurementData.map((measurement, index) => ({
-        ...measurement,
-        distance_from_bank: currentNumMeasurements === 1 ? 0 : (index * width) / (currentNumMeasurements - 1),
-      }));
-      console.log('Updating measurement distances:', newMeasurements);
-      setMeasurementData(newMeasurements);
-    }
+
+    // Update distances but preserve depths using the same logic as the original
+    const newDistances = generateEvenlySpacedDistances(width, numMeasurements);
+    const newMeasurementData = measurementData.map((point, index) => ({
+      distance_from_bank: newDistances[index] || 0,
+      depth: point.depth,
+    }));
+    console.log('Updating measurement distances:', newMeasurementData);
+    setMeasurementData(newMeasurementData);
   };
 
   const handleSitePhotoSelect = (file: File) => {
