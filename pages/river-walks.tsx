@@ -6,7 +6,7 @@ import { LogOut, MapPin, User as UserIcon } from 'lucide-react';
 import {
   RiverWalkForm,
   RiverWalkList,
-  SiteManagement,
+  EnhancedSiteManagement,
 } from '../components/river-walks';
 import { ReportGenerator } from '../components/river-walks/ReportGenerator';
 import { DiagnosticPanel } from '../components/DiagnosticPanel';
@@ -301,7 +301,7 @@ export default function RiverWalksPage() {
 
         {/* Site management modal */}
         {selectedRiverWalk && (
-          <SiteManagement
+          <EnhancedSiteManagement
             riverWalk={selectedRiverWalk}
             onClose={handleCloseSiteManagement}
           />

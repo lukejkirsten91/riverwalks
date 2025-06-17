@@ -7,7 +7,8 @@ const BUCKET_NAME = 'site-photos';
 export async function uploadSitePhoto(
   siteId: string,
   file: File,
-  userId: string
+  userId: string,
+  photoType: 'site' | 'sedimentation' = 'site'
 ): Promise<string> {
   try {
     console.log('Starting photo upload for site:', siteId);
@@ -27,7 +28,8 @@ export async function uploadSitePhoto(
     
     // Create a unique filename
     const fileExt = file.name.split('.').pop();
-    const fileName = `${userId}/${siteId}-${Date.now()}.${fileExt}`;
+    const prefix = photoType === 'sedimentation' ? 'sed' : 'site';
+    const fileName = `${userId}/${siteId}-${prefix}-${Date.now()}.${fileExt}`;
     console.log('Generated filename:', fileName);
 
     // Upload the file

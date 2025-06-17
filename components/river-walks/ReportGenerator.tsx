@@ -5,7 +5,6 @@ import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { formatDate } from '../../lib/utils';
 import type { RiverWalk, Site, MeasurementPoint } from '../../types';
-import { River3DVisualization } from './River3DVisualization';
 
 // Dynamically import Plotly to avoid SSR issues
 const Plot = dynamic(() => import('react-plotly.js'), { 
@@ -385,23 +384,6 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
             </div>
           </div>
 
-          {/* 3D River Profile Visualization */}
-          {sites.length > 1 && (
-            <div className="mb-8">
-              <h3 className="text-lg sm:text-xl font-semibold mb-4 border-b pb-2">3D River Profile</h3>
-              <div className="bg-white border rounded-lg p-4">
-                <River3DVisualization 
-                  sites={sites} 
-                  height={500}
-                  title={`3D Profile: ${riverWalk.name}`}
-                />
-              </div>
-              <p className="text-sm text-gray-600 mt-2 text-center">
-                Interactive 3D visualization showing the river profile across all measurement sites. 
-                Blue areas represent water (below 0m), brown areas represent banks and land (above 0m).
-              </p>
-            </div>
-          )}
 
           {/* Sites and measurements */}
           {sites.map((site, index) => {
@@ -434,12 +416,14 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
                     {/* Site details */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-600">
                       <div>
-                        <p><strong>River Width:</strong> {site.river_width}m</p>
+                        <p><strong>River Width:</strong> {site.river_width}{site.units || 'm'}</p>
                         {site.latitude && site.longitude && (
                           <p><strong>Coordinates:</strong> {site.latitude.toFixed(6)}, {site.longitude.toFixed(6)}</p>
                         )}
+                        {site.weather_conditions && <p><strong>Weather:</strong> {site.weather_conditions}</p>}
                       </div>
                       <div>
+                        {site.land_use && <p><strong>Land Use:</strong> {site.land_use}</p>}
                         {site.notes && <p><strong>Notes:</strong> {site.notes}</p>}
                       </div>
                     </div>
@@ -464,8 +448,8 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
                               .map((point, idx) => (
                                 <tr key={point.id} className={idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
                                   <td className="border border-gray-300 px-2 sm:px-3 py-2">{point.point_number}</td>
-                                  <td className="border border-gray-300 px-2 sm:px-3 py-2">{point.distance_from_bank.toFixed(1)}</td>
-                                  <td className="border border-gray-300 px-2 sm:px-3 py-2">{point.depth.toFixed(1)}</td>
+                                  <td className="border border-gray-300 px-2 sm:px-3 py-2">{point.distance_from_bank.toFixed(2)}</td>
+                                  <td className="border border-gray-300 px-2 sm:px-3 py-2">{point.depth.toFixed(2)}</td>
                                 </tr>
                               ))
                             }
@@ -526,6 +510,47 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
                           <p><strong>Measurement Points:</strong> {site.measurement_points.length}</p>
                           <p><strong>Width Coverage:</strong> {((Math.max(...site.measurement_points.map(p => p.distance_from_bank)) / site.river_width) * 100).toFixed(0)}%</p>
                         </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Sedimentation section */}
+                  {site.sedimentation_data && site.sedimentation_data.measurements && site.sedimentation_data.measurements.length > 0 && (
+                    <div className="mt-6">
+                      <h4 className="font-semibold mb-3">Sedimentation Analysis</h4>
+                      
+                      {/* Sedimentation photo */}
+                      {site.sedimentation_photo_url && (
+                        <div className="mb-4">
+                          <img
+                            src={site.sedimentation_photo_url}
+                            alt={`Sedimentation at ${site.site_name}`}
+                            className="w-full max-w-sm mx-auto h-32 sm:h-48 object-cover rounded-lg border shadow-md"
+                          />
+                          <p className="text-center text-sm text-gray-500 mt-2">Sedimentation photograph</p>
+                        </div>
+                      )}
+
+                      {/* Sedimentation data table */}
+                      <div className="overflow-x-auto -mx-2 sm:mx-0">
+                        <table className="w-full border-collapse border border-gray-300 text-xs sm:text-sm min-w-full">
+                          <thead>
+                            <tr className="bg-amber-50">
+                              <th className="border border-gray-300 px-2 sm:px-3 py-2 text-left">Measurement</th>
+                              <th className="border border-gray-300 px-2 sm:px-3 py-2 text-left">Sediment Size ({site.units || 'm'})</th>
+                              <th className="border border-gray-300 px-2 sm:px-3 py-2 text-left">Roundness</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {site.sedimentation_data.measurements.map((measurement, idx) => (
+                              <tr key={idx} className={idx % 2 === 0 ? 'bg-white' : 'bg-amber-50'}>
+                                <td className="border border-gray-300 px-2 sm:px-3 py-2">{idx + 1}</td>
+                                <td className="border border-gray-300 px-2 sm:px-3 py-2">{measurement.sediment_size}</td>
+                                <td className="border border-gray-300 px-2 sm:px-3 py-2 capitalize">{measurement.sediment_roundness.replace('-', ' ')}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
                       </div>
                     </div>
                   )}

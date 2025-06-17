@@ -22,6 +22,11 @@ export interface Site {
   longitude: number | null;
   photo_url: string | null;
   notes: string | null;
+  weather_conditions: string | null;
+  land_use: string | null;
+  units: 'm' | 'cm' | 'mm' | 'ft';
+  sedimentation_photo_url: string | null;
+  sedimentation_data: SedimentationData | null;
   created_at: string;
   updated_at: string;
   measurement_points?: MeasurementPoint[];
@@ -51,6 +56,19 @@ export interface SiteFormData {
   latitude?: string;
   longitude?: string;
   notes?: string;
+  weather_conditions?: string;
+  land_use?: string;
+  units?: 'm' | 'cm' | 'mm' | 'ft';
+}
+
+export interface SedimentationMeasurement {
+  sediment_size: string;
+  sediment_roundness: 'angular' | 'sub-angular' | 'sub-rounded' | 'rounded' | 'well-rounded';
+}
+
+export interface SedimentationData {
+  photo_url?: string | null;
+  measurements: SedimentationMeasurement[];
 }
 
 export interface CreateSiteData {
@@ -62,6 +80,11 @@ export interface CreateSiteData {
   longitude?: number;
   photo_url?: string;
   notes?: string;
+  weather_conditions?: string;
+  land_use?: string;
+  units?: 'm' | 'cm' | 'mm' | 'ft';
+  sedimentation_photo_url?: string;
+  sedimentation_data?: SedimentationData;
 }
 
 export interface UpdateSiteData {
@@ -71,6 +94,11 @@ export interface UpdateSiteData {
   longitude?: number;
   photo_url?: string | null;
   notes?: string;
+  weather_conditions?: string;
+  land_use?: string;
+  units?: 'm' | 'cm' | 'mm' | 'ft';
+  sedimentation_photo_url?: string | null;
+  sedimentation_data?: SedimentationData | null;
 }
 
 // Photo-related types
