@@ -73,10 +73,14 @@ export function SiteManagement({ riverWalk, onClose }: SiteManagementProps) {
       river_walk_id: riverWalk.id,
       site_number: nextSiteNumber,
       site_name: formData.site_name,
-      river_width: parseFloat(formData.river_width),
+      river_width: parseFloat((formData as any).river_width || '10'),
       latitude: formData.latitude ? parseFloat(formData.latitude) : undefined,
       longitude: formData.longitude ? parseFloat(formData.longitude) : undefined,
       notes: formData.notes || undefined,
+      weather_conditions: formData.weather_conditions,
+      land_use: formData.land_use,
+      depth_units: formData.depth_units || 'm',
+      sedimentation_units: formData.sedimentation_units || 'mm',
     };
 
     // Create the site first to get the ID
@@ -166,10 +170,14 @@ export function SiteManagement({ riverWalk, onClose }: SiteManagementProps) {
     
     const updateData: UpdateSiteData = {
       site_name: formData.site_name,
-      river_width: parseFloat(formData.river_width),
+      river_width: parseFloat((formData as any).river_width || editingSite.river_width.toString()),
       latitude: formData.latitude ? parseFloat(formData.latitude) : undefined,
       longitude: formData.longitude ? parseFloat(formData.longitude) : undefined,
       notes: formData.notes || undefined,
+      weather_conditions: formData.weather_conditions,
+      land_use: formData.land_use,
+      depth_units: formData.depth_units || 'm',
+      sedimentation_units: formData.sedimentation_units || 'mm',
       photo_url: photoUrl,
     };
 

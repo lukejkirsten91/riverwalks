@@ -416,7 +416,7 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
                     {/* Site details */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-600">
                       <div>
-                        <p><strong>River Width:</strong> {site.river_width}{site.units || 'm'}</p>
+                        <p><strong>River Width:</strong> {site.river_width}{site.depth_units || 'm'}</p>
                         {site.latitude && site.longitude && (
                           <p><strong>Coordinates:</strong> {site.latitude.toFixed(6)}, {site.longitude.toFixed(6)}</p>
                         )}
@@ -537,7 +537,7 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
                           <thead>
                             <tr className="bg-amber-50">
                               <th className="border border-gray-300 px-2 sm:px-3 py-2 text-left">Measurement</th>
-                              <th className="border border-gray-300 px-2 sm:px-3 py-2 text-left">Sediment Size ({site.units || 'm'})</th>
+                              <th className="border border-gray-300 px-2 sm:px-3 py-2 text-left">Sediment Size ({site.sedimentation_units || 'mm'})</th>
                               <th className="border border-gray-300 px-2 sm:px-3 py-2 text-left">Roundness</th>
                             </tr>
                           </thead>
@@ -545,8 +545,8 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
                             {site.sedimentation_data.measurements.map((measurement, idx) => (
                               <tr key={idx} className={idx % 2 === 0 ? 'bg-white' : 'bg-amber-50'}>
                                 <td className="border border-gray-300 px-2 sm:px-3 py-2">{idx + 1}</td>
-                                <td className="border border-gray-300 px-2 sm:px-3 py-2">{measurement.sediment_size}</td>
-                                <td className="border border-gray-300 px-2 sm:px-3 py-2 capitalize">{measurement.sediment_roundness.replace('-', ' ')}</td>
+                                <td className="border border-gray-300 px-2 sm:px-3 py-2">{measurement.sediment_size.toFixed(2)}</td>
+                                <td className="border border-gray-300 px-2 sm:px-3 py-2">{measurement.sediment_roundness.toFixed(1)}</td>
                               </tr>
                             ))}
                           </tbody>

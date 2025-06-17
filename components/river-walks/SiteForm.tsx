@@ -19,11 +19,16 @@ export function SiteForm({
 }: SiteFormProps) {
   const [formData, setFormData] = useState<SiteFormData>({
     site_name: editingSite?.site_name || '',
-    river_width: editingSite ? editingSite.river_width.toString() : '',
     latitude: editingSite?.latitude ? editingSite.latitude.toString() : '',
     longitude: editingSite?.longitude ? editingSite.longitude.toString() : '',
     notes: editingSite?.notes || '',
+    weather_conditions: editingSite?.weather_conditions || '',
+    land_use: editingSite?.land_use || '',
+    depth_units: editingSite?.depth_units || 'm',
+    sedimentation_units: editingSite?.sedimentation_units || 'mm',
   });
+
+  const [riverWidth, setRiverWidth] = useState(editingSite?.river_width?.toString() || '');
 
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(editingSite?.photo_url || null);
@@ -53,7 +58,12 @@ export function SiteForm({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await onSubmit(formData, photoFile || undefined, removePhoto);
+    // For backward compatibility, we need to add the river_width back
+    const submitData = {
+      ...formData,
+      river_width: riverWidth
+    };
+    await onSubmit(submitData as any, photoFile || undefined, removePhoto);
   };
 
   const title = editingSite ? 'Edit Site' : 'Add New Site';
@@ -103,12 +113,8 @@ export function SiteForm({
               </span>
             </label>
             <NumberInput
-              value={formData.river_width}
-              onChange={(value) =>
-                handleInputChange({
-                  target: { name: 'river_width', value },
-                } as any)
-              }
+              value={riverWidth}
+              onChange={(value) => setRiverWidth(value)}
               placeholder="e.g., 3.5"
               step={0.1}
               min={0.1}

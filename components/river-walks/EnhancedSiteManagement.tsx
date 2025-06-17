@@ -46,6 +46,7 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
     formData: SiteFormData,
     measurementData: MeasurementPointFormData[],
     numMeasurements: number,
+    riverWidth: number,
     sedimentationData: {
       photo?: File;
       measurements: SedimentationMeasurement[];
@@ -103,13 +104,14 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
         // Update site with all data
         const updateData: UpdateSiteData = {
           site_name: formData.site_name,
-          river_width: parseFloat(formData.river_width),
+          river_width: riverWidth,
           latitude: formData.latitude ? parseFloat(formData.latitude) : undefined,
           longitude: formData.longitude ? parseFloat(formData.longitude) : undefined,
           notes: formData.notes || undefined,
           weather_conditions: formData.weather_conditions || undefined,
           land_use: formData.land_use || undefined,
-          units: formData.units || 'm',
+          depth_units: formData.depth_units || 'm',
+          sedimentation_units: formData.sedimentation_units || 'mm',
           photo_url: sitePhotoUrl,
           sedimentation_photo_url: sedimentationPhotoUrl,
           sedimentation_data: {
@@ -136,13 +138,14 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
           river_walk_id: riverWalk.id,
           site_number: nextSiteNumber,
           site_name: formData.site_name,
-          river_width: parseFloat(formData.river_width),
+          river_width: riverWidth,
           latitude: formData.latitude ? parseFloat(formData.latitude) : undefined,
           longitude: formData.longitude ? parseFloat(formData.longitude) : undefined,
           notes: formData.notes || undefined,
           weather_conditions: formData.weather_conditions || undefined,
           land_use: formData.land_use || undefined,
-          units: formData.units || 'm',
+          depth_units: formData.depth_units || 'm',
+          sedimentation_units: formData.sedimentation_units || 'mm',
           sedimentation_data: {
             measurements: sedimentationData.measurements,
           },

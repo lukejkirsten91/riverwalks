@@ -24,7 +24,8 @@ export interface Site {
   notes: string | null;
   weather_conditions: string | null;
   land_use: string | null;
-  units: 'm' | 'cm' | 'mm' | 'ft';
+  depth_units: UnitType;
+  sedimentation_units: UnitType;
   sedimentation_photo_url: string | null;
   sedimentation_data: SedimentationData | null;
   created_at: string;
@@ -50,20 +51,22 @@ export interface RiverWalkFormData {
   notes?: string;
 }
 
+export type UnitType = 'm' | 'cm' | 'mm' | 'ft' | 'in' | 'yd';
+
 export interface SiteFormData {
   site_name: string;
-  river_width: string;
   latitude?: string;
   longitude?: string;
   notes?: string;
   weather_conditions?: string;
   land_use?: string;
-  units?: 'm' | 'cm' | 'mm' | 'ft';
+  depth_units?: UnitType;
+  sedimentation_units?: UnitType;
 }
 
 export interface SedimentationMeasurement {
-  sediment_size: string;
-  sediment_roundness: 'angular' | 'sub-angular' | 'sub-rounded' | 'rounded' | 'well-rounded';
+  sediment_size: number;
+  sediment_roundness: number;
 }
 
 export interface SedimentationData {
@@ -82,7 +85,8 @@ export interface CreateSiteData {
   notes?: string;
   weather_conditions?: string;
   land_use?: string;
-  units?: 'm' | 'cm' | 'mm' | 'ft';
+  depth_units?: UnitType;
+  sedimentation_units?: UnitType;
   sedimentation_photo_url?: string;
   sedimentation_data?: SedimentationData;
 }
@@ -96,7 +100,8 @@ export interface UpdateSiteData {
   notes?: string;
   weather_conditions?: string;
   land_use?: string;
-  units?: 'm' | 'cm' | 'mm' | 'ft';
+  depth_units?: UnitType;
+  sedimentation_units?: UnitType;
   sedimentation_photo_url?: string | null;
   sedimentation_data?: SedimentationData | null;
 }
