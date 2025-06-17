@@ -170,6 +170,71 @@ export function River3DVisualization({ sites, height = 600, title = "3D River Pr
       hoverinfo: 'skip'
     });
 
+    // Add underground brown areas around and below the river
+    const undergroundDepth = Math.abs(zMin) + 2; // Extend below deepest point
+    
+    validSites.forEach((site, siteIndex) => {
+      if (siteIndex < validSites.length - 1) {
+        // Create underground surfaces between sites
+        const nextSiteIndex = siteIndex + 1;
+        const currentWidth = site.river_width;
+        const nextWidth = validSites[nextSiteIndex].river_width;
+        const maxSiteWidth = Math.max(currentWidth, nextWidth);
+        
+        // Underground area - extends beyond river width
+        const undergroundX = [
+          [-bankExtension, maxSiteWidth + bankExtension, maxSiteWidth + bankExtension, -bankExtension],
+          [-bankExtension, maxSiteWidth + bankExtension, maxSiteWidth + bankExtension, -bankExtension]
+        ];
+        const undergroundY = [
+          [siteIndex, siteIndex, siteIndex, siteIndex],
+          [nextSiteIndex, nextSiteIndex, nextSiteIndex, nextSiteIndex]
+        ];
+        const undergroundZ = [
+          [-undergroundDepth, -undergroundDepth, 0, 0],
+          [-undergroundDepth, -undergroundDepth, 0, 0]
+        ];
+        
+        traces.push({
+          type: 'surface',
+          x: undergroundX,
+          y: undergroundY,
+          z: undergroundZ,
+          colorscale: [[0, 'rgb(139, 69, 19)'], [1, 'rgb(160, 82, 45)']],
+          showscale: false,
+          opacity: 0.8,
+          name: 'Underground',
+          lighting: {
+            ambient: 0.6,
+            diffuse: 0.8,
+            roughness: 0.9
+          },
+          hoverinfo: 'skip'
+        });
+      }
+    });
+
+    // Add bold lines connecting measurement points at each site
+    validSites.forEach((site, siteIndex) => {
+      const points = site.measurement_points!.sort((a, b) => a.point_number - b.point_number);
+      
+      // Bold line connecting all points at this site
+      traces.push({
+        type: 'scatter3d',
+        mode: 'lines',
+        x: points.map(p => p.distance_from_bank),
+        y: Array(points.length).fill(siteIndex),
+        z: points.map(p => -p.depth),
+        line: {
+          color: 'rgba(255, 0, 0, 0.8)',
+          width: 8
+        },
+        showlegend: false,
+        hoverinfo: 'skip',
+        name: `Site ${siteIndex + 1} Profile`
+      });
+    });
+
     // Add measurement point markers
     validSites.forEach((site, siteIndex) => {
       const points = site.measurement_points!.sort((a, b) => a.point_number - b.point_number);
@@ -181,13 +246,17 @@ export function River3DVisualization({ sites, height = 600, title = "3D River Pr
         y: Array(points.length).fill(siteIndex),
         z: points.map(p => -p.depth),
         marker: {
-          size: 5,
+          size: 6,
           color: 'red',
-          symbol: 'circle'
+          symbol: 'circle',
+          line: {
+            color: 'darkred',
+            width: 2
+          }
         },
         text: points.map(p => `${p.depth.toFixed(1)}m`),
         textposition: 'top center',
-        textfont: { size: 8 },
+        textfont: { size: 8, color: 'black' },
         showlegend: false,
         hovertemplate: points.map((p, idx) => 
           `Site: ${site.site_name}<br>Point ${p.point_number}<br>Distance: ${p.distance_from_bank.toFixed(1)}m<br>Depth: ${p.depth.toFixed(1)}m<extra></extra>`
@@ -236,12 +305,12 @@ export function River3DVisualization({ sites, height = 600, title = "3D River Pr
           title: { text: 'Elevation (m)' },
           showgrid: true,
           gridcolor: 'lightgray',
-          range: [zMin * 1.1, Math.max(bankHeight + 0.2, zMax * 1.1)]
+          range: [-(Math.abs(zMin) + 2.5), Math.max(bankHeight + 0.5, zMax * 1.1)]
         },
-        aspectratio: { x: 1.5, y: 2, z: 0.6 },
+        aspectratio: { x: 1.5, y: 2, z: 0.8 },
         camera: {
-          eye: { x: 1.8, y: -1.8, z: 1.2 },
-          center: { x: 0.3, y: validSites.length / 2, z: -0.2 }
+          eye: { x: 1.8, y: -1.8, z: 1.0 },
+          center: { x: 0.3, y: validSites.length / 2, z: -0.5 }
         }
       },
       height: height,
