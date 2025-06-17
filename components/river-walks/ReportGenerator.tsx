@@ -5,6 +5,7 @@ import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { formatDate } from '../../lib/utils';
 import type { RiverWalk, Site, MeasurementPoint } from '../../types';
+import { River3DVisualization } from './River3DVisualization';
 
 // Dynamically import Plotly to avoid SSR issues
 const Plot = dynamic(() => import('react-plotly.js'), { 
@@ -383,6 +384,24 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
               </div>
             </div>
           </div>
+
+          {/* 3D River Profile Visualization */}
+          {sites.length > 1 && (
+            <div className="mb-8">
+              <h3 className="text-lg sm:text-xl font-semibold mb-4 border-b pb-2">3D River Profile</h3>
+              <div className="bg-white border rounded-lg p-4">
+                <River3DVisualization 
+                  sites={sites} 
+                  height={500}
+                  title={`3D Profile: ${riverWalk.name}`}
+                />
+              </div>
+              <p className="text-sm text-gray-600 mt-2 text-center">
+                Interactive 3D visualization showing the river profile across all measurement sites. 
+                Blue areas represent water (below 0m), brown areas represent banks and land (above 0m).
+              </p>
+            </div>
+          )}
 
           {/* Sites and measurements */}
           {sites.map((site, index) => {

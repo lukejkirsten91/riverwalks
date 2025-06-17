@@ -5,3 +5,4 @@ export { SiteForm } from './SiteForm';
 export { SiteList } from './SiteList';
 export { MeasurementEditor } from './MeasurementEditor';
 export { ReportGenerator } from './ReportGenerator';
+export { River3DVisualization } from './River3DVisualization';

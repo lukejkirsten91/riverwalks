@@ -295,22 +295,46 @@ if st.session_state.num_points > 0:
                 Y_river = np.array(river_y_all)
                 Z_river = np.array(river_z_all)
                 
-                # Add the river bed surface
+                # Create a custom colorscale that transitions from brown (above 0m) to blue (below 0m)
+                # First, we need to normalize Z values to create the colorscale properly
+                z_min = np.min(Z_river)
+                z_max = max(0, np.max(Z_river))  # Ensure we include 0 as reference
+                
+                # Create colorscale that changes at z=0
+                if z_min < 0:  # We have underwater parts
+                    # Calculate the position of z=0 in the normalized range
+                    zero_pos = abs(z_min) / (abs(z_min) + z_max) if (abs(z_min) + z_max) > 0 else 0.5
+                    
+                    colorscale = [
+                        [0, 'rgb(0, 0, 139)'],      # Dark blue for deepest parts
+                        [zero_pos * 0.7, 'rgb(30, 144, 255)'],  # Dodger blue
+                        [zero_pos * 0.9, 'rgb(65, 105, 225)'],  # Royal blue approaching surface
+                        [zero_pos, 'rgb(135, 206, 250)'],       # Light blue at water surface (z=0)
+                        [zero_pos + 0.01, 'rgb(160, 82, 45)'],  # Brown just above water
+                        [1, 'rgb(139, 69, 19)']                 # Dark brown for high banks
+                    ]
+                else:
+                    # All above water - use brown tones
+                    colorscale = [
+                        [0, 'rgb(160, 82, 45)'],    # Medium brown
+                        [1, 'rgb(139, 69, 19)']     # Dark brown
+                    ]
+                
+                # Add the river bed surface with depth-based coloring
                 fig.add_trace(go.Surface(
                     x=X_river,
                     y=Y_river,
                     z=Z_river,
-                    colorscale=[
-                        [0, 'rgb(0, 0, 139)'],    # Dark blue for deepest parts
-                        [0.3, 'rgb(30, 144, 255)'],  # Dodger blue
-                        [0.6, 'rgb(65, 105, 225)'],  # Royal blue
-                        [0.8, 'rgb(100, 149, 237)'],  # Cornflower blue
-                        [1, 'rgb(135, 206, 250)']     # Light sky blue for shallow parts
-                    ],
-                    reversescale=True,
+                    colorscale=colorscale,
                     showscale=True,
-                    colorbar=dict(title="Depth (m)"),
-                    name="River Bed",
+                    colorbar=dict(
+                        title="Elevation (m)",
+                        titleside="right",
+                        tickmode="linear",
+                        tick0=z_min,
+                        dtick=(abs(z_min) + z_max) / 5 if (abs(z_min) + z_max) > 0 else 0.5
+                    ),
+                    name="River Bed & Banks",
                     lighting=dict(
                         ambient=0.7,
                         diffuse=0.9,
@@ -375,11 +399,27 @@ if st.session_state.num_points > 0:
                     Y_left = np.array(left_y).reshape(n_profiles, n_points_per_profile)
                     Z_left = np.array(left_z).reshape(n_profiles, n_points_per_profile)
                     
+                    # Create elevation-based coloring for left bank
+                    Z_left_min = np.min(Z_left)
+                    Z_left_max = np.max(Z_left)
+                    
+                    if Z_left_min < 0:  # Has underwater parts
+                        zero_pos_left = abs(Z_left_min) / (abs(Z_left_min) + Z_left_max) if (abs(Z_left_min) + Z_left_max) > 0 else 0.5
+                        left_colorscale = [
+                            [0, 'rgb(0, 0, 139)'],           # Dark blue for underwater
+                            [zero_pos_left * 0.8, 'rgb(65, 105, 225)'],  # Royal blue
+                            [zero_pos_left, 'rgb(135, 206, 250)'],       # Light blue at water level
+                            [zero_pos_left + 0.01, 'rgb(160, 82, 45)'],  # Brown above water
+                            [1, 'rgb(139, 69, 19)']                      # Dark brown for high areas
+                        ]
+                    else:
+                        left_colorscale = [[0, 'rgb(160, 82, 45)'], [1, 'rgb(139, 69, 19)']]
+                    
                     fig.add_trace(go.Surface(
                         x=X_left,
                         y=Y_left,
                         z=Z_left,
-                        colorscale=[[0, '#8B4513'], [0.3, '#A0522D'], [0.6, '#CD853F'], [1, '#DEB887']],
+                        colorscale=left_colorscale,
                         showscale=False,
                         name="Left Bank",
                         lighting=dict(ambient=0.8, diffuse=0.9, roughness=0.7, specular=0.2),
@@ -424,11 +464,27 @@ if st.session_state.num_points > 0:
                     Y_right = np.array(right_y).reshape(n_profiles, n_points_per_profile)
                     Z_right = np.array(right_z).reshape(n_profiles, n_points_per_profile)
                     
+                    # Create elevation-based coloring for right bank
+                    Z_right_min = np.min(Z_right)
+                    Z_right_max = np.max(Z_right)
+                    
+                    if Z_right_min < 0:  # Has underwater parts
+                        zero_pos_right = abs(Z_right_min) / (abs(Z_right_min) + Z_right_max) if (abs(Z_right_min) + Z_right_max) > 0 else 0.5
+                        right_colorscale = [
+                            [0, 'rgb(0, 0, 139)'],           # Dark blue for underwater
+                            [zero_pos_right * 0.8, 'rgb(65, 105, 225)'],  # Royal blue
+                            [zero_pos_right, 'rgb(135, 206, 250)'],       # Light blue at water level
+                            [zero_pos_right + 0.01, 'rgb(160, 82, 45)'],  # Brown above water
+                            [1, 'rgb(139, 69, 19)']                       # Dark brown for high areas
+                        ]
+                    else:
+                        right_colorscale = [[0, 'rgb(160, 82, 45)'], [1, 'rgb(139, 69, 19)']]
+                    
                     fig.add_trace(go.Surface(
                         x=X_right,
                         y=Y_right,
                         z=Z_right,
-                        colorscale=[[0, '#8B4513'], [0.3, '#A0522D'], [0.6, '#CD853F'], [1, '#DEB887']],
+                        colorscale=right_colorscale,
                         showscale=False,
                         name="Right Bank",
                         lighting=dict(ambient=0.8, diffuse=0.9, roughness=0.7, specular=0.2),
