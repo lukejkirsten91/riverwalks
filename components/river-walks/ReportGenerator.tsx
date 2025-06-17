@@ -286,10 +286,13 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-start justify-center p-2 sm:p-4 z-50 overflow-y-auto">
-      <div className="bg-white rounded-lg w-full max-w-6xl min-h-[95vh] sm:min-h-[90vh] mt-2 sm:mt-4 mb-4 sm:mb-8 overflow-hidden flex flex-col">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-start justify-center p-2 sm:p-4 z-50" onClick={onClose}>
+      <div 
+        className="bg-white rounded-lg w-full max-w-6xl max-h-[98vh] sm:max-h-[90vh] overflow-y-auto mt-2 sm:mt-0"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Header with controls */}
-        <div className="sticky top-0 bg-white border-b p-4 sm:p-6 z-50 rounded-t-lg shadow-sm">
+        <div className="sticky top-0 bg-white border-b p-4 sm:p-6 z-10 rounded-t-lg shadow-sm">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="flex items-center gap-3 min-w-0 flex-1">
               <FileText className="w-5 h-5 sm:w-6 sm:h-6 text-primary shrink-0" />
@@ -330,8 +333,7 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
         </div>
 
         {/* Report content */}
-        <div className="flex-1 overflow-y-auto">
-          <div ref={reportRef} className="p-4 sm:p-6 lg:p-8 bg-white">
+        <div ref={reportRef} className="p-4 sm:p-6 lg:p-8 bg-white">
           <style>{`
             @media print {
               .page-break-before {
@@ -517,7 +519,6 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
           <div className="mt-8 pt-4 border-t text-center text-sm text-gray-500">
             <p>Generated on {new Date().toLocaleDateString()} using Riverwalks GCSE Geography Tool</p>
             <p className="mt-1">This report contains {sites.length} measurement sites with detailed cross-section analysis</p>
-          </div>
           </div>
         </div>
       </div>
