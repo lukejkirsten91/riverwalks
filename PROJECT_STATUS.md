@@ -7,7 +7,7 @@ Riverwalks is a web application designed primarily for GCSE Geography students t
 ## 🚀 Live Application
 
 - **Production URL**: https://riverwalks.vercel.app
-- **Current Status**: ✅ Complete Photo Upload System + Camera Emoji UX + Inline Editing + Brand Integration + Archive System + Mobile-First Design + Comprehensive Site Management + Professional Report Generation & PDF Export + 3D River Visualization
+- **Current Status**: ✅ Complete Enhanced Site Management + Integrated Measurements & Sedimentation + Unit Selection + Depth Precision + Professional Report Generation & PDF Export + Mobile-First Design + Archive System
 
 ## 🏗️ Technical Stack
 
@@ -183,18 +183,23 @@ Riverwalks is a web application designed primarily for GCSE Geography students t
 - **Enhanced Loading States**: Improved animations and feedback during report generation and PDF export
 - **Data Analysis**: Automatic calculation of max depth, average depth, measurement coverage, and site statistics
 
-### ✅ 3D River Visualization (COMPLETED)
+### ✅ Enhanced Site Management System (COMPLETED)
 
-- **Interactive 3D River Profiles**: Advanced 3D visualization using Plotly.js showing complete river channel across all measurement sites
-- **Realistic Depth-Based Coloring**: Blue colors for underwater areas (below 0m), brown colors for banks and land (above 0m)
-- **Elevation-Based Color Transitions**: Smooth color transitions at water surface level with proper z=0 reference
-- **React Component Integration**: Reusable `River3DVisualization` component with TypeScript integration
-- **Report Integration**: 3D visualization automatically included in PDF reports for river walks with multiple sites
-- **Interactive 3D Controls**: Full camera positioning, rotation, zoom, and measurement point inspection
-- **Measurement Point Markers**: Red markers showing depth measurements with hover information
-- **Site Labeling**: Clear site identification and navigation in 3D space
-- **Professional Styling**: Consistent with existing design system and educational requirements
-- **Mobile Responsive**: Touch-friendly 3D interactions and responsive sizing
+- **Unified Site & Measurement Form**: Single comprehensive form combining site details, depth measurements, and sedimentation analysis
+- **Enhanced Site Details**: Site name (defaults to "Site 1" but editable), river width, coordinates, weather conditions, land use, and notes
+- **Unit Selection System**: Support for meters (m), centimeters (cm), millimeters (mm), and feet (ft) throughout the application
+- **Precision Depth Measurements**: All depth measurements rounded to 2 decimal places for accuracy
+- **Integrated Sedimentation Analysis**: Photo upload, configurable measurement count, sediment size and roundness for each measurement point
+- **Dual Photo System**: Separate photo uploads for site overview and sedimentation samples
+- **Professional Reporting**: Comprehensive reports including all new fields, formatted sedimentation tables, and enhanced site details
+- **Mobile-Optimized Interface**: Touch-friendly controls with responsive design for field data collection
+- **TypeScript Safety**: Full type definitions for all new data structures and API interfaces
+
+### 📦 Archived Features
+
+- **3D River Visualization**: Temporarily archived to `archived-features/3d-visualization/` for future restoration
+  - Interactive 3D river profiles with depth-based coloring available for future re-integration
+  - Complete React component with TypeScript integration preserved
 
 ## 🗄️ Database Schema
 
@@ -228,6 +233,11 @@ CREATE TABLE sites (
   longitude DECIMAL(11,8),
   photo_url TEXT,
   notes TEXT,
+  weather_conditions TEXT,
+  land_use TEXT,
+  units TEXT DEFAULT 'm' CHECK (units IN ('m', 'cm', 'mm', 'ft')),
+  sedimentation_photo_url TEXT,
+  sedimentation_data JSONB,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -256,6 +266,9 @@ CREATE TABLE measurement_points (
 
 ```
 riverwalks/
+├── archived-features/             # Temporarily archived components
+│   └── 3d-visualization/
+│       └── River3DVisualization.tsx # 3D river profile visualization (archived)
 ├── components/
 │   ├── auth/
 │   │   └── auth-card.tsx          # Google OAuth login/logout
@@ -263,11 +276,13 @@ riverwalks/
 │   │   ├── index.ts               # Component exports
 │   │   ├── RiverWalkForm.tsx      # River walk creation/editing form
 │   │   ├── RiverWalkList.tsx      # River walks display component with inline editing
-│   │   ├── SiteManagement.tsx     # Site management modal container
-│   │   ├── SiteForm.tsx           # Site creation/editing form
+│   │   ├── SiteManagement.tsx     # Original site management modal container
+│   │   ├── EnhancedSiteManagement.tsx # NEW: Comprehensive site & measurement management
+│   │   ├── SiteForm.tsx           # Original site creation/editing form
+│   │   ├── EnhancedSiteForm.tsx   # NEW: Unified site, measurement & sedimentation form
 │   │   ├── SiteList.tsx           # Sites display component with inline editing
-│   │   ├── MeasurementEditor.tsx  # Measurement points editor
-│   │   └── River3DVisualization.tsx # 3D river profile visualization component
+│   │   ├── MeasurementEditor.tsx  # Original measurement points editor
+│   │   └── ReportGenerator.tsx    # Enhanced report generation with sedimentation data
 │   └── ui/                        # shadcn/ui + custom components (TypeScript)
 │   │   ├── InlineEdit.tsx         # Click-to-edit text component
 │   │   ├── InlineNumberEdit.tsx   # Click-to-edit number component
@@ -292,9 +307,11 @@ riverwalks/
 ├── supabase/
 │   ├── cleanup.sql                # Initial database setup script
 │   ├── sites-schema.sql           # Sites and measurement points schema
+│   ├── add-archive-field.sql      # Archive functionality migration
 │   ├── add-photos-coordinates-notes.sql # Photo upload and enhanced fields migration
 │   ├── complete-storage-reset.sql # Complete storage bucket and RLS policy setup
-│   └── fix-storage-rls.sql        # Storage RLS policy fixes (alternative approach)
+│   ├── fix-storage-rls.sql        # Storage RLS policy fixes (alternative approach)
+│   └── add-enhanced-site-fields.sql # NEW: Weather, land use, units, sedimentation fields
 ├── types/
 │   └── index.ts                   # TypeScript type definitions
 ├── .eslintrc.json                 # ESLint configuration
@@ -320,6 +337,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
    - Run `supabase/sites-schema.sql` to create sites and measurement_points tables
    - Run `supabase/add-archive-field.sql` to add archive functionality
    - Run `supabase/complete-storage-reset.sql` to set up complete photo upload system (database + storage + RLS)
+   - Run `supabase/add-enhanced-site-fields.sql` to add new fields (weather, land use, units, sedimentation)
    - Alternative: Use individual migration files if preferred
 3. **Authentication**: Users table automatically managed by Supabase Auth
 
@@ -816,5 +834,5 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 ---
 
 _Last Updated: June 17, 2025_
-_Status: ✅ Complete Photo Upload System + Professional Report Generation & PDF Export + 2D Cross-Section Visualization + 3D River Visualization + Realistic Chart Styling + Mobile-First Design + Comprehensive Site Management + All Phase 1, 2 & 3 Features_
-_Next Phase: GCSE Enhancement Features (Phase 4)_
+_Status: ✅ Enhanced Site Management System + Integrated Measurements & Sedimentation + Unit Selection + Precision Measurements + Professional Report Generation & PDF Export + Mobile-First Design + Comprehensive Site Management + All Core Features Complete_
+_Next Phase: Report Enhancement & Analysis Features_
