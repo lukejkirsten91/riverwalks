@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { Upload, X, Image as ImageIcon } from 'lucide-react';
+import { Upload, X, Image as ImageIcon, Loader2 } from 'lucide-react';
 
 interface FileUploadProps {
   onFileSelect: (file: File) => void;
@@ -10,6 +10,8 @@ interface FileUploadProps {
   className?: string;
   disabled?: boolean;
   uploadText?: string;
+  loading?: boolean;
+  loadingText?: string;
 }
 
 export function FileUpload({
@@ -21,6 +23,8 @@ export function FileUpload({
   className = "",
   disabled = false,
   uploadText = "Upload site photo",
+  loading = false,
+  loadingText = "Uploading...",
 }: FileUploadProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [dragOver, setDragOver] = useState(false);
@@ -59,7 +63,7 @@ export function FileUpload({
     e.preventDefault();
     setDragOver(false);
 
-    if (disabled) return;
+    if (disabled || loading) return;
 
     const file = e.dataTransfer.files[0];
     if (file) {
@@ -69,7 +73,7 @@ export function FileUpload({
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
-    if (!disabled) {
+    if (!disabled && !loading) {
       setDragOver(true);
     }
   };
@@ -79,7 +83,7 @@ export function FileUpload({
   };
 
   const openFileDialog = () => {
-    if (!disabled) {
+    if (!disabled && !loading) {
       fileInputRef.current?.click();
     }
   };
@@ -105,11 +109,20 @@ export function FileUpload({
           <button
             onClick={handleRemove}
             className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-1 hover:bg-destructive/90 transition-colors shadow-modern"
-            disabled={disabled}
+            disabled={disabled || loading}
             title="Remove photo"
           >
             <X className="w-4 h-4" />
           </button>
+          {/* Loading overlay for existing image */}
+          {loading && (
+            <div className="absolute inset-0 bg-black/50 rounded-lg flex items-center justify-center">
+              <div className="text-white text-center">
+                <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2" />
+                <div className="text-xs">{loadingText}</div>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
@@ -126,11 +139,13 @@ export function FileUpload({
               ? 'border-primary bg-primary/5' 
               : 'border-border hover:border-primary/50 hover:bg-muted/30'
             }
-            ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
+            ${disabled || loading ? 'opacity-50 cursor-not-allowed' : ''}
           `}
         >
           <div className="flex flex-col items-center gap-3">
-            {dragOver ? (
+            {loading ? (
+              <Loader2 className="w-8 h-8 text-primary animate-spin" />
+            ) : dragOver ? (
               <Upload className="w-8 h-8 text-primary" />
             ) : (
               <ImageIcon className="w-8 h-8 text-muted-foreground" />
@@ -138,14 +153,18 @@ export function FileUpload({
             
             <div>
               <p className="text-foreground font-medium">
-                {dragOver ? 'Drop image here' : uploadText}
+                {loading ? loadingText : dragOver ? 'Drop image here' : uploadText}
               </p>
-              <p className="text-muted-foreground text-sm mt-1">
-                Click to browse or drag and drop
-              </p>
-              <p className="text-muted-foreground text-xs mt-1">
-                PNG, JPEG, JPG, WEBP up to {Math.round(maxSizeBytes / (1024 * 1024))}MB
-              </p>
+              {!loading && (
+                <>
+                  <p className="text-muted-foreground text-sm mt-1">
+                    Click to browse or drag and drop
+                  </p>
+                  <p className="text-muted-foreground text-xs mt-1">
+                    PNG, JPEG, JPG, WEBP up to {Math.round(maxSizeBytes / (1024 * 1024))}MB
+                  </p>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -158,7 +177,7 @@ export function FileUpload({
         accept={accept}
         onChange={handleInputChange}
         className="hidden"
-        disabled={disabled}
+        disabled={disabled || loading}
       />
 
       {/* Error display */}

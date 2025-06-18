@@ -3,6 +3,7 @@ import { MapPin, Camera, Droplets, Mountain, CloudSun, TreePine, Settings } from
 import { NumberInput } from '../ui/NumberInput';
 import { InlineNumberEdit } from '../ui/InlineNumberEdit';
 import { FileUpload } from '../ui/FileUpload';
+import { LoadingButton } from '../ui/LoadingSpinner';
 import type { Site, SiteFormData, MeasurementPointFormData, SedimentationMeasurement, UnitType } from '../../types';
 
 interface EnhancedSiteFormProps {
@@ -375,6 +376,8 @@ export function EnhancedSiteForm({
                 onFileRemove={handleSitePhotoRemove}
                 currentImageUrl={sitePhotoPreview}
                 disabled={loading}
+                loading={loading}
+                loadingText="Uploading site photo..."
               />
             </div>
 
@@ -592,6 +595,8 @@ export function EnhancedSiteForm({
                 onFileRemove={handleSedimentationPhotoRemove}
                 currentImageUrl={sedimentationPhotoPreview}
                 disabled={loading}
+                loading={loading}
+                loadingText="Uploading sediment photo..."
                 uploadText="Upload sediment photo"
               />
             </div>
@@ -643,17 +648,19 @@ export function EnhancedSiteForm({
 
         {/* =============== SUBMIT BUTTONS =============== */}
         <div className="flex flex-col sm:flex-row gap-4 pt-6 border-t-2 border-gray-200">
-          <button
+          <LoadingButton
             type="submit"
-            className="btn-success touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed flex-1 sm:flex-none"
-            disabled={loading}
+            loading={loading}
+            loadingText={loadingText}
+            className="btn-success touch-manipulation flex-1 sm:flex-none"
           >
-            {loading ? loadingText : buttonText}
-          </button>
+            {buttonText}
+          </LoadingButton>
           <button
             type="button"
             onClick={onCancel}
             className="btn-secondary touch-manipulation flex-1 sm:flex-none"
+            disabled={loading}
           >
             Cancel
           </button>

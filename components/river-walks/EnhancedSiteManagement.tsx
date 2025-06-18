@@ -5,6 +5,7 @@ import { uploadSitePhoto, deleteSitePhoto } from '../../lib/api/storage';
 import { EnhancedSiteForm } from './EnhancedSiteForm';
 import { SiteList } from './SiteList';
 import { useSites } from '../../hooks/useSites';
+import { useToast } from '../ui/ToastProvider';
 import { supabase } from '../../lib/supabase';
 import type {
   RiverWalk,
@@ -34,6 +35,7 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
     handleDeleteSite,
   } = useSites();
 
+  const { showSuccess, showError } = useToast();
   const [showSiteForm, setShowSiteForm] = useState(false);
   const [editingSite, setEditingSite] = useState<Site | null>(null);
 
@@ -131,6 +133,7 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
         await createMeasurementPoints(editingSite.id, measurementPoints);
 
         setEditingSite(null);
+        showSuccess('Site Updated', `${formData.site_name} has been successfully updated with all measurements and data.`);
       } else {
         // Creating new site
         const nextSiteNumber = sites.length + 1;
@@ -188,6 +191,7 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
         }
 
         setShowSiteForm(false);
+        showSuccess('Site Created', `${formData.site_name} has been successfully created with all measurements and data.`);
       }
 
       // Refresh sites data
@@ -195,7 +199,9 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
       setSitesError(null);
     } catch (error) {
       console.error('Error in handleEnhancedSubmit:', error);
-      setSitesError(`Operation failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      setSitesError(`Operation failed: ${errorMessage}`);
+      showError('Operation Failed', `Could not ${editingSite ? 'update' : 'create'} site: ${errorMessage}`);
     }
   };
 
@@ -226,7 +232,13 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
         `Are you sure you want to delete "${site.site_name}"? This will also delete all measurement points and photos for this site.`
       )
     ) {
-      await handleDeleteSite(site.id, riverWalk.id);
+      try {
+        await handleDeleteSite(site.id, riverWalk.id);
+        showSuccess('Site Deleted', `${site.site_name} has been successfully deleted.`);
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        showError('Delete Failed', `Could not delete ${site.site_name}: ${errorMessage}`);
+      }
     }
   };
 

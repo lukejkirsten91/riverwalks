@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { MapPin } from 'lucide-react';
+import { LoadingButton } from '../ui/LoadingSpinner';
 import type { RiverWalk, RiverWalkFormData } from '../../types';
 
 interface RiverWalkFormProps {
@@ -127,17 +128,19 @@ export function RiverWalkForm({
 
         {/* Actions */}
         <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-border">
-          <button
+          <LoadingButton
             type="submit"
-            className="btn-success touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed"
-            disabled={loading}
+            loading={loading}
+            loadingText="Saving..."
+            className="btn-success touch-manipulation"
           >
-            {loading ? 'Saving...' : currentRiverWalk ? 'Update Study' : 'Create Study'}
-          </button>
+            {currentRiverWalk ? 'Update Study' : 'Create Study'}
+          </LoadingButton>
           <button
             type="button"
             onClick={onCancel}
             className="btn-secondary touch-manipulation"
+            disabled={loading}
           >
             Cancel
           </button>

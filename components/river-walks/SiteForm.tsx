@@ -182,6 +182,8 @@ export function SiteForm({
             onFileRemove={handlePhotoRemove}
             currentImageUrl={photoPreview}
             disabled={loading}
+            loading={loading}
+            loadingText="Uploading site photo..."
           />
           <p className="text-muted-foreground text-xs mt-2">
             Add a photo of this measurement site for reference
