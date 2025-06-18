@@ -72,19 +72,36 @@ export function EnhancedSiteForm({
   );
   const [removeSedimentationPhoto, setRemoveSedimentationPhoto] = useState(false);
 
-  // Initialize measurement data
+  // Initialize measurement data - always auto-update distances when parameters change
   useEffect(() => {
     if (editingSite?.measurement_points && editingSite.measurement_points.length > 0) {
-      // Use existing measurement points
+      // Use existing measurement points but auto-update distances to match river width and number of points
       const existing = editingSite.measurement_points
         .sort((a, b) => a.point_number - b.point_number)
         .map(point => ({
           distance_from_bank: point.distance_from_bank,
           depth: point.depth,
         }));
-      setMeasurementData(existing);
+      
+      // If the number of measurement points changed, regenerate to match
+      if (existing.length !== numMeasurements) {
+        const newDistances = generateEvenlySpacedDistances(riverWidth, numMeasurements);
+        const newMeasurements = Array.from({ length: numMeasurements }, (_, index) => ({
+          distance_from_bank: newDistances[index],
+          depth: index < existing.length ? existing[index].depth : 0,
+        }));
+        setMeasurementData(newMeasurements);
+      } else {
+        // Same number of points - just update distances to match current river width
+        const newDistances = generateEvenlySpacedDistances(riverWidth, numMeasurements);
+        const updatedMeasurements = existing.map((point, index) => ({
+          distance_from_bank: newDistances[index],
+          depth: point.depth,
+        }));
+        setMeasurementData(updatedMeasurements);
+      }
     } else {
-      // Generate evenly spaced measurement points
+      // Generate evenly spaced measurement points for new sites
       const newMeasurements = Array.from({ length: numMeasurements }, (_, index) => ({
         distance_from_bank: (index * riverWidth) / (numMeasurements - 1),
         depth: 0,

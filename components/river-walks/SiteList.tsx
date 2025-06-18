@@ -1,4 +1,4 @@
-import { MapPin, Trash2, Plus, Ruler, Edit } from 'lucide-react';
+import { MapPin, Trash2, Plus, Ruler } from 'lucide-react';
 import { InlineEdit } from '../ui/InlineEdit';
 import { InlineNumberEdit } from '../ui/InlineNumberEdit';
 import type { Site } from '../../types';
@@ -146,14 +146,7 @@ export function SiteList({
                 className="btn-primary touch-manipulation"
               >
                 <Ruler className="w-4 h-4 mr-2" />
-                Measurements
-              </button>
-              <button
-                onClick={() => onEditSite(site)}
-                className="btn-primary touch-manipulation"
-              >
-                <Edit className="w-4 h-4 mr-2" />
-                Edit Site
+                Site Info and Measurements
               </button>
               <button
                 onClick={() => onDeleteSite(site)}

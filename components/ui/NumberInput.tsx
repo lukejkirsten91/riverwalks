@@ -111,9 +111,9 @@ export function NumberInput({
         required={required}
         disabled={disabled}
       />
-      {/* Show "0" as a visual hint when field is empty */}
-      {internalValue === '' && (
-        <div className="absolute inset-0 flex items-center px-4 pointer-events-none text-muted-foreground">
+      {/* Show "0" as a visual hint when field is empty and not focused */}
+      {internalValue === '' && placeholder !== '0.0' && (
+        <div className="absolute inset-0 flex items-center px-4 pointer-events-none text-muted-foreground opacity-60">
           0
         </div>
       )}
