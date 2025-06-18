@@ -403,34 +403,35 @@ export function EnhancedSiteForm({
                 <label className="block text-foreground mb-3 font-medium">
                   River Width ({formData.depth_units})
                 </label>
-                <div className="flex items-center gap-2">
-                  <span className="text-gray-600 text-sm">Width:</span>
-                  <InlineNumberEdit
-                    value={riverWidth}
-                    onSave={handleRiverWidthChange}
-                    suffix={formData.depth_units}
-                    min={formData.depth_units === 'mm' ? 100 : 0.1}
-                    decimals={formData.depth_units === 'mm' ? 0 : 2}
-                    className="text-base font-medium border border-border min-w-[100px] flex-1"
-                  />
-                </div>
+                <NumberInput
+                  value={riverWidth.toString()}
+                  onChange={(value) => handleRiverWidthChange(parseFloat(value) || 0)}
+                  placeholder="e.g., 3.5"
+                  step={formData.depth_units === 'mm' ? 1 : 0.1}
+                  min={formData.depth_units === 'mm' ? 100 : 0.1}
+                  required
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Distances will auto-update when changed
+                </p>
               </div>
 
               <div>
                 <label className="block text-foreground mb-3 font-medium">
                   Number of Measurement Points
                 </label>
-                <div className="flex items-center gap-2">
-                  <span className="text-gray-600 text-sm">Points:</span>
-                  <InlineNumberEdit
-                    value={numMeasurements}
-                    onSave={handleNumMeasurementsChange}
-                    min={2}
-                    max={20}
-                    decimals={0}
-                    className="text-base font-medium border border-border min-w-[80px] flex-1"
-                  />
-                </div>
+                <NumberInput
+                  value={numMeasurements.toString()}
+                  onChange={(value) => handleNumMeasurementsChange(Math.round(parseFloat(value) || 2))}
+                  placeholder="5"
+                  step={1}
+                  min={2}
+                  max={20}
+                  required
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Distances will auto-space evenly
+                </p>
               </div>
             </div>
 
@@ -525,17 +526,15 @@ export function EnhancedSiteForm({
                 <label className="block text-foreground mb-3 font-medium">
                   Number of Sedimentation Measurements
                 </label>
-                <div className="flex items-center gap-2">
-                  <span className="text-gray-600 text-sm">Count:</span>
-                  <InlineNumberEdit
-                    value={numSedimentationMeasurements}
-                    onSave={(value) => setNumSedimentationMeasurements(Math.round(value))}
-                    min={1}
-                    max={10}
-                    decimals={0}
-                    className="text-base font-medium border border-border min-w-[80px] flex-1"
-                  />
-                </div>
+                <NumberInput
+                  value={numSedimentationMeasurements.toString()}
+                  onChange={(value) => setNumSedimentationMeasurements(Math.round(parseFloat(value) || 1))}
+                  placeholder="3"
+                  step={1}
+                  min={1}
+                  max={10}
+                  required
+                />
               </div>
             </div>
 
