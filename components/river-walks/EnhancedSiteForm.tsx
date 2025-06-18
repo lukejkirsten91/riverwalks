@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { MapPin, Camera, Droplets, Mountain, CloudSun, TreePine, Settings } from 'lucide-react';
+import { MapPin, Camera, Droplets, Mountain, CloudSun, TreePine, Settings, ArrowLeft } from 'lucide-react';
 import { NumberInput } from '../ui/NumberInput';
 import { InlineNumberEdit } from '../ui/InlineNumberEdit';
 import { FileUpload } from '../ui/FileUpload';
@@ -22,6 +22,7 @@ interface EnhancedSiteFormProps {
     removeSedimentationPhoto?: boolean
   ) => Promise<void>;
   onCancel: () => void;
+  onBack?: () => void;
   loading: boolean;
 }
 
@@ -38,6 +39,7 @@ export function EnhancedSiteForm({
   editingSite,
   onSubmit,
   onCancel,
+  onBack,
   loading,
 }: EnhancedSiteFormProps) {
   // Site details form data
@@ -72,6 +74,9 @@ export function EnhancedSiteForm({
     editingSite?.sedimentation_photo_url || null
   );
   const [removeSedimentationPhoto, setRemoveSedimentationPhoto] = useState(false);
+
+  // Track if form has been modified
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
   // Initialize measurement data - always auto-update distances when parameters change
   useEffect(() => {
@@ -144,6 +149,7 @@ export function EnhancedSiteForm({
       ...prev,
       [name]: value,
     }));
+    setHasUnsavedChanges(true);
   };
 
   const handleMeasurementChange = (index: number, field: keyof MeasurementPointFormData, value: string) => {
@@ -153,6 +159,7 @@ export function EnhancedSiteForm({
       [field]: parseFloat(value) || 0,
     };
     setMeasurementData(newData);
+    setHasUnsavedChanges(true);
   };
 
   const handleSedimentationMeasurementChange = (index: number, field: keyof SedimentationMeasurement, value: string | number) => {
@@ -162,6 +169,7 @@ export function EnhancedSiteForm({
       [field]: typeof value === 'string' ? parseFloat(value) || 0 : value,
     };
     setSedimentationMeasurements(newData);
+    setHasUnsavedChanges(true);
   };
 
   // Generate evenly spaced distances based on river width and number of measurements
@@ -192,6 +200,7 @@ export function EnhancedSiteForm({
     }
     console.log('New measurement data:', newMeasurementData);
     setMeasurementData(newMeasurementData);
+    setHasUnsavedChanges(true);
   };
 
   const handleRiverWidthChange = (width: number) => {
@@ -206,6 +215,7 @@ export function EnhancedSiteForm({
     }));
     console.log('Updating measurement distances:', newMeasurementData);
     setMeasurementData(newMeasurementData);
+    setHasUnsavedChanges(true);
   };
 
   const handleSitePhotoSelect = (file: File) => {
@@ -213,12 +223,14 @@ export function EnhancedSiteForm({
     setRemoveSitePhoto(false);
     const previewUrl = URL.createObjectURL(file);
     setSitePhotoPreview(previewUrl);
+    setHasUnsavedChanges(true);
   };
 
   const handleSitePhotoRemove = () => {
     setSitePhotoFile(null);
     setSitePhotoPreview(null);
     setRemoveSitePhoto(true);
+    setHasUnsavedChanges(true);
   };
 
   const handleSedimentationPhotoSelect = (file: File) => {
@@ -226,12 +238,14 @@ export function EnhancedSiteForm({
     setRemoveSedimentationPhoto(false);
     const previewUrl = URL.createObjectURL(file);
     setSedimentationPhotoPreview(previewUrl);
+    setHasUnsavedChanges(true);
   };
 
   const handleSedimentationPhotoRemove = () => {
     setSedimentationPhotoFile(null);
     setSedimentationPhotoPreview(null);
     setRemoveSedimentationPhoto(true);
+    setHasUnsavedChanges(true);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -249,6 +263,31 @@ export function EnhancedSiteForm({
       removeSitePhoto,
       removeSedimentationPhoto
     );
+    setHasUnsavedChanges(false);
+  };
+
+  const handleBack = () => {
+    if (hasUnsavedChanges && onBack) {
+      const result = window.confirm(
+        'You have unsaved changes. Do you want to save them before going back?\n\n' +
+        'Click "OK" to save changes\n' +
+        'Click "Cancel" to go back without saving'
+      );
+      
+      if (result) {
+        // User wants to save - trigger form submission
+        const form = document.querySelector('form') as HTMLFormElement;
+        if (form) {
+          form.requestSubmit();
+        }
+      } else {
+        // User wants to go back without saving
+        onBack();
+      }
+    } else if (onBack) {
+      // No unsaved changes, just go back
+      onBack();
+    }
   };
 
   const title = editingSite ? 'Edit Site & Measurements' : 'Add New Site';
@@ -258,6 +297,17 @@ export function EnhancedSiteForm({
   return (
     <div className="card-modern-xl p-6 bg-card max-w-5xl mx-auto">
       <div className="flex items-center gap-3 mb-8">
+        {/* Back button */}
+        {onBack && (
+          <button
+            onClick={handleBack}
+            className="w-10 h-10 rounded-lg bg-muted/50 hover:bg-muted flex items-center justify-center transition-colors"
+            title="Back to sites list"
+            type="button"
+          >
+            <ArrowLeft className="w-5 h-5 text-muted-foreground" />
+          </button>
+        )}
         <div className="w-12 h-12 rounded-xl flex items-center justify-center gradient-primary text-white">
           <MapPin className="w-6 h-6" />
         </div>

@@ -316,6 +316,10 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
                 setEditingSite(null);
                 setShowSiteForm(false);
               }}
+              onBack={() => {
+                setEditingSite(null);
+                setShowSiteForm(false);
+              }}
               loading={loading}
             />
           ) : (

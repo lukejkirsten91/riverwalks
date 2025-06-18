@@ -13,31 +13,31 @@ interface ToastProps {
 const typeConfig = {
   success: {
     icon: CheckCircle,
-    bgColor: 'bg-success/10',
-    borderColor: 'border-success/20',
+    bgColor: 'bg-success/20',
+    borderColor: 'border-success/30',
     iconColor: 'text-success',
-    titleColor: 'text-success',
+    titleColor: 'text-success-foreground',
   },
   error: {
     icon: XCircle,
-    bgColor: 'bg-destructive/10',
-    borderColor: 'border-destructive/20',
+    bgColor: 'bg-destructive/20',
+    borderColor: 'border-destructive/30',
     iconColor: 'text-destructive',
-    titleColor: 'text-destructive',
+    titleColor: 'text-destructive-foreground',
   },
   warning: {
     icon: AlertCircle,
-    bgColor: 'bg-warning/10',
-    borderColor: 'border-warning/20',
+    bgColor: 'bg-warning/20',
+    borderColor: 'border-warning/30',
     iconColor: 'text-warning',
-    titleColor: 'text-warning',
+    titleColor: 'text-warning-foreground',
   },
   info: {
     icon: Info,
-    bgColor: 'bg-blue-500/10',
-    borderColor: 'border-blue-500/20',
-    iconColor: 'text-blue-500',
-    titleColor: 'text-blue-600',
+    bgColor: 'bg-blue-500/20',
+    borderColor: 'border-blue-500/30',
+    iconColor: 'text-blue-600',
+    titleColor: 'text-blue-700',
   },
 };
 
@@ -87,7 +87,7 @@ export function Toast({
       <div
         className={`
           ${config.bgColor} ${config.borderColor} border rounded-lg shadow-modern-lg
-          backdrop-blur-sm p-4 flex items-start gap-3
+          p-4 flex items-start gap-3
         `}
       >
         {/* Icon */}
@@ -95,11 +95,11 @@ export function Toast({
 
         {/* Content */}
         <div className="flex-1 min-w-0">
-          <h4 className={`font-medium ${config.titleColor} text-sm`}>
+          <h4 className={`font-semibold ${config.titleColor} text-sm`}>
             {title}
           </h4>
           {message && (
-            <p className="text-muted-foreground text-xs mt-1">
+            <p className="text-foreground/80 text-xs mt-1 font-medium">
               {message}
             </p>
           )}
