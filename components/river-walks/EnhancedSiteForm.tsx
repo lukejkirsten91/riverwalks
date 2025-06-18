@@ -403,12 +403,18 @@ export function EnhancedSiteForm({
                 <label className="block text-foreground mb-3 font-medium">
                   River Width ({formData.depth_units})
                 </label>
-                <NumberInput
-                  value={riverWidth.toString()}
-                  onChange={(value) => handleRiverWidthChange(parseFloat(value) || 0)}
+                <input
+                  type="number"
+                  value={riverWidth}
+                  onChange={(e) => {
+                    console.log('River width onChange triggered with value:', e.target.value);
+                    const newWidth = parseFloat(e.target.value) || 0;
+                    handleRiverWidthChange(newWidth);
+                  }}
                   placeholder="e.g., 3.5"
                   step={formData.depth_units === 'mm' ? 1 : 0.1}
                   min={formData.depth_units === 'mm' ? 100 : 0.1}
+                  className="input-modern"
                   required
                 />
                 <p className="text-xs text-gray-500 mt-1">
@@ -420,13 +426,19 @@ export function EnhancedSiteForm({
                 <label className="block text-foreground mb-3 font-medium">
                   Number of Measurement Points
                 </label>
-                <NumberInput
-                  value={numMeasurements.toString()}
-                  onChange={(value) => handleNumMeasurementsChange(Math.round(parseFloat(value) || 2))}
+                <input
+                  type="number"
+                  value={numMeasurements}
+                  onChange={(e) => {
+                    console.log('Num measurements onChange triggered with value:', e.target.value);
+                    const newNum = Math.round(parseFloat(e.target.value) || 2);
+                    handleNumMeasurementsChange(newNum);
+                  }}
                   placeholder="5"
                   step={1}
                   min={2}
                   max={20}
+                  className="input-modern"
                   required
                 />
                 <p className="text-xs text-gray-500 mt-1">
@@ -440,6 +452,12 @@ export function EnhancedSiteForm({
               <div>
                 <h5 className="font-medium text-gray-700 mb-3">Distance from Bank ({formData.depth_units})</h5>
                 <div className="space-y-3">
+                  {(() => {
+                    console.log('Current measurementData:', measurementData);
+                    console.log('Current riverWidth:', riverWidth);
+                    console.log('Current numMeasurements:', numMeasurements);
+                    return null;
+                  })()}
                   {measurementData.map((point, index) => (
                     <div key={index} className="flex items-center gap-3">
                       <label className="text-sm text-gray-600 min-w-[60px]">
