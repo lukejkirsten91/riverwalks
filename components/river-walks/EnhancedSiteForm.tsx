@@ -169,18 +169,7 @@ export function EnhancedSiteForm({
     console.log('River width changing from', riverWidth, 'to', width);
     setRiverWidth(width);
 
-    // For existing sites, ask user if they want to auto-redistribute
-    if (editingSite?.measurement_points && measurementData.length > 0) {
-      const shouldRedistribute = window.confirm(
-        `Do you want to automatically redistribute the measurement points evenly across the new width (${width}${formData.depth_units})?\n\nClick OK to redistribute evenly, or Cancel to keep current distances.`
-      );
-      
-      if (!shouldRedistribute) {
-        return; // Just update the width, don't change distances
-      }
-    }
-
-    // Update distances but preserve depths using the same logic as the original
+    // Always auto-redistribute distances when width changes, preserving depths
     const newDistances = generateEvenlySpacedDistances(width, numMeasurements);
     const newMeasurementData = measurementData.map((point, index) => ({
       distance_from_bank: newDistances[index] || 0,
