@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
-import { MapPin, Camera, Droplets, Mountain, CloudSun, TreePine, Settings, ArrowLeft } from 'lucide-react';
+import { MapPin, Camera, Droplets, Mountain, CloudSun, TreePine, Settings, ArrowLeft, Map } from 'lucide-react';
 import { NumberInput } from '../ui/NumberInput';
 import { InlineNumberEdit } from '../ui/InlineNumberEdit';
 import { FileUpload } from '../ui/FileUpload';
 import { LoadingButton } from '../ui/LoadingSpinner';
+import MapLocationPicker from '../ui/MapLocationPickerWrapper';
 import type { Site, SiteFormData, MeasurementPointFormData, SedimentationMeasurement, UnitType } from '../../types';
 
 interface EnhancedSiteFormProps {
@@ -80,6 +81,9 @@ export function EnhancedSiteForm({
   // Track if form has been modified
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
+  // Map state
+  const [showMap, setShowMap] = useState(false);
+
   // Initialize measurement data - always auto-update distances when parameters change
   useEffect(() => {
     if (editingSite?.measurement_points && editingSite.measurement_points.length > 0) {
@@ -150,6 +154,29 @@ export function EnhancedSiteForm({
     setFormData(prev => ({
       ...prev,
       [name]: value,
+    }));
+    setHasUnsavedChanges(true);
+  };
+
+  // Handle coordinate input changes (for manual entry that should update map)
+  const handleCoordinateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value,
+    }));
+    setHasUnsavedChanges(true);
+    
+    // Note: The map will automatically update via the useEffect in MapLocationPicker
+    // when the latitude/longitude props change
+  };
+
+  // Handle map location changes
+  const handleMapLocationChange = (lat: number, lng: number, address?: string) => {
+    setFormData(prev => ({
+      ...prev,
+      latitude: lat.toString(),
+      longitude: lng.toString(),
     }));
     setHasUnsavedChanges(true);
   };
@@ -371,7 +398,7 @@ export function EnhancedSiteForm({
                   type="number"
                   name="latitude"
                   value={formData.latitude}
-                  onChange={handleInputChange}
+                  onChange={handleCoordinateChange}
                   className="input-modern"
                   placeholder="e.g., 51.4545"
                   step="any"
@@ -388,13 +415,63 @@ export function EnhancedSiteForm({
                   type="number"
                   name="longitude"
                   value={formData.longitude}
-                  onChange={handleInputChange}
+                  onChange={handleCoordinateChange}
                   className="input-modern"
                   placeholder="e.g., -2.5879"
                   step="any"
                   min="-180"
                   max="180"
                 />
+              </div>
+
+              {/* Map Location Picker */}
+              <div className="sm:col-span-2">
+                <div className="flex items-center justify-between mb-3">
+                  <label className="block text-foreground font-medium">
+                    <span className="flex items-center gap-2">
+                      <Map className="w-4 h-4" />
+                      Find Location on Map
+                    </span>
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setShowMap(!showMap)}
+                    className={`btn-secondary text-sm ${showMap ? 'bg-primary/10 text-primary border-primary/30' : ''}`}
+                  >
+                    {showMap ? 'Hide Map' : 'Show Map'}
+                  </button>
+                </div>
+                
+                {showMap && (
+                  <div className="border-2 border-primary/20 rounded-lg p-4 bg-white/50">
+                    <MapLocationPicker
+                      latitude={formData.latitude ? parseFloat(formData.latitude) : undefined}
+                      longitude={formData.longitude ? parseFloat(formData.longitude) : undefined}
+                      onLocationChange={handleMapLocationChange}
+                      height="400px"
+                    />
+                  </div>
+                )}
+                
+                {!showMap && (
+                  <div className="bg-blue-50/50 border border-blue-200 rounded-lg p-4 text-center">
+                    <Map className="w-8 h-8 text-blue-500 mx-auto mb-2" />
+                    <p className="text-sm text-blue-700 font-medium mb-1">
+                      Make it easy to find your location!
+                    </p>
+                    <p className="text-xs text-blue-600 mb-3">
+                      Use the interactive map to find coordinates by clicking, searching for an address, or using GPS location
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => setShowMap(true)}
+                      className="btn-primary text-sm"
+                    >
+                      <Map className="w-4 h-4 mr-2" />
+                      Open Map
+                    </button>
+                  </div>
+                )}
               </div>
 
               <div className="sm:col-span-2">
