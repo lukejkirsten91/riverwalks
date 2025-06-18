@@ -169,6 +169,17 @@ export function EnhancedSiteForm({
     console.log('River width changing from', riverWidth, 'to', width);
     setRiverWidth(width);
 
+    // For existing sites, ask user if they want to auto-redistribute
+    if (editingSite?.measurement_points && measurementData.length > 0) {
+      const shouldRedistribute = window.confirm(
+        `Do you want to automatically redistribute the measurement points evenly across the new width (${width}${formData.depth_units})?\n\nClick OK to redistribute evenly, or Cancel to keep current distances.`
+      );
+      
+      if (!shouldRedistribute) {
+        return; // Just update the width, don't change distances
+      }
+    }
+
     // Update distances but preserve depths using the same logic as the original
     const newDistances = generateEvenlySpacedDistances(width, numMeasurements);
     const newMeasurementData = measurementData.map((point, index) => ({
@@ -403,20 +414,17 @@ export function EnhancedSiteForm({
                 <label className="block text-foreground mb-3 font-medium">
                   River Width ({formData.depth_units})
                 </label>
-                <input
-                  type="number"
-                  value={riverWidth}
-                  onChange={(e) => {
-                    console.log('River width onChange triggered with value:', e.target.value);
-                    const newWidth = parseFloat(e.target.value) || 0;
-                    handleRiverWidthChange(newWidth);
-                  }}
-                  placeholder="e.g., 3.5"
-                  step={formData.depth_units === 'mm' ? 1 : 0.1}
-                  min={formData.depth_units === 'mm' ? 100 : 0.1}
-                  className="input-modern"
-                  required
-                />
+                <div className="flex items-center gap-2">
+                  <span className="text-gray-600 text-sm">Width:</span>
+                  <InlineNumberEdit
+                    value={riverWidth}
+                    onSave={handleRiverWidthChange}
+                    suffix={formData.depth_units}
+                    min={formData.depth_units === 'mm' ? 100 : 0.1}
+                    decimals={formData.depth_units === 'mm' ? 0 : 2}
+                    className="text-base font-medium border border-border min-w-[100px] flex-1"
+                  />
+                </div>
                 <p className="text-xs text-gray-500 mt-1">
                   Distances will auto-update when changed
                 </p>
@@ -426,21 +434,17 @@ export function EnhancedSiteForm({
                 <label className="block text-foreground mb-3 font-medium">
                   Number of Measurement Points
                 </label>
-                <input
-                  type="number"
-                  value={numMeasurements}
-                  onChange={(e) => {
-                    console.log('Num measurements onChange triggered with value:', e.target.value);
-                    const newNum = Math.round(parseFloat(e.target.value) || 2);
-                    handleNumMeasurementsChange(newNum);
-                  }}
-                  placeholder="5"
-                  step={1}
-                  min={2}
-                  max={20}
-                  className="input-modern"
-                  required
-                />
+                <div className="flex items-center gap-2">
+                  <span className="text-gray-600 text-sm">Points:</span>
+                  <InlineNumberEdit
+                    value={numMeasurements}
+                    onSave={handleNumMeasurementsChange}
+                    min={2}
+                    max={20}
+                    decimals={0}
+                    className="text-base font-medium border border-border min-w-[80px] flex-1"
+                  />
+                </div>
                 <p className="text-xs text-gray-500 mt-1">
                   Distances will auto-space evenly
                 </p>
@@ -544,15 +548,17 @@ export function EnhancedSiteForm({
                 <label className="block text-foreground mb-3 font-medium">
                   Number of Sedimentation Measurements
                 </label>
-                <NumberInput
-                  value={numSedimentationMeasurements.toString()}
-                  onChange={(value) => setNumSedimentationMeasurements(Math.round(parseFloat(value) || 1))}
-                  placeholder="3"
-                  step={1}
-                  min={1}
-                  max={10}
-                  required
-                />
+                <div className="flex items-center gap-2">
+                  <span className="text-gray-600 text-sm">Count:</span>
+                  <InlineNumberEdit
+                    value={numSedimentationMeasurements}
+                    onSave={(value) => setNumSedimentationMeasurements(Math.round(value))}
+                    min={1}
+                    max={10}
+                    decimals={0}
+                    className="text-base font-medium border border-border min-w-[80px] flex-1"
+                  />
+                </div>
               </div>
             </div>
 
