@@ -8,6 +8,7 @@ import type { Site, SiteFormData, MeasurementPointFormData, SedimentationMeasure
 
 interface EnhancedSiteFormProps {
   editingSite?: Site | null;
+  nextSiteNumber?: number;
   onSubmit: (
     formData: SiteFormData, 
     measurementData: MeasurementPointFormData[],
@@ -37,6 +38,7 @@ const UNIT_OPTIONS: { value: UnitType; label: string; shortLabel: string }[] = [
 
 export function EnhancedSiteForm({
   editingSite,
+  nextSiteNumber,
   onSubmit,
   onCancel,
   onBack,
@@ -44,7 +46,7 @@ export function EnhancedSiteForm({
 }: EnhancedSiteFormProps) {
   // Site details form data
   const [formData, setFormData] = useState<SiteFormData>({
-    site_name: editingSite?.site_name || `Site ${(editingSite?.site_number ?? 1)}`,
+    site_name: editingSite?.site_name || `Site ${nextSiteNumber || 1}`,
     latitude: editingSite?.latitude ? editingSite.latitude.toString() : '',
     longitude: editingSite?.longitude ? editingSite.longitude.toString() : '',
     notes: editingSite?.notes || '',

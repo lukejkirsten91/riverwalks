@@ -144,7 +144,7 @@ export default function AuthCard() {
         
         <button 
           onClick={handleSignIn} 
-          className="btn-primary w-full touch-manipulation text-base"
+          className="btn-primary w-full touch-manipulation text-base text-white"
         >
           <svg className="mr-3 h-5 w-5" viewBox="0 0 24 24">
             <path

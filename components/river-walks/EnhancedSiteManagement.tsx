@@ -311,6 +311,7 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
           {editingSite || showSiteForm ? (
             <EnhancedSiteForm
               editingSite={editingSite}
+              nextSiteNumber={sites.length + 1}
               onSubmit={handleEnhancedSubmit}
               onCancel={() => {
                 setEditingSite(null);

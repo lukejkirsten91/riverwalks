@@ -16,28 +16,28 @@ const typeConfig = {
     bgColor: 'bg-success/20',
     borderColor: 'border-success/30',
     iconColor: 'text-success',
-    titleColor: 'text-success-foreground',
+    titleColor: 'text-green-800',
   },
   error: {
     icon: XCircle,
     bgColor: 'bg-destructive/20',
     borderColor: 'border-destructive/30',
     iconColor: 'text-destructive',
-    titleColor: 'text-destructive-foreground',
+    titleColor: 'text-red-800',
   },
   warning: {
     icon: AlertCircle,
     bgColor: 'bg-warning/20',
     borderColor: 'border-warning/30',
     iconColor: 'text-warning',
-    titleColor: 'text-warning-foreground',
+    titleColor: 'text-amber-800',
   },
   info: {
     icon: Info,
     bgColor: 'bg-blue-500/20',
     borderColor: 'border-blue-500/30',
     iconColor: 'text-blue-600',
-    titleColor: 'text-blue-700',
+    titleColor: 'text-blue-800',
   },
 };
 
@@ -99,7 +99,7 @@ export function Toast({
             {title}
           </h4>
           {message && (
-            <p className="text-foreground/80 text-xs mt-1 font-medium">
+            <p className="text-gray-700 text-xs mt-1 font-medium">
               {message}
             </p>
           )}
