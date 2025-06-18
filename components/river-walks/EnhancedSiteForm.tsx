@@ -111,13 +111,24 @@ export function EnhancedSiteForm({
   }, [numMeasurements, riverWidth, editingSite]);
 
 
-  // Initialize sedimentation data
+  // Initialize sedimentation data - always auto-update when count changes
   useEffect(() => {
     if (editingSite?.sedimentation_data?.measurements) {
-      setSedimentationMeasurements(editingSite.sedimentation_data.measurements);
-      setNumSedimentationMeasurements(editingSite.sedimentation_data.measurements.length);
+      const existing = editingSite.sedimentation_data.measurements;
+      
+      // If the number of measurements changed, adjust the array to match
+      if (existing.length !== numSedimentationMeasurements) {
+        const newMeasurements = Array.from({ length: numSedimentationMeasurements }, (_, index) => ({
+          sediment_size: index < existing.length ? existing[index].sediment_size : 0,
+          sediment_roundness: index < existing.length ? existing[index].sediment_roundness : 0,
+        }));
+        setSedimentationMeasurements(newMeasurements);
+      } else {
+        // Same number of measurements - use existing data
+        setSedimentationMeasurements(existing);
+      }
     } else {
-      // Initialize with empty measurements
+      // Initialize with empty measurements for new sites
       const newMeasurements = Array.from({ length: numSedimentationMeasurements }, () => ({
         sediment_size: 0,
         sediment_roundness: 0,
@@ -581,6 +592,7 @@ export function EnhancedSiteForm({
                 onFileRemove={handleSedimentationPhotoRemove}
                 currentImageUrl={sedimentationPhotoPreview}
                 disabled={loading}
+                uploadText="Upload sediment photo"
               />
             </div>
 
@@ -607,19 +619,21 @@ export function EnhancedSiteForm({
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Sediment Roundness (0-6 scale)
                     </label>
-                    <NumberInput
-                      value={measurement.sediment_roundness.toString()}
-                      onChange={(value) =>
-                        handleSedimentationMeasurementChange(index, 'sediment_roundness', value)
+                    <select
+                      value={measurement.sediment_roundness}
+                      onChange={(e) =>
+                        handleSedimentationMeasurementChange(index, 'sediment_roundness', parseFloat(e.target.value))
                       }
-                      placeholder="0"
-                      step={0.1}
-                      min={0}
-                      max={6}
-                    />
-                    <p className="text-xs text-gray-500 mt-1">
-                      0 = Angular, 6 = Well-rounded
-                    </p>
+                      className="input-modern"
+                    >
+                      <option value={0}>0 - Angular</option>
+                      <option value={1}>1 - Very Angular</option>
+                      <option value={2}>2 - Sub-angular</option>
+                      <option value={3}>3 - Sub-rounded</option>
+                      <option value={4}>4 - Rounded</option>
+                      <option value={5}>5 - Well-rounded</option>
+                      <option value={6}>6 - Very Well-rounded</option>
+                    </select>
                   </div>
                 </div>
               ))}

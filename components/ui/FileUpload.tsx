@@ -9,6 +9,7 @@ interface FileUploadProps {
   maxSizeBytes?: number;
   className?: string;
   disabled?: boolean;
+  uploadText?: string;
 }
 
 export function FileUpload({
@@ -19,6 +20,7 @@ export function FileUpload({
   maxSizeBytes = 5 * 1024 * 1024, // 5MB default
   className = "",
   disabled = false,
+  uploadText = "Upload site photo",
 }: FileUploadProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [dragOver, setDragOver] = useState(false);
@@ -136,7 +138,7 @@ export function FileUpload({
             
             <div>
               <p className="text-foreground font-medium">
-                {dragOver ? 'Drop image here' : 'Upload site photo'}
+                {dragOver ? 'Drop image here' : uploadText}
               </p>
               <p className="text-muted-foreground text-sm mt-1">
                 Click to browse or drag and drop
