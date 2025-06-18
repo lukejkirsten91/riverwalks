@@ -531,6 +531,10 @@ CREATE TABLE measurement_points (
 
 ## ✅ Recently Resolved Issues
 
+- ✅ **Auto-Adjustment for Existing Sites**: Fixed measurement point auto-updating when editing existing sites to match new site behavior
+- ✅ **UI Consolidation**: Removed duplicate Edit Site button and consolidated functionality into Site Info and Measurements
+- ✅ **Button Clarity**: Renamed Measurements button to Site Info and Measurements for better user understanding
+- ✅ **NumberInput Visual Issues**: Fixed bold zero display problem in sedimentation input fields
 - ✅ **Photo Upload System**: Complete implementation with storage, RLS policies, and intuitive UX
 - ✅ **Storage RLS Policy Violations**: Resolved with comprehensive policy reset and simple auth approach
 - ✅ **Persistent Error Messages**: Fixed error state management throughout application
@@ -833,6 +837,6 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 
 ---
 
-_Last Updated: June 17, 2025_
-_Status: ✅ Enhanced Site Management System + Integrated Measurements & Sedimentation + Unit Selection + Precision Measurements + Professional Report Generation & PDF Export + Mobile-First Design + Comprehensive Site Management + All Core Features Complete_
+_Last Updated: June 18, 2025_
+_Status: ✅ Enhanced Site Management System + Integrated Measurements & Sedimentation + Unit Selection + Precision Measurements + Professional Report Generation & PDF Export + Mobile-First Design + Comprehensive Site Management + UI/UX Improvements + All Core Features Complete_
 _Next Phase: Report Enhancement & Analysis Features_
