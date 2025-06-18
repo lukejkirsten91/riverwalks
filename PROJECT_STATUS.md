@@ -531,6 +531,7 @@ CREATE TABLE measurement_points (
 
 ## ✅ Recently Resolved Issues
 
+- ✅ **Sedimentation UX Improvements**: Enhanced sediment measurement auto-updating, descriptive roundness dropdown, and specific upload text
 - ✅ **Auto-Adjustment for Existing Sites**: Fixed measurement point auto-updating when editing existing sites to match new site behavior
 - ✅ **UI Consolidation**: Removed duplicate Edit Site button and consolidated functionality into Site Info and Measurements
 - ✅ **Button Clarity**: Renamed Measurements button to Site Info and Measurements for better user understanding
