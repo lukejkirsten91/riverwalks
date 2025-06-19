@@ -283,7 +283,7 @@ export function CrossSectionForm({
               <h4 className="font-semibold text-blue-800">Cross-Sectional Profile</h4>
             </div>
             
-            <div className="bg-white rounded-lg p-4 border border-blue-200">
+            <div className="bg-white rounded-lg p-4 border border-blue-200" style={{backgroundColor: 'lightcyan'}}>
               <svg
                 width="100%"
                 height="300"
@@ -293,7 +293,7 @@ export function CrossSectionForm({
                 {/* Grid lines */}
                 <defs>
                   <pattern id="grid" width="40" height="30" patternUnits="userSpaceOnUse">
-                    <path d="M 40 0 L 0 0 0 30" fill="none" stroke="#e5e7eb" strokeWidth="1"/>
+                    <path d="M 40 0 L 0 0 0 30" fill="none" stroke="lightgray" strokeWidth="1"/>
                   </pattern>
                 </defs>
                 <rect width="100%" height="100%" fill="url(#grid)" />
@@ -303,92 +303,74 @@ export function CrossSectionForm({
                   const maxDepth = Math.max(...measurementData.map(p => p.depth || 0));
                   const scaleX = 700 / riverWidth; // 700px width for chart area
                   const scaleY = maxDepth > 0 ? 180 / maxDepth : 1; // 180px height for chart area
-                  const waterSurfaceY = 70; // Water surface level
+                  const waterSurfaceY = 70; // Water surface level (0 depth)
                   
                   const points = measurementData.map(point => ({
                     x: 50 + (point.distance_from_bank || 0) * scaleX,
-                    y: waterSurfaceY + (point.depth || 0) * scaleY
+                    y: waterSurfaceY + (point.depth || 0) * scaleY // Positive depth goes down
                   }));
                   
                   // Find the deepest point for underground fill
                   const maxDepthY = Math.max(...points.map(p => p.y));
-                  const undergroundBottom = maxDepthY + 30;
+                  const brownFillBottom = maxDepthY + 40; // Extend brown fill below deepest point
                   
                   return (
                     <>
-                      {/* Brown underground area (full width) */}
-                      <rect
-                        x="50"
-                        y={maxDepthY}
-                        width="700"
-                        height={undergroundBottom - maxDepthY}
-                        fill="#8B4513"
-                      />
-                      
-                      {/* Left bank */}
+                      {/* Brown underground area - EXACTLY like report */}
                       <polygon
-                        points={`30,${waterSurfaceY - 20} 50,${waterSurfaceY} 50,${undergroundBottom} 30,${undergroundBottom}`}
-                        fill="#8B4513"
+                        points={`30,${brownFillBottom} 770,${brownFillBottom} 770,${waterSurfaceY} 750,${waterSurfaceY} 50,${waterSurfaceY} 30,${brownFillBottom}`}
+                        fill="peru"
                       />
                       
-                      {/* Right bank */}
+                      {/* Left bank slope */}
                       <polygon
-                        points={`750,${waterSurfaceY} 770,${waterSurfaceY - 20} 770,${undergroundBottom} 750,${undergroundBottom}`}
-                        fill="#8B4513"
+                        points={`30,${waterSurfaceY + 30} 50,${waterSurfaceY} 50,${brownFillBottom} 30,${brownFillBottom}`}
+                        fill="peru"
                       />
                       
-                      {/* River bed area - create water area above the bed */}
+                      {/* Right bank slope */}
+                      <polygon
+                        points={`750,${waterSurfaceY} 770,${waterSurfaceY + 30} 770,${brownFillBottom} 750,${brownFillBottom}`}
+                        fill="peru"
+                      />
+                      
+                      {/* Water area - fill from water surface to river bed EXACTLY like report */}
                       {points.length > 1 && (
                         <path
                           d={`M 50 ${waterSurfaceY} L ${points.map(p => `${p.x} ${p.y}`).join(' L ')} L 750 ${waterSurfaceY} Z`}
-                          fill="#87CEEB"
-                          fillOpacity="0.7"
+                          fill="lightblue"
                         />
                       )}
                       
-                      {/* River bed line */}
+                      {/* River bed line - EXACTLY like report colors */}
                       {points.length > 1 && (
                         <path
                           d={`M ${points.map(p => `${p.x} ${p.y}`).join(' L ')}`}
                           fill="none"
-                          stroke="#4682B4"
-                          strokeWidth="3"
+                          stroke="royalblue"
+                          strokeWidth="2"
                         />
                       )}
                       
-                      {/* Water surface line */}
+                      {/* Water surface line - EXACTLY like report */}
                       <line 
                         x1="50" 
                         y1={waterSurfaceY} 
                         x2="750" 
                         y2={waterSurfaceY} 
-                        stroke="#00BFFF" 
+                        stroke="lightblue" 
                         strokeWidth="2" 
-                        strokeDasharray="5,5" 
                       />
                       
-                      {/* Measurement points */}
+                      {/* Measurement points - EXACTLY like report */}
                       {points.map((point, index) => (
-                        <g key={index}>
-                          <circle
-                            cx={point.x}
-                            cy={point.y}
-                            r="5"
-                            fill="#FF6347"
-                            stroke="white"
-                            strokeWidth="2"
-                          />
-                          <text
-                            x={point.x}
-                            y={point.y - 12}
-                            textAnchor="middle"
-                            fontSize="11"
-                            fill="#000"
-                            fontWeight="bold"
-                          >
-                            {index + 1}
-                          </text>
-                        </g>
+                        <circle
+                          key={index}
+                          cx={point.x}
+                          cy={point.y}
+                          r="4"
+                          fill="darkblue"
+                        />
                       ))}
                       
                       {/* Depth labels */}
@@ -396,42 +378,63 @@ export function CrossSectionForm({
                         <text
                           key={`depth-${index}`}
                           x={point.x}
-                          y={point.y + 25}
+                          y={point.y + 20}
                           textAnchor="middle"
                           fontSize="10"
                           fill="#000"
                         >
-                          {(measurementData[index].depth || 0).toFixed(1)}{depthUnits}
+                          {(measurementData[index].depth || 0).toFixed(1)}m
                         </text>
                       ))}
                       
-                      {/* Legend */}
-                      <g transform="translate(520, 20)">
-                        <rect x="0" y="0" width="160" height="45" fill="white" stroke="#ccc" strokeWidth="1" rx="3"/>
-                        <rect x="5" y="8" width="12" height="8" fill="#87CEEB" />
-                        <text x="20" y="16" fontSize="10" fill="#000">Water</text>
-                        <rect x="5" y="22" width="12" height="8" fill="#8B4513" />
-                        <text x="20" y="30" fontSize="10" fill="#000">Underground</text>
-                        <circle cx="75" cy="12" r="3" fill="#FF6347" stroke="white" strokeWidth="1"/>
-                        <text x="85" y="16" fontSize="10" fill="#000">Measurement</text>
-                        <line x1="75" y1="25" x2="95" y2="25" stroke="#00BFFF" strokeWidth="1" strokeDasharray="2,2"/>
-                        <text x="100" y="29" fontSize="10" fill="#000">Surface</text>
-                      </g>
+                      {/* Width measurement line - EXACTLY like report */}
+                      <line 
+                        x1="50" 
+                        y1={waterSurfaceY - 20} 
+                        x2="750" 
+                        y2={waterSurfaceY - 20} 
+                        stroke="black" 
+                        strokeWidth="2" 
+                      />
                       
-                      {/* Water surface label */}
-                      <text x="760" y={waterSurfaceY - 5} fill="#00BFFF" fontSize="11" fontWeight="bold">
-                        Water Surface
+                      {/* Width measurement end lines */}
+                      <line 
+                        x1="50" 
+                        y1={waterSurfaceY - 20} 
+                        x2="50" 
+                        y2={waterSurfaceY - 10} 
+                        stroke="black" 
+                        strokeWidth="2" 
+                      />
+                      <line 
+                        x1="750" 
+                        y1={waterSurfaceY - 20} 
+                        x2="750" 
+                        y2={waterSurfaceY - 10} 
+                        stroke="black" 
+                        strokeWidth="2" 
+                      />
+                      
+                      {/* Width label */}
+                      <text 
+                        x="400" 
+                        y={waterSurfaceY - 25} 
+                        textAnchor="middle" 
+                        fontSize="10" 
+                        fill="#000"
+                      >
+                        {riverWidth}m
                       </text>
                     </>
                   );
                 })()}
                 
-                {/* Axis labels */}
-                <text x="400" y="290" textAnchor="middle" fontSize="12" fill="#6b7280" fontWeight="bold">
-                  Distance from Bank ({depthUnits})
+                {/* Axis labels - EXACTLY like report */}
+                <text x="400" y="290" textAnchor="middle" fontSize="12" fill="#000">
+                  Distance from Bank (m)
                 </text>
-                <text x="25" y="150" textAnchor="middle" fontSize="12" fill="#6b7280" fontWeight="bold" transform="rotate(-90 25 150)">
-                  Depth ({depthUnits})
+                <text x="25" y="150" textAnchor="middle" fontSize="12" fill="#000" transform="rotate(-90 25 150)">
+                  Depth (m)
                 </text>
               </svg>
             </div>
