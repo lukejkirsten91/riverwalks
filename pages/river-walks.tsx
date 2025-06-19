@@ -33,14 +33,9 @@ export default function RiverWalksPage() {
   const {
     riverWalks,
     archivedRiverWalks,
-    showArchived,
-    setShowArchived,
-    sortBy,
-    setSortBy,
     loading,
     error,
     setError,
-    handleDateRangeFilter,
     handleCreateRiverWalk,
     handleUpdateRiverWalk,
     handleArchiveRiverWalk,
@@ -197,55 +192,21 @@ export default function RiverWalksPage() {
                 alt="Riverwalks Logo" 
                 className="h-16 w-16 sm:h-20 sm:w-20 rounded-xl object-contain shadow-lg"
               />
-              <div className="hidden sm:block">
+              <div>
+                <h1 className="text-3xl sm:text-4xl font-bold text-foreground">Your River Walks</h1>
                 <p className="text-muted-foreground text-sm">Manage your river study documentation</p>
               </div>
             </div>
 
-            {/* Center: Action buttons and filters */}
+            {/* Center: Action buttons */}
             <div className="flex flex-col sm:flex-row gap-3 sm:flex-1 sm:justify-center">
-              {/* Sort toggle */}
-              <div className="flex items-center gap-2">
-                <label className="text-sm text-muted-foreground">Sort by:</label>
-                <button
-                  className={`text-xs px-3 py-1 rounded-md border transition-all touch-manipulation ${
-                    sortBy === 'date' 
-                      ? 'bg-primary/10 text-primary border-primary/30' 
-                      : 'bg-white/50 text-muted-foreground border-white/30 hover:bg-white/80'
-                  }`}
-                  onClick={() => setSortBy('date')}
-                >
-                  Walk Date
-                </button>
-                <button
-                  className={`text-xs px-3 py-1 rounded-md border transition-all touch-manipulation ${
-                    sortBy === 'date_created' 
-                      ? 'bg-primary/10 text-primary border-primary/30' 
-                      : 'bg-white/50 text-muted-foreground border-white/30 hover:bg-white/80'
-                  }`}
-                  onClick={() => setSortBy('date_created')}
-                >
-                  Created Date
-                </button>
-              </div>
-
-              {/* Archive toggle button */}
-              <button
-                className={showArchived ? "btn-secondary touch-manipulation" : "btn-warning touch-manipulation"}
-                onClick={() => setShowArchived(!showArchived)}
-              >
-                {showArchived ? `Active (${riverWalks.length})` : `Archived (${archivedRiverWalks.length})`}
-              </button>
-
               {/* Add River Walk button - only show when not viewing archived */}
-              {!showArchived && (
-                <button
-                  className={showForm ? "btn-secondary touch-manipulation" : "btn-primary touch-manipulation"}
-                  onClick={handleAddNewRiverWalk}
-                >
-                  {showForm ? 'Cancel' : '+ Add River Walk'}
-                </button>
-              )}
+              <button
+                className={showForm ? "btn-secondary touch-manipulation" : "btn-primary touch-manipulation"}
+                onClick={handleAddNewRiverWalk}
+              >
+                {showForm ? 'Cancel' : '+ Add River Walk'}
+              </button>
             </div>
 
             {/* Right side: Profile */}
@@ -302,8 +263,8 @@ export default function RiverWalksPage() {
           </div>
         )}
 
-        {/* Form section - only show when not viewing archived */}
-        {showForm && !showArchived && (
+        {/* Form section */}
+        {showForm && (
           <div className="mb-8">
             <RiverWalkForm
               currentRiverWalk={currentRiverWalk}
@@ -316,14 +277,14 @@ export default function RiverWalksPage() {
 
         {/* River walks list */}
         <RiverWalkList
-          riverWalks={showArchived ? archivedRiverWalks : riverWalks}
+          riverWalks={riverWalks}
+          archivedRiverWalks={archivedRiverWalks}
           onUpdateField={handleUpdateField}
           onArchive={handleArchive}
           onRestore={handleRestore}
           onDelete={handleDelete}
           onManageSites={handleManageSites}
           onGenerateReport={handleGenerateReport}
-          showArchived={showArchived}
         />
 
         {/* Site management modal */}
