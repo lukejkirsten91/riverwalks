@@ -56,6 +56,35 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
   const [currentView, setCurrentView] = useState<CurrentView>('site_list');
   const [currentSite, setCurrentSite] = useState<Site | null>(null);
 
+  // Handle browser back button
+  React.useEffect(() => {
+    const handlePopState = (event: PopStateEvent) => {
+      if (event.state?.view) {
+        setCurrentView(event.state.view);
+        setCurrentSite(event.state.site || null);
+      } else {
+        // If no state, go back to site list or close modal
+        if (currentView !== 'site_list') {
+          setCurrentView('site_list');
+          setCurrentSite(null);
+        } else {
+          onClose();
+        }
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    
+    // Push initial state
+    if (typeof window !== 'undefined') {
+      window.history.pushState({ view: 'site_list' }, '', window.location.href);
+    }
+
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, [currentView, onClose]);
+
   // Load sites when component mounts
   React.useEffect(() => {
     fetchSites(riverWalk.id);
@@ -65,6 +94,10 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
   const handleSiteSelect = (site: Site) => {
     setCurrentSite(site);
     setCurrentView('site_todos');
+    // Push state for back button navigation
+    if (typeof window !== 'undefined') {
+      window.history.pushState({ view: 'site_todos', site }, '', window.location.href);
+    }
   };
 
   const handleTodoClick = (todoType: 'site_info' | 'cross_section' | 'velocity' | 'sediment') => {
@@ -74,16 +107,29 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
       velocity: 'velocity_form',
       sediment: 'sediment_form',
     };
-    setCurrentView(viewMap[todoType]);
+    const newView = viewMap[todoType];
+    setCurrentView(newView);
+    // Push state for back button navigation
+    if (typeof window !== 'undefined') {
+      window.history.pushState({ view: newView, site: currentSite }, '', window.location.href);
+    }
   };
 
   const handleBackToTodos = () => {
     setCurrentView('site_todos');
+    // Push state for back button navigation
+    if (typeof window !== 'undefined') {
+      window.history.pushState({ view: 'site_todos', site: currentSite }, '', window.location.href);
+    }
   };
 
   const handleBackToSites = () => {
     setCurrentView('site_list');
     setCurrentSite(null);
+    // Push state for back button navigation
+    if (typeof window !== 'undefined') {
+      window.history.pushState({ view: 'site_list' }, '', window.location.href);
+    }
   };
 
   // Form submission handlers
@@ -139,6 +185,10 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
       
       showSuccess('Site Info Updated', 'Site information has been saved successfully.');
       setCurrentView('site_todos');
+      // Push state for back button navigation
+      if (typeof window !== 'undefined') {
+        window.history.pushState({ view: 'site_todos', site: currentSite }, '', window.location.href);
+      }
     } catch (error) {
       console.error('Error updating site info:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
@@ -196,6 +246,10 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
       
       showSuccess('Cross-Section Updated', 'Cross-sectional measurements have been saved successfully.');
       setCurrentView('site_todos');
+      // Push state for back button navigation
+      if (typeof window !== 'undefined') {
+        window.history.pushState({ view: 'site_todos', site: currentSite }, '', window.location.href);
+      }
     } catch (error) {
       console.error('Error updating cross-section:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
@@ -229,6 +283,10 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
       
       showSuccess('Velocity Updated', 'Velocity measurements have been saved successfully.');
       setCurrentView('site_todos');
+      // Push state for back button navigation
+      if (typeof window !== 'undefined') {
+        window.history.pushState({ view: 'site_todos', site: currentSite }, '', window.location.href);
+      }
     } catch (error) {
       console.error('Error updating velocity:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
@@ -294,6 +352,10 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
       
       showSuccess('Sediment Analysis Updated', 'Sediment analysis has been saved successfully.');
       setCurrentView('site_todos');
+      // Push state for back button navigation
+      if (typeof window !== 'undefined') {
+        window.history.pushState({ view: 'site_todos', site: currentSite }, '', window.location.href);
+      }
     } catch (error) {
       console.error('Error updating sediment analysis:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';

@@ -3,6 +3,7 @@ export interface RiverWalk {
   id: string;
   created_at: string;
   updated_at: string;
+  date_created: string;
   name: string;
   date: string;
   country: string;

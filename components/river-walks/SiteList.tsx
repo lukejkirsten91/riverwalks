@@ -78,8 +78,7 @@ export function SiteList({
                     />
                   </div>
                 ) : (
-                  <div className="w-12 h-12 rounded-lg bg-muted/50 border border-border flex items-center justify-center shadow-modern">
-                    <span className="text-2xl">📷</span>
+                  <div className="w-12 h-12 rounded-lg bg-muted/50 border border-border shadow-modern">
                   </div>
                 )}
                 <div className="flex-1 min-w-0">
@@ -115,40 +114,52 @@ export function SiteList({
 
             {/* Action buttons and progress */}
             <div className="flex flex-col gap-3">
-              {/* Todo Progress */}
-              <div className="grid grid-cols-2 gap-2">
-                <div className={`text-xs px-2 py-1 rounded border ${
-                  site.todo_site_info_status === 'complete' ? 'bg-green-50 text-green-700 border-green-200' :
-                  site.todo_site_info_status === 'in_progress' ? 'bg-yellow-50 text-yellow-700 border-yellow-200' :
-                  'bg-gray-50 text-gray-600 border-gray-200'
-                }`}>
-                  Site Info: {site.todo_site_info_status === 'complete' ? '✓' : 
-                           site.todo_site_info_status === 'in_progress' ? '⏳' : '○'}
-                </div>
-                <div className={`text-xs px-2 py-1 rounded border ${
-                  site.todo_cross_section_status === 'complete' ? 'bg-green-50 text-green-700 border-green-200' :
-                  site.todo_cross_section_status === 'in_progress' ? 'bg-yellow-50 text-yellow-700 border-yellow-200' :
-                  'bg-gray-50 text-gray-600 border-gray-200'
-                }`}>
-                  Cross-Section: {site.todo_cross_section_status === 'complete' ? '✓' : 
-                                 site.todo_cross_section_status === 'in_progress' ? '⏳' : '○'}
-                </div>
-                <div className={`text-xs px-2 py-1 rounded border ${
-                  site.todo_velocity_status === 'complete' ? 'bg-green-50 text-green-700 border-green-200' :
-                  site.todo_velocity_status === 'in_progress' ? 'bg-yellow-50 text-yellow-700 border-yellow-200' :
-                  'bg-gray-50 text-gray-600 border-gray-200'
-                }`}>
-                  Velocity: {site.todo_velocity_status === 'complete' ? '✓' : 
-                            site.todo_velocity_status === 'in_progress' ? '⏳' : '○'}
-                </div>
-                <div className={`text-xs px-2 py-1 rounded border ${
-                  site.todo_sediment_status === 'complete' ? 'bg-green-50 text-green-700 border-green-200' :
-                  site.todo_sediment_status === 'in_progress' ? 'bg-yellow-50 text-yellow-700 border-yellow-200' :
-                  'bg-gray-50 text-gray-600 border-gray-200'
-                }`}>
-                  Sediment: {site.todo_sediment_status === 'complete' ? '✓' : 
-                            site.todo_sediment_status === 'in_progress' ? '⏳' : '○'}
-                </div>
+              {/* Todo Progress Bar */}
+              <div className="space-y-2">
+                {(() => {
+                  const statuses = [
+                    site.todo_site_info_status,
+                    site.todo_cross_section_status,
+                    site.todo_velocity_status,
+                    site.todo_sediment_status
+                  ];
+                  const completedCount = statuses.filter(status => status === 'complete').length;
+                  const inProgressCount = statuses.filter(status => status === 'in_progress').length;
+                  const totalCount = statuses.length;
+                  const progressPercent = (completedCount / totalCount) * 100;
+                  
+                  return (
+                    <>
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="text-muted-foreground">Progress</span>
+                        <span className="font-medium text-foreground">
+                          {completedCount}/{totalCount} complete
+                        </span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div 
+                          className="bg-green-500 h-2 rounded-full transition-all duration-300"
+                          style={{ width: `${progressPercent}%` }}
+                        ></div>
+                      </div>
+                      <div className="flex items-center gap-1 text-xs">
+                        <span className="flex items-center gap-1">
+                          <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                          <span className="text-muted-foreground">{completedCount} done</span>
+                        </span>
+                        {inProgressCount > 0 && (
+                          <>
+                            <span className="text-muted-foreground">•</span>
+                            <span className="flex items-center gap-1">
+                              <span className="w-2 h-2 bg-yellow-500 rounded-full"></span>
+                              <span className="text-muted-foreground">{inProgressCount} in progress</span>
+                            </span>
+                          </>
+                        )}
+                      </div>
+                    </>
+                  );
+                })()}
               </div>
               
               <div className="flex flex-col sm:flex-row gap-3">

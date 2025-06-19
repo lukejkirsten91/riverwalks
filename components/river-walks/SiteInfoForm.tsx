@@ -282,7 +282,7 @@ export function SiteInfoForm({
             type="submit"
             loading={loading}
             loadingText="Saving..."
-            className="btn-success touch-manipulation flex-1 sm:flex-none"
+            className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg font-medium transition-all duration-200 border border-yellow-600 shadow-modern hover:shadow-modern-lg touch-manipulation flex-1 sm:flex-none"
           >
             Save and Mark as In Progress
           </LoadingButton>
@@ -291,7 +291,7 @@ export function SiteInfoForm({
             onClick={(e: React.MouseEvent<HTMLButtonElement>) => handleSubmit(e as any, true)}
             loading={loading}
             loadingText="Completing..."
-            className="btn-primary touch-manipulation flex-1 sm:flex-none"
+            className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-medium transition-all duration-200 border border-green-600 shadow-modern hover:shadow-modern-lg touch-manipulation flex-1 sm:flex-none"
           >
             Save and Mark Complete
           </LoadingButton>

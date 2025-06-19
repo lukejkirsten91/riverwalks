@@ -35,9 +35,12 @@ export default function RiverWalksPage() {
     archivedRiverWalks,
     showArchived,
     setShowArchived,
+    sortBy,
+    setSortBy,
     loading,
     error,
     setError,
+    handleDateRangeFilter,
     handleCreateRiverWalk,
     handleUpdateRiverWalk,
     handleArchiveRiverWalk,
@@ -184,63 +187,48 @@ export default function RiverWalksPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-muted/50 to-slate-100">
       <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
-        {/* Top navigation with profile */}
-        <div className="flex justify-end items-center mb-6">
-          {user && (
-            <div className="relative" data-profile-dropdown>
-              {/* Profile button */}
-              <button
-                onClick={() => setShowProfileDropdown(!showProfileDropdown)}
-                className="flex items-center gap-2 text-muted-foreground hover:text-foreground px-3 py-2 rounded-lg bg-white/50 hover:bg-white/80 transition-all duration-200 touch-manipulation border border-white/30"
-                title="Profile menu"
-              >
-                <div className="w-8 h-8 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center">
-                  <UserIcon className="w-4 h-4 text-primary" />
-                </div>
-                <span className="hidden sm:block text-sm">{user.email}</span>
-              </button>
-
-              {/* Dropdown menu */}
-              {showProfileDropdown && (
-                <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-modern border border-white/30 py-2 z-50">
-                  <div className="px-4 py-2 text-sm text-muted-foreground border-b border-border">
-                    Signed in as
-                  </div>
-                  <div className="px-4 py-2 text-sm font-medium text-foreground border-b border-border">
-                    {user.email}
-                  </div>
-                  <button
-                    onClick={() => {
-                      setShowProfileDropdown(false);
-                      handleSignOut();
-                    }}
-                    className="w-full text-left px-4 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors flex items-center gap-2"
-                  >
-                    <LogOut className="w-4 h-4" />
-                    Sign Out
-                  </button>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-
-        {/* Modern header with glassmorphism */}
-        <div className="glass rounded-2xl p-6 mb-8 border border-white/20">
+        {/* Combined header with logo and profile */}
+        <div className="glass rounded-2xl p-4 sm:p-6 mb-8 border border-white/20">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div className="flex items-center gap-3">
+            {/* Left side: Logo and title */}
+            <div className="flex items-center gap-4">
               <img 
                 src="/logo.png" 
                 alt="Riverwalks Logo" 
-                className="h-12 w-12 rounded-xl object-contain"
+                className="h-16 w-16 sm:h-20 sm:w-20 rounded-xl object-contain shadow-lg"
               />
-              <div>
-                <h1 className="text-3xl sm:text-4xl font-bold text-foreground">Your River Walks</h1>
+              <div className="hidden sm:block">
                 <p className="text-muted-foreground text-sm">Manage your river study documentation</p>
               </div>
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-3">
+            {/* Center: Action buttons and filters */}
+            <div className="flex flex-col sm:flex-row gap-3 sm:flex-1 sm:justify-center">
+              {/* Sort toggle */}
+              <div className="flex items-center gap-2">
+                <label className="text-sm text-muted-foreground">Sort by:</label>
+                <button
+                  className={`text-xs px-3 py-1 rounded-md border transition-all touch-manipulation ${
+                    sortBy === 'date' 
+                      ? 'bg-primary/10 text-primary border-primary/30' 
+                      : 'bg-white/50 text-muted-foreground border-white/30 hover:bg-white/80'
+                  }`}
+                  onClick={() => setSortBy('date')}
+                >
+                  Walk Date
+                </button>
+                <button
+                  className={`text-xs px-3 py-1 rounded-md border transition-all touch-manipulation ${
+                    sortBy === 'date_created' 
+                      ? 'bg-primary/10 text-primary border-primary/30' 
+                      : 'bg-white/50 text-muted-foreground border-white/30 hover:bg-white/80'
+                  }`}
+                  onClick={() => setSortBy('date_created')}
+                >
+                  Created Date
+                </button>
+              </div>
+
               {/* Archive toggle button */}
               <button
                 className={showArchived ? "btn-secondary touch-manipulation" : "btn-warning touch-manipulation"}
@@ -259,6 +247,45 @@ export default function RiverWalksPage() {
                 </button>
               )}
             </div>
+
+            {/* Right side: Profile */}
+            {user && (
+              <div className="relative" data-profile-dropdown>
+                {/* Profile button */}
+                <button
+                  onClick={() => setShowProfileDropdown(!showProfileDropdown)}
+                  className="flex items-center gap-2 text-muted-foreground hover:text-foreground px-3 py-2 rounded-lg bg-white/50 hover:bg-white/80 transition-all duration-200 touch-manipulation border border-white/30"
+                  title="Profile menu"
+                >
+                  <div className="w-8 h-8 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center">
+                    <UserIcon className="w-4 h-4 text-primary" />
+                  </div>
+                  <span className="hidden sm:block text-sm truncate max-w-32">{user.email}</span>
+                </button>
+
+                {/* Dropdown menu */}
+                {showProfileDropdown && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-modern border border-white/30 py-2 z-50">
+                    <div className="px-4 py-2 text-sm text-muted-foreground border-b border-border">
+                      Signed in as
+                    </div>
+                    <div className="px-4 py-2 text-sm font-medium text-foreground border-b border-border">
+                      {user.email}
+                    </div>
+                    <button
+                      onClick={() => {
+                        setShowProfileDropdown(false);
+                        handleSignOut();
+                      }}
+                      className="w-full text-left px-4 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors flex items-center gap-2"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      Sign Out
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
 

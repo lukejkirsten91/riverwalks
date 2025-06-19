@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import {
   getRiverWalks,
   getArchivedRiverWalks,
+  getRiverWalksByDateRange,
   createRiverWalk,
   updateRiverWalk,
   archiveRiverWalk,
@@ -15,6 +16,7 @@ export function useRiverWalks() {
   const [riverWalks, setRiverWalks] = useState<RiverWalk[]>([]);
   const [archivedRiverWalks, setArchivedRiverWalks] = useState<RiverWalk[]>([]);
   const [showArchived, setShowArchived] = useState(false);
+  const [sortBy, setSortBy] = useState<'date' | 'date_created'>('date');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { showSuccess, showError } = useToast();
@@ -23,8 +25,8 @@ export function useRiverWalks() {
     try {
       setLoading(true);
       const [activeData, archivedData] = await Promise.all([
-        getRiverWalks(false),
-        getArchivedRiverWalks()
+        getRiverWalks(false, sortBy),
+        getArchivedRiverWalks(sortBy)
       ]);
       setRiverWalks(activeData);
       setArchivedRiverWalks(archivedData);
@@ -124,19 +126,44 @@ export function useRiverWalks() {
     }
   };
 
+  const handleDateRangeFilter = async (startDate: string, endDate: string) => {
+    try {
+      setLoading(true);
+      const filteredData = await getRiverWalksByDateRange(
+        startDate, 
+        endDate, 
+        sortBy, 
+        showArchived
+      );
+      if (showArchived) {
+        setArchivedRiverWalks(filteredData);
+      } else {
+        setRiverWalks(filteredData);
+      }
+    } catch (err) {
+      setError('Failed to filter river walks by date range');
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     fetchRiverWalks();
-  }, []);
+  }, [sortBy]);
 
   return {
     riverWalks,
     archivedRiverWalks,
     showArchived,
     setShowArchived,
+    sortBy,
+    setSortBy,
     loading,
     error,
     setError,
     fetchRiverWalks,
+    handleDateRangeFilter,
     handleCreateRiverWalk,
     handleUpdateRiverWalk,
     handleArchiveRiverWalk,

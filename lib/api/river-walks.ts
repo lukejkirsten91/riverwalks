@@ -2,7 +2,10 @@ import { supabase } from '../supabase';
 import type { RiverWalk, RiverWalkFormData } from '../../types';
 
 // Get all river walks for the current user (excluding archived by default)
-export async function getRiverWalks(includeArchived = false): Promise<RiverWalk[]> {
+export async function getRiverWalks(
+  includeArchived = false, 
+  sortBy: 'date' | 'date_created' = 'date'
+): Promise<RiverWalk[]> {
   let query = supabase
     .from('river_walks')
     .select('*');
@@ -11,7 +14,7 @@ export async function getRiverWalks(includeArchived = false): Promise<RiverWalk[
     query = query.eq('archived', false);
   }
 
-  const { data, error } = await query.order('date', { ascending: false });
+  const { data, error } = await query.order(sortBy, { ascending: false });
 
   if (error) {
     console.error('Error fetching river walks:', error);
@@ -22,12 +25,14 @@ export async function getRiverWalks(includeArchived = false): Promise<RiverWalk[
 }
 
 // Get only archived river walks for the current user
-export async function getArchivedRiverWalks(): Promise<RiverWalk[]> {
+export async function getArchivedRiverWalks(
+  sortBy: 'date' | 'date_created' = 'date'
+): Promise<RiverWalk[]> {
   const { data, error } = await supabase
     .from('river_walks')
     .select('*')
     .eq('archived', true)
-    .order('date', { ascending: false });
+    .order(sortBy, { ascending: false });
 
   if (error) {
     console.error('Error fetching archived river walks:', error);
@@ -157,4 +162,31 @@ export async function deleteRiverWalk(id: string): Promise<boolean> {
   }
 
   return true;
+}
+
+// Get river walks filtered by date range
+export async function getRiverWalksByDateRange(
+  startDate: string,
+  endDate: string,
+  dateField: 'date' | 'date_created' = 'date',
+  includeArchived = false
+): Promise<RiverWalk[]> {
+  let query = supabase
+    .from('river_walks')
+    .select('*')
+    .gte(dateField, startDate)
+    .lte(dateField, endDate);
+
+  if (!includeArchived) {
+    query = query.eq('archived', false);
+  }
+
+  const { data, error } = await query.order(dateField, { ascending: false });
+
+  if (error) {
+    console.error('Error fetching river walks by date range:', error);
+    throw error;
+  }
+
+  return data || [];
 }
