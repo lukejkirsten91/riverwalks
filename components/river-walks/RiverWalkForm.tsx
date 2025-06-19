@@ -19,7 +19,7 @@ export function RiverWalkForm({
   const [formData, setFormData] = useState<RiverWalkFormData>({
     name: currentRiverWalk?.name || '',
     date: currentRiverWalk?.date || new Date().toISOString().split('T')[0],
-    country: currentRiverWalk?.country || 'UK',
+    country: currentRiverWalk?.country || '',
     county: currentRiverWalk?.county || '',
     notes: currentRiverWalk?.notes || '',
   });

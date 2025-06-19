@@ -326,17 +326,6 @@ export function EnhancedSiteForm({
   return (
     <div className="card-modern-xl p-6 bg-card max-w-5xl mx-auto">
       <div className="flex items-center gap-3 mb-8">
-        {/* Back button */}
-        {onBack && (
-          <button
-            onClick={handleBack}
-            className="w-10 h-10 rounded-lg bg-muted/50 hover:bg-muted flex items-center justify-center transition-colors"
-            title="Back to sites list"
-            type="button"
-          >
-            <ArrowLeft className="w-5 h-5 text-muted-foreground" />
-          </button>
-        )}
         <div className="w-12 h-12 rounded-xl flex items-center justify-center gradient-primary text-white">
           <MapPin className="w-6 h-6" />
         </div>

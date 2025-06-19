@@ -8,6 +8,7 @@ import {
   restoreRiverWalk,
   deleteRiverWalk,
 } from '../lib/api/river-walks';
+import { useToast } from '../components/ui/ToastProvider';
 import type { RiverWalk, RiverWalkFormData } from '../types';
 
 export function useRiverWalks() {
@@ -16,6 +17,7 @@ export function useRiverWalks() {
   const [showArchived, setShowArchived] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { showSuccess, showError } = useToast();
 
   const fetchRiverWalks = async () => {
     try {
@@ -39,8 +41,11 @@ export function useRiverWalks() {
       setLoading(true);
       await createRiverWalk(formData);
       await fetchRiverWalks();
+      showSuccess('River Walk Created', `${formData.name} has been successfully created.`);
     } catch (err) {
-      setError('Failed to create river walk');
+      const errorMessage = 'Failed to create river walk';
+      setError(errorMessage);
+      showError('Creation Failed', errorMessage);
       console.error(err);
       throw err;
     } finally {
@@ -68,10 +73,14 @@ export function useRiverWalks() {
   const handleArchiveRiverWalk = async (id: string) => {
     try {
       setLoading(true);
+      const riverWalk = riverWalks.find(rw => rw.id === id);
       await archiveRiverWalk(id);
       await fetchRiverWalks();
+      showSuccess('River Walk Archived', `${riverWalk?.name || 'River walk'} has been archived.`);
     } catch (err) {
-      setError('Failed to archive river walk');
+      const errorMessage = 'Failed to archive river walk';
+      setError(errorMessage);
+      showError('Archive Failed', errorMessage);
       console.error(err);
       throw err;
     } finally {
@@ -82,10 +91,14 @@ export function useRiverWalks() {
   const handleRestoreRiverWalk = async (id: string) => {
     try {
       setLoading(true);
+      const riverWalk = archivedRiverWalks.find(rw => rw.id === id);
       await restoreRiverWalk(id);
       await fetchRiverWalks();
+      showSuccess('River Walk Restored', `${riverWalk?.name || 'River walk'} has been restored.`);
     } catch (err) {
-      setError('Failed to restore river walk');
+      const errorMessage = 'Failed to restore river walk';
+      setError(errorMessage);
+      showError('Restore Failed', errorMessage);
       console.error(err);
       throw err;
     } finally {
@@ -96,10 +109,14 @@ export function useRiverWalks() {
   const handleDeleteRiverWalk = async (id: string) => {
     try {
       setLoading(true);
+      const riverWalk = archivedRiverWalks.find(rw => rw.id === id);
       await deleteRiverWalk(id);
       await fetchRiverWalks();
+      showSuccess('River Walk Deleted', `${riverWalk?.name || 'River walk'} has been permanently deleted.`);
     } catch (err) {
-      setError('Failed to delete river walk');
+      const errorMessage = 'Failed to delete river walk';
+      setError(errorMessage);
+      showError('Delete Failed', errorMessage);
       console.error(err);
       throw err;
     } finally {

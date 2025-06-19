@@ -104,6 +104,8 @@ export function MapLocationPicker({
   const [showResults, setShowResults] = useState(false);
   const [locationStatus, setLocationStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [statusMessage, setStatusMessage] = useState('');
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [pendingLocation, setPendingLocation] = useState<{lat: number, lng: number, address?: string} | null>(null);
 
   // Update position when props change
   useEffect(() => {
@@ -116,25 +118,45 @@ export function MapLocationPicker({
 
   // Handle position changes from map interactions
   const handlePositionChange = async (latlng: LatLng) => {
-    setPosition(latlng);
-    setCenter(latlng);
-    
-    // Reverse geocoding to get address
+    // Get address first
+    let address = '';
     try {
       const response = await fetch(
         `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latlng.lat}&lon=${latlng.lng}&zoom=18&addressdetails=1`
       );
       const data = await response.json();
-      const address = data.display_name || '';
-      
-      onLocationChange(latlng.lat, latlng.lng, address);
-      setLocationStatus('success');
-      setStatusMessage('Location updated successfully');
-      setTimeout(() => setLocationStatus('idle'), 3000);
+      address = data.display_name || '';
     } catch (error) {
-      onLocationChange(latlng.lat, latlng.lng);
       console.warn('Reverse geocoding failed:', error);
     }
+    
+    // Show confirmation dialog for new locations
+    if (!position) {
+      setPendingLocation({ lat: latlng.lat, lng: latlng.lng, address });
+      setShowConfirmDialog(true);
+    } else {
+      // Direct update for existing markers being dragged
+      confirmLocationUpdate(latlng.lat, latlng.lng, address);
+    }
+  };
+
+  // Confirm and save location
+  const confirmLocationUpdate = (lat: number, lng: number, address?: string) => {
+    const newPos = new LatLng(lat, lng);
+    setPosition(newPos);
+    setCenter(newPos);
+    onLocationChange(lat, lng, address);
+    setLocationStatus('success');
+    setStatusMessage('Coordinates saved successfully!');
+    setTimeout(() => setLocationStatus('idle'), 3000);
+    setShowConfirmDialog(false);
+    setPendingLocation(null);
+  };
+
+  // Cancel location selection
+  const cancelLocationSelection = () => {
+    setShowConfirmDialog(false);
+    setPendingLocation(null);
   };
 
   // Get user's current location
@@ -149,13 +171,26 @@ export function MapLocationPicker({
     setLocationStatus('idle');
     
     navigator.geolocation.getCurrentPosition(
-      (position) => {
+      async (position) => {
         const { latitude, longitude } = position.coords;
         const newPos = new LatLng(latitude, longitude);
-        handlePositionChange(newPos);
         setIsLocating(false);
-        setLocationStatus('success');
-        setStatusMessage('Found your location!');
+        
+        // Get address for GPS location
+        let address = '';
+        try {
+          const response = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1`
+          );
+          const data = await response.json();
+          address = data.display_name || '';
+        } catch (error) {
+          console.warn('Reverse geocoding failed:', error);
+        }
+        
+        // Show confirmation for GPS location
+        setPendingLocation({ lat: latitude, lng: longitude, address });
+        setShowConfirmDialog(true);
       },
       (error) => {
         setIsLocating(false);
@@ -212,9 +247,9 @@ export function MapLocationPicker({
   const handleResultSelect = (result: GeocodingResult) => {
     const lat = parseFloat(result.lat);
     const lng = parseFloat(result.lon);
-    const newPos = new LatLng(lat, lng);
     
-    handlePositionChange(newPos);
+    setPendingLocation({ lat, lng, address: result.display_name });
+    setShowConfirmDialog(true);
     setShowResults(false);
     setSearchQuery('');
   };
@@ -326,9 +361,9 @@ export function MapLocationPicker({
         {/* Map Instructions Overlay */}
         {!position && (
           <div className="absolute top-2 left-2 right-2 bg-white/90 backdrop-blur-sm rounded-lg p-3 shadow-sm z-10">
-            <div className="flex items-center gap-2 text-sm text-gray-700">
+            <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-700">
               <MapPin className="w-4 h-4 text-primary shrink-0" />
-              <span>Click on the map to place a pin, or use "Find My Location" to auto-locate</span>
+              <span>Click on the map to place a pin, search for an address, or use "Find My Location" to auto-locate</span>
             </div>
           </div>
         )}
@@ -346,6 +381,51 @@ export function MapLocationPicker({
           </div>
           <div className="text-xs text-blue-600 mt-1">
             Click or drag the pin to adjust the exact position
+          </div>
+        </div>
+      )}
+
+      {/* Location Confirmation Dialog */}
+      {showConfirmDialog && pendingLocation && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-xl p-6 max-w-md w-full mx-auto shadow-xl">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                <MapPin className="w-5 h-5 text-primary" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">Confirm Site Location</h3>
+                <p className="text-sm text-gray-600">Is this the correct location for your site?</p>
+              </div>
+            </div>
+            
+            <div className="bg-gray-50 rounded-lg p-3 mb-4">
+              <div className="text-sm font-medium text-gray-900 mb-1">Coordinates:</div>
+              <div className="text-sm text-gray-700 font-mono">
+                {pendingLocation.lat.toFixed(6)}, {pendingLocation.lng.toFixed(6)}
+              </div>
+              {pendingLocation.address && (
+                <div className="text-xs text-gray-600 mt-2">
+                  <span className="font-medium">Address:</span> {pendingLocation.address}
+                </div>
+              )}
+            </div>
+            
+            <div className="flex flex-col sm:flex-row gap-3">
+              <button
+                onClick={() => confirmLocationUpdate(pendingLocation.lat, pendingLocation.lng, pendingLocation.address)}
+                className="btn-success flex-1 flex items-center justify-center gap-2"
+              >
+                <CheckCircle className="w-4 h-4" />
+                Save Location
+              </button>
+              <button
+                onClick={cancelLocationSelection}
+                className="btn-secondary flex-1"
+              >
+                Cancel
+              </button>
+            </div>
           </div>
         </div>
       )}

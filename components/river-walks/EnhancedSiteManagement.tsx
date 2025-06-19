@@ -256,13 +256,49 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
         {/* Header */}
         <div className="sticky top-0 bg-white border-b p-4 sm:p-6 z-10">
           <div className="flex items-start sm:items-center justify-between gap-3">
-            <div className="flex-1 min-w-0">
-              <h2 className="text-lg sm:text-2xl font-bold truncate">
-                Manage Sites
-              </h2>
-              <p className="text-sm sm:text-base text-gray-600 truncate">
-                {riverWalk.name}
-              </p>
+            <div className="flex items-center gap-3 flex-1 min-w-0">
+              {/* Back button - only show when form is active */}
+              {(editingSite || showSiteForm) && (
+                <button
+                  onClick={() => {
+                    const hasUnsavedChanges = document.querySelector('form') && editingSite;
+                    if (hasUnsavedChanges) {
+                      const result = window.confirm(
+                        'You have unsaved changes. Do you want to save them before going back?\n\n' +
+                        'Click "OK" to save changes\n' +
+                        'Click "Cancel" to go back without saving'
+                      );
+                      
+                      if (result) {
+                        // User wants to save - trigger form submission
+                        const form = document.querySelector('form') as HTMLFormElement;
+                        if (form) {
+                          form.requestSubmit();
+                        }
+                        return;
+                      }
+                    }
+                    // Go back without saving or no unsaved changes
+                    setEditingSite(null);
+                    setShowSiteForm(false);
+                  }}
+                  className="w-10 h-10 rounded-lg bg-muted/50 hover:bg-muted flex items-center justify-center transition-colors"
+                  title="Back to sites list"
+                  type="button"
+                >
+                  <svg className="w-5 h-5 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+              )}
+              <div className="flex-1 min-w-0">
+                <h2 className="text-lg sm:text-2xl font-bold truncate">
+                  {(editingSite || showSiteForm) ? (editingSite ? 'Edit Site & Measurements' : 'Add New Site') : 'Manage Sites'}
+                </h2>
+                <p className="text-sm sm:text-base text-gray-600 truncate">
+                  {riverWalk.name}
+                </p>
+              </div>
             </div>
             <button
               onClick={onClose}
