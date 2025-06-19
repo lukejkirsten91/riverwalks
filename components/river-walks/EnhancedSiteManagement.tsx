@@ -178,8 +178,21 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
 
       await fetchSites(riverWalk.id);
       
-      // Update current site state immediately for instant UI update
-      setCurrentSite(prev => prev ? { ...prev, ...updateData } : null);
+      // Update current site state immediately for instant UI update (including measurement points)
+      const updatedMeasurementPoints = measurementPoints.map((point, index) => ({
+        id: `temp-${index}`, // Temporary ID for immediate UI update
+        site_id: currentSite.id,
+        point_number: point.point_number,
+        distance_from_bank: point.distance_from_bank,
+        depth: point.depth,
+        created_at: new Date().toISOString(),
+      }));
+      
+      setCurrentSite(prev => prev ? { 
+        ...prev, 
+        ...updateData,
+        measurement_points: updatedMeasurementPoints
+      } : null);
       
       showSuccess('Cross-Section Updated', 'Cross-sectional measurements have been saved successfully.');
       setCurrentView('site_todos');

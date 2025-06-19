@@ -242,7 +242,7 @@ export function CrossSectionForm({
                       min={0}
                       max={riverWidth}
                       decimals={2}
-                      className="flex-1 border border-border min-w-[100px]"
+                      className="flex-1 bg-blue-50 hover:bg-blue-100 px-3 py-2 rounded-lg border border-blue-200"
                     />
                   </div>
                 ))}
@@ -283,7 +283,7 @@ export function CrossSectionForm({
             loadingText="Saving..."
             className="btn-success touch-manipulation flex-1 sm:flex-none"
           >
-            Save and Exit
+            Save and Mark as In Progress
           </LoadingButton>
           <LoadingButton
             type="button"

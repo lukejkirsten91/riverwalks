@@ -293,7 +293,7 @@ export function SedimentForm({
             loadingText="Saving..."
             className="btn-success touch-manipulation flex-1 sm:flex-none"
           >
-            Save and Exit
+            Save and Mark as In Progress
           </LoadingButton>
           <LoadingButton
             type="button"
