@@ -182,24 +182,23 @@ export default function RiverWalksPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-muted/50 to-slate-100">
       <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
-        {/* Combined header with logo and profile */}
-        <div className="glass rounded-2xl p-4 sm:p-6 mb-8 border border-white/20">
-          {/* Top row: Logo, title and profile */}
-          <div className="flex items-start justify-between gap-4 mb-4 sm:mb-0">
+        {/* Compact header with logo and profile */}
+        <div className="glass rounded-2xl p-4 sm:p-6 mb-6 border border-white/20">
+          <div className="flex items-center justify-between gap-4">
             {/* Left side: Logo and title */}
             <div className="flex items-center gap-4 flex-1 min-w-0">
               <img 
                 src="/logo.png" 
                 alt="Riverwalks Logo" 
-                className="h-16 w-16 sm:h-20 sm:w-20 rounded-xl object-contain shadow-lg flex-shrink-0"
+                className="h-12 w-12 sm:h-16 sm:w-16 rounded-xl object-contain shadow-lg flex-shrink-0"
               />
               <div className="min-w-0">
-                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground">Your River Walks</h1>
+                <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-foreground">Your River Walks</h1>
                 <p className="text-muted-foreground text-sm">Manage your river study documentation</p>
               </div>
             </div>
 
-            {/* Right side: Profile - always top right */}
+            {/* Right side: Profile */}
             {user && (
               <div className="relative flex-shrink-0" data-profile-dropdown>
                 {/* Profile button */}
@@ -238,16 +237,16 @@ export default function RiverWalksPage() {
               </div>
             )}
           </div>
+        </div>
 
-          {/* Bottom row: Action buttons - centered */}
-          <div className="flex justify-center sm:justify-center">
-            <button
-              className={showForm ? "btn-secondary touch-manipulation" : "btn-primary touch-manipulation"}
-              onClick={handleAddNewRiverWalk}
-            >
-              {showForm ? 'Cancel' : '+ Add River Walk'}
-            </button>
-          </div>
+        {/* Action buttons - right aligned below header */}
+        <div className="flex justify-end mb-6">
+          <button
+            className={showForm ? "btn-secondary touch-manipulation" : "btn-primary touch-manipulation"}
+            onClick={handleAddNewRiverWalk}
+          >
+            {showForm ? 'Cancel' : '+ Add River Walk'}
+          </button>
         </div>
 
         {/* Error display */}

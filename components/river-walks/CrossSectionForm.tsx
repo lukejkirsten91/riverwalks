@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Ruler, Settings } from 'lucide-react';
+import { Ruler, Settings, BarChart3 } from 'lucide-react';
 import { InlineNumberEdit } from '../ui/InlineNumberEdit';
 import { LoadingButton } from '../ui/LoadingSpinner';
 import type { Site, MeasurementPointFormData, UnitType, TodoStatus } from '../../types';
@@ -274,6 +274,135 @@ export function CrossSectionForm({
             </div>
           </div>
         </div>
+
+        {/* Real-time Cross-Sectional Chart */}
+        {measurementData.length > 0 && measurementData.some(point => point.depth > 0) && (
+          <div className="mt-8 bg-blue-50/50 rounded-xl p-6 border border-blue-100">
+            <div className="flex items-center gap-3 mb-4">
+              <BarChart3 className="w-5 h-5 text-blue-600" />
+              <h4 className="font-semibold text-blue-800">Cross-Sectional Profile</h4>
+            </div>
+            
+            <div className="bg-white rounded-lg p-4 border border-blue-200">
+              <svg
+                width="100%"
+                height="300"
+                viewBox="0 0 800 300"
+                className="border border-gray-200 rounded"
+              >
+                {/* Grid lines */}
+                <defs>
+                  <pattern id="grid" width="40" height="30" patternUnits="userSpaceOnUse">
+                    <path d="M 40 0 L 0 0 0 30" fill="none" stroke="#e5e7eb" strokeWidth="1"/>
+                  </pattern>
+                </defs>
+                <rect width="100%" height="100%" fill="url(#grid)" />
+                
+                {/* Water surface line */}
+                <line x1="50" y1="50" x2="750" y2="50" stroke="#3b82f6" strokeWidth="2" strokeDasharray="5,5" />
+                <text x="760" y="55" fill="#3b82f6" fontSize="12">Water Surface</text>
+                
+                {/* River bed profile */}
+                {(() => {
+                  const maxDepth = Math.max(...measurementData.map(p => p.depth || 0));
+                  const scaleX = 700 / riverWidth; // 700px width for chart area
+                  const scaleY = maxDepth > 0 ? 200 / maxDepth : 1; // 200px height for chart area
+                  
+                  const points = measurementData.map(point => ({
+                    x: 50 + (point.distance_from_bank || 0) * scaleX,
+                    y: 50 + (point.depth || 0) * scaleY
+                  }));
+                  
+                  // Create path for river bed
+                  const pathData = points.reduce((path, point, index) => {
+                    if (index === 0) {
+                      return `M ${point.x} 50 L ${point.x} ${point.y}`;
+                    }
+                    return `${path} L ${point.x} ${point.y}`;
+                  }, '') + ' L 750 50 Z';
+                  
+                  return (
+                    <>
+                      {/* River bed area */}
+                      <path
+                        d={pathData}
+                        fill="#8b5cf6"
+                        fillOpacity="0.3"
+                        stroke="#8b5cf6"
+                        strokeWidth="2"
+                      />
+                      
+                      {/* Measurement points */}
+                      {points.map((point, index) => (
+                        <g key={index}>
+                          <circle
+                            cx={point.x}
+                            cy={point.y}
+                            r="4"
+                            fill="#8b5cf6"
+                            stroke="white"
+                            strokeWidth="2"
+                          />
+                          <text
+                            x={point.x}
+                            y={point.y - 10}
+                            textAnchor="middle"
+                            fontSize="10"
+                            fill="#6b46c1"
+                          >
+                            {index + 1}
+                          </text>
+                        </g>
+                      ))}
+                      
+                      {/* Depth labels */}
+                      {points.map((point, index) => (
+                        <text
+                          key={`depth-${index}`}
+                          x={point.x}
+                          y={point.y + 20}
+                          textAnchor="middle"
+                          fontSize="10"
+                          fill="#6b46c1"
+                        >
+                          {(measurementData[index].depth || 0).toFixed(1)}{depthUnits}
+                        </text>
+                      ))}
+                    </>
+                  );
+                })()}
+                
+                {/* Axis labels */}
+                <text x="400" y="290" textAnchor="middle" fontSize="12" fill="#6b7280">
+                  Distance from bank ({depthUnits})
+                </text>
+                <text x="20" y="150" textAnchor="middle" fontSize="12" fill="#6b7280" transform="rotate(-90 20 150)">
+                  Depth ({depthUnits})
+                </text>
+              </svg>
+            </div>
+            
+            {/* Cross-sectional area calculation */}
+            {(() => {
+              const area = measurementData.reduce((total, point, index, arr) => {
+                if (index === 0) return 0;
+                const prevPoint = arr[index - 1];
+                const width = (point.distance_from_bank || 0) - (prevPoint.distance_from_bank || 0);
+                const avgDepth = ((point.depth || 0) + (prevPoint.depth || 0)) / 2;
+                return total + (width * avgDepth);
+              }, 0);
+              
+              return (
+                <div className="mt-4 p-3 bg-blue-100 rounded-lg border border-blue-200">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-blue-700 font-medium">Cross-sectional Area:</span>
+                    <span className="text-blue-800 font-bold">{area.toFixed(2)} {depthUnits}²</span>
+                  </div>
+                </div>
+              );
+            })()}
+          </div>
+        )}
 
         {/* Submit Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 pt-6 border-t-2 border-gray-200">
