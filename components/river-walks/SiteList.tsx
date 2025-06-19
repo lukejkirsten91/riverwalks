@@ -1,4 +1,4 @@
-import { MapPin, Trash2, Plus, Ruler } from 'lucide-react';
+import { MapPin, Trash2, Ruler } from 'lucide-react';
 import { InlineEdit } from '../ui/InlineEdit';
 import { InlineNumberEdit } from '../ui/InlineNumberEdit';
 import type { Site } from '../../types';
@@ -32,8 +32,7 @@ export function SiteList({
           onClick={onAddNewSite}
           className="btn-primary touch-manipulation"
         >
-          <Plus className="w-5 h-5 mr-2" />
-          Add First Site
+          + Add First Site
         </button>
       </div>
     );
@@ -55,8 +54,7 @@ export function SiteList({
           onClick={onAddNewSite}
           className="btn-primary touch-manipulation"
         >
-          <Plus className="w-5 h-5 mr-2" />
-          Add New Site
+          + Add New Site
         </button>
       </div>
 
@@ -132,10 +130,6 @@ export function SiteList({
                     className="text-sm"
                   />
                 </div>
-                <div className="flex items-center gap-2">
-                  <MapPin className="w-4 h-4" />
-                  <span>{site.measurement_points?.length || 0} points</span>
-                </div>
               </div>
             </div>
 
@@ -196,57 +190,6 @@ export function SiteList({
             </div>
           </div>
 
-          {/* Measurement points - clickable */}
-          {site.measurement_points && site.measurement_points.length > 0 && (
-            <div className="pt-4 border-t border-border">
-              <div className="flex items-center justify-between mb-4">
-                <h5 className="font-medium text-foreground">
-                  Measurement Points
-                </h5>
-                <span className="text-xs text-muted-foreground">
-                  Click a point to edit quickly
-                </span>
-              </div>
-              
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
-                {site.measurement_points.map((point) => (
-                  <button
-                    key={point.id}
-                    onClick={() => onEditMeasurements(site)}
-                    className="bg-muted/50 hover:bg-primary/10 border border-border hover:border-primary/30 p-3 rounded-lg text-left transition-all duration-200 hover:shadow-modern touch-manipulation"
-                  >
-                    <div className="font-medium text-foreground text-sm">
-                      Point {point.point_number}
-                    </div>
-                    <div className="text-muted-foreground text-xs mt-1">
-                      {point.distance_from_bank}m from bank
-                    </div>
-                    <div className="text-muted-foreground text-xs">
-                      {point.depth}m depth
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* No measurements state */}
-          {(!site.measurement_points || site.measurement_points.length === 0) && (
-            <div className="pt-4 border-t border-border">
-              <div className="bg-muted/30 rounded-lg p-4 text-center">
-                <p className="text-muted-foreground text-sm mb-3">
-                  No measurement points added yet
-                </p>
-                <button
-                  onClick={() => onEditMeasurements(site)}
-                  className="btn-primary touch-manipulation text-sm"
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add Measurements
-                </button>
-              </div>
-            </div>
-          )}
         </div>
       ))}
     </div>

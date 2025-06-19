@@ -134,6 +134,9 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
       await handleUpdateSite(currentSite.id, updateData, riverWalk.id);
       await fetchSites(riverWalk.id);
       
+      // Update current site state immediately for instant UI update
+      setCurrentSite(prev => prev ? { ...prev, ...updateData } : null);
+      
       showSuccess('Site Info Updated', 'Site information has been saved successfully.');
       setCurrentView('site_todos');
     } catch (error) {
@@ -175,6 +178,9 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
 
       await fetchSites(riverWalk.id);
       
+      // Update current site state immediately for instant UI update
+      setCurrentSite(prev => prev ? { ...prev, ...updateData } : null);
+      
       showSuccess('Cross-Section Updated', 'Cross-sectional measurements have been saved successfully.');
       setCurrentView('site_todos');
     } catch (error) {
@@ -204,6 +210,9 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
 
       await handleUpdateSite(currentSite.id, updateData, riverWalk.id);
       await fetchSites(riverWalk.id);
+      
+      // Update current site state immediately for instant UI update
+      setCurrentSite(prev => prev ? { ...prev, ...updateData } : null);
       
       showSuccess('Velocity Updated', 'Velocity measurements have been saved successfully.');
       setCurrentView('site_todos');
@@ -266,6 +275,9 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
 
       await handleUpdateSite(currentSite.id, updateData, riverWalk.id);
       await fetchSites(riverWalk.id);
+      
+      // Update current site state immediately for instant UI update
+      setCurrentSite(prev => prev ? { ...prev, ...updateData } : null);
       
       showSuccess('Sediment Analysis Updated', 'Sediment analysis has been saved successfully.');
       setCurrentView('site_todos');
