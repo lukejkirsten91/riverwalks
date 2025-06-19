@@ -298,38 +298,73 @@ export function CrossSectionForm({
                 </defs>
                 <rect width="100%" height="100%" fill="url(#grid)" />
                 
-                {/* Water surface line */}
-                <line x1="50" y1="50" x2="750" y2="50" stroke="#3b82f6" strokeWidth="2" strokeDasharray="5,5" />
-                <text x="760" y="55" fill="#3b82f6" fontSize="12">Water Surface</text>
-                
-                {/* River bed profile */}
+                {/* Chart area calculations */}
                 {(() => {
                   const maxDepth = Math.max(...measurementData.map(p => p.depth || 0));
                   const scaleX = 700 / riverWidth; // 700px width for chart area
-                  const scaleY = maxDepth > 0 ? 200 / maxDepth : 1; // 200px height for chart area
+                  const scaleY = maxDepth > 0 ? 180 / maxDepth : 1; // 180px height for chart area
+                  const waterSurfaceY = 70; // Water surface level
                   
                   const points = measurementData.map(point => ({
                     x: 50 + (point.distance_from_bank || 0) * scaleX,
-                    y: 50 + (point.depth || 0) * scaleY
+                    y: waterSurfaceY + (point.depth || 0) * scaleY
                   }));
                   
-                  // Create path for river bed
-                  const pathData = points.reduce((path, point, index) => {
-                    if (index === 0) {
-                      return `M ${point.x} 50 L ${point.x} ${point.y}`;
-                    }
-                    return `${path} L ${point.x} ${point.y}`;
-                  }, '') + ' L 750 50 Z';
+                  // Find the deepest point for underground fill
+                  const maxDepthY = Math.max(...points.map(p => p.y));
+                  const undergroundBottom = maxDepthY + 30;
                   
                   return (
                     <>
-                      {/* River bed area */}
-                      <path
-                        d={pathData}
-                        fill="#8b5cf6"
-                        fillOpacity="0.3"
-                        stroke="#8b5cf6"
-                        strokeWidth="2"
+                      {/* Brown underground area (full width) */}
+                      <rect
+                        x="50"
+                        y={maxDepthY}
+                        width="700"
+                        height={undergroundBottom - maxDepthY}
+                        fill="#8B4513"
+                      />
+                      
+                      {/* Left bank */}
+                      <polygon
+                        points={`30,${waterSurfaceY - 20} 50,${waterSurfaceY} 50,${undergroundBottom} 30,${undergroundBottom}`}
+                        fill="#8B4513"
+                      />
+                      
+                      {/* Right bank */}
+                      <polygon
+                        points={`750,${waterSurfaceY} 770,${waterSurfaceY - 20} 770,${undergroundBottom} 750,${undergroundBottom}`}
+                        fill="#8B4513"
+                      />
+                      
+                      {/* River bed area - create water area above the bed */}
+                      {points.length > 1 && (
+                        <path
+                          d={`M 50 ${waterSurfaceY} L ${points.map(p => `${p.x} ${p.y}`).join(' L ')} L 750 ${waterSurfaceY} Z`}
+                          fill="#87CEEB"
+                          fillOpacity="0.7"
+                        />
+                      )}
+                      
+                      {/* River bed line */}
+                      {points.length > 1 && (
+                        <path
+                          d={`M ${points.map(p => `${p.x} ${p.y}`).join(' L ')}`}
+                          fill="none"
+                          stroke="#4682B4"
+                          strokeWidth="3"
+                        />
+                      )}
+                      
+                      {/* Water surface line */}
+                      <line 
+                        x1="50" 
+                        y1={waterSurfaceY} 
+                        x2="750" 
+                        y2={waterSurfaceY} 
+                        stroke="#00BFFF" 
+                        strokeWidth="2" 
+                        strokeDasharray="5,5" 
                       />
                       
                       {/* Measurement points */}
@@ -338,17 +373,18 @@ export function CrossSectionForm({
                           <circle
                             cx={point.x}
                             cy={point.y}
-                            r="4"
-                            fill="#8b5cf6"
+                            r="5"
+                            fill="#FF6347"
                             stroke="white"
                             strokeWidth="2"
                           />
                           <text
                             x={point.x}
-                            y={point.y - 10}
+                            y={point.y - 12}
                             textAnchor="middle"
-                            fontSize="10"
-                            fill="#6b46c1"
+                            fontSize="11"
+                            fill="#000"
+                            fontWeight="bold"
                           >
                             {index + 1}
                           </text>
@@ -360,23 +396,41 @@ export function CrossSectionForm({
                         <text
                           key={`depth-${index}`}
                           x={point.x}
-                          y={point.y + 20}
+                          y={point.y + 25}
                           textAnchor="middle"
                           fontSize="10"
-                          fill="#6b46c1"
+                          fill="#000"
                         >
                           {(measurementData[index].depth || 0).toFixed(1)}{depthUnits}
                         </text>
                       ))}
+                      
+                      {/* Legend */}
+                      <g transform="translate(520, 20)">
+                        <rect x="0" y="0" width="160" height="45" fill="white" stroke="#ccc" strokeWidth="1" rx="3"/>
+                        <rect x="5" y="8" width="12" height="8" fill="#87CEEB" />
+                        <text x="20" y="16" fontSize="10" fill="#000">Water</text>
+                        <rect x="5" y="22" width="12" height="8" fill="#8B4513" />
+                        <text x="20" y="30" fontSize="10" fill="#000">Underground</text>
+                        <circle cx="75" cy="12" r="3" fill="#FF6347" stroke="white" strokeWidth="1"/>
+                        <text x="85" y="16" fontSize="10" fill="#000">Measurement</text>
+                        <line x1="75" y1="25" x2="95" y2="25" stroke="#00BFFF" strokeWidth="1" strokeDasharray="2,2"/>
+                        <text x="100" y="29" fontSize="10" fill="#000">Surface</text>
+                      </g>
+                      
+                      {/* Water surface label */}
+                      <text x="760" y={waterSurfaceY - 5} fill="#00BFFF" fontSize="11" fontWeight="bold">
+                        Water Surface
+                      </text>
                     </>
                   );
                 })()}
                 
                 {/* Axis labels */}
-                <text x="400" y="290" textAnchor="middle" fontSize="12" fill="#6b7280">
-                  Distance from bank ({depthUnits})
+                <text x="400" y="290" textAnchor="middle" fontSize="12" fill="#6b7280" fontWeight="bold">
+                  Distance from Bank ({depthUnits})
                 </text>
-                <text x="20" y="150" textAnchor="middle" fontSize="12" fill="#6b7280" transform="rotate(-90 20 150)">
+                <text x="25" y="150" textAnchor="middle" fontSize="12" fill="#6b7280" fontWeight="bold" transform="rotate(-90 25 150)">
                   Depth ({depthUnits})
                 </text>
               </svg>
