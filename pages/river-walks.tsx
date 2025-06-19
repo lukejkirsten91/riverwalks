@@ -184,34 +184,24 @@ export default function RiverWalksPage() {
       <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
         {/* Combined header with logo and profile */}
         <div className="glass rounded-2xl p-4 sm:p-6 mb-8 border border-white/20">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          {/* Top row: Logo, title and profile */}
+          <div className="flex items-start justify-between gap-4 mb-4 sm:mb-0">
             {/* Left side: Logo and title */}
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-4 flex-1 min-w-0">
               <img 
                 src="/logo.png" 
                 alt="Riverwalks Logo" 
-                className="h-16 w-16 sm:h-20 sm:w-20 rounded-xl object-contain shadow-lg"
+                className="h-16 w-16 sm:h-20 sm:w-20 rounded-xl object-contain shadow-lg flex-shrink-0"
               />
-              <div>
-                <h1 className="text-3xl sm:text-4xl font-bold text-foreground">Your River Walks</h1>
+              <div className="min-w-0">
+                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground">Your River Walks</h1>
                 <p className="text-muted-foreground text-sm">Manage your river study documentation</p>
               </div>
             </div>
 
-            {/* Center: Action buttons */}
-            <div className="flex flex-col sm:flex-row gap-3 sm:flex-1 sm:justify-center">
-              {/* Add River Walk button - only show when not viewing archived */}
-              <button
-                className={showForm ? "btn-secondary touch-manipulation" : "btn-primary touch-manipulation"}
-                onClick={handleAddNewRiverWalk}
-              >
-                {showForm ? 'Cancel' : '+ Add River Walk'}
-              </button>
-            </div>
-
-            {/* Right side: Profile */}
+            {/* Right side: Profile - always top right */}
             {user && (
-              <div className="relative" data-profile-dropdown>
+              <div className="relative flex-shrink-0" data-profile-dropdown>
                 {/* Profile button */}
                 <button
                   onClick={() => setShowProfileDropdown(!showProfileDropdown)}
@@ -247,6 +237,16 @@ export default function RiverWalksPage() {
                 )}
               </div>
             )}
+          </div>
+
+          {/* Bottom row: Action buttons - centered */}
+          <div className="flex justify-center sm:justify-center">
+            <button
+              className={showForm ? "btn-secondary touch-manipulation" : "btn-primary touch-manipulation"}
+              onClick={handleAddNewRiverWalk}
+            >
+              {showForm ? 'Cancel' : '+ Add River Walk'}
+            </button>
           </div>
         </div>
 
