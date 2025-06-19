@@ -145,17 +145,52 @@ export function SiteTodoList({ site, onTodoClick }: SiteTodoListProps) {
         })}
       </div>
 
-      {/* Progress Summary */}
+      {/* Progress Bar */}
       <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-        <div className="flex items-center gap-2 mb-2">
+        <div className="flex items-center gap-2 mb-3">
           <div className="w-4 h-4 rounded-full bg-blue-500"></div>
           <span className="text-sm font-medium text-blue-800">Site Progress</span>
         </div>
-        <div className="flex gap-4 text-xs text-blue-700">
-          <span>Complete: {todos.filter(t => t.status === 'complete').length}/4</span>
-          <span>In Progress: {todos.filter(t => t.status === 'in_progress').length}</span>
-          <span>Remaining: {todos.filter(t => t.status === 'not_started').length}</span>
-        </div>
+        
+        {(() => {
+          const completedCount = todos.filter(t => t.status === 'complete').length;
+          const inProgressCount = todos.filter(t => t.status === 'in_progress').length;
+          const totalCount = todos.length;
+          const progressPercent = (completedCount / totalCount) * 100;
+          
+          return (
+            <>
+              <div className="flex items-center justify-between text-xs mb-2">
+                <span className="text-blue-700">Progress</span>
+                <span className="font-medium text-blue-800">
+                  {completedCount}/{totalCount} tasks complete
+                </span>
+              </div>
+              <div className="w-full bg-blue-200 rounded-full h-3 mb-3">
+                <div 
+                  className="bg-green-500 h-3 rounded-full transition-all duration-500"
+                  style={{ width: `${progressPercent}%` }}
+                ></div>
+              </div>
+              <div className="flex items-center gap-4 text-xs">
+                <span className="flex items-center gap-1">
+                  <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                  <span className="text-blue-700">{completedCount} complete</span>
+                </span>
+                {inProgressCount > 0 && (
+                  <span className="flex items-center gap-1">
+                    <span className="w-2 h-2 bg-yellow-500 rounded-full"></span>
+                    <span className="text-blue-700">{inProgressCount} in progress</span>
+                  </span>
+                )}
+                <span className="flex items-center gap-1">
+                  <span className="w-2 h-2 bg-gray-400 rounded-full"></span>
+                  <span className="text-blue-700">{todos.filter(t => t.status === 'not_started').length} remaining</span>
+                </span>
+              </div>
+            </>
+          );
+        })()}
       </div>
     </div>
   );
