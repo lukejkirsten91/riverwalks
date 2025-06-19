@@ -90,6 +90,14 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
     fetchSites(riverWalk.id);
   }, [riverWalk.id]);
 
+  // Scroll to top when modal opens or view changes
+  React.useEffect(() => {
+    const modalElement = document.querySelector('[data-modal="site-management"]');
+    if (modalElement) {
+      modalElement.scrollTop = 0;
+    }
+  }, [currentView]);
+
   // Navigation handlers
   const handleSiteSelect = (site: Site) => {
     setCurrentSite(site);
@@ -541,6 +549,7 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
       <div 
         className="bg-white rounded-lg w-full max-w-6xl max-h-[98vh] sm:max-h-[90vh] overflow-y-auto mt-2 sm:mt-0"
         onClick={(e) => e.stopPropagation()}
+        data-modal="site-management"
       >
         {/* Header */}
         <div className="sticky top-0 bg-white border-b p-4 sm:p-6 z-10">
