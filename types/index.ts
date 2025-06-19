@@ -12,6 +12,22 @@ export interface RiverWalk {
   notes: string | null;
 }
 
+export type TodoStatus = 'not_started' | 'in_progress' | 'complete';
+
+export interface VelocityMeasurement {
+  measurement_number: number;
+  time_seconds: number;
+  float_travel_distance: number;
+  velocity_ms: number;
+}
+
+export interface VelocityData {
+  measurements: VelocityMeasurement[];
+  average_velocity?: number;
+  float_distance_units?: UnitType;
+  time_units?: 'seconds' | 'minutes';
+}
+
 export interface Site {
   id: string;
   river_walk_id: string;
@@ -28,6 +44,12 @@ export interface Site {
   sedimentation_units: UnitType;
   sedimentation_photo_url: string | null;
   sedimentation_data: SedimentationData | null;
+  velocity_measurement_count: number;
+  velocity_data: VelocityData | null;
+  todo_site_info_status: TodoStatus;
+  todo_cross_section_status: TodoStatus;
+  todo_velocity_status: TodoStatus;
+  todo_sediment_status: TodoStatus;
   created_at: string;
   updated_at: string;
   measurement_points?: MeasurementPoint[];
@@ -89,6 +111,12 @@ export interface CreateSiteData {
   sedimentation_units?: UnitType;
   sedimentation_photo_url?: string;
   sedimentation_data?: SedimentationData;
+  velocity_measurement_count?: number;
+  velocity_data?: VelocityData;
+  todo_site_info_status?: TodoStatus;
+  todo_cross_section_status?: TodoStatus;
+  todo_velocity_status?: TodoStatus;
+  todo_sediment_status?: TodoStatus;
 }
 
 export interface UpdateSiteData {
@@ -104,6 +132,12 @@ export interface UpdateSiteData {
   sedimentation_units?: UnitType;
   sedimentation_photo_url?: string | null;
   sedimentation_data?: SedimentationData | null;
+  velocity_measurement_count?: number;
+  velocity_data?: VelocityData | null;
+  todo_site_info_status?: TodoStatus;
+  todo_cross_section_status?: TodoStatus;
+  todo_velocity_status?: TodoStatus;
+  todo_sediment_status?: TodoStatus;
 }
 
 // Photo-related types

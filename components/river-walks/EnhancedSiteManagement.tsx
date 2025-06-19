@@ -2,8 +2,12 @@ import React, { useState } from 'react';
 import { formatDate } from '../../lib/utils';
 import { updateSite, createMeasurementPoints, deleteMeasurementPointsForSite } from '../../lib/api/sites';
 import { uploadSitePhoto, deleteSitePhoto } from '../../lib/api/storage';
-import { EnhancedSiteForm } from './EnhancedSiteForm';
 import { SiteList } from './SiteList';
+import { SiteTodoList } from './SiteTodoList';
+import { SiteInfoForm } from './SiteInfoForm';
+import { CrossSectionForm } from './CrossSectionForm';
+import { VelocityForm } from './VelocityForm';
+import { SedimentForm } from './SedimentForm';
 import { useSites } from '../../hooks/useSites';
 import { useToast } from '../ui/ToastProvider';
 import { supabase } from '../../lib/supabase';
@@ -16,12 +20,23 @@ import type {
   MeasurementPointFormData,
   SedimentationMeasurement,
   CreateMeasurementPointData,
+  VelocityData,
+  UnitType,
+  TodoStatus,
 } from '../../types';
 
 interface EnhancedSiteManagementProps {
   riverWalk: RiverWalk;
   onClose: () => void;
 }
+
+type CurrentView = 
+  | 'site_list' 
+  | 'site_todos' 
+  | 'site_info_form' 
+  | 'cross_section_form' 
+  | 'velocity_form' 
+  | 'sediment_form';
 
 export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManagementProps) {
   const {
@@ -36,180 +51,232 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
   } = useSites();
 
   const { showSuccess, showError } = useToast();
-  const [showSiteForm, setShowSiteForm] = useState(false);
-  const [editingSite, setEditingSite] = useState<Site | null>(null);
+  
+  // Navigation state
+  const [currentView, setCurrentView] = useState<CurrentView>('site_list');
+  const [currentSite, setCurrentSite] = useState<Site | null>(null);
 
   // Load sites when component mounts
   React.useEffect(() => {
     fetchSites(riverWalk.id);
   }, [riverWalk.id]);
 
-  const handleEnhancedSubmit = async (
+  // Navigation handlers
+  const handleSiteSelect = (site: Site) => {
+    setCurrentSite(site);
+    setCurrentView('site_todos');
+  };
+
+  const handleTodoClick = (todoType: 'site_info' | 'cross_section' | 'velocity' | 'sediment') => {
+    const viewMap: Record<typeof todoType, CurrentView> = {
+      site_info: 'site_info_form',
+      cross_section: 'cross_section_form',
+      velocity: 'velocity_form',
+      sediment: 'sediment_form',
+    };
+    setCurrentView(viewMap[todoType]);
+  };
+
+  const handleBackToTodos = () => {
+    setCurrentView('site_todos');
+  };
+
+  const handleBackToSites = () => {
+    setCurrentView('site_list');
+    setCurrentSite(null);
+  };
+
+  // Form submission handlers
+  const handleSiteInfoSubmit = async (
     formData: SiteFormData,
-    measurementData: MeasurementPointFormData[],
-    numMeasurements: number,
-    riverWidth: number,
-    sedimentationData: {
-      photo?: File;
-      measurements: SedimentationMeasurement[];
-    },
     sitePhoto?: File,
     removeSitePhoto?: boolean,
-    removeSedimentationPhoto?: boolean
+    todoStatus?: TodoStatus
   ) => {
-    // Get current user for photo uploads
+    if (!currentSite) return;
+
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) {
       throw new Error('You must be logged in to upload photos');
     }
 
     try {
-      let sitePhotoUrl: string | null | undefined;
-      let sedimentationPhotoUrl: string | null | undefined;
+      let sitePhotoUrl: string | null | undefined = currentSite.photo_url;
 
-      if (editingSite) {
-        // Editing existing site
-        sitePhotoUrl = editingSite.photo_url;
-        sedimentationPhotoUrl = editingSite.sedimentation_photo_url;
-
-        // Handle site photo
-        if (removeSitePhoto) {
-          if (editingSite.photo_url) {
-            await deleteSitePhoto(editingSite.photo_url);
-          }
-          sitePhotoUrl = null;
-        } else if (sitePhoto) {
-          if (editingSite.photo_url) {
-            await deleteSitePhoto(editingSite.photo_url);
-          }
-          sitePhotoUrl = await uploadSitePhoto(editingSite.id, sitePhoto, session.user.id);
+      // Handle site photo
+      if (removeSitePhoto) {
+        if (currentSite.photo_url) {
+          await deleteSitePhoto(currentSite.photo_url);
         }
-
-        // Handle sedimentation photo
-        if (removeSedimentationPhoto) {
-          if (editingSite.sedimentation_photo_url) {
-            await deleteSitePhoto(editingSite.sedimentation_photo_url);
-          }
-          sedimentationPhotoUrl = null;
-        } else if (sedimentationData.photo) {
-          if (editingSite.sedimentation_photo_url) {
-            await deleteSitePhoto(editingSite.sedimentation_photo_url);
-          }
-          sedimentationPhotoUrl = await uploadSitePhoto(
-            editingSite.id, 
-            sedimentationData.photo, 
-            session.user.id,
-            'sedimentation'
-          );
+        sitePhotoUrl = null;
+      } else if (sitePhoto) {
+        if (currentSite.photo_url) {
+          await deleteSitePhoto(currentSite.photo_url);
         }
-
-        // Update site with all data
-        const updateData: UpdateSiteData = {
-          site_name: formData.site_name,
-          river_width: riverWidth,
-          latitude: formData.latitude ? parseFloat(formData.latitude) : undefined,
-          longitude: formData.longitude ? parseFloat(formData.longitude) : undefined,
-          notes: formData.notes || undefined,
-          weather_conditions: formData.weather_conditions || undefined,
-          land_use: formData.land_use || undefined,
-          depth_units: formData.depth_units || 'm',
-          sedimentation_units: formData.sedimentation_units || 'mm',
-          photo_url: sitePhotoUrl,
-          sedimentation_photo_url: sedimentationPhotoUrl,
-          sedimentation_data: {
-            measurements: sedimentationData.measurements,
-          },
-        };
-
-        await handleUpdateSite(editingSite.id, updateData, riverWalk.id);
-
-        // Update measurement points
-        await deleteMeasurementPointsForSite(editingSite.id);
-        const measurementPoints: CreateMeasurementPointData[] = measurementData.map((point, index) => ({
-          point_number: index + 1,
-          distance_from_bank: point.distance_from_bank,
-          depth: point.depth,
-        }));
-        await createMeasurementPoints(editingSite.id, measurementPoints);
-
-        setEditingSite(null);
-        showSuccess('Site Updated', `${formData.site_name} has been successfully updated with all measurements and data.`);
-      } else {
-        // Creating new site
-        const nextSiteNumber = sites.length + 1;
-        const newSite: CreateSiteData = {
-          river_walk_id: riverWalk.id,
-          site_number: nextSiteNumber,
-          site_name: formData.site_name,
-          river_width: riverWidth,
-          latitude: formData.latitude ? parseFloat(formData.latitude) : undefined,
-          longitude: formData.longitude ? parseFloat(formData.longitude) : undefined,
-          notes: formData.notes || undefined,
-          weather_conditions: formData.weather_conditions || undefined,
-          land_use: formData.land_use || undefined,
-          depth_units: formData.depth_units || 'm',
-          sedimentation_units: formData.sedimentation_units || 'mm',
-          sedimentation_data: {
-            measurements: sedimentationData.measurements,
-          },
-        };
-
-        const createdSite = await handleCreateSite(newSite);
-
-        if (createdSite) {
-          // Upload photos if provided
-          if (sitePhoto) {
-            sitePhotoUrl = await uploadSitePhoto(createdSite.id, sitePhoto, session.user.id);
-            await updateSite(createdSite.id, {
-              site_name: createdSite.site_name,
-              river_width: createdSite.river_width,
-              photo_url: sitePhotoUrl,
-            });
-          }
-
-          if (sedimentationData.photo) {
-            sedimentationPhotoUrl = await uploadSitePhoto(
-              createdSite.id, 
-              sedimentationData.photo, 
-              session.user.id,
-              'sedimentation'
-            );
-            await updateSite(createdSite.id, {
-              site_name: createdSite.site_name,
-              river_width: createdSite.river_width,
-              sedimentation_photo_url: sedimentationPhotoUrl,
-            });
-          }
-
-          // Create measurement points
-          const measurementPoints: CreateMeasurementPointData[] = measurementData.map((point, index) => ({
-            point_number: index + 1,
-            distance_from_bank: point.distance_from_bank,
-            depth: point.depth,
-          }));
-          await createMeasurementPoints(createdSite.id, measurementPoints);
-        }
-
-        setShowSiteForm(false);
-        showSuccess('Site Created', `${formData.site_name} has been successfully created with all measurements and data.`);
+        sitePhotoUrl = await uploadSitePhoto(currentSite.id, sitePhoto, session.user.id);
       }
 
-      // Refresh sites data
+      // Update site
+      const updateData: UpdateSiteData = {
+        site_name: formData.site_name,
+        river_width: currentSite.river_width,
+        latitude: formData.latitude ? parseFloat(formData.latitude) : undefined,
+        longitude: formData.longitude ? parseFloat(formData.longitude) : undefined,
+        notes: formData.notes || undefined,
+        weather_conditions: formData.weather_conditions || undefined,
+        land_use: formData.land_use || undefined,
+        depth_units: currentSite.depth_units,
+        sedimentation_units: currentSite.sedimentation_units,
+        photo_url: sitePhotoUrl,
+        todo_site_info_status: todoStatus || 'in_progress',
+      };
+
+      await handleUpdateSite(currentSite.id, updateData, riverWalk.id);
       await fetchSites(riverWalk.id);
-      setSitesError(null);
+      
+      showSuccess('Site Info Updated', 'Site information has been saved successfully.');
+      setCurrentView('site_todos');
     } catch (error) {
-      console.error('Error in handleEnhancedSubmit:', error);
+      console.error('Error updating site info:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      setSitesError(`Operation failed: ${errorMessage}`);
-      showError('Operation Failed', `Could not ${editingSite ? 'update' : 'create'} site: ${errorMessage}`);
+      showError('Update Failed', `Could not update site info: ${errorMessage}`);
     }
   };
 
-  const handleEditSite = (site: Site) => {
-    setSitesError(null);
-    setEditingSite(site);
+  const handleCrossSectionSubmit = async (
+    riverWidth: number,
+    measurementData: MeasurementPointFormData[],
+    numMeasurements: number,
+    depthUnits: UnitType,
+    todoStatus?: TodoStatus
+  ) => {
+    if (!currentSite) return;
+
+    try {
+      // Update site with new river width and depth units
+      const updateData: UpdateSiteData = {
+        site_name: currentSite.site_name,
+        river_width: riverWidth,
+        depth_units: depthUnits,
+        sedimentation_units: currentSite.sedimentation_units,
+        todo_cross_section_status: todoStatus || 'in_progress',
+      };
+
+      await handleUpdateSite(currentSite.id, updateData, riverWalk.id);
+
+      // Update measurement points
+      await deleteMeasurementPointsForSite(currentSite.id);
+      const measurementPoints: CreateMeasurementPointData[] = measurementData.map((point, index) => ({
+        point_number: index + 1,
+        distance_from_bank: point.distance_from_bank,
+        depth: point.depth,
+      }));
+      await createMeasurementPoints(currentSite.id, measurementPoints);
+
+      await fetchSites(riverWalk.id);
+      
+      showSuccess('Cross-Section Updated', 'Cross-sectional measurements have been saved successfully.');
+      setCurrentView('site_todos');
+    } catch (error) {
+      console.error('Error updating cross-section:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      showError('Update Failed', `Could not update cross-section: ${errorMessage}`);
+    }
   };
 
+  const handleVelocitySubmit = async (
+    velocityData: VelocityData,
+    velocityMeasurementCount: number,
+    todoStatus?: TodoStatus
+  ) => {
+    if (!currentSite) return;
+
+    try {
+      const updateData: UpdateSiteData = {
+        site_name: currentSite.site_name,
+        river_width: currentSite.river_width,
+        depth_units: currentSite.depth_units,
+        sedimentation_units: currentSite.sedimentation_units,
+        velocity_measurement_count: velocityMeasurementCount,
+        velocity_data: velocityData,
+        todo_velocity_status: todoStatus || 'in_progress',
+      };
+
+      await handleUpdateSite(currentSite.id, updateData, riverWalk.id);
+      await fetchSites(riverWalk.id);
+      
+      showSuccess('Velocity Updated', 'Velocity measurements have been saved successfully.');
+      setCurrentView('site_todos');
+    } catch (error) {
+      console.error('Error updating velocity:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      showError('Update Failed', `Could not update velocity: ${errorMessage}`);
+    }
+  };
+
+  const handleSedimentSubmit = async (
+    sedimentationData: {
+      photo?: File;
+      measurements: SedimentationMeasurement[];
+    },
+    numSedimentationMeasurements: number,
+    sedimentationUnits: UnitType,
+    removeSedimentationPhoto?: boolean,
+    todoStatus?: TodoStatus
+  ) => {
+    if (!currentSite) return;
+
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      throw new Error('You must be logged in to upload photos');
+    }
+
+    try {
+      let sedimentationPhotoUrl: string | null | undefined = currentSite.sedimentation_photo_url;
+
+      // Handle sedimentation photo
+      if (removeSedimentationPhoto) {
+        if (currentSite.sedimentation_photo_url) {
+          await deleteSitePhoto(currentSite.sedimentation_photo_url);
+        }
+        sedimentationPhotoUrl = null;
+      } else if (sedimentationData.photo) {
+        if (currentSite.sedimentation_photo_url) {
+          await deleteSitePhoto(currentSite.sedimentation_photo_url);
+        }
+        sedimentationPhotoUrl = await uploadSitePhoto(
+          currentSite.id, 
+          sedimentationData.photo, 
+          session.user.id,
+          'sedimentation'
+        );
+      }
+
+      const updateData: UpdateSiteData = {
+        site_name: currentSite.site_name,
+        river_width: currentSite.river_width,
+        depth_units: currentSite.depth_units,
+        sedimentation_units: sedimentationUnits,
+        sedimentation_photo_url: sedimentationPhotoUrl,
+        sedimentation_data: {
+          measurements: sedimentationData.measurements,
+        },
+        todo_sediment_status: todoStatus || 'in_progress',
+      };
+
+      await handleUpdateSite(currentSite.id, updateData, riverWalk.id);
+      await fetchSites(riverWalk.id);
+      
+      showSuccess('Sediment Analysis Updated', 'Sediment analysis has been saved successfully.');
+      setCurrentView('site_todos');
+    } catch (error) {
+      console.error('Error updating sediment analysis:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      showError('Update Failed', `Could not update sediment analysis: ${errorMessage}`);
+    }
+  };
+
+  // Site management handlers (from SiteList)
   const handleUpdateSiteField = async (id: string, field: 'site_name' | 'river_width', value: string | number) => {
     const updateData = field === 'site_name' 
       ? { site_name: value as string, river_width: 0 }
@@ -221,6 +288,8 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
     const completeUpdateData = {
       site_name: field === 'site_name' ? value as string : existingSite.site_name,
       river_width: field === 'river_width' ? value as number : parseFloat(existingSite.river_width.toString()),
+      depth_units: existingSite.depth_units,
+      sedimentation_units: existingSite.sedimentation_units,
     };
 
     await handleUpdateSite(id, completeUpdateData, riverWalk.id);
@@ -229,7 +298,7 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
   const handleDeleteSiteWithConfirm = async (site: Site) => {
     if (
       window.confirm(
-        `Are you sure you want to delete "${site.site_name}"? This will also delete all measurement points and photos for this site.`
+        `Are you sure you want to delete \"${site.site_name}\"? This will also delete all measurement points and photos for this site.`
       )
     ) {
       try {
@@ -239,6 +308,139 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
         const errorMessage = error instanceof Error ? error.message : 'Unknown error';
         showError('Delete Failed', `Could not delete ${site.site_name}: ${errorMessage}`);
       }
+    }
+  };
+
+  const handleAddNewSite = async () => {
+    try {
+      const nextSiteNumber = sites.length + 1;
+      const newSite: CreateSiteData = {
+        river_walk_id: riverWalk.id,
+        site_number: nextSiteNumber,
+        site_name: `Site ${nextSiteNumber}`,
+        river_width: 10,
+        depth_units: 'm',
+        sedimentation_units: 'mm',
+        todo_site_info_status: 'not_started',
+        todo_cross_section_status: 'not_started',
+        todo_velocity_status: 'not_started',
+        todo_sediment_status: 'not_started',
+      };
+
+      const createdSite = await handleCreateSite(newSite);
+      if (createdSite) {
+        await fetchSites(riverWalk.id);
+        showSuccess('Site Created', `${newSite.site_name} has been successfully created.`);
+      }
+    } catch (error) {
+      console.error('Error creating site:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      showError('Creation Failed', `Could not create site: ${errorMessage}`);
+    }
+  };
+
+  const getViewTitle = (): string => {
+    switch (currentView) {
+      case 'site_list':
+        return 'Manage Sites';
+      case 'site_todos':
+        return currentSite?.site_name || 'Site Tasks';
+      case 'site_info_form':
+        return 'Site Information';
+      case 'cross_section_form':
+        return 'Cross-Sectional Area';
+      case 'velocity_form':
+        return 'Velocity Measurements';
+      case 'sediment_form':
+        return 'Sediment Analysis';
+      default:
+        return 'Manage Sites';
+    }
+  };
+
+  const renderBackButton = () => {
+    if (currentView === 'site_list') return null;
+    
+    const handleBack = currentView === 'site_todos' ? handleBackToSites : handleBackToTodos;
+    
+    return (
+      <button
+        onClick={handleBack}
+        className="w-10 h-10 rounded-lg bg-muted/50 hover:bg-muted flex items-center justify-center transition-colors"
+        title="Back"
+        type="button"
+      >
+        <svg className="w-5 h-5 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+        </svg>
+      </button>
+    );
+  };
+
+  const renderCurrentView = () => {
+    switch (currentView) {
+      case 'site_list':
+        return (
+          <SiteList
+            sites={sites}
+            onEditMeasurements={handleSiteSelect} // Now opens todo list instead
+            onEditSite={handleSiteSelect} // Now opens todo list instead
+            onUpdateSite={handleUpdateSiteField}
+            onDeleteSite={handleDeleteSiteWithConfirm}
+            onAddNewSite={handleAddNewSite}
+          />
+        );
+      
+      case 'site_todos':
+        return currentSite ? (
+          <SiteTodoList
+            site={currentSite}
+            onTodoClick={handleTodoClick}
+          />
+        ) : null;
+      
+      case 'site_info_form':
+        return currentSite ? (
+          <SiteInfoForm
+            site={currentSite}
+            onSubmit={handleSiteInfoSubmit}
+            onCancel={handleBackToTodos}
+            loading={sitesLoading}
+          />
+        ) : null;
+      
+      case 'cross_section_form':
+        return currentSite ? (
+          <CrossSectionForm
+            site={currentSite}
+            onSubmit={handleCrossSectionSubmit}
+            onCancel={handleBackToTodos}
+            loading={sitesLoading}
+          />
+        ) : null;
+      
+      case 'velocity_form':
+        return currentSite ? (
+          <VelocityForm
+            site={currentSite}
+            onSubmit={handleVelocitySubmit}
+            onCancel={handleBackToTodos}
+            loading={sitesLoading}
+          />
+        ) : null;
+      
+      case 'sediment_form':
+        return currentSite ? (
+          <SedimentForm
+            site={currentSite}
+            onSubmit={handleSedimentSubmit}
+            onCancel={handleBackToTodos}
+            loading={sitesLoading}
+          />
+        ) : null;
+      
+      default:
+        return null;
     }
   };
 
@@ -257,43 +459,10 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
         <div className="sticky top-0 bg-white border-b p-4 sm:p-6 z-10">
           <div className="flex items-start sm:items-center justify-between gap-3">
             <div className="flex items-center gap-3 flex-1 min-w-0">
-              {/* Back button - only show when form is active */}
-              {(editingSite || showSiteForm) && (
-                <button
-                  onClick={() => {
-                    const hasUnsavedChanges = document.querySelector('form') && editingSite;
-                    if (hasUnsavedChanges) {
-                      const result = window.confirm(
-                        'You have unsaved changes. Do you want to save them before going back?\n\n' +
-                        'Click "OK" to save changes\n' +
-                        'Click "Cancel" to go back without saving'
-                      );
-                      
-                      if (result) {
-                        // User wants to save - trigger form submission
-                        const form = document.querySelector('form') as HTMLFormElement;
-                        if (form) {
-                          form.requestSubmit();
-                        }
-                        return;
-                      }
-                    }
-                    // Go back without saving or no unsaved changes
-                    setEditingSite(null);
-                    setShowSiteForm(false);
-                  }}
-                  className="w-10 h-10 rounded-lg bg-muted/50 hover:bg-muted flex items-center justify-center transition-colors"
-                  title="Back to sites list"
-                  type="button"
-                >
-                  <svg className="w-5 h-5 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                  </svg>
-                </button>
-              )}
+              {renderBackButton()}
               <div className="flex-1 min-w-0">
                 <h2 className="text-lg sm:text-2xl font-bold truncate">
-                  {(editingSite || showSiteForm) ? (editingSite ? 'Edit Site & Measurements' : 'Add New Site') : 'Manage Sites'}
+                  {getViewTitle()}
                 </h2>
                 <p className="text-sm sm:text-base text-gray-600 truncate">
                   {riverWalk.name}
@@ -344,31 +513,7 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
             </div>
           )}
 
-          {editingSite || showSiteForm ? (
-            <EnhancedSiteForm
-              editingSite={editingSite}
-              nextSiteNumber={sites.length + 1}
-              onSubmit={handleEnhancedSubmit}
-              onCancel={() => {
-                setEditingSite(null);
-                setShowSiteForm(false);
-              }}
-              onBack={() => {
-                setEditingSite(null);
-                setShowSiteForm(false);
-              }}
-              loading={loading}
-            />
-          ) : (
-            <SiteList
-              sites={sites}
-              onEditMeasurements={handleEditSite} // This now opens the enhanced form
-              onEditSite={handleEditSite}
-              onUpdateSite={handleUpdateSiteField}
-              onDeleteSite={handleDeleteSiteWithConfirm}
-              onAddNewSite={() => setShowSiteForm(true)}
-            />
-          )}
+          {renderCurrentView()}
         </div>
       </div>
     </div>

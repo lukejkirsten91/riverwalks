@@ -139,22 +139,60 @@ export function SiteList({
               </div>
             </div>
 
-            {/* Action buttons */}
-            <div className="flex flex-col sm:flex-row gap-3">
-              <button
-                onClick={() => onEditMeasurements(site)}
-                className="btn-primary touch-manipulation"
-              >
-                <Ruler className="w-4 h-4 mr-2" />
-                Site Info and Measurements
-              </button>
-              <button
-                onClick={() => onDeleteSite(site)}
-                className="bg-destructive/10 hover:bg-destructive/20 text-destructive px-4 py-2 rounded-lg font-medium transition-all duration-200 border border-destructive/20 shadow-modern hover:shadow-modern-lg touch-manipulation flex items-center justify-center"
-              >
-                <Trash2 className="w-4 h-4 mr-2" />
-                Delete
-              </button>
+            {/* Action buttons and progress */}
+            <div className="flex flex-col gap-3">
+              {/* Todo Progress */}
+              <div className="grid grid-cols-2 gap-2">
+                <div className={`text-xs px-2 py-1 rounded border ${
+                  site.todo_site_info_status === 'complete' ? 'bg-green-50 text-green-700 border-green-200' :
+                  site.todo_site_info_status === 'in_progress' ? 'bg-yellow-50 text-yellow-700 border-yellow-200' :
+                  'bg-gray-50 text-gray-600 border-gray-200'
+                }`}>
+                  Site Info: {site.todo_site_info_status === 'complete' ? '✓' : 
+                           site.todo_site_info_status === 'in_progress' ? '⏳' : '○'}
+                </div>
+                <div className={`text-xs px-2 py-1 rounded border ${
+                  site.todo_cross_section_status === 'complete' ? 'bg-green-50 text-green-700 border-green-200' :
+                  site.todo_cross_section_status === 'in_progress' ? 'bg-yellow-50 text-yellow-700 border-yellow-200' :
+                  'bg-gray-50 text-gray-600 border-gray-200'
+                }`}>
+                  Cross-Section: {site.todo_cross_section_status === 'complete' ? '✓' : 
+                                 site.todo_cross_section_status === 'in_progress' ? '⏳' : '○'}
+                </div>
+                <div className={`text-xs px-2 py-1 rounded border ${
+                  site.todo_velocity_status === 'complete' ? 'bg-green-50 text-green-700 border-green-200' :
+                  site.todo_velocity_status === 'in_progress' ? 'bg-yellow-50 text-yellow-700 border-yellow-200' :
+                  'bg-gray-50 text-gray-600 border-gray-200'
+                }`}>
+                  Velocity: {site.todo_velocity_status === 'complete' ? '✓' : 
+                            site.todo_velocity_status === 'in_progress' ? '⏳' : '○'}
+                </div>
+                <div className={`text-xs px-2 py-1 rounded border ${
+                  site.todo_sediment_status === 'complete' ? 'bg-green-50 text-green-700 border-green-200' :
+                  site.todo_sediment_status === 'in_progress' ? 'bg-yellow-50 text-yellow-700 border-yellow-200' :
+                  'bg-gray-50 text-gray-600 border-gray-200'
+                }`}>
+                  Sediment: {site.todo_sediment_status === 'complete' ? '✓' : 
+                            site.todo_sediment_status === 'in_progress' ? '⏳' : '○'}
+                </div>
+              </div>
+              
+              <div className="flex flex-col sm:flex-row gap-3">
+                <button
+                  onClick={() => onEditMeasurements(site)}
+                  className="btn-primary touch-manipulation"
+                >
+                  <MapPin className="w-4 h-4 mr-2" />
+                  Manage Site Tasks
+                </button>
+                <button
+                  onClick={() => onDeleteSite(site)}
+                  className="bg-destructive/10 hover:bg-destructive/20 text-destructive px-4 py-2 rounded-lg font-medium transition-all duration-200 border border-destructive/20 shadow-modern hover:shadow-modern-lg touch-manipulation flex items-center justify-center"
+                >
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Delete
+                </button>
+              </div>
             </div>
           </div>
 

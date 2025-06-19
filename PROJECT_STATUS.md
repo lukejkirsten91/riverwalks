@@ -7,7 +7,7 @@ Riverwalks is a web application designed primarily for GCSE Geography students t
 ## 🚀 Live Application
 
 - **Production URL**: https://riverwalks.vercel.app
-- **Current Status**: ✅ Complete Enhanced Site Management + Integrated Measurements & Sedimentation + Unit Selection + Depth Precision + Professional Report Generation & PDF Export + Mobile-First Design + Archive System
+- **Current Status**: ✅ Complete Todo-Based Site Management + Educational Workflow + Four Specialized Forms + Progress Tracking + Velocity Measurements + Professional Report Generation & PDF Export + Mobile-First Design + Archive System
 
 ## 🏗️ Technical Stack
 
@@ -24,6 +24,18 @@ Riverwalks is a web application designed primarily for GCSE Geography students t
 - **Repository**: https://github.com/lukejkirsten91/riverwalks
 
 ## 📊 Current Features (Completed)
+
+### ✅ Todo-Based Site Management System (NEW - MAJOR RELEASE)
+
+- **Educational Todo Workflow**: Complete restructure for GCSE students with clear task progression
+- **Four Focused Forms**: Split complex site form into Site Info, Cross-Sectional Area, Velocity, and Sediment Analysis
+- **Visual Progress Tracking**: Color-coded todo statuses (not started, in progress, complete) with intuitive icons
+- **Save and Exit vs Mark Complete**: Dual submission options for flexible workflow management
+- **Todo List Interface**: Clear task overview for each site showing what students need to complete
+- **Progressive Navigation**: Seamless flow between site list → todo list → individual forms
+- **Status Integration**: Todo progress visible in site overview with color-coded badges
+- **New Velocity Measurements**: Complete velocity measurement form with float timing and automatic calculations
+- **Database Schema**: Enhanced with todo status tracking and velocity data fields
 
 ### ✅ Authentication System
 
@@ -183,9 +195,9 @@ Riverwalks is a web application designed primarily for GCSE Geography students t
 - **Enhanced Loading States**: Improved animations and feedback during report generation and PDF export
 - **Data Analysis**: Automatic calculation of max depth, average depth, measurement coverage, and site statistics
 
-### ✅ Enhanced Site Management System (COMPLETED)
+### ✅ Enhanced Site Management System (COMPLETED - REPLACED BY TODO SYSTEM)
 
-- **Unified Site & Measurement Form**: Single comprehensive form combining site details, depth measurements, and sedimentation analysis
+- **REPLACED**: Previous unified form replaced by todo-based system for better educational workflow
 - **Enhanced Site Details**: Site name (defaults to "Site 1" but editable), river width, coordinates, weather conditions, land use, and notes
 - **Unit Selection System**: Support for meters (m), centimeters (cm), millimeters (mm), and feet (ft) throughout the application
 - **Precision Depth Measurements**: All depth measurements rounded to 2 decimal places for accuracy
@@ -194,6 +206,15 @@ Riverwalks is a web application designed primarily for GCSE Geography students t
 - **Professional Reporting**: Comprehensive reports including all new fields, formatted sedimentation tables, and enhanced site details
 - **Mobile-Optimized Interface**: Touch-friendly controls with responsive design for field data collection
 - **TypeScript Safety**: Full type definitions for all new data structures and API interfaces
+
+### ✅ Todo-Based Educational Workflow (CURRENT SYSTEM)
+
+- **Four Specialized Forms**: Site Info, Cross-Sectional Area, Velocity Measurements, Sediment Analysis
+- **Progressive Task Management**: Students can see exactly what they need to complete for each site
+- **Flexible Saving Options**: Save and Exit (partial completion) vs Save and Mark Complete (full completion)
+- **Visual Status Indicators**: Clear color coding and icons for todo status tracking
+- **Educational Focus**: Designed specifically for GCSE Geography fieldwork requirements
+- **Velocity Measurements**: New comprehensive velocity measurement system with automatic calculations
 
 ### 📦 Archived Features
 
@@ -220,7 +241,7 @@ CREATE TABLE river_walks (
 );
 ```
 
-### sites table (Enhanced)
+### sites table (Enhanced with Todo Tracking)
 
 ```sql
 CREATE TABLE sites (
@@ -235,9 +256,18 @@ CREATE TABLE sites (
   notes TEXT,
   weather_conditions TEXT,
   land_use TEXT,
-  units TEXT DEFAULT 'm' CHECK (units IN ('m', 'cm', 'mm', 'ft')),
+  depth_units TEXT DEFAULT 'm' CHECK (depth_units IN ('m', 'cm', 'mm', 'ft', 'in', 'yd')),
+  sedimentation_units TEXT DEFAULT 'mm' CHECK (sedimentation_units IN ('m', 'cm', 'mm', 'ft', 'in', 'yd')),
   sedimentation_photo_url TEXT,
   sedimentation_data JSONB,
+  -- NEW: Todo tracking fields
+  todo_site_info_status TEXT DEFAULT 'not_started' CHECK (todo_site_info_status IN ('not_started', 'in_progress', 'complete')),
+  todo_cross_section_status TEXT DEFAULT 'not_started' CHECK (todo_cross_section_status IN ('not_started', 'in_progress', 'complete')),
+  todo_velocity_status TEXT DEFAULT 'not_started' CHECK (todo_velocity_status IN ('not_started', 'in_progress', 'complete')),
+  todo_sediment_status TEXT DEFAULT 'not_started' CHECK (todo_sediment_status IN ('not_started', 'in_progress', 'complete')),
+  -- NEW: Velocity measurement fields
+  velocity_measurement_count INTEGER DEFAULT 3,
+  velocity_data JSONB,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -277,12 +307,17 @@ riverwalks/
 │   │   ├── RiverWalkForm.tsx      # River walk creation/editing form
 │   │   ├── RiverWalkList.tsx      # River walks display component with inline editing
 │   │   ├── SiteManagement.tsx     # Original site management modal container
-│   │   ├── EnhancedSiteManagement.tsx # NEW: Comprehensive site & measurement management
+│   │   ├── EnhancedSiteManagement.tsx # UPDATED: Todo-based site management system
 │   │   ├── SiteForm.tsx           # Original site creation/editing form
-│   │   ├── EnhancedSiteForm.tsx   # NEW: Unified site, measurement & sedimentation form
-│   │   ├── SiteList.tsx           # Sites display component with inline editing
+│   │   ├── EnhancedSiteForm.tsx   # LEGACY: Replaced by specialized todo forms
+│   │   ├── SiteList.tsx           # UPDATED: Sites display with todo progress indicators
 │   │   ├── MeasurementEditor.tsx  # Original measurement points editor
-│   │   └── ReportGenerator.tsx    # Enhanced report generation with sedimentation data
+│   │   ├── ReportGenerator.tsx    # Enhanced report generation with sedimentation data
+│   │   ├── SiteTodoList.tsx       # NEW: Todo list interface for each site
+│   │   ├── SiteInfoForm.tsx       # NEW: Site information form (todo 1/4)
+│   │   ├── CrossSectionForm.tsx   # NEW: Cross-sectional area measurements (todo 2/4)
+│   │   ├── VelocityForm.tsx       # NEW: Velocity measurements form (todo 3/4)
+│   │   └── SedimentForm.tsx       # NEW: Sediment analysis form (todo 4/4)
 │   └── ui/                        # shadcn/ui + custom components (TypeScript)
 │   │   ├── InlineEdit.tsx         # Click-to-edit text component
 │   │   ├── InlineNumberEdit.tsx   # Click-to-edit number component
@@ -311,7 +346,8 @@ riverwalks/
 │   ├── add-photos-coordinates-notes.sql # Photo upload and enhanced fields migration
 │   ├── complete-storage-reset.sql # Complete storage bucket and RLS policy setup
 │   ├── fix-storage-rls.sql        # Storage RLS policy fixes (alternative approach)
-│   └── add-enhanced-site-fields.sql # NEW: Weather, land use, units, sedimentation fields
+│   ├── add-enhanced-site-fields.sql # Weather, land use, units, sedimentation fields
+│   └── add-site-todo-tracking.sql # NEW: Todo status tracking and velocity measurement fields
 ├── types/
 │   └── index.ts                   # TypeScript type definitions
 ├── .eslintrc.json                 # ESLint configuration
@@ -338,6 +374,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
    - Run `supabase/add-archive-field.sql` to add archive functionality
    - Run `supabase/complete-storage-reset.sql` to set up complete photo upload system (database + storage + RLS)
    - Run `supabase/add-enhanced-site-fields.sql` to add new fields (weather, land use, units, sedimentation)
+   - **NEW**: Run `supabase/add-site-todo-tracking.sql` to add todo status tracking and velocity measurement fields
    - Alternative: Use individual migration files if preferred
 3. **Authentication**: Users table automatically managed by Supabase Auth
 
@@ -838,6 +875,6 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 
 ---
 
-_Last Updated: June 18, 2025_
-_Status: ✅ Enhanced Site Management System + Integrated Measurements & Sedimentation + Unit Selection + Precision Measurements + Professional Report Generation & PDF Export + Mobile-First Design + Comprehensive Site Management + UI/UX Improvements + All Core Features Complete_
-_Next Phase: Report Enhancement & Analysis Features_
+_Last Updated: June 19, 2025_
+_Status: ✅ MAJOR RELEASE: Todo-Based Site Management System + Educational Workflow + Four Specialized Forms + Progress Tracking + Velocity Measurements + Professional Report Generation & PDF Export + Mobile-First Design + All Educational Features Complete_
+_Next Phase: Velocity Integration in Reports & Advanced Analysis Features_
