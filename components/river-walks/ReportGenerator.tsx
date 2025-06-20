@@ -533,6 +533,11 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
                 const centerLat = (boundedMinLat + boundedMaxLat) / 2;
                 const centerLng = (boundedMinLng + boundedMaxLng) / 2;
                 
+                // Debug: Log API key availability and map parameters
+                console.log('Google Maps API Key available:', !!process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY);
+                console.log('Map center:', centerLat, centerLng);
+                console.log('Map zoom:', zoom);
+                
                 // Calculate appropriate zoom level based on bounding box
                 const latDiff = boundedMaxLat - boundedMinLat;
                 const lngDiff = boundedMaxLng - boundedMinLng;
@@ -554,6 +559,8 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
                         className="w-full h-96 object-cover"
                         onError={(e) => {
                           console.error('Google Maps Static API failed to load');
+                          console.error('API Key available:', !!process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY);
+                          console.error('Full URL:', e.currentTarget.src);
                           const target = e.currentTarget;
                           target.alt = 'Map could not be loaded - check Google Maps API key';
                         }}
