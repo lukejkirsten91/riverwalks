@@ -554,7 +554,7 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
                     <div className="relative">
                       {/* Google Maps Static API */}
                       <img
-                        src={`https://maps.googleapis.com/maps/api/staticmap?center=${centerLat},${centerLng}&zoom=${zoom}&size=600x400&maptype=roadmap&key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}`}
+                        src={`https://maps.googleapis.com/maps/api/staticmap?center=${centerLat},${centerLng}&zoom=${zoom}&size=600x400&maptype=roadmap&style=feature:poi|visibility:off&style=feature:transit|visibility:off&style=element:labels|visibility:off&style=feature:administrative|visibility:off&key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}`}
                         alt="Site Location Map"
                         className="w-full h-96 object-cover"
                         onError={(e) => {
@@ -830,6 +830,146 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
                     </tbody>
                   </table>
                 </div>
+              </div>
+
+              {/* Sediment Analysis Charts */}
+              <div>
+                <h3 className="text-lg sm:text-xl font-semibold mb-4 border-b pb-2">Sediment Analysis Visualization</h3>
+                {(() => {
+                  // Collect all sediment data from sites
+                  const allSedimentData = sites.flatMap(site => 
+                    site.sedimentation_data?.measurements || []
+                  );
+                  
+                  if (allSedimentData.length === 0) {
+                    return (
+                      <div className="bg-gray-100 rounded-lg p-8 text-center border-2 border-dashed border-gray-300">
+                        <div className="text-gray-600">
+                          <svg className="w-12 h-12 mx-auto mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                          </svg>
+                          <h4 className="text-lg font-semibold mb-2">No Sediment Data Available</h4>
+                          <p className="text-sm">Add sediment measurements to see analysis charts</p>
+                        </div>
+                      </div>
+                    );
+                  }
+
+                  // Prepare data for charts
+                  const sizeRanges = ['0-2mm', '2-4mm', '4-8mm', '8-16mm', '16-32mm', '32+mm'];
+                  const sizeCounts = [0, 0, 0, 0, 0, 0];
+                  
+                  allSedimentData.forEach(measurement => {
+                    const size = measurement.sediment_size;
+                    if (size < 2) sizeCounts[0]++;
+                    else if (size < 4) sizeCounts[1]++;
+                    else if (size < 8) sizeCounts[2]++;
+                    else if (size < 16) sizeCounts[3]++;
+                    else if (size < 32) sizeCounts[4]++;
+                    else sizeCounts[5]++;
+                  });
+
+                  // Roundness ranges (Powers scale: 1=very angular, 6=very rounded)
+                  const roundnessRanges = ['Very Angular (1-2)', 'Angular (2-3)', 'Sub-Angular (3-4)', 'Sub-Rounded (4-5)', 'Rounded (5-6)', 'Very Rounded (6)'];
+                  const roundnessCounts = [0, 0, 0, 0, 0, 0];
+                  
+                  allSedimentData.forEach(measurement => {
+                    const roundness = measurement.sediment_roundness;
+                    if (roundness < 2) roundnessCounts[0]++;
+                    else if (roundness < 3) roundnessCounts[1]++;
+                    else if (roundness < 4) roundnessCounts[2]++;
+                    else if (roundness < 5) roundnessCounts[3]++;
+                    else if (roundness < 6) roundnessCounts[4]++;
+                    else roundnessCounts[5]++;
+                  });
+
+                  return (
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                      {/* Radial Chart - Sediment Size Distribution */}
+                      <div className="bg-white rounded-lg border border-gray-300 p-4">
+                        <h4 className="text-lg font-semibold mb-4 text-center">Sediment Size Distribution</h4>
+                        <div className="flex items-center justify-center">
+                          <Plot
+                            data={[{
+                              type: 'pie',
+                              values: sizeCounts,
+                              labels: sizeRanges,
+                              hole: 0.4,
+                              marker: {
+                                colors: ['#fee2e2', '#fecaca', '#fca5a5', '#f87171', '#ef4444', '#dc2626']
+                              },
+                              textinfo: 'label+percent',
+                              textposition: 'outside',
+                              showlegend: true
+                            }]}
+                            layout={{
+                              height: 400,
+                              width: 400,
+                              margin: { t: 40, l: 20, r: 20, b: 20 },
+                              font: { size: 12 },
+                              paper_bgcolor: 'white',
+                              plot_bgcolor: 'white',
+                              legend: {
+                                orientation: 'v',
+                                x: 1.05,
+                                y: 0.5
+                              }
+                            }}
+                            config={{ displayModeBar: false, responsive: true }}
+                          />
+                        </div>
+                        <p className="text-xs text-gray-600 text-center mt-2">
+                          Total samples: {allSedimentData.length}
+                        </p>
+                      </div>
+
+                      {/* Wind Rose Chart - Sediment Roundness Distribution */}
+                      <div className="bg-white rounded-lg border border-gray-300 p-4">
+                        <h4 className="text-lg font-semibold mb-4 text-center">Sediment Roundness Distribution</h4>
+                        <div className="flex items-center justify-center">
+                          <Plot
+                            data={[{
+                              type: 'barpolar',
+                              r: roundnessCounts,
+                              theta: [0, 60, 120, 180, 240, 300],
+                              marker: {
+                                color: ['#fef3c7', '#fde68a', '#facc15', '#eab308', '#ca8a04', '#a16207'],
+                                line: {
+                                  color: 'white',
+                                  width: 2
+                                }
+                              },
+                              hovertemplate: '%{r} samples<br>%{theta}°<extra></extra>'
+                            }]}
+                            layout={{
+                              height: 400,
+                              width: 400,
+                              margin: { t: 40, l: 20, r: 20, b: 20 },
+                              polar: {
+                                radialaxis: {
+                                  visible: true,
+                                  range: [0, Math.max(...roundnessCounts) + 1]
+                                },
+                                angularaxis: {
+                                  tickvals: [0, 60, 120, 180, 240, 300],
+                                  ticktext: roundnessRanges,
+                                  direction: 'clockwise'
+                                }
+                              },
+                              font: { size: 10 },
+                              paper_bgcolor: 'white',
+                              plot_bgcolor: 'white'
+                            }}
+                            config={{ displayModeBar: false, responsive: true }}
+                          />
+                        </div>
+                        <p className="text-xs text-gray-600 text-center mt-2">
+                          Based on Powers Roundness Scale (1=Angular, 6=Rounded)
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })()}
               </div>
             </div>
           </div>
