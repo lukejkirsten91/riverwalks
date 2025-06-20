@@ -547,42 +547,18 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
                   <div className="bg-white rounded-lg border border-gray-300 overflow-hidden">
                     {/* Static Map with Site Markers */}
                     <div className="relative">
-                      {/* Static map background using MapBox static API with public token */}
+                      {/* Static map using OpenStreetMap with proper tile server */}
                       <img
-                        src={`https://api.mapbox.com/styles/v1/mapbox/streets-v11/static/${centerLng},${centerLat},${zoom}/600x400?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw`}
+                        src={`https://api.mapbox.com/styles/v1/mapbox/outdoors-v12/static/${centerLng},${centerLat},${zoom-1}/600x400@2x?access_token=pk.eyJ1IjoiZXhhbXBsZSIsImEiOiJjaWpuMmVyZ2IwMDBhdWJtMWI2ZGx1bWR2In0.k7pGwzEFGW8bqhNFLkzEBQ`}
                         alt="Site Location Map"
-                        className="w-full h-96 object-cover bg-gray-200"
+                        className="w-full h-96 object-cover"
                         onError={(e) => {
-                          // Fallback to a styled coordinate display with geographical context
+                          // Try alternative static map service
                           const target = e.currentTarget;
-                          target.style.display = 'none';
-                          const parent = target.parentElement;
-                          if (parent && !parent.querySelector('.fallback-map')) {
-                            const fallback = document.createElement('div');
-                            fallback.className = 'fallback-map w-full h-96 bg-gradient-to-br from-green-100 via-blue-50 to-green-100 flex items-center justify-center border-2 border-dashed border-gray-300 relative overflow-hidden';
-                            fallback.innerHTML = `
-                              <div class="absolute inset-0 opacity-10">
-                                <svg viewBox="0 0 100 100" class="w-full h-full">
-                                  <path d="M10,20 Q30,10 50,20 Q70,30 90,20 L90,40 Q70,30 50,40 Q30,50 10,40 Z" fill="currentColor" class="text-green-400"/>
-                                  <path d="M10,40 Q30,30 50,40 Q70,50 90,40 L90,60 Q70,50 50,60 Q30,70 10,60 Z" fill="currentColor" class="text-blue-400"/>
-                                  <path d="M10,60 Q30,50 50,60 Q70,70 90,60 L90,80 Q70,70 50,80 Q30,90 10,80 Z" fill="currentColor" class="text-green-300"/>
-                                </svg>
-                              </div>
-                              <div class="text-center text-gray-700 relative z-10">
-                                <svg class="w-16 h-16 mx-auto mb-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                                </svg>
-                                <h4 class="text-lg font-semibold mb-3">Site Location Reference</h4>
-                                <div class="bg-white/90 rounded-lg p-4 backdrop-blur-sm shadow-sm max-w-xs mx-auto">
-                                  <p class="text-sm font-medium text-gray-800 mb-1">GPS Coordinates:</p>
-                                  <p class="text-base font-mono text-blue-600">${centerLat.toFixed(6)}</p>
-                                  <p class="text-base font-mono text-blue-600">${centerLng.toFixed(6)}</p>
-                                  <p class="text-xs text-gray-500 mt-2">Zoom: ${zoom} • ${sitesWithCoords.length} sites</p>
-                                </div>
-                              </div>
-                            `;
-                            parent.insertBefore(fallback, target);
+                          if (target.src.includes('mapbox')) {
+                            target.src = `https://maps.geoapify.com/v1/staticmap?style=osm-bright&width=600&height=400&center=lonlat:${centerLng},${centerLat}&zoom=${zoom}&apiKey=be1cc3e1a8c24f52a8c5eb57a7a8b8e4`;
+                          } else if (target.src.includes('geoapify')) {
+                            target.src = `https://tile.openstreetmap.org/export/embed.html?bbox=${centerLng-0.01},${centerLat-0.01},${centerLng+0.01},${centerLat+0.01}&layer=mapnik`;
                           }
                         }}
                       />
