@@ -955,7 +955,7 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
                         }
                       }
                     } as any;
-                  }).filter(data => data.r.some(count => count > 0));
+                  }).filter(data => data.r.some((count: number) => count > 0));
 
                   return (
                     <div className="w-full max-w-4xl mx-auto">
