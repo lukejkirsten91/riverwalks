@@ -529,37 +529,40 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
                   distances.push(distance);
                 }
                 
+                // Calculate zoom level and center for embedding
+                const centerLat = (boundedMinLat + boundedMaxLat) / 2;
+                const centerLng = (boundedMinLng + boundedMaxLng) / 2;
+                
+                // Calculate appropriate zoom level based on bounding box
+                const latDiff = boundedMaxLat - boundedMinLat;
+                const lngDiff = boundedMaxLng - boundedMinLng;
+                const maxDiff = Math.max(latDiff, lngDiff);
+                let zoom = 15;
+                if (maxDiff > 0.01) zoom = 13;
+                if (maxDiff > 0.05) zoom = 11;
+                if (maxDiff > 0.1) zoom = 10;
+                if (maxDiff > 0.5) zoom = 8;
+                
                 return (
                   <div className="bg-white rounded-lg border border-gray-300 overflow-hidden">
-                    {/* Real Map Background with Overlay */}
+                    {/* Real Map with Site Markers */}
                     <div className="relative">
-                      {/* Map Background */}
-                      <div 
-                        className="absolute inset-0 z-0 bg-cover bg-center"
-                        style={{
-                          backgroundImage: `url("https://tile.openstreetmap.org/${Math.floor((boundedMinLat + boundedMaxLat) / 2 * 100) / 100}/${Math.floor((boundedMinLng + boundedMaxLng) / 2 * 100) / 100}/12.png")`,
-                          backgroundColor: '#f0f9ff' // Light blue fallback
-                        }}
-                      >
-                        {/* Topographic-style overlay */}
-                        <div className="absolute inset-0 bg-gradient-to-br from-green-100/30 via-blue-50/20 to-blue-100/40"></div>
-                        {/* Grid overlay for map-like appearance */}
-                        <svg width="100%" height="100%" className="absolute inset-0">
-                          <defs>
-                            <pattern id="mapPattern" width="40" height="40" patternUnits="userSpaceOnUse">
-                              <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(34, 197, 94, 0.1)" strokeWidth="1"/>
-                            </pattern>
-                          </defs>
-                          <rect width="100%" height="100%" fill="url(#mapPattern)" />
-                        </svg>
-                      </div>
+                      {/* OpenStreetMap iframe */}
+                      <iframe
+                        width="100%"
+                        height="400"
+                        style={{ border: 0 }}
+                        src={`https://www.openstreetmap.org/export/embed.html?bbox=${boundedMinLng},${boundedMinLat},${boundedMaxLng},${boundedMaxLat}&layer=mapnik&marker=${centerLat},${centerLng}`}
+                        title="Site Location Map"
+                      />
                       
-                      {/* SVG Overlay for markers and lines */}
+                      {/* Overlay SVG for enhanced markers and connecting lines */}
                       <svg 
                         width="100%" 
                         height="400" 
                         viewBox={`0 0 ${mapWidth} ${mapHeight}`} 
-                        className="relative z-10"
+                        className="absolute inset-0 z-10 pointer-events-none"
+                        style={{ background: 'transparent' }}
                       >
                         
                         {/* Connecting lines between sites - Always show if multiple sites exist */}
