@@ -545,18 +545,20 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
                 
                 return (
                   <div className="bg-white rounded-lg border border-gray-300 overflow-hidden">
-                    {/* Real Map with Site Markers */}
+                    {/* Static Map with Site Markers */}
                     <div className="relative">
-                      {/* OpenStreetMap iframe */}
-                      <iframe
-                        width="100%"
-                        height="400"
-                        style={{ border: 0 }}
-                        src={`https://www.openstreetmap.org/export/embed.html?bbox=${boundedMinLng},${boundedMinLat},${boundedMaxLng},${boundedMaxLat}&layer=mapnik&marker=${centerLat},${centerLng}`}
-                        title="Site Location Map"
+                      {/* Static OpenStreetMap background */}
+                      <img
+                        src={`https://staticmap.openstreetmap.de/staticmap.php?center=${centerLat},${centerLng}&zoom=${zoom}&size=600x400&maptype=mapnik`}
+                        alt="Site Location Map"
+                        className="w-full h-96 object-cover"
+                        onError={(e) => {
+                          // Fallback to a different static map service
+                          e.currentTarget.src = `https://maps.geoapify.com/v1/staticmap?style=osm-carto&width=600&height=400&center=lonlat:${centerLng},${centerLat}&zoom=${zoom}&apiKey=demo`;
+                        }}
                       />
                       
-                      {/* Overlay SVG for enhanced markers and connecting lines */}
+                      {/* Overlay SVG for markers and connecting lines */}
                       <svg 
                         width="100%" 
                         height="400" 
