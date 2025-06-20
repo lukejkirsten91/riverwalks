@@ -368,19 +368,20 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
       >
         {/* Header with controls */}
         <div className="sticky top-0 bg-white border-b p-4 sm:p-6 z-10 rounded-t-lg shadow-sm">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div className="flex items-center gap-3 min-w-0 flex-1">
-              <FileText className="w-5 h-5 sm:w-6 sm:h-6 text-primary shrink-0" />
-              <div className="min-w-0 flex-1">
-                <h2 className="text-lg sm:text-xl font-bold truncate">River Walk Report</h2>
-                <p className="text-xs sm:text-sm text-muted-foreground truncate">{riverWalk.name}</p>
+          <div className="flex items-start justify-between gap-4">
+            {/* Left side: Report info and export button */}
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 min-w-0 flex-1">
+              <div className="flex items-center gap-3 min-w-0">
+                <FileText className="w-5 h-5 sm:w-6 sm:h-6 text-primary shrink-0" />
+                <div className="min-w-0">
+                  <h2 className="text-lg sm:text-xl font-bold truncate">River Walk Report</h2>
+                  <p className="text-xs sm:text-sm text-muted-foreground truncate">{riverWalk.name}</p>
+                </div>
               </div>
-            </div>
-            <div className="flex items-center gap-2 shrink-0">
               <button
                 onClick={exportToPDF}
                 disabled={isExporting}
-                className="btn-primary flex items-center gap-2 disabled:opacity-50 text-sm sm:text-base px-3 py-2 sm:px-4 sm:py-3"
+                className="btn-primary flex items-center gap-2 disabled:opacity-50 text-sm sm:text-base px-3 py-2 sm:px-4 sm:py-3 shrink-0"
               >
                 {isExporting ? (
                   <>
@@ -396,14 +397,16 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
                   </>
                 )}
               </button>
-              <button
-                onClick={onClose}
-                className="text-gray-500 hover:text-gray-700 p-2 touch-manipulation"
-                aria-label="Close"
-              >
-                <X className="w-5 h-5" />
-              </button>
             </div>
+            
+            {/* Right side: Close button - always top-right */}
+            <button
+              onClick={onClose}
+              className="text-gray-500 hover:text-gray-700 p-2 touch-manipulation shrink-0"
+              aria-label="Close"
+            >
+              <X className="w-5 h-5" />
+            </button>
           </div>
         </div>
 
@@ -528,19 +531,39 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
                 
                 return (
                   <div className="bg-white rounded-lg border border-gray-300 overflow-hidden">
-                    {/* Map SVG */}
-                    <div className="relative bg-green-50">
-                      <svg width="100%" height="400" viewBox={`0 0 ${mapWidth} ${mapHeight}`} className="bg-green-100">
-                        {/* Background grid to simulate OS map */}
-                        <defs>
-                          <pattern id="mapGrid" width="50" height="50" patternUnits="userSpaceOnUse">
-                            <path d="M 50 0 L 0 0 0 50" fill="none" stroke="#e5e7eb" strokeWidth="1"/>
-                          </pattern>
-                        </defs>
-                        <rect width="100%" height="100%" fill="url(#mapGrid)" />
+                    {/* Real Map Background with Overlay */}
+                    <div className="relative">
+                      {/* Map Background */}
+                      <div 
+                        className="absolute inset-0 z-0 bg-cover bg-center"
+                        style={{
+                          backgroundImage: `url("https://tile.openstreetmap.org/${Math.floor((boundedMinLat + boundedMaxLat) / 2 * 100) / 100}/${Math.floor((boundedMinLng + boundedMaxLng) / 2 * 100) / 100}/12.png")`,
+                          backgroundColor: '#f0f9ff' // Light blue fallback
+                        }}
+                      >
+                        {/* Topographic-style overlay */}
+                        <div className="absolute inset-0 bg-gradient-to-br from-green-100/30 via-blue-50/20 to-blue-100/40"></div>
+                        {/* Grid overlay for map-like appearance */}
+                        <svg width="100%" height="100%" className="absolute inset-0">
+                          <defs>
+                            <pattern id="mapPattern" width="40" height="40" patternUnits="userSpaceOnUse">
+                              <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(34, 197, 94, 0.1)" strokeWidth="1"/>
+                            </pattern>
+                          </defs>
+                          <rect width="100%" height="100%" fill="url(#mapPattern)" />
+                        </svg>
+                      </div>
+                      
+                      {/* SVG Overlay for markers and lines */}
+                      <svg 
+                        width="100%" 
+                        height="400" 
+                        viewBox={`0 0 ${mapWidth} ${mapHeight}`} 
+                        className="relative z-10"
+                      >
                         
-                        {/* Connecting lines between sites */}
-                        {sitePoints.length > 1 && sitePoints.map((point, index) => {
+                        {/* Connecting lines between sites - Always show if multiple sites exist */}
+                        {sitesWithCoords.length > 1 && sitePoints.map((point, index) => {
                           if (index === 0) return null;
                           const prevPoint = sitePoints[index - 1];
                           return (
@@ -551,8 +574,9 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
                               x2={point.x}
                               y2={point.y}
                               stroke="#dc2626"
-                              strokeWidth="2"
-                              strokeDasharray="5,5"
+                              strokeWidth="3"
+                              strokeDasharray="8,4"
+                              strokeLinecap="round"
                             />
                           );
                         })}
@@ -603,7 +627,7 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
                                 fontSize="9"
                                 fill="#dc2626"
                                 fontWeight="bold"
-                                className="bg-white"
+                                style={{ filter: 'drop-shadow(0 0 2px white)' }}
                               >
                                 {distances[index - 1].toFixed(0)}m
                               </text>
@@ -809,7 +833,7 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
                   {/* SITE HEADER SECTION */}
                   <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-6">
                     <h3 className="text-2xl font-bold mb-2">
-                      {site.site_name === `Site ${site.site_number}` 
+                      {site.site_name.trim() === `Site ${site.site_number}` 
                         ? `Site ${site.site_number}`
                         : `Site ${site.site_number}: ${site.site_name}`
                       }
@@ -862,10 +886,10 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
                           <div>
                             <img
                               src={site.sedimentation_photo_url}
-                              alt={`Sedimentation at ${site.site_name}`}
+                              alt={`Sediment sample at ${site.site_name}`}
                               className="w-full h-64 object-cover rounded-lg border shadow-lg"
                             />
-                            <p className="text-center text-sm text-gray-500 mt-2">Sedimentation sample photograph</p>
+                            <p className="text-center text-sm text-gray-500 mt-2">Sediment sample photograph</p>
                           </div>
                         )}
                       </div>
@@ -1033,10 +1057,10 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
                     </div>
                   )}
 
-                  {/* SEDIMENTATION ANALYSIS SECTION */}
+                  {/* SEDIMENT ANALYSIS SECTION */}
                   {site.sedimentation_data && site.sedimentation_data.measurements && site.sedimentation_data.measurements.length > 0 && (
                     <div className="p-6">
-                      <h4 className="text-lg font-semibold mb-4 text-gray-800 border-b pb-2">Sedimentation Analysis</h4>
+                      <h4 className="text-lg font-semibold mb-4 text-gray-800 border-b pb-2">Sediment Analysis</h4>
                       
                       {/* Statistical summary */}
                       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
