@@ -942,7 +942,7 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
                     });
                     
                     return {
-                      type: 'barpolar',
+                      type: 'barpolar' as const,
                       r: siteRoundnessCounts,
                       theta: [0, 60, 120, 180, 240, 300],
                       name: `Site ${site.site_number}`,
@@ -954,7 +954,7 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
                           width: 2
                         }
                       }
-                    };
+                    } as any;
                   }).filter(data => data.r.some(count => count > 0));
 
                   return (
