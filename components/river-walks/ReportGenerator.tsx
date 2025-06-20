@@ -547,19 +547,15 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
                   <div className="bg-white rounded-lg border border-gray-300 overflow-hidden">
                     {/* Static Map with Site Markers */}
                     <div className="relative">
-                      {/* Static map using OpenStreetMap with proper tile server */}
+                      {/* Google Maps Static API */}
                       <img
-                        src={`https://api.mapbox.com/styles/v1/mapbox/outdoors-v12/static/${centerLng},${centerLat},${zoom-1}/600x400@2x?access_token=pk.eyJ1IjoiZXhhbXBsZSIsImEiOiJjaWpuMmVyZ2IwMDBhdWJtMWI2ZGx1bWR2In0.k7pGwzEFGW8bqhNFLkzEBQ`}
+                        src={`https://maps.googleapis.com/maps/api/staticmap?center=${centerLat},${centerLng}&zoom=${zoom}&size=600x400&maptype=roadmap&key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}`}
                         alt="Site Location Map"
                         className="w-full h-96 object-cover"
                         onError={(e) => {
-                          // Try alternative static map service
+                          console.error('Google Maps Static API failed to load');
                           const target = e.currentTarget;
-                          if (target.src.includes('mapbox')) {
-                            target.src = `https://maps.geoapify.com/v1/staticmap?style=osm-bright&width=600&height=400&center=lonlat:${centerLng},${centerLat}&zoom=${zoom}&apiKey=be1cc3e1a8c24f52a8c5eb57a7a8b8e4`;
-                          } else if (target.src.includes('geoapify')) {
-                            target.src = `https://tile.openstreetmap.org/export/embed.html?bbox=${centerLng-0.01},${centerLat-0.01},${centerLng+0.01},${centerLat+0.01}&layer=mapnik`;
-                          }
+                          target.alt = 'Map could not be loaded - check Google Maps API key';
                         }}
                       />
                       
