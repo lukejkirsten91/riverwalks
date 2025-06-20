@@ -197,7 +197,10 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
       });
 
       const pageWidth = 210; // A4 width in mm
-      const pageHeight = 295; // A4 height in mm
+      const pageHeight = 297; // A4 height in mm
+      const margin = 20; // 20mm margin on all sides
+      const contentWidth = pageWidth - (2 * margin);
+      const contentHeight = pageHeight - (2 * margin);
 
       // First, add the header and summary section as the first page
       const headerElement = reportRef.current.querySelector('[data-summary-section]') as HTMLElement;
@@ -209,9 +212,9 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
         });
         
         const headerImgData = headerCanvas.toDataURL('image/png');
-        const headerHeight = (headerCanvas.height * pageWidth) / headerCanvas.width;
+        const headerHeight = (headerCanvas.height * contentWidth) / headerCanvas.width;
         
-        pdf.addImage(headerImgData, 'PNG', 0, 10, pageWidth, Math.min(headerHeight, pageHeight - 20));
+        pdf.addImage(headerImgData, 'PNG', margin, margin, contentWidth, Math.min(headerHeight, contentHeight));
       }
 
       // Get each site section and add as separate pages
@@ -230,28 +233,28 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
         });
 
         const siteImgData = siteCanvas.toDataURL('image/png');
-        const siteImgHeight = (siteCanvas.height * pageWidth) / siteCanvas.width;
+        const siteImgHeight = (siteCanvas.height * contentWidth) / siteCanvas.width;
         
         // If site content is too tall for one page, split it
-        if (siteImgHeight > pageHeight - 20) {
-          let yPosition = 10;
+        if (siteImgHeight > contentHeight) {
+          let yPosition = margin;
           let remainingHeight = siteImgHeight;
           let isFirstSitePage = true;
           
           while (remainingHeight > 0) {
-            const currentPageHeight = Math.min(remainingHeight, pageHeight - 20);
+            const currentPageHeight = Math.min(remainingHeight, contentHeight);
             
-            pdf.addImage(siteImgData, 'PNG', 0, yPosition, pageWidth, currentPageHeight);
+            pdf.addImage(siteImgData, 'PNG', margin, yPosition, contentWidth, currentPageHeight);
             
             remainingHeight -= currentPageHeight;
             
             if (remainingHeight > 0) {
               pdf.addPage();
-              yPosition = 10;
+              yPosition = margin;
             }
           }
         } else {
-          pdf.addImage(siteImgData, 'PNG', 0, 10, pageWidth, siteImgHeight);
+          pdf.addImage(siteImgData, 'PNG', margin, margin, contentWidth, siteImgHeight);
         }
       }
 
@@ -285,22 +288,14 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
     }
   };
 
-  // Helper function to calculate cross-sectional area using trapezoidal rule
+  // Helper function to calculate cross-sectional area (Width × Average Depth)
   const calculateCrossSectionalArea = (site: Site): number => {
-    if (!site.measurement_points || site.measurement_points.length < 2) return 0;
+    if (!site.measurement_points || site.measurement_points.length === 0) return 0;
     
-    const sortedPoints = site.measurement_points.sort((a, b) => a.point_number - b.point_number);
-    let area = 0;
+    const totalDepth = site.measurement_points.reduce((sum, point) => sum + point.depth, 0);
+    const avgDepth = totalDepth / site.measurement_points.length;
     
-    for (let i = 1; i < sortedPoints.length; i++) {
-      const prevPoint = sortedPoints[i - 1];
-      const currPoint = sortedPoints[i];
-      const width = currPoint.distance_from_bank - prevPoint.distance_from_bank;
-      const avgDepth = (prevPoint.depth + currPoint.depth) / 2;
-      area += width * avgDepth;
-    }
-    
-    return area;
+    return site.river_width * avgDepth;
   };
 
   // Helper function to calculate discharge (Q = A × V)
@@ -704,6 +699,7 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
                             Site {site.site_number}
                           </th>
                         ))}
+                        <th className="border border-gray-300 px-3 py-2 text-center font-semibold bg-blue-100">Summary</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -714,6 +710,9 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
                             {site.river_width.toFixed(1)}
                           </td>
                         ))}
+                        <td className="border border-gray-300 px-3 py-2 text-center font-semibold bg-blue-50">
+                          {sites.length > 0 ? (sites.reduce((sum, site) => sum + site.river_width, 0) / sites.length).toFixed(1) : '0.0'}
+                        </td>
                       </tr>
                       <tr>
                         <td className="border border-gray-300 px-3 py-2 font-medium bg-gray-50">Average Depth (m)</td>
@@ -725,6 +724,16 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
                             }
                           </td>
                         ))}
+                        <td className="border border-gray-300 px-3 py-2 text-center font-semibold bg-blue-50">
+                          {(() => {
+                            const avgDepths = sites.map(site => 
+                              site.measurement_points && site.measurement_points.length > 0
+                                ? site.measurement_points.reduce((sum, p) => sum + p.depth, 0) / site.measurement_points.length
+                                : 0
+                            ).filter(depth => depth > 0);
+                            return avgDepths.length > 0 ? (avgDepths.reduce((sum, depth) => sum + depth, 0) / avgDepths.length).toFixed(2) : '0.00';
+                          })()}
+                        </td>
                       </tr>
                       <tr>
                         <td className="border border-gray-300 px-3 py-2 font-medium bg-gray-50">Cross-Sectional Area (m²)</td>
@@ -733,6 +742,9 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
                             {calculateCrossSectionalArea(site).toFixed(2)}
                           </td>
                         ))}
+                        <td className="border border-gray-300 px-3 py-2 text-center font-semibold bg-blue-50">
+                          {sites.length > 0 ? (sites.reduce((sum, site) => sum + calculateCrossSectionalArea(site), 0) / sites.length).toFixed(2) : '0.00'}
+                        </td>
                       </tr>
                     </tbody>
                   </table>
@@ -752,6 +764,7 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
                             Site {site.site_number}
                           </th>
                         ))}
+                        <th className="border border-gray-300 px-3 py-2 text-center font-semibold bg-green-100">Summary</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -762,6 +775,12 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
                             {site.velocity_data?.average_velocity?.toFixed(3) || 'N/A'}
                           </td>
                         ))}
+                        <td className="border border-gray-300 px-3 py-2 text-center font-semibold bg-green-50">
+                          {(() => {
+                            const velocities = sites.map(site => site.velocity_data?.average_velocity).filter(v => v !== undefined && v !== null);
+                            return velocities.length > 0 ? (velocities.reduce((sum, v) => sum + v, 0) / velocities.length).toFixed(3) : 'N/A';
+                          })()}
+                        </td>
                       </tr>
                       <tr>
                         <td className="border border-gray-300 px-3 py-2 font-medium bg-gray-50">Discharge (m³/s)</td>
@@ -770,6 +789,9 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
                             {calculateDischarge(site).toFixed(3)}
                           </td>
                         ))}
+                        <td className="border border-gray-300 px-3 py-2 text-center font-semibold bg-green-50">
+                          {sites.length > 0 ? (sites.reduce((sum, site) => sum + calculateDischarge(site), 0) / sites.length).toFixed(3) : '0.000'}
+                        </td>
                       </tr>
                     </tbody>
                   </table>
@@ -789,6 +811,7 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
                             Site {site.site_number}
                           </th>
                         ))}
+                        <th className="border border-gray-300 px-3 py-2 text-center font-semibold bg-amber-100">Summary</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -803,6 +826,12 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
                             }
                           </td>
                         ))}
+                        <td className="border border-gray-300 px-3 py-2 text-center font-semibold bg-amber-50">
+                          {(() => {
+                            const allSizes = sites.flatMap(site => site.sedimentation_data?.measurements || []).map(m => m.sediment_size);
+                            return allSizes.length > 0 ? (allSizes.reduce((sum, size) => sum + size, 0) / allSizes.length).toFixed(2) : 'N/A';
+                          })()}
+                        </td>
                       </tr>
                       <tr>
                         <td className="border border-gray-300 px-3 py-2 font-medium bg-gray-50">Sediment Shape Average</td>
@@ -815,6 +844,12 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
                             }
                           </td>
                         ))}
+                        <td className="border border-gray-300 px-3 py-2 text-center font-semibold bg-amber-50">
+                          {(() => {
+                            const allRoundness = sites.flatMap(site => site.sedimentation_data?.measurements || []).map(m => m.sediment_roundness);
+                            return allRoundness.length > 0 ? (allRoundness.reduce((sum, roundness) => sum + roundness, 0) / allRoundness.length).toFixed(1) : 'N/A';
+                          })()}
+                        </td>
                       </tr>
                       <tr>
                         <td className="border border-gray-300 px-3 py-2 font-medium bg-gray-50">Spearman's Rank Correlation</td>
@@ -826,6 +861,16 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
                             }
                           </td>
                         ))}
+                        <td className="border border-gray-300 px-3 py-2 text-center font-semibold bg-amber-50">
+                          {(() => {
+                            const correlations = sites.map(site => 
+                              site.sedimentation_data?.measurements && site.sedimentation_data.measurements.length >= 3
+                                ? calculateSpearmansRank(site)
+                                : null
+                            ).filter(corr => corr !== null);
+                            return correlations.length > 0 ? (correlations.reduce((sum, corr) => sum + corr, 0) / correlations.length).toFixed(3) : 'N/A';
+                          })()}
+                        </td>
                       </tr>
                     </tbody>
                   </table>
@@ -869,102 +914,99 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
                     else sizeCounts[5]++;
                   });
 
-                  // Roundness ranges (Powers scale: 1=very angular, 6=very rounded)
-                  const roundnessRanges = ['Very Angular (1-2)', 'Angular (2-3)', 'Sub-Angular (3-4)', 'Sub-Rounded (4-5)', 'Rounded (5-6)', 'Very Rounded (6)'];
+                  // Roundness ranges (Powers scale: 1=very angular, 6=well rounded)
+                  const roundnessRanges = ['1 - Very Angular', '2 - Angular', '3 - Sub Angular', '4 - Sub Rounded', '5 - Rounded', '6 - Well Rounded'];
                   const roundnessCounts = [0, 0, 0, 0, 0, 0];
                   
                   allSedimentData.forEach(measurement => {
-                    const roundness = measurement.sediment_roundness;
-                    if (roundness < 2) roundnessCounts[0]++;
-                    else if (roundness < 3) roundnessCounts[1]++;
-                    else if (roundness < 4) roundnessCounts[2]++;
-                    else if (roundness < 5) roundnessCounts[3]++;
-                    else if (roundness < 6) roundnessCounts[4]++;
-                    else roundnessCounts[5]++;
+                    const roundness = Math.round(measurement.sediment_roundness);
+                    if (roundness === 1) roundnessCounts[0]++;
+                    else if (roundness === 2) roundnessCounts[1]++;
+                    else if (roundness === 3) roundnessCounts[2]++;
+                    else if (roundness === 4) roundnessCounts[3]++;
+                    else if (roundness === 5) roundnessCounts[4]++;
+                    else if (roundness === 6) roundnessCounts[5]++;
                   });
 
-                  return (
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                      {/* Radial Chart - Sediment Size Distribution */}
-                      <div className="bg-white rounded-lg border border-gray-300 p-4">
-                        <h4 className="text-lg font-semibold mb-4 text-center">Sediment Size Distribution</h4>
-                        <div className="flex items-center justify-center">
-                          <Plot
-                            data={[{
-                              type: 'pie',
-                              values: sizeCounts,
-                              labels: sizeRanges,
-                              hole: 0.4,
-                              marker: {
-                                colors: ['#fee2e2', '#fecaca', '#fca5a5', '#f87171', '#ef4444', '#dc2626']
-                              },
-                              textinfo: 'label+percent',
-                              textposition: 'outside',
-                              showlegend: true
-                            }]}
-                            layout={{
-                              height: 400,
-                              width: 400,
-                              margin: { t: 40, l: 20, r: 20, b: 20 },
-                              font: { size: 12 },
-                              paper_bgcolor: 'white',
-                              plot_bgcolor: 'white',
-                              legend: {
-                                orientation: 'v',
-                                x: 1.05,
-                                y: 0.5
-                              }
-                            }}
-                            config={{ displayModeBar: false, responsive: true }}
-                          />
-                        </div>
-                        <p className="text-xs text-gray-600 text-center mt-2">
-                          Total samples: {allSedimentData.length}
-                        </p>
-                      </div>
+                  // Prepare data for wind rose by site
+                  const siteColors = ['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899'];
+                  const siteData = sites.map((site, siteIndex) => {
+                    const siteRoundnessCounts = [0, 0, 0, 0, 0, 0];
+                    const siteMeasurements = site.sedimentation_data?.measurements || [];
+                    
+                    siteMeasurements.forEach(measurement => {
+                      const roundness = Math.round(measurement.sediment_roundness);
+                      if (roundness >= 1 && roundness <= 6) {
+                        siteRoundnessCounts[roundness - 1]++;
+                      }
+                    });
+                    
+                    return {
+                      type: 'barpolar',
+                      r: siteRoundnessCounts,
+                      theta: [0, 60, 120, 180, 240, 300],
+                      name: `Site ${site.site_number}`,
+                      marker: {
+                        color: siteColors[siteIndex % siteColors.length],
+                        opacity: 0.7,
+                        line: {
+                          color: siteColors[siteIndex % siteColors.length],
+                          width: 2
+                        }
+                      }
+                    };
+                  }).filter(data => data.r.some(count => count > 0));
 
-                      {/* Wind Rose Chart - Sediment Roundness Distribution */}
+                  return (
+                    <div className="w-full max-w-4xl mx-auto">
+                      {/* Wind Rose Chart - Sediment Roundness by Site */}
                       <div className="bg-white rounded-lg border border-gray-300 p-4">
-                        <h4 className="text-lg font-semibold mb-4 text-center">Sediment Roundness Distribution</h4>
-                        <div className="flex items-center justify-center">
+                        <h4 className="text-lg font-semibold mb-4 text-center">Sediment Roundness Distribution by Site</h4>
+                        <div className="flex items-center justify-center" style={{ touchAction: 'pan-y' }}>
                           <Plot
-                            data={[{
-                              type: 'barpolar',
-                              r: roundnessCounts,
-                              theta: [0, 60, 120, 180, 240, 300],
-                              marker: {
-                                color: ['#fef3c7', '#fde68a', '#facc15', '#eab308', '#ca8a04', '#a16207'],
-                                line: {
-                                  color: 'white',
-                                  width: 2
-                                }
-                              },
-                              hovertemplate: '%{r} samples<br>%{theta}°<extra></extra>'
-                            }]}
+                            data={siteData}
                             layout={{
                               height: 400,
-                              width: 400,
+                              width: 600,
                               margin: { t: 40, l: 20, r: 20, b: 20 },
                               polar: {
                                 radialaxis: {
                                   visible: true,
-                                  range: [0, Math.max(...roundnessCounts) + 1]
+                                  range: [0, Math.max(...allSedimentData.map(() => 5)) + 1],
+                                  tickfont: { size: 10 }
                                 },
                                 angularaxis: {
                                   tickvals: [0, 60, 120, 180, 240, 300],
                                   ticktext: roundnessRanges,
-                                  direction: 'clockwise'
+                                  direction: 'clockwise',
+                                  tickfont: { size: 9 }
                                 }
                               },
                               font: { size: 10 },
                               paper_bgcolor: 'white',
-                              plot_bgcolor: 'white'
+                              plot_bgcolor: 'white',
+                              showlegend: true,
+                              legend: {
+                                orientation: 'h',
+                                x: 0.5,
+                                xanchor: 'center',
+                                y: -0.1
+                              }
                             }}
-                            config={{ displayModeBar: false, responsive: true }}
+                            config={{ 
+                              displayModeBar: false, 
+                              responsive: true,
+                              staticPlot: true,
+                              scrollZoom: false,
+                              doubleClick: false,
+                              showTips: false,
+                              displaylogo: false
+                            }}
+                            style={{ pointerEvents: 'none' }}
                           />
                         </div>
                         <p className="text-xs text-gray-600 text-center mt-2">
-                          Based on Powers Roundness Scale (1=Angular, 6=Rounded)
+                          Based on Powers Roundness Scale • Total samples: {allSedimentData.length} across {sites.length} sites
                         </p>
                       </div>
                     </div>
@@ -1115,6 +1157,12 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
                           <h5 className="font-medium mb-3 text-gray-700">Statistical Analysis</h5>
                           <div className="bg-blue-50 p-4 rounded-lg space-y-3">
                             <div className="grid grid-cols-2 gap-4 text-sm">
+                              <div>
+                                <p><strong>Width:</strong></p>
+                                <p className="text-lg font-bold text-blue-600">
+                                  {site.river_width.toFixed(1)}m
+                                </p>
+                              </div>
                               <div>
                                 <p><strong>Maximum Depth:</strong></p>
                                 <p className="text-lg font-bold text-blue-600">
