@@ -533,11 +533,6 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
                 const centerLat = (boundedMinLat + boundedMaxLat) / 2;
                 const centerLng = (boundedMinLng + boundedMaxLng) / 2;
                 
-                // Debug: Log API key availability and map parameters
-                console.log('Google Maps API Key available:', !!process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY);
-                console.log('Map center:', centerLat, centerLng);
-                console.log('Map zoom:', zoom);
-                
                 // Calculate appropriate zoom level based on bounding box
                 const latDiff = boundedMaxLat - boundedMinLat;
                 const lngDiff = boundedMaxLng - boundedMinLng;
@@ -547,6 +542,11 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
                 if (maxDiff > 0.05) zoom = 11;
                 if (maxDiff > 0.1) zoom = 10;
                 if (maxDiff > 0.5) zoom = 8;
+                
+                // Debug: Log API key availability and map parameters
+                console.log('Google Maps API Key available:', !!process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY);
+                console.log('Map center:', centerLat, centerLng);
+                console.log('Map zoom:', zoom);
                 
                 return (
                   <div className="bg-white rounded-lg border border-gray-300 overflow-hidden">
