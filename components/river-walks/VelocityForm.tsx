@@ -180,6 +180,20 @@ export function VelocityForm({
           </p>
         </div>
       </div>
+
+      {/* Instructions for Students */}
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+        <h4 className="font-semibold text-blue-900 mb-2">📋 Instructions for Velocity Measurements</h4>
+        <div className="text-sm text-blue-800 space-y-1">
+          <p><strong>1.</strong> Mark out a known distance along the riverbank (e.g., 5 or 10 meters)</p>
+          <p><strong>2.</strong> Use a floating object like an orange, stick, or cork as your "float"</p>
+          <p><strong>3.</strong> Start the timer when the float crosses your start line</p>
+          <p><strong>4.</strong> Stop the timer when the float crosses your end line</p>
+          <p><strong>5.</strong> Repeat this 3+ times to get an average velocity</p>
+          <p><strong>6.</strong> Take measurements in the fastest-flowing part of the channel (thalweg)</p>
+          <p><strong>Safety:</strong> Never enter fast-flowing or deep water - use a float method only</p>
+        </div>
+      </div>
       
       <form onSubmit={(e) => handleSubmit(e, false)} className="space-y-8">
         <div className="bg-green-50/50 rounded-xl p-6 border border-green-100">

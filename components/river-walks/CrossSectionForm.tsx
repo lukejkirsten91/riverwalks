@@ -156,6 +156,19 @@ export function CrossSectionForm({
           </p>
         </div>
       </div>
+
+      {/* Instructions for Students */}
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+        <h4 className="font-semibold text-blue-900 mb-2">📋 Instructions for Cross-Sectional Area</h4>
+        <div className="text-sm text-blue-800 space-y-1">
+          <p><strong>1.</strong> Measure the total width of the river from bank to bank using a tape measure</p>
+          <p><strong>2.</strong> Choose 3-5 evenly spaced points across the river width</p>
+          <p><strong>3.</strong> At each point, measure the depth using a ranging pole or measuring stick</p>
+          <p><strong>4.</strong> Record the distance from the left bank and the depth at each measurement point</p>
+          <p><strong>5.</strong> Take measurements in the wetted perimeter (areas with flowing water)</p>
+          <p><strong>6.</strong> Be careful near deep water - use a long measuring stick and work in pairs</p>
+        </div>
+      </div>
       
       <form onSubmit={(e) => handleSubmit(e, false)} className="space-y-8">
         <div className="bg-blue-50/50 rounded-xl p-6 border border-blue-100">

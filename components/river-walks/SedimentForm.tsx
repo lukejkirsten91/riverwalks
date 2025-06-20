@@ -154,6 +154,34 @@ export function SedimentForm({
           </p>
         </div>
       </div>
+
+      {/* Instructions for Students */}
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+        <h4 className="font-semibold text-blue-900 mb-2">📋 Instructions for Sediment Analysis</h4>
+        <div className="text-sm text-blue-800 space-y-1">
+          <p><strong>1.</strong> Collect 3+ sediment samples from different areas of the riverbed at this site</p>
+          <p><strong>2.</strong> Take a photo of your samples laid out for reference</p>
+          <p><strong>3.</strong> Measure each sample's size in mm using a ruler or caliper</p>
+          <p><strong>4.</strong> Compare each sample to the Powers Roundness Scale below (1=very angular, 6=very rounded)</p>
+          <p><strong>5.</strong> Record your measurements in the table</p>
+        </div>
+      </div>
+
+      {/* Powers Roundness Scale Reference */}
+      <div className="bg-white border border-gray-200 rounded-lg p-4 mb-6">
+        <h4 className="font-semibold text-gray-900 mb-3 text-center">Powers Roundness Scale Reference</h4>
+        <div className="flex justify-center">
+          <img 
+            src="/powers_roundness_scale.png" 
+            alt="Powers Roundness Scale showing sediment shape categories from 1 (very angular) to 6 (very rounded)"
+            className="max-w-full h-auto rounded border border-gray-300 shadow-sm"
+            style={{ maxHeight: '200px' }}
+          />
+        </div>
+        <p className="text-xs text-gray-600 text-center mt-2">
+          Use this scale to rate sediment roundness: 1 = Very Angular, 6 = Very Rounded
+        </p>
+      </div>
       
       <form onSubmit={(e) => handleSubmit(e, false)} className="space-y-8">
         <div className="bg-amber-50/50 rounded-xl p-6 border border-amber-100">

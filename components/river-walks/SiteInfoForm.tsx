@@ -107,6 +107,19 @@ export function SiteInfoForm({
           </p>
         </div>
       </div>
+
+      {/* Instructions for Students */}
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+        <h4 className="font-semibold text-blue-900 mb-2">📋 Instructions for Site Information</h4>
+        <div className="text-sm text-blue-800 space-y-1">
+          <p><strong>1.</strong> Give your site a descriptive name (e.g., "Upstream Riffle", "Meander Pool")</p>
+          <p><strong>2.</strong> Record GPS coordinates if available - use your phone's GPS or maps app</p>
+          <p><strong>3.</strong> Take a photo showing the overall site and river channel</p>
+          <p><strong>4.</strong> Note current weather conditions and recent rainfall</p>
+          <p><strong>5.</strong> Observe and record surrounding land use (urban, agricultural, woodland, etc.)</p>
+          <p><strong>6.</strong> Add any other relevant observations in the notes section</p>
+        </div>
+      </div>
       
       <form onSubmit={(e) => handleSubmit(e, false)} className="space-y-8">
         {/* Site Details Section */}
