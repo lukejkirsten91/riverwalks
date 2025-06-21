@@ -179,8 +179,8 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
     };
   };
 
-  // Helper function to capture content with intelligent page splitting
-  const captureContentWithPageSplitting = async (
+  // Helper function to capture content with component-aware page splitting
+  const captureContentWithComponentSplitting = async (
     element: HTMLElement, 
     pdf: jsPDF, 
     contentWidth: number, 
@@ -188,7 +188,7 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
     margin: number,
     isFirstPage: boolean = false
   ) => {
-    console.log('Capturing content with intelligent page splitting...');
+    console.log('Capturing content with component-aware page splitting...');
     
     // Force desktop layout for PDF generation by temporarily adjusting styles
     const originalStyle = element.style.cssText;
@@ -203,7 +203,50 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
     // Wait for style changes to take effect
     await new Promise(resolve => setTimeout(resolve, 100));
     
-    // Use consistent scaling for all devices
+    // Identify all components that should never be split
+    const componentSelectors = [
+      'table',                    // All tables
+      '.plotly-graph-div',       // Plotly charts
+      '[class*="chart"]',        // Any chart containers
+      '.bg-blue-50',             // KPI cards and summary boxes
+      '.bg-green-50',            // Velocity analysis boxes
+      '.bg-amber-50',            // Sediment analysis boxes
+      '.bg-gray-50',             // Photography sections
+      '.grid',                   // Grid layouts
+      '.rounded-lg',             // Card components
+      'svg',                     // SVG elements (maps, charts)
+      'img',                     // Images
+      '.border',                 // Bordered sections
+      '[class*="bg-"]',          // Any background colored sections
+      'h1, h2, h3, h4, h5, h6',  // Headers should not be separated from following content
+    ];
+    
+    // Get all components within the element
+    const components: Array<{element: HTMLElement, rect: DOMRect}> = [];
+    
+    // Add the main sections
+    componentSelectors.forEach(selector => {
+      const elements = element.querySelectorAll(selector) as NodeListOf<HTMLElement>;
+      elements.forEach(el => {
+        const rect = el.getBoundingClientRect();
+        const elementRect = element.getBoundingClientRect();
+        // Convert to relative coordinates within the main element
+        const relativeRect = new DOMRect(
+          rect.left - elementRect.left,
+          rect.top - elementRect.top,
+          rect.width,
+          rect.height
+        );
+        components.push({ element: el, rect: relativeRect });
+      });
+    });
+    
+    // Sort components by their top position
+    components.sort((a, b) => a.rect.top - b.rect.top);
+    
+    console.log(`Found ${components.length} components to preserve`);
+    
+    // Create canvas of the entire content
     const canvas = await html2canvas(element, {
       scale: 2,
       useCORS: true,
@@ -217,11 +260,12 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
     // Restore original styles
     element.style.cssText = originalStyle;
     
-    const imgData = canvas.toDataURL('image/png', 0.9);
     const imgWidth = contentWidth;
     const imgHeight = (canvas.height * contentWidth) / canvas.width;
+    const pixelsPerMM = canvas.height / imgHeight;
+    const maxContentHeightPx = contentHeight * pixelsPerMM;
     
-    console.log(`Content dimensions: ${imgWidth}mm x ${imgHeight}mm, Page content area: ${contentWidth}mm x ${contentHeight}mm`);
+    console.log(`Total content: ${imgHeight}mm (${canvas.height}px), Max per page: ${contentHeight}mm (${maxContentHeightPx}px)`);
     
     // If content fits on one page, add it directly
     if (imgHeight <= contentHeight) {
@@ -229,108 +273,106 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
       if (!isFirstPage) {
         pdf.addPage();
       }
+      const imgData = canvas.toDataURL('image/png', 0.9);
       pdf.addImage(imgData, 'PNG', margin, margin, imgWidth, imgHeight);
       return;
     }
     
-    // Content needs to be split across pages - use smarter splitting
-    console.log(`Content too large (${imgHeight}mm), splitting across pages`);
+    // Split content while preserving components
+    console.log('Content requires splitting - preserving component boundaries');
     
-    const sourceHeight = canvas.height;
-    const sourceWidth = canvas.width;
-    const pixelsPerMM = sourceHeight / imgHeight;
+    let currentPageStartY = 0;
+    let isFirstPageOfContent = isFirstPage;
     
-    // Try to find good break points by looking for white space or section boundaries
-    const findGoodBreakPoint = (startY: number, maxHeight: number): number => {
-      const maxY = Math.min(startY + maxHeight, sourceHeight);
-      const searchZone = Math.min(maxHeight * 0.1, 50); // Search within 10% of max height or 50px
+    while (currentPageStartY < canvas.height) {
+      const remainingHeight = canvas.height - currentPageStartY;
+      let pageEndY = Math.min(currentPageStartY + maxContentHeightPx, canvas.height);
       
-      // Create a small canvas to sample colors and find white space
-      const testCanvas = document.createElement('canvas');
-      testCanvas.width = sourceWidth;
-      testCanvas.height = Math.min(searchZone, maxY - startY);
-      const testCtx = testCanvas.getContext('2d');
-      
-      if (!testCtx) return maxY;
-      
-      // Sample the bottom area looking for white/light rows (good break points)
-      const searchStart = Math.max(0, maxY - searchZone);
-      testCtx.drawImage(canvas, 0, searchStart, sourceWidth, testCanvas.height, 0, 0, sourceWidth, testCanvas.height);
-      
-      const imageData = testCtx.getImageData(0, 0, sourceWidth, testCanvas.height);
-      const data = imageData.data;
-      
-      // Look for rows that are mostly white/light (good break points)
-      for (let y = testCanvas.height - 1; y >= 0; y--) {
-        let whitePixels = 0;
-        const rowStart = y * sourceWidth * 4;
+      // If this isn't the last page, find a safe break point
+      if (pageEndY < canvas.height) {
+        console.log(`Looking for safe break point between ${currentPageStartY}px and ${pageEndY}px`);
         
-        for (let x = 0; x < sourceWidth; x++) {
-          const pixelIndex = rowStart + x * 4;
-          const r = data[pixelIndex];
-          const g = data[pixelIndex + 1];
-          const b = data[pixelIndex + 2];
+        // Convert pixel coordinates to DOM coordinates for component checking
+        const elementRect = element.getBoundingClientRect();
+        const scale = elementRect.height / canvas.height;
+        
+        // Find the latest safe break point (largest Y that doesn't split any component)
+        let safestBreakY = currentPageStartY + (maxContentHeightPx * 0.5); // Start with at least half a page
+        
+        // Check each component to see if it would be split
+        for (const component of components) {
+          const componentTopPx = component.rect.top / scale;
+          const componentBottomPx = (component.rect.top + component.rect.height) / scale;
           
-          // Consider pixel "white" if all RGB values are > 240
-          if (r > 240 && g > 240 && b > 240) {
-            whitePixels++;
+          // Skip components that are entirely before our current page
+          if (componentBottomPx <= currentPageStartY) continue;
+          
+          // Skip components that are entirely after our potential page end
+          if (componentTopPx >= pageEndY) continue;
+          
+          // If component starts in our range but extends beyond pageEndY, 
+          // we need to end the page before this component starts
+          if (componentTopPx >= currentPageStartY && componentBottomPx > pageEndY) {
+            if (componentTopPx > safestBreakY) {
+              safestBreakY = componentTopPx;
+              console.log(`Found safe break before component at ${componentTopPx}px`);
+            }
+          }
+          
+          // If component fits entirely within our page, we can break after it
+          if (componentTopPx >= currentPageStartY && componentBottomPx <= pageEndY) {
+            if (componentBottomPx > safestBreakY) {
+              safestBreakY = componentBottomPx;
+              console.log(`Can break after component ending at ${componentBottomPx}px`);
+            }
           }
         }
         
-        // If more than 80% of the row is white, it's a good break point
-        if (whitePixels / sourceWidth > 0.8) {
-          return searchStart + y;
+        // Use the safest break point we found
+        pageEndY = Math.min(safestBreakY, canvas.height);
+        
+        // Ensure we make progress - if safest break is too close to start, use minimum progress
+        const minProgress = maxContentHeightPx * 0.3; // At least 30% of page height
+        if (pageEndY - currentPageStartY < minProgress) {
+          pageEndY = Math.min(currentPageStartY + minProgress, canvas.height);
+          console.log(`Minimum progress enforced: ${pageEndY - currentPageStartY}px`);
         }
       }
       
-      // No good break point found, use max height
-      return maxY;
-    };
-    
-    let remainingSourceHeight = sourceHeight;
-    let sourceY = 0;
-    let isFirstPageOfContent = isFirstPage;
-    
-    while (remainingSourceHeight > 0) {
-      const maxContentHeightPx = contentHeight * pixelsPerMM;
-      let currentSourceHeight = Math.min(remainingSourceHeight, maxContentHeightPx);
+      const pageHeight = pageEndY - currentPageStartY;
+      const pageMmHeight = pageHeight / pixelsPerMM;
       
-      // Try to find a better break point if we're not at the end
-      if (remainingSourceHeight > maxContentHeightPx) {
-        const betterBreakPoint = findGoodBreakPoint(sourceY, currentSourceHeight);
-        currentSourceHeight = betterBreakPoint - sourceY;
-      }
+      console.log(`Creating page: ${currentPageStartY}px to ${pageEndY}px (${pageMmHeight}mm)`);
       
-      const currentMmHeight = currentSourceHeight / pixelsPerMM;
+      // Create canvas for this page
+      const pageCanvas = document.createElement('canvas');
+      pageCanvas.width = canvas.width;
+      pageCanvas.height = pageHeight;
+      const pageCtx = pageCanvas.getContext('2d');
       
-      // Create a cropped canvas for this page segment
-      const segmentCanvas = document.createElement('canvas');
-      segmentCanvas.width = sourceWidth;
-      segmentCanvas.height = currentSourceHeight;
-      const segmentCtx = segmentCanvas.getContext('2d');
-      
-      if (segmentCtx) {
-        segmentCtx.fillStyle = '#ffffff';
-        segmentCtx.fillRect(0, 0, sourceWidth, currentSourceHeight);
+      if (pageCtx) {
+        // Fill with white background
+        pageCtx.fillStyle = '#ffffff';
+        pageCtx.fillRect(0, 0, canvas.width, pageHeight);
         
-        segmentCtx.drawImage(
+        // Draw the page content
+        pageCtx.drawImage(
           canvas,
-          0, sourceY, sourceWidth, currentSourceHeight,
-          0, 0, sourceWidth, currentSourceHeight
+          0, currentPageStartY, canvas.width, pageHeight,
+          0, 0, canvas.width, pageHeight
         );
         
-        const segmentImgData = segmentCanvas.toDataURL('image/png', 0.9);
+        const pageImgData = pageCanvas.toDataURL('image/png', 0.9);
         
         if (!isFirstPageOfContent) {
           pdf.addPage();
         }
         
-        pdf.addImage(segmentImgData, 'PNG', margin, margin, imgWidth, currentMmHeight);
-        console.log(`Added page segment: ${currentMmHeight}mm height`);
+        pdf.addImage(pageImgData, 'PNG', margin, margin, imgWidth, pageMmHeight);
+        console.log(`Added page with ${pageMmHeight}mm height`);
       }
       
-      remainingSourceHeight -= currentSourceHeight;
-      sourceY += currentSourceHeight;
+      currentPageStartY = pageEndY;
       isFirstPageOfContent = false;
     }
   };
@@ -363,14 +405,14 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
 
       console.log(`PDF settings: ${pageWidth}x${pageHeight}mm, content: ${contentWidth}x${contentHeight}mm`);
 
-      // Capture summary section with intelligent page splitting
+      // Capture summary section with component-aware page splitting
       const headerElement = reportRef.current.querySelector('[data-summary-section]') as HTMLElement;
       if (headerElement) {
         console.log('Processing summary section...');
-        await captureContentWithPageSplitting(headerElement, pdf, contentWidth, contentHeight, margin, true);
+        await captureContentWithComponentSplitting(headerElement, pdf, contentWidth, contentHeight, margin, true);
       }
 
-      // Get each site section and process with intelligent splitting
+      // Get each site section and process with component-aware splitting
       const siteElements = reportRef.current.querySelectorAll('[data-site-section]');
       console.log(`Found ${siteElements.length} site sections`);
       
@@ -378,7 +420,7 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
         const siteElement = siteElements[i] as HTMLElement;
         console.log(`Processing site ${i + 1}/${siteElements.length}`);
         
-        await captureContentWithPageSplitting(siteElement, pdf, contentWidth, contentHeight, margin, false);
+        await captureContentWithComponentSplitting(siteElement, pdf, contentWidth, contentHeight, margin, false);
       }
 
       // Save the PDF with appropriate method for device
