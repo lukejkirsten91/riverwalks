@@ -186,10 +186,17 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
     setIsExporting(true);
 
     try {
-      // Wait for charts to render fully
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Wait for charts to render fully - longer delay for complex charts
+      await new Promise(resolve => setTimeout(resolve, 3000));
 
-      // Capture individual sections for better page control
+      // Detect mobile device for better PDF handling
+      const isMobile = /Mobi|Android/i.test(navigator.userAgent);
+      const isSmallScreen = window.innerWidth < 768;
+      
+      // Adjust scale based on device capabilities
+      const canvasScale = isMobile || isSmallScreen ? 1.5 : 2;
+      
+      // Create PDF with consistent settings
       const pdf = new jsPDF({
         orientation: 'portrait',
         unit: 'mm',
@@ -198,75 +205,116 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
 
       const pageWidth = 210; // A4 width in mm
       const pageHeight = 297; // A4 height in mm
-      const margin = 20; // 20mm margin on all sides
+      const margin = 15; // Reduced margin for more content space
       const contentWidth = pageWidth - (2 * margin);
       const contentHeight = pageHeight - (2 * margin);
 
       // First, add the header and summary section as the first page
       const headerElement = reportRef.current.querySelector('[data-summary-section]') as HTMLElement;
       if (headerElement) {
+        console.log('Capturing summary section...');
         const headerCanvas = await html2canvas(headerElement, {
-          scale: 2,
+          scale: canvasScale,
           useCORS: true,
           allowTaint: true,
+          width: headerElement.scrollWidth,
+          height: headerElement.scrollHeight,
+          backgroundColor: '#ffffff',
         });
         
-        const headerImgData = headerCanvas.toDataURL('image/png');
+        const headerImgData = headerCanvas.toDataURL('image/png', 0.9);
         const headerHeight = (headerCanvas.height * contentWidth) / headerCanvas.width;
         
-        pdf.addImage(headerImgData, 'PNG', margin, margin, contentWidth, Math.min(headerHeight, contentHeight));
+        // Ensure header fits on first page
+        const maxHeaderHeight = contentHeight - 20;
+        const finalHeaderHeight = Math.min(headerHeight, maxHeaderHeight);
+        
+        pdf.addImage(headerImgData, 'PNG', margin, margin, contentWidth, finalHeaderHeight);
       }
 
       // Get each site section and add as separate pages
       const siteElements = reportRef.current.querySelectorAll('[data-site-section]');
+      console.log(`Found ${siteElements.length} site sections`);
       
       for (let i = 0; i < siteElements.length; i++) {
         const siteElement = siteElements[i] as HTMLElement;
+        console.log(`Processing site ${i + 1}/${siteElements.length}`);
         
-        // Add new page for each site
+        // Add new page for each site (don't add extra page for first site)
         pdf.addPage();
 
+        // Capture site section with improved settings
         const siteCanvas = await html2canvas(siteElement, {
-          scale: 2,
+          scale: canvasScale,
           useCORS: true,
           allowTaint: true,
+          width: siteElement.scrollWidth,
+          height: siteElement.scrollHeight,
+          backgroundColor: '#ffffff',
+          logging: false, // Reduce console noise
         });
 
-        const siteImgData = siteCanvas.toDataURL('image/png');
+        const siteImgData = siteCanvas.toDataURL('image/png', 0.9);
+        const siteImgWidth = contentWidth;
         const siteImgHeight = (siteCanvas.height * contentWidth) / siteCanvas.width;
         
-        // If site content is too tall for one page, split it
+        // Handle large content by splitting across pages
         if (siteImgHeight > contentHeight) {
-          let yPosition = margin;
-          let remainingHeight = siteImgHeight;
-          let isFirstSitePage = true;
+          console.log(`Site ${i + 1} content is tall (${siteImgHeight}mm), splitting across pages`);
           
-          while (remainingHeight > 0) {
-            const currentPageHeight = Math.min(remainingHeight, contentHeight);
+          const sourceHeight = siteCanvas.height;
+          const sourceWidth = siteCanvas.width;
+          const pixelsPerMM = sourceHeight / siteImgHeight;
+          
+          let remainingSourceHeight = sourceHeight;
+          let sourceY = 0;
+          let isFirstPageOfSite = true;
+          
+          while (remainingSourceHeight > 0) {
+            const maxContentHeightPx = contentHeight * pixelsPerMM;
+            const currentSourceHeight = Math.min(remainingSourceHeight, maxContentHeightPx);
+            const currentMmHeight = currentSourceHeight / pixelsPerMM;
             
-            pdf.addImage(siteImgData, 'PNG', margin, yPosition, contentWidth, currentPageHeight);
+            // Create a cropped canvas for this page segment
+            const segmentCanvas = document.createElement('canvas');
+            segmentCanvas.width = sourceWidth;
+            segmentCanvas.height = currentSourceHeight;
+            const segmentCtx = segmentCanvas.getContext('2d');
             
-            remainingHeight -= currentPageHeight;
-            
-            if (remainingHeight > 0) {
-              pdf.addPage();
-              yPosition = margin;
+            if (segmentCtx) {
+              segmentCtx.drawImage(
+                siteCanvas,
+                0, sourceY, sourceWidth, currentSourceHeight,
+                0, 0, sourceWidth, currentSourceHeight
+              );
+              
+              const segmentImgData = segmentCanvas.toDataURL('image/png', 0.9);
+              
+              if (!isFirstPageOfSite) {
+                pdf.addPage();
+              }
+              
+              pdf.addImage(segmentImgData, 'PNG', margin, margin, siteImgWidth, currentMmHeight);
             }
+            
+            remainingSourceHeight -= currentSourceHeight;
+            sourceY += currentSourceHeight;
+            isFirstPageOfSite = false;
           }
         } else {
-          pdf.addImage(siteImgData, 'PNG', margin, margin, contentWidth, siteImgHeight);
+          // Content fits on one page
+          pdf.addImage(siteImgData, 'PNG', margin, margin, siteImgWidth, siteImgHeight);
         }
       }
 
-      // Save the PDF with mobile-friendly approach
-      const fileName = `${riverWalk.name.replace(/[^a-z0-9]/gi, '_')}_report.pdf`;
+      // Save the PDF with appropriate method for device
+      const fileName = `${riverWalk.name.replace(/[^a-z0-9\s]/gi, '_').replace(/\s+/g, '_')}_report.pdf`;
       
-      // For mobile devices, use a different approach
-      if (/Mobi|Android/i.test(navigator.userAgent)) {
+      if (isMobile) {
+        // Mobile-specific download handling
         const pdfBlob = pdf.output('blob');
         const url = URL.createObjectURL(pdfBlob);
         
-        // Create a temporary link for download
         const link = document.createElement('a');
         link.href = url;
         link.download = fileName;
@@ -275,11 +323,13 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
         link.click();
         document.body.removeChild(link);
         
-        // Clean up the URL object
-        setTimeout(() => URL.revokeObjectURL(url), 100);
+        // Clean up
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
       } else {
         pdf.save(fileName);
       }
+      
+      console.log('PDF generation completed successfully');
     } catch (error) {
       console.error('Error generating PDF:', error);
       alert('Error generating PDF. Please try again.');
@@ -412,6 +462,47 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
               .page-break-before {
                 page-break-before: always;
                 break-before: page;
+              }
+            }
+            
+            /* PDF-specific styles for better rendering */
+            [data-summary-section], [data-site-section] {
+              background-color: white !important;
+              color: black !important;
+              font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif !important;
+            }
+            
+            /* Ensure charts and images render properly */
+            [data-summary-section] img, [data-site-section] img {
+              max-width: 100% !important;
+              height: auto !important;
+            }
+            
+            /* Fix text sizing for mobile PDF generation */
+            @media (max-width: 768px) {
+              [data-summary-section], [data-site-section] {
+                font-size: 14px !important;
+                line-height: 1.4 !important;
+              }
+              
+              [data-summary-section] h1 {
+                font-size: 24px !important;
+              }
+              
+              [data-summary-section] h2 {
+                font-size: 20px !important;
+              }
+              
+              [data-summary-section] h3, [data-site-section] h3 {
+                font-size: 18px !important;
+              }
+              
+              [data-summary-section] h4, [data-site-section] h4 {
+                font-size: 16px !important;
+              }
+              
+              [data-summary-section] table, [data-site-section] table {
+                font-size: 12px !important;
               }
             }
           `}</style>
