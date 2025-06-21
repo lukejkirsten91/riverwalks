@@ -203,82 +203,105 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
     // Wait for style changes to take effect
     await new Promise(resolve => setTimeout(resolve, 100));
     
-    // Use a much more aggressive approach - treat EVERY child element as a component
-    // This ensures absolutely nothing gets split
+    // Identify components using a safer, more targeted approach
+    console.log('Identifying components to preserve...');
     const components: Array<{element: HTMLElement, rect: DOMRect, type: string}> = [];
-    const elementRect = element.getBoundingClientRect();
+    let filteredComponents: Array<{element: HTMLElement, rect: DOMRect, type: string}> = [];
     
-    // Function to recursively find all meaningful elements
-    const findAllComponents = (parent: HTMLElement, depth: number = 0) => {
-      const children = Array.from(parent.children) as HTMLElement[];
+    try {
+      const elementRect = element.getBoundingClientRect();
       
-      children.forEach(child => {
-        const rect = child.getBoundingClientRect();
-        
-        // Skip elements that are too small or have no meaningful content
-        if (rect.height < 10 || rect.width < 10) return;
-        
-        // Convert to relative coordinates within the main element
-        const relativeRect = new DOMRect(
-          rect.left - elementRect.left,
-          rect.top - elementRect.top,
-          rect.width,
-          rect.height
-        );
-        
-        // Determine component type for debugging
-        let componentType = child.tagName.toLowerCase();
-        if (child.className) {
-          const classes = child.className.split(' ').filter(c => c.includes('bg-') || c.includes('border') || c.includes('rounded')); 
-          if (classes.length > 0) componentType += ` (${classes.join(', ')})`;
+      // Use specific selectors for known component types that should never be split
+      const componentSelectors = [
+        'table',                    // All tables
+        '.plotly-graph-div',       // Plotly charts  
+        'svg',                     // SVG elements (maps, charts)
+        'img',                     // Images
+        '.bg-blue-50',             // KPI cards
+        '.bg-green-50',            // Velocity analysis
+        '.bg-amber-50',            // Sediment analysis
+        '.bg-gray-50',             // Photography sections
+        '.grid',                   // Grid layouts
+        '.rounded-lg',             // Card components
+        '.border',                 // Bordered sections
+        'h3, h4, h5',              // Section headers
+        '.mb-6, .mb-8',            // Major sections with margins
+        '[class*="overflow-x-auto"]', // Scrollable tables
+      ];
+      
+      // Find components using selectors
+      componentSelectors.forEach(selector => {
+        try {
+          const elements = element.querySelectorAll(selector) as NodeListOf<HTMLElement>;
+          elements.forEach(el => {
+            const rect = el.getBoundingClientRect();
+            
+            // Skip very small elements
+            if (rect.height < 20 || rect.width < 50) return;
+            
+            // Convert to relative coordinates
+            const relativeRect = new DOMRect(
+              rect.left - elementRect.left,
+              rect.top - elementRect.top,
+              rect.width,
+              rect.height
+            );
+            
+            // Determine component type
+            let componentType = el.tagName.toLowerCase();
+            if (el.className) {
+              const importantClasses = el.className.split(' ').filter(c => 
+                c.includes('bg-') || c.includes('border') || c.includes('rounded') || 
+                c.includes('grid') || c.includes('plotly')
+              );
+              if (importantClasses.length > 0) {
+                componentType += ` (${importantClasses.slice(0, 2).join(', ')})`;
+              }
+            }
+            
+            components.push({ 
+              element: el, 
+              rect: relativeRect, 
+              type: componentType 
+            });
+          });
+        } catch (err) {
+          console.warn(`Error processing selector ${selector}:`, err);
         }
-        
-        // Add this element as a component to preserve
-        components.push({ 
-          element: child, 
-          rect: relativeRect, 
-          type: componentType 
+      });
+      
+      // Remove overlapping components (keep the outermost ones)
+      filteredComponents = components.filter((comp, index) => {
+        return !components.some((other, otherIndex) => {
+          if (index === otherIndex) return false;
+          
+          // Check if comp is completely inside other (with some tolerance)
+          const tolerance = 5;
+          return (
+            other.rect.top <= comp.rect.top + tolerance &&
+            other.rect.left <= comp.rect.left + tolerance &&
+            (other.rect.top + other.rect.height) >= (comp.rect.top + comp.rect.height - tolerance) &&
+            (other.rect.left + other.rect.width) >= (comp.rect.left + comp.rect.width - tolerance) &&
+            (other.rect.width > comp.rect.width + tolerance || other.rect.height > comp.rect.height + tolerance)
+          );
         });
-        
-        // Don't recurse into certain containers to avoid double-counting
-        const skipRecursion = [
-          'table', 'svg', 'img', 'canvas', 'video', 'audio', 'iframe'
-        ].includes(child.tagName.toLowerCase()) || 
-        child.classList.contains('plotly-graph-div');
-        
-        if (!skipRecursion && depth < 3) {
-          findAllComponents(child, depth + 1);
-        }
       });
-    };
-    
-    // Find all components starting from the main element
-    findAllComponents(element);
-    
-    // Remove overlapping components (keep the largest/outermost ones)
-    const filteredComponents = components.filter((comp, index) => {
-      // Check if this component is completely contained within another component
-      return !components.some((other, otherIndex) => {
-        if (index === otherIndex) return false;
-        
-        // Check if comp is completely inside other
-        return (
-          other.rect.top <= comp.rect.top &&
-          other.rect.left <= comp.rect.left &&
-          other.rect.bottom >= comp.rect.bottom &&
-          other.rect.right >= comp.rect.right &&
-          (other.rect.width > comp.rect.width || other.rect.height > comp.rect.height)
-        );
+      
+      // Sort by vertical position
+      filteredComponents.sort((a, b) => a.rect.top - b.rect.top);
+      
+      console.log(`Found ${filteredComponents.length} components to preserve:`);
+      filteredComponents.slice(0, 10).forEach((comp, i) => {
+        console.log(`  ${i + 1}. ${comp.type} at ${comp.rect.top.toFixed(0)}px (height: ${comp.rect.height.toFixed(0)}px)`);
       });
-    });
-    
-    // Sort components by their top position
-    filteredComponents.sort((a, b) => a.rect.top - b.rect.top);
-    
-    console.log(`Found ${filteredComponents.length} components to preserve:`);
-    filteredComponents.forEach((comp, i) => {
-      console.log(`  ${i + 1}. ${comp.type} at ${comp.rect.top.toFixed(0)}px (height: ${comp.rect.height.toFixed(0)}px)`);
-    });
+      if (filteredComponents.length > 10) {
+        console.log(`  ... and ${filteredComponents.length - 10} more components`);
+      }
+    } catch (error) {
+      console.error('Error in component detection:', error);
+      // Fallback to empty array if component detection fails
+      filteredComponents = [];
+    }
     
     // Create canvas of the entire content
     const canvas = await html2canvas(element, {
@@ -326,78 +349,60 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
       if (pageEndY < canvas.height) {
         console.log(`Looking for safe break point between ${currentPageStartY}px and ${pageEndY}px`);
         
-        // Convert pixel coordinates to DOM coordinates for component checking
-        const elementRect = element.getBoundingClientRect();
-        const scale = elementRect.height / canvas.height;
-        
         // Find the latest safe break point (largest Y that doesn't split any component)
         let safestBreakY = currentPageStartY + (maxContentHeightPx * 0.5); // Start with at least half a page
         
-        // Check each component to see if it would be split
-        for (const component of filteredComponents) {
-          const componentTopPx = component.rect.top / scale;
-          const componentBottomPx = (component.rect.top + component.rect.height) / scale;
+        try {
+          // Convert pixel coordinates to DOM coordinates for component checking
+          const elementRect = element.getBoundingClientRect();
+          const scale = elementRect.height > 0 ? elementRect.height / canvas.height : 1;
           
-          // Skip components that are entirely before our current page
-          if (componentBottomPx <= currentPageStartY) continue;
-          
-          // Skip components that are entirely after our potential page end
-          if (componentTopPx >= pageEndY) continue;
-          
-          // If component starts in our range but extends beyond pageEndY, 
-          // we need to end the page before this component starts
-          if (componentTopPx >= currentPageStartY && componentBottomPx > pageEndY) {
-            if (componentTopPx > safestBreakY) {
-              safestBreakY = componentTopPx;
-              console.log(`Found safe break before ${component.type} at ${componentTopPx}px`);
+          // Check each component to see if it would be split
+          for (const component of filteredComponents) {
+            try {
+              const componentTopPx = component.rect.top / scale;
+              const componentBottomPx = (component.rect.top + component.rect.height) / scale;
+              
+              // Skip components that are entirely before our current page
+              if (componentBottomPx <= currentPageStartY) continue;
+              
+              // Skip components that are entirely after our potential page end
+              if (componentTopPx >= pageEndY) continue;
+              
+              // If component starts in our range but extends beyond pageEndY, 
+              // we need to end the page before this component starts
+              if (componentTopPx >= currentPageStartY && componentBottomPx > pageEndY) {
+                if (componentTopPx > safestBreakY) {
+                  safestBreakY = componentTopPx;
+                  console.log(`Found safe break before ${component.type} at ${componentTopPx}px`);
+                }
+              }
+              
+              // If component fits entirely within our page, we can break after it
+              if (componentTopPx >= currentPageStartY && componentBottomPx <= pageEndY) {
+                if (componentBottomPx > safestBreakY) {
+                  safestBreakY = componentBottomPx;
+                  console.log(`Can break after ${component.type} ending at ${componentBottomPx}px`);
+                }
+              }
+            } catch (componentError) {
+              console.warn(`Error processing component ${component.type}:`, componentError);
             }
           }
-          
-          // If component fits entirely within our page, we can break after it
-          if (componentTopPx >= currentPageStartY && componentBottomPx <= pageEndY) {
-            if (componentBottomPx > safestBreakY) {
-              safestBreakY = componentBottomPx;
-              console.log(`Can break after ${component.type} ending at ${componentBottomPx}px`);
-            }
-          }
+        } catch (scaleError) {
+          console.warn('Error in coordinate scaling, using simple break:', scaleError);
+          // Fallback to simple break without component checking
+          safestBreakY = currentPageStartY + (maxContentHeightPx * 0.8);
         }
         
         // Use the safest break point we found
         pageEndY = Math.min(safestBreakY, canvas.height);
-        
-        // Double-check that our chosen break point doesn't split any component
-        let finalCheckPassed = true;
-        for (const component of filteredComponents) {
-          const componentTopPx = component.rect.top / scale;
-          const componentBottomPx = (component.rect.top + component.rect.height) / scale;
-          
-          // Check if this component would be split by our break point
-          if (componentTopPx < pageEndY && componentBottomPx > pageEndY) {
-            console.log(`WARNING: Break point would split ${component.type} (${componentTopPx}-${componentBottomPx}px), adjusting...`);
-            // Move break point to before this component
-            pageEndY = Math.max(componentTopPx, currentPageStartY + (maxContentHeightPx * 0.2));
-            finalCheckPassed = false;
-            break;
-          }
-        }
         
         // Ensure we make progress - if safest break is too close to start, use minimum progress
         const minProgress = maxContentHeightPx * 0.2; // Reduced to 20% to be more conservative
         if (pageEndY - currentPageStartY < minProgress) {
           console.log(`Enforcing minimum progress: ${minProgress}px`);
           pageEndY = Math.min(currentPageStartY + minProgress, canvas.height);
-          
-          // Final safety check after enforcing minimum progress
-          for (const component of filteredComponents) {
-            const componentTopPx = component.rect.top / scale;
-            const componentBottomPx = (component.rect.top + component.rect.height) / scale;
-            
-            if (componentTopPx < pageEndY && componentBottomPx > pageEndY) {
-              console.log(`FINAL CHECK: Still would split ${component.type}, moving to start of component`);
-              pageEndY = componentTopPx;
-              break;
-            }
-          }
         }
       }
       
