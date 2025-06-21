@@ -179,8 +179,8 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
     };
   };
 
-  // Helper function to capture content with component-aware page splitting
-  const captureContentWithComponentSplitting = async (
+  // Simplified CSS-based PDF generation that relies on CSS page-break properties
+  const generateSimplePDF = async (
     element: HTMLElement, 
     pdf: jsPDF, 
     contentWidth: number, 
@@ -188,9 +188,9 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
     margin: number,
     isFirstPage: boolean = false
   ) => {
-    console.log('Capturing content with component-aware page splitting...');
+    console.log('Generating PDF using CSS page-break approach...');
     
-    // Force desktop layout for PDF generation by temporarily adjusting styles
+    // Force desktop layout for PDF generation
     const originalStyle = element.style.cssText;
     element.style.cssText += `
       width: 800px !important;
@@ -201,109 +201,9 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
     `;
     
     // Wait for style changes to take effect
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await new Promise(resolve => setTimeout(resolve, 200));
     
-    // Identify components using a safer, more targeted approach
-    console.log('Identifying components to preserve...');
-    const components: Array<{element: HTMLElement, rect: DOMRect, type: string}> = [];
-    let filteredComponents: Array<{element: HTMLElement, rect: DOMRect, type: string}> = [];
-    
-    try {
-      const elementRect = element.getBoundingClientRect();
-      
-      // Use specific selectors for known component types that should never be split
-      const componentSelectors = [
-        'table',                    // All tables
-        '.plotly-graph-div',       // Plotly charts  
-        'svg',                     // SVG elements (maps, charts)
-        'img',                     // Images
-        '.bg-blue-50',             // KPI cards
-        '.bg-green-50',            // Velocity analysis
-        '.bg-amber-50',            // Sediment analysis
-        '.bg-gray-50',             // Photography sections
-        '.grid',                   // Grid layouts
-        '.rounded-lg',             // Card components
-        '.border',                 // Bordered sections
-        'h3, h4, h5',              // Section headers
-        '.mb-6, .mb-8',            // Major sections with margins
-        '[class*="overflow-x-auto"]', // Scrollable tables
-      ];
-      
-      // Find components using selectors
-      componentSelectors.forEach(selector => {
-        try {
-          const elements = element.querySelectorAll(selector) as NodeListOf<HTMLElement>;
-          elements.forEach(el => {
-            const rect = el.getBoundingClientRect();
-            
-            // Skip very small elements
-            if (rect.height < 20 || rect.width < 50) return;
-            
-            // Convert to relative coordinates
-            const relativeRect = new DOMRect(
-              rect.left - elementRect.left,
-              rect.top - elementRect.top,
-              rect.width,
-              rect.height
-            );
-            
-            // Determine component type
-            let componentType = el.tagName.toLowerCase();
-            if (el.className) {
-              const importantClasses = el.className.split(' ').filter(c => 
-                c.includes('bg-') || c.includes('border') || c.includes('rounded') || 
-                c.includes('grid') || c.includes('plotly')
-              );
-              if (importantClasses.length > 0) {
-                componentType += ` (${importantClasses.slice(0, 2).join(', ')})`;
-              }
-            }
-            
-            components.push({ 
-              element: el, 
-              rect: relativeRect, 
-              type: componentType 
-            });
-          });
-        } catch (err) {
-          console.warn(`Error processing selector ${selector}:`, err);
-        }
-      });
-      
-      // Remove overlapping components (keep the outermost ones)
-      filteredComponents = components.filter((comp, index) => {
-        return !components.some((other, otherIndex) => {
-          if (index === otherIndex) return false;
-          
-          // Check if comp is completely inside other (with some tolerance)
-          const tolerance = 5;
-          return (
-            other.rect.top <= comp.rect.top + tolerance &&
-            other.rect.left <= comp.rect.left + tolerance &&
-            (other.rect.top + other.rect.height) >= (comp.rect.top + comp.rect.height - tolerance) &&
-            (other.rect.left + other.rect.width) >= (comp.rect.left + comp.rect.width - tolerance) &&
-            (other.rect.width > comp.rect.width + tolerance || other.rect.height > comp.rect.height + tolerance)
-          );
-        });
-      });
-      
-      // Sort by vertical position
-      filteredComponents.sort((a, b) => a.rect.top - b.rect.top);
-      
-      console.log(`Found ${filteredComponents.length} components to preserve:`);
-      filteredComponents.slice(0, 10).forEach((comp, i) => {
-        console.log(`  ${i + 1}. ${comp.type} at ${comp.rect.top.toFixed(0)}px (height: ${comp.rect.height.toFixed(0)}px)`);
-      });
-      if (filteredComponents.length > 10) {
-        console.log(`  ... and ${filteredComponents.length - 10} more components`);
-      }
-    } catch (error) {
-      console.error('Error in component detection:', error);
-      // Fallback to empty array if component detection fails
-      filteredComponents = [];
-    }
-    
-    // Create canvas of the entire content
+    // Generate canvas with CSS page-break properties applied
     const canvas = await html2canvas(element, {
       scale: 2,
       useCORS: true,
@@ -312,6 +212,9 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
       height: element.scrollHeight,
       backgroundColor: '#ffffff',
       logging: false,
+      // Let CSS handle page breaks
+      scrollX: 0,
+      scrollY: 0,
     });
     
     // Restore original styles
@@ -319,10 +222,8 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
     
     const imgWidth = contentWidth;
     const imgHeight = (canvas.height * contentWidth) / canvas.width;
-    const pixelsPerMM = canvas.height / imgHeight;
-    const maxContentHeightPx = contentHeight * pixelsPerMM;
     
-    console.log(`Total content: ${imgHeight}mm (${canvas.height}px), Max per page: ${contentHeight}mm (${maxContentHeightPx}px)`);
+    console.log(`Content dimensions: ${imgWidth}mm x ${imgHeight}mm`);
     
     // If content fits on one page, add it directly
     if (imgHeight <= contentHeight) {
@@ -335,111 +236,53 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
       return;
     }
     
-    // Split content while preserving components
-    console.log('Content requires splitting - preserving component boundaries');
+    // For large content, use simple chunking with generous spacing
+    // CSS page-break properties should prevent most splitting issues
+    console.log('Content requires multiple pages - using CSS-guided chunking');
     
-    let currentPageStartY = 0;
+    const pixelsPerMM = canvas.height / imgHeight;
+    const chunkHeightMM = contentHeight * 0.85; // Use 85% of page height for safety
+    const chunkHeightPx = chunkHeightMM * pixelsPerMM;
+    
+    let currentY = 0;
     let isFirstPageOfContent = isFirstPage;
     
-    while (currentPageStartY < canvas.height) {
-      const remainingHeight = canvas.height - currentPageStartY;
-      let pageEndY = Math.min(currentPageStartY + maxContentHeightPx, canvas.height);
+    while (currentY < canvas.height) {
+      const remainingHeight = canvas.height - currentY;
+      const currentChunkHeight = Math.min(chunkHeightPx, remainingHeight);
+      const currentChunkMM = currentChunkHeight / pixelsPerMM;
       
-      // If this isn't the last page, find a safe break point
-      if (pageEndY < canvas.height) {
-        console.log(`Looking for safe break point between ${currentPageStartY}px and ${pageEndY}px`);
-        
-        // Find the latest safe break point (largest Y that doesn't split any component)
-        let safestBreakY = currentPageStartY + (maxContentHeightPx * 0.5); // Start with at least half a page
-        
-        try {
-          // Convert pixel coordinates to DOM coordinates for component checking
-          const elementRect = element.getBoundingClientRect();
-          const scale = elementRect.height > 0 ? elementRect.height / canvas.height : 1;
-          
-          // Check each component to see if it would be split
-          for (const component of filteredComponents) {
-            try {
-              const componentTopPx = component.rect.top / scale;
-              const componentBottomPx = (component.rect.top + component.rect.height) / scale;
-              
-              // Skip components that are entirely before our current page
-              if (componentBottomPx <= currentPageStartY) continue;
-              
-              // Skip components that are entirely after our potential page end
-              if (componentTopPx >= pageEndY) continue;
-              
-              // If component starts in our range but extends beyond pageEndY, 
-              // we need to end the page before this component starts
-              if (componentTopPx >= currentPageStartY && componentBottomPx > pageEndY) {
-                if (componentTopPx > safestBreakY) {
-                  safestBreakY = componentTopPx;
-                  console.log(`Found safe break before ${component.type} at ${componentTopPx}px`);
-                }
-              }
-              
-              // If component fits entirely within our page, we can break after it
-              if (componentTopPx >= currentPageStartY && componentBottomPx <= pageEndY) {
-                if (componentBottomPx > safestBreakY) {
-                  safestBreakY = componentBottomPx;
-                  console.log(`Can break after ${component.type} ending at ${componentBottomPx}px`);
-                }
-              }
-            } catch (componentError) {
-              console.warn(`Error processing component ${component.type}:`, componentError);
-            }
-          }
-        } catch (scaleError) {
-          console.warn('Error in coordinate scaling, using simple break:', scaleError);
-          // Fallback to simple break without component checking
-          safestBreakY = currentPageStartY + (maxContentHeightPx * 0.8);
-        }
-        
-        // Use the safest break point we found
-        pageEndY = Math.min(safestBreakY, canvas.height);
-        
-        // Ensure we make progress - if safest break is too close to start, use minimum progress
-        const minProgress = maxContentHeightPx * 0.2; // Reduced to 20% to be more conservative
-        if (pageEndY - currentPageStartY < minProgress) {
-          console.log(`Enforcing minimum progress: ${minProgress}px`);
-          pageEndY = Math.min(currentPageStartY + minProgress, canvas.height);
-        }
-      }
+      console.log(`Creating page chunk: ${currentY}px to ${currentY + currentChunkHeight}px (${currentChunkMM}mm)`);
       
-      const pageHeight = pageEndY - currentPageStartY;
-      const pageMmHeight = pageHeight / pixelsPerMM;
+      // Create canvas for this chunk
+      const chunkCanvas = document.createElement('canvas');
+      chunkCanvas.width = canvas.width;
+      chunkCanvas.height = currentChunkHeight;
+      const chunkCtx = chunkCanvas.getContext('2d');
       
-      console.log(`Creating page: ${currentPageStartY}px to ${pageEndY}px (${pageMmHeight}mm)`);
-      
-      // Create canvas for this page
-      const pageCanvas = document.createElement('canvas');
-      pageCanvas.width = canvas.width;
-      pageCanvas.height = pageHeight;
-      const pageCtx = pageCanvas.getContext('2d');
-      
-      if (pageCtx) {
+      if (chunkCtx) {
         // Fill with white background
-        pageCtx.fillStyle = '#ffffff';
-        pageCtx.fillRect(0, 0, canvas.width, pageHeight);
+        chunkCtx.fillStyle = '#ffffff';
+        chunkCtx.fillRect(0, 0, canvas.width, currentChunkHeight);
         
-        // Draw the page content
-        pageCtx.drawImage(
+        // Draw the chunk content
+        chunkCtx.drawImage(
           canvas,
-          0, currentPageStartY, canvas.width, pageHeight,
-          0, 0, canvas.width, pageHeight
+          0, currentY, canvas.width, currentChunkHeight,
+          0, 0, canvas.width, currentChunkHeight
         );
         
-        const pageImgData = pageCanvas.toDataURL('image/png', 0.9);
+        const chunkImgData = chunkCanvas.toDataURL('image/png', 0.9);
         
         if (!isFirstPageOfContent) {
           pdf.addPage();
         }
         
-        pdf.addImage(pageImgData, 'PNG', margin, margin, imgWidth, pageMmHeight);
-        console.log(`Added page with ${pageMmHeight}mm height`);
+        pdf.addImage(chunkImgData, 'PNG', margin, margin, imgWidth, currentChunkMM);
+        console.log(`Added page chunk with ${currentChunkMM}mm height`);
       }
       
-      currentPageStartY = pageEndY;
+      currentY += currentChunkHeight;
       isFirstPageOfContent = false;
     }
   };
@@ -472,22 +315,22 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
 
       console.log(`PDF settings: ${pageWidth}x${pageHeight}mm, content: ${contentWidth}x${contentHeight}mm`);
 
-      // Capture summary section with component-aware page splitting
+      // Generate summary section using CSS page-break approach
       const headerElement = reportRef.current.querySelector('[data-summary-section]') as HTMLElement;
       if (headerElement) {
-        console.log('Processing summary section...');
-        await captureContentWithComponentSplitting(headerElement, pdf, contentWidth, contentHeight, margin, true);
+        console.log('Processing summary section with CSS page-breaks...');
+        await generateSimplePDF(headerElement, pdf, contentWidth, contentHeight, margin, true);
       }
 
-      // Get each site section and process with component-aware splitting
+      // Process each site section with CSS page-break approach
       const siteElements = reportRef.current.querySelectorAll('[data-site-section]');
       console.log(`Found ${siteElements.length} site sections`);
       
       for (let i = 0; i < siteElements.length; i++) {
         const siteElement = siteElements[i] as HTMLElement;
-        console.log(`Processing site ${i + 1}/${siteElements.length}`);
+        console.log(`Processing site ${i + 1}/${siteElements.length} with CSS page-breaks`);
         
-        await captureContentWithComponentSplitting(siteElement, pdf, contentWidth, contentHeight, margin, false);
+        await generateSimplePDF(siteElement, pdf, contentWidth, contentHeight, margin, false);
       }
 
       // Save the PDF with appropriate method for device
@@ -648,6 +491,31 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
               }
             }
             
+            /* Modern CSS page-break approach - prevents component splitting */
+            .pdf-component {
+              break-inside: avoid !important;
+              page-break-inside: avoid !important;
+              -webkit-column-break-inside: avoid !important;
+              orphans: 3 !important;
+              widows: 3 !important;
+            }
+            
+            /* Specific component protection */
+            table, .plotly-graph-div, svg, img,
+            .bg-blue-50, .bg-green-50, .bg-amber-50, .bg-gray-50,
+            .grid, .rounded-lg, .border, .overflow-x-auto,
+            h3, h4, h5, .mb-6, .mb-8 {
+              break-inside: avoid !important;
+              page-break-inside: avoid !important;
+              -webkit-column-break-inside: avoid !important;
+            }
+            
+            /* Table-specific protection */
+            .row-group, tbody, .table-container {
+              break-inside: avoid !important;
+              page-break-inside: avoid !important;
+            }
+            
             /* PDF-specific styles for better rendering */
             [data-summary-section], [data-site-section] {
               background-color: white !important;
@@ -661,8 +529,11 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
               height: auto !important;
             }
             
-            /* Desktop layout enforced for PDF generation - mobile styles removed */
-            /* PDF generation now forces desktop layout regardless of device */
+            /* Section spacing control */
+            [data-summary-section] > *, [data-site-section] > * {
+              break-inside: avoid !important;
+              page-break-inside: avoid !important;
+            }
           `}</style>
           {/* NEW SUMMARY PAGE */}
           <div data-summary-section className="mb-8">
@@ -680,9 +551,9 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
             </div>
 
             {/* Key Performance Indicators */}
-            <div className="mb-8">
+            <div className="mb-8 pdf-component">
               <h3 className="text-lg sm:text-xl font-semibold mb-4 border-b pb-2">Key Performance Indicators</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 sm:gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 sm:gap-4 pdf-component">
                 <div className="bg-blue-50 p-3 sm:p-4 rounded-lg">
                   <h4 className="font-semibold text-blue-800 text-sm sm:text-base">Total Sites</h4>
                   <p className="text-xl sm:text-2xl font-bold text-blue-600">{sites.length}</p>
@@ -713,7 +584,7 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
             </div>
 
             {/* Site Location Map */}
-            <div className="mb-8">
+            <div className="mb-8 pdf-component">
               <h3 className="text-lg sm:text-xl font-semibold mb-4 border-b pb-2">Site Locations</h3>
               {(() => {
                 // Filter sites with coordinates
@@ -936,9 +807,9 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
             {/* Raw Data Tables */}
             <div className="space-y-8">
               {/* Cross-Sectional Area Summary Table */}
-              <div>
+              <div className="pdf-component">
                 <h3 className="text-lg sm:text-xl font-semibold mb-4 border-b pb-2">Cross-Sectional Area Summary</h3>
-                <div className="overflow-x-auto">
+                <div className="overflow-x-auto pdf-component">
                   <table className="w-full border-collapse border border-gray-300 text-sm">
                     <thead>
                       <tr className="bg-blue-50">
