@@ -6,6 +6,13 @@ import html2canvas from 'html2canvas';
 import { formatDate } from '../../lib/utils';
 import type { RiverWalk, Site, MeasurementPoint } from '../../types';
 
+// Extend window to include Plotly
+declare global {
+  interface Window {
+    Plotly: any;
+  }
+}
+
 // Dynamically import Plotly to avoid SSR issues
 const Plot = dynamic(() => import('react-plotly.js'), { 
   ssr: false,
@@ -203,6 +210,36 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
     // Wait for style changes to take effect
     await new Promise(resolve => setTimeout(resolve, 200));
     
+    // Special handling for Plotly charts - ensure they're fully rendered
+    const plotlyCharts = element.querySelectorAll('.plotly-graph-div');
+    if (plotlyCharts.length > 0) {
+      console.log(`Found ${plotlyCharts.length} Plotly charts, ensuring they're rendered...`);
+      
+      // Wait for all Plotly charts to be ready
+      for (const chart of Array.from(plotlyCharts)) {
+        try {
+          // Force Plotly to redraw the chart at the correct size
+          const plotlyDiv = chart as any;
+          if (plotlyDiv && plotlyDiv.layout && window.Plotly) {
+            await new Promise(resolve => {
+              window.Plotly.redraw(plotlyDiv).then(() => {
+                console.log('Plotly chart redrawn successfully');
+                resolve(true);
+              }).catch((error: any) => {
+                console.warn('Plotly redraw failed:', error);
+                resolve(true); // Continue anyway
+              });
+            });
+          }
+        } catch (error) {
+          console.warn('Error handling Plotly chart:', error);
+        }
+      }
+      
+      // Additional wait for charts to settle
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    }
+    
     // Generate canvas with CSS page-break properties applied
     const canvas = await html2canvas(element, {
       scale: 2,
@@ -215,6 +252,9 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
       // Let CSS handle page breaks
       scrollX: 0,
       scrollY: 0,
+      // Better chart and SVG handling
+      foreignObjectRendering: true,
+      removeContainer: false,
     });
     
     // Restore original styles
@@ -294,8 +334,17 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
     setIsExporting(true);
 
     try {
-      // Wait for charts to render fully
-      await new Promise(resolve => setTimeout(resolve, 3000));
+      // Wait for charts to render fully - longer delay for complex visualizations
+      console.log('Waiting for all charts and visualizations to render...');
+      await new Promise(resolve => setTimeout(resolve, 4000));
+      
+      // Check if any Plotly charts exist and ensure they're ready
+      const allPlotlyCharts = reportRef.current.querySelectorAll('.plotly-graph-div');
+      if (allPlotlyCharts.length > 0) {
+        console.log(`Found ${allPlotlyCharts.length} total Plotly charts in document`);
+        // Give extra time for complex charts
+        await new Promise(resolve => setTimeout(resolve, 2000));
+      }
 
       // Always use desktop-style layout for PDF generation
       const isMobile = /Mobi|Android/i.test(navigator.userAgent);
@@ -508,6 +557,26 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
               break-inside: avoid !important;
               page-break-inside: avoid !important;
               -webkit-column-break-inside: avoid !important;
+            }
+            
+            /* Enhanced chart rendering for PDF */
+            .plotly-graph-div {
+              width: 100% !important;
+              height: auto !important;
+              min-height: 400px !important;
+              background: white !important;
+              position: relative !important;
+            }
+            
+            .plotly-graph-div svg {
+              width: 100% !important;
+              height: 100% !important;
+              background: white !important;
+            }
+            
+            /* Ensure charts are visible during capture */
+            .plotly-graph-div .plotly-notifier {
+              display: none !important;
             }
             
             /* Table-specific protection */
