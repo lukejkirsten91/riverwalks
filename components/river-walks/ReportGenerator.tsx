@@ -179,6 +179,162 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
     };
   };
 
+  // Helper function to capture content with intelligent page splitting
+  const captureContentWithPageSplitting = async (
+    element: HTMLElement, 
+    pdf: jsPDF, 
+    contentWidth: number, 
+    contentHeight: number, 
+    margin: number,
+    isFirstPage: boolean = false
+  ) => {
+    console.log('Capturing content with intelligent page splitting...');
+    
+    // Force desktop layout for PDF generation by temporarily adjusting styles
+    const originalStyle = element.style.cssText;
+    element.style.cssText += `
+      width: 800px !important;
+      max-width: none !important;
+      transform: scale(1) !important;
+      font-size: 14px !important;
+      line-height: 1.5 !important;
+    `;
+    
+    // Wait for style changes to take effect
+    await new Promise(resolve => setTimeout(resolve, 100));
+    
+    // Use consistent scaling for all devices
+    const canvas = await html2canvas(element, {
+      scale: 2,
+      useCORS: true,
+      allowTaint: true,
+      width: 800,
+      height: element.scrollHeight,
+      backgroundColor: '#ffffff',
+      logging: false,
+    });
+    
+    // Restore original styles
+    element.style.cssText = originalStyle;
+    
+    const imgData = canvas.toDataURL('image/png', 0.9);
+    const imgWidth = contentWidth;
+    const imgHeight = (canvas.height * contentWidth) / canvas.width;
+    
+    console.log(`Content dimensions: ${imgWidth}mm x ${imgHeight}mm, Page content area: ${contentWidth}mm x ${contentHeight}mm`);
+    
+    // If content fits on one page, add it directly
+    if (imgHeight <= contentHeight) {
+      console.log('Content fits on single page');
+      if (!isFirstPage) {
+        pdf.addPage();
+      }
+      pdf.addImage(imgData, 'PNG', margin, margin, imgWidth, imgHeight);
+      return;
+    }
+    
+    // Content needs to be split across pages - use smarter splitting
+    console.log(`Content too large (${imgHeight}mm), splitting across pages`);
+    
+    const sourceHeight = canvas.height;
+    const sourceWidth = canvas.width;
+    const pixelsPerMM = sourceHeight / imgHeight;
+    
+    // Try to find good break points by looking for white space or section boundaries
+    const findGoodBreakPoint = (startY: number, maxHeight: number): number => {
+      const maxY = Math.min(startY + maxHeight, sourceHeight);
+      const searchZone = Math.min(maxHeight * 0.1, 50); // Search within 10% of max height or 50px
+      
+      // Create a small canvas to sample colors and find white space
+      const testCanvas = document.createElement('canvas');
+      testCanvas.width = sourceWidth;
+      testCanvas.height = Math.min(searchZone, maxY - startY);
+      const testCtx = testCanvas.getContext('2d');
+      
+      if (!testCtx) return maxY;
+      
+      // Sample the bottom area looking for white/light rows (good break points)
+      const searchStart = Math.max(0, maxY - searchZone);
+      testCtx.drawImage(canvas, 0, searchStart, sourceWidth, testCanvas.height, 0, 0, sourceWidth, testCanvas.height);
+      
+      const imageData = testCtx.getImageData(0, 0, sourceWidth, testCanvas.height);
+      const data = imageData.data;
+      
+      // Look for rows that are mostly white/light (good break points)
+      for (let y = testCanvas.height - 1; y >= 0; y--) {
+        let whitePixels = 0;
+        const rowStart = y * sourceWidth * 4;
+        
+        for (let x = 0; x < sourceWidth; x++) {
+          const pixelIndex = rowStart + x * 4;
+          const r = data[pixelIndex];
+          const g = data[pixelIndex + 1];
+          const b = data[pixelIndex + 2];
+          
+          // Consider pixel "white" if all RGB values are > 240
+          if (r > 240 && g > 240 && b > 240) {
+            whitePixels++;
+          }
+        }
+        
+        // If more than 80% of the row is white, it's a good break point
+        if (whitePixels / sourceWidth > 0.8) {
+          return searchStart + y;
+        }
+      }
+      
+      // No good break point found, use max height
+      return maxY;
+    };
+    
+    let remainingSourceHeight = sourceHeight;
+    let sourceY = 0;
+    let isFirstPageOfContent = isFirstPage;
+    
+    while (remainingSourceHeight > 0) {
+      const maxContentHeightPx = contentHeight * pixelsPerMM;
+      let currentSourceHeight = Math.min(remainingSourceHeight, maxContentHeightPx);
+      
+      // Try to find a better break point if we're not at the end
+      if (remainingSourceHeight > maxContentHeightPx) {
+        const betterBreakPoint = findGoodBreakPoint(sourceY, currentSourceHeight);
+        currentSourceHeight = betterBreakPoint - sourceY;
+      }
+      
+      const currentMmHeight = currentSourceHeight / pixelsPerMM;
+      
+      // Create a cropped canvas for this page segment
+      const segmentCanvas = document.createElement('canvas');
+      segmentCanvas.width = sourceWidth;
+      segmentCanvas.height = currentSourceHeight;
+      const segmentCtx = segmentCanvas.getContext('2d');
+      
+      if (segmentCtx) {
+        segmentCtx.fillStyle = '#ffffff';
+        segmentCtx.fillRect(0, 0, sourceWidth, currentSourceHeight);
+        
+        segmentCtx.drawImage(
+          canvas,
+          0, sourceY, sourceWidth, currentSourceHeight,
+          0, 0, sourceWidth, currentSourceHeight
+        );
+        
+        const segmentImgData = segmentCanvas.toDataURL('image/png', 0.9);
+        
+        if (!isFirstPageOfContent) {
+          pdf.addPage();
+        }
+        
+        pdf.addImage(segmentImgData, 'PNG', margin, margin, imgWidth, currentMmHeight);
+        console.log(`Added page segment: ${currentMmHeight}mm height`);
+      }
+      
+      remainingSourceHeight -= currentSourceHeight;
+      sourceY += currentSourceHeight;
+      isFirstPageOfContent = false;
+    }
+  };
+
   // Export report as PDF
   const exportToPDF = async () => {
     if (!reportRef.current) return;
@@ -186,15 +342,11 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
     setIsExporting(true);
 
     try {
-      // Wait for charts to render fully - longer delay for complex charts
+      // Wait for charts to render fully
       await new Promise(resolve => setTimeout(resolve, 3000));
 
-      // Detect mobile device for better PDF handling
+      // Always use desktop-style layout for PDF generation
       const isMobile = /Mobi|Android/i.test(navigator.userAgent);
-      const isSmallScreen = window.innerWidth < 768;
-      
-      // Adjust scale based on device capabilities
-      const canvasScale = isMobile || isSmallScreen ? 1.5 : 2;
       
       // Create PDF with consistent settings
       const pdf = new jsPDF({
@@ -205,34 +357,20 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
 
       const pageWidth = 210; // A4 width in mm
       const pageHeight = 297; // A4 height in mm
-      const margin = 15; // Reduced margin for more content space
+      const margin = 15;
       const contentWidth = pageWidth - (2 * margin);
       const contentHeight = pageHeight - (2 * margin);
 
-      // First, add the header and summary section as the first page
+      console.log(`PDF settings: ${pageWidth}x${pageHeight}mm, content: ${contentWidth}x${contentHeight}mm`);
+
+      // Capture summary section with intelligent page splitting
       const headerElement = reportRef.current.querySelector('[data-summary-section]') as HTMLElement;
       if (headerElement) {
-        console.log('Capturing summary section...');
-        const headerCanvas = await html2canvas(headerElement, {
-          scale: canvasScale,
-          useCORS: true,
-          allowTaint: true,
-          width: headerElement.scrollWidth,
-          height: headerElement.scrollHeight,
-          backgroundColor: '#ffffff',
-        });
-        
-        const headerImgData = headerCanvas.toDataURL('image/png', 0.9);
-        const headerHeight = (headerCanvas.height * contentWidth) / headerCanvas.width;
-        
-        // Ensure header fits on first page
-        const maxHeaderHeight = contentHeight - 20;
-        const finalHeaderHeight = Math.min(headerHeight, maxHeaderHeight);
-        
-        pdf.addImage(headerImgData, 'PNG', margin, margin, contentWidth, finalHeaderHeight);
+        console.log('Processing summary section...');
+        await captureContentWithPageSplitting(headerElement, pdf, contentWidth, contentHeight, margin, true);
       }
 
-      // Get each site section and add as separate pages
+      // Get each site section and process with intelligent splitting
       const siteElements = reportRef.current.querySelectorAll('[data-site-section]');
       console.log(`Found ${siteElements.length} site sections`);
       
@@ -240,71 +378,7 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
         const siteElement = siteElements[i] as HTMLElement;
         console.log(`Processing site ${i + 1}/${siteElements.length}`);
         
-        // Add new page for each site (don't add extra page for first site)
-        pdf.addPage();
-
-        // Capture site section with improved settings
-        const siteCanvas = await html2canvas(siteElement, {
-          scale: canvasScale,
-          useCORS: true,
-          allowTaint: true,
-          width: siteElement.scrollWidth,
-          height: siteElement.scrollHeight,
-          backgroundColor: '#ffffff',
-          logging: false, // Reduce console noise
-        });
-
-        const siteImgData = siteCanvas.toDataURL('image/png', 0.9);
-        const siteImgWidth = contentWidth;
-        const siteImgHeight = (siteCanvas.height * contentWidth) / siteCanvas.width;
-        
-        // Handle large content by splitting across pages
-        if (siteImgHeight > contentHeight) {
-          console.log(`Site ${i + 1} content is tall (${siteImgHeight}mm), splitting across pages`);
-          
-          const sourceHeight = siteCanvas.height;
-          const sourceWidth = siteCanvas.width;
-          const pixelsPerMM = sourceHeight / siteImgHeight;
-          
-          let remainingSourceHeight = sourceHeight;
-          let sourceY = 0;
-          let isFirstPageOfSite = true;
-          
-          while (remainingSourceHeight > 0) {
-            const maxContentHeightPx = contentHeight * pixelsPerMM;
-            const currentSourceHeight = Math.min(remainingSourceHeight, maxContentHeightPx);
-            const currentMmHeight = currentSourceHeight / pixelsPerMM;
-            
-            // Create a cropped canvas for this page segment
-            const segmentCanvas = document.createElement('canvas');
-            segmentCanvas.width = sourceWidth;
-            segmentCanvas.height = currentSourceHeight;
-            const segmentCtx = segmentCanvas.getContext('2d');
-            
-            if (segmentCtx) {
-              segmentCtx.drawImage(
-                siteCanvas,
-                0, sourceY, sourceWidth, currentSourceHeight,
-                0, 0, sourceWidth, currentSourceHeight
-              );
-              
-              const segmentImgData = segmentCanvas.toDataURL('image/png', 0.9);
-              
-              if (!isFirstPageOfSite) {
-                pdf.addPage();
-              }
-              
-              pdf.addImage(segmentImgData, 'PNG', margin, margin, siteImgWidth, currentMmHeight);
-            }
-            
-            remainingSourceHeight -= currentSourceHeight;
-            sourceY += currentSourceHeight;
-            isFirstPageOfSite = false;
-          }
-        } else {
-          // Content fits on one page
-          pdf.addImage(siteImgData, 'PNG', margin, margin, siteImgWidth, siteImgHeight);
-        }
+        await captureContentWithPageSplitting(siteElement, pdf, contentWidth, contentHeight, margin, false);
       }
 
       // Save the PDF with appropriate method for device
@@ -478,33 +552,8 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
               height: auto !important;
             }
             
-            /* Fix text sizing for mobile PDF generation */
-            @media (max-width: 768px) {
-              [data-summary-section], [data-site-section] {
-                font-size: 14px !important;
-                line-height: 1.4 !important;
-              }
-              
-              [data-summary-section] h1 {
-                font-size: 24px !important;
-              }
-              
-              [data-summary-section] h2 {
-                font-size: 20px !important;
-              }
-              
-              [data-summary-section] h3, [data-site-section] h3 {
-                font-size: 18px !important;
-              }
-              
-              [data-summary-section] h4, [data-site-section] h4 {
-                font-size: 16px !important;
-              }
-              
-              [data-summary-section] table, [data-site-section] table {
-                font-size: 12px !important;
-              }
-            }
+            /* Desktop layout enforced for PDF generation - mobile styles removed */
+            /* PDF generation now forces desktop layout regardless of device */
           `}</style>
           {/* NEW SUMMARY PAGE */}
           <div data-summary-section className="mb-8">
