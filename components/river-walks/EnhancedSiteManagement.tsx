@@ -408,7 +408,21 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
 
   const handleAddNewSite = async () => {
     try {
-      const nextSiteNumber = sites.length + 1;
+      // Find the next available site number (handles gaps from deleted sites)
+      const existingSiteNumbers = sites.map(site => site.site_number).sort((a, b) => a - b);
+      let nextSiteNumber = 1;
+      
+      // Find the first gap in numbering, or use the next number after the highest
+      for (let i = 0; i < existingSiteNumbers.length; i++) {
+        if (existingSiteNumbers[i] !== nextSiteNumber) {
+          break; // Found a gap
+        }
+        nextSiteNumber++;
+      }
+      
+      console.log('Creating new site with number:', nextSiteNumber);
+      console.log('Existing site numbers:', existingSiteNumbers);
+      
       const newSite: CreateSiteData = {
         river_walk_id: riverWalk.id,
         site_number: nextSiteNumber,
@@ -429,8 +443,24 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
       }
     } catch (error) {
       console.error('Error creating site:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      showError('Creation Failed', `Could not create site: ${errorMessage}`);
+      console.error('Full error object:', error);
+      
+      // Enhanced error messages
+      let errorMessage = 'Unknown error';
+      if (error instanceof Error) {
+        errorMessage = error.message;
+        
+        // Check for specific database constraint violations
+        if (errorMessage.includes('duplicate key') || errorMessage.includes('unique constraint')) {
+          errorMessage = 'Site number conflict detected. This might be due to a database sync issue. Please refresh the page and try again.';
+        } else if (errorMessage.includes('foreign key') || errorMessage.includes('river_walk_id')) {
+          errorMessage = 'Invalid river walk reference. Please refresh the page and try again.';
+        } else if (errorMessage.includes('permission') || errorMessage.includes('RLS')) {
+          errorMessage = 'Permission denied. Please make sure you are logged in and try again.';
+        }
+      }
+      
+      showError('Site Creation Failed', `Could not create site: ${errorMessage}`);
     }
   };
 
