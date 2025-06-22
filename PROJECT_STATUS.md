@@ -7,7 +7,7 @@ Riverwalks is a web application designed primarily for GCSE Geography students t
 ## 🚀 Live Application
 
 - **Production URL**: https://riverwalks.vercel.app
-- **Current Status**: ✅ Complete Todo-Based Site Management + Educational Workflow + Four Specialized Forms + Progress Tracking + Velocity Measurements + Professional Report Generation & PDF Export + Mobile-First Design + Archive System + **COMPREHENSIVE REPORT RESTRUCTURE WITH ENHANCED ANALYSIS** + **GOOGLE MAPS INTEGRATION** + **SEDIMENT VISUALIZATION CHARTS** + **EDUCATIONAL INSTRUCTIONS** + **RESPONSIVE PDF GENERATION WITH SMART CHART PROTECTION** + **MOBILE INTERACTION OPTIMIZATION**
+- **Current Status**: ✅ **MVP COMPLETE** - Ready for Commercialization | Todo-Based Site Management + Educational Workflow + Four Specialized Forms + Progress Tracking + Velocity Measurements + Professional Report Generation & PDF Export + Mobile-First Design + Archive System + **COMPREHENSIVE REPORT RESTRUCTURE WITH ENHANCED ANALYSIS** + **GOOGLE MAPS INTEGRATION** + **SEDIMENT VISUALIZATION CHARTS** + **EDUCATIONAL INSTRUCTIONS** + **RESPONSIVE PDF GENERATION WITH SMART CHART PROTECTION** + **MOBILE INTERACTION OPTIMIZATION** + **SAVE CONFIRMATION DIALOGS**
 
 ## 🏗️ Technical Stack
 
@@ -470,43 +470,300 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 6. Data persists between sessions
 7. Can navigate home or sign out
 
-## 🚀 Next Phase: 3D Visualization & Advanced Features
+## 🚀 ROADMAP: MVP to Shipped Product (£1.49/year SaaS)
 
-### ✅ Completed Integration Phases
+### ✅ PHASE 1-3: COMPLETED - MVP Foundation
+- ✅ **Phase 1**: Sites Foundation with data model and measurement system
+- ✅ **Phase 2**: 2D Visualization & Report Generation with professional charts
+- ✅ **Phase 3**: 3D Visualization with advanced river profile modeling
 
-**Phase 1: Sites Foundation** ✅ COMPLETED
-- ✅ Sites data model and measurement points storage
-- ✅ Complete site management with photos, coordinates, and notes
-- ✅ Comprehensive measurement point editing system
+### 🎯 PHASE 4: LEGAL & COMPLIANCE FOUNDATION
+**Priority: HIGH | Timeline: 1-2 weeks | Status: IN PROGRESS**
 
-**Phase 2: 2D Visualization & Report Generation** ✅ COMPLETED
-- ✅ Plotly.js integration for professional 2D cross-section charts
-- ✅ Realistic chart styling with brown underground areas and width indicators
-- ✅ Professional PDF report generation with proper pagination
-- ✅ GCSE Geography coursework-ready layout and analysis
+**Legal Documentation:**
+- ✅ **Terms of Service**: Educational use, liability limitations, data usage rights, GCSE-specific terms
+- ⏳ **Privacy Policy**: GDPR-compliant privacy notice covering data collection, storage, usage
+- ⏳ **Cookie Policy**: Required for UK/EU users, analytics tracking consent
+- ⏳ **User Agreement Modals**: Mandatory acceptance during signup process
+- ⏳ **Age Verification**: COPPA/GDPR compliance for under-13 users (parental consent)
 
-### ✅ Completed: Phase 3 - 3D Visualization
+**Implementation:**
+- ✅ Professional Terms of Service page with educational focus (/terms)
+- ⏳ Privacy Policy page with GDPR compliance
+- ⏳ Cookie Policy for UK/EU compliance
+- ⏳ Add mandatory acceptance checkboxes to signup flow
+- ⏳ Implement cookie consent banner with granular controls
+- ⏳ Add privacy-compliant analytics setup
 
-**Successfully Integrated 3D Features from app.py Streamlit Application:**
-- ✅ **3D River Profile**: Advanced 3D visualization showing complete river channel with banks and terrain
-- ✅ **Multiple Site Integration**: Connected 3D visualization across all measurement sites
-- ✅ **Interactive 3D Controls**: Camera positioning, rotation, and zoom capabilities  
-- ✅ **Realistic Terrain Modeling**: Blue underwater areas, brown banks, smooth elevation transitions
-- ✅ **React Integration**: Professional TypeScript component integrated into report system
-- ✅ **PDF Export Compatible**: 3D visualization included in generated PDF reports
+### 🎯 PHASE 5: DOMAIN & BRANDING
+**Priority: HIGH | Timeline: 1 week**
 
-**Implementation Completed:**
-- ✅ Enhanced app.py 3D visualization with proper blue/brown color scheme
-- ✅ Created React `River3DVisualization` component with Plotly.js
-- ✅ 3D charts work in both screen view and PDF export
-- ✅ Consistent styling with existing 2D charts and design system
+**Domain Migration:**
+- ⏳ **Purchase riverwalks.co.uk domain**
+- ⏳ **DNS Configuration**: Point domain to Vercel deployment
+- ⏳ **SSL Certificate**: Automatic via Vercel + custom domain
+- ⏳ **Redirect Setup**: riverwalks.vercel.app → riverwalks.co.uk
+- ⏳ **OAuth URL Updates**: Update Google OAuth settings for new domain
+- ⏳ **Environment Variables**: Update all service integrations
 
-### 🚀 Future Phase 4: GCSE Enhancement Features
+**Implementation:**
+- Register domain through UK registrar (Namecheap, 123-reg)
+- Configure Vercel custom domain settings
+- Update all external service configurations
 
-- **Advanced Analysis**: Flow rate calculations, wetted perimeter, hydraulic radius
-- **Educational Content**: Built-in GCSE Geography guidance and templates
-- **Data Comparison**: Multi-river walk analysis and comparison tools
-- **Export Options**: Enhanced CSV/Excel export with calculation formulas
+### 🎯 PHASE 6: PAYMENT INFRASTRUCTURE  
+**Priority: HIGH | Timeline: 2-3 weeks**
+
+**Stripe Integration:**
+- ⏳ **Stripe Account Setup**: UK business account with proper tax settings
+- ⏳ **Subscription Management**: £1.49/year recurring payments
+- ⏳ **Payment Flow**: Seamless checkout experience with Stripe Elements
+- ⏳ **Webhook Handling**: Subscription events, payment failures, renewals
+- ⏳ **User Account Status**: Free trial → Paid subscription management
+- ⏳ **Payment Security**: PCI compliance through Stripe
+
+**Database Extensions:**
+```sql
+CREATE TABLE subscriptions (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID NOT NULL REFERENCES auth.users(id),
+  stripe_customer_id TEXT NOT NULL,
+  stripe_subscription_id TEXT,
+  status TEXT CHECK (status IN ('trial', 'active', 'past_due', 'canceled')),
+  current_period_end TIMESTAMP WITH TIME ZONE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+```
+
+**Implementation:**
+- Install @stripe/stripe-js and stripe packages
+- Create subscription-gated access controls
+- Implement payment success/failure flows
+- Add billing management interface
+
+### 🎯 PHASE 7: AUTHENTICATION EXPANSION
+**Priority: MEDIUM | Timeline: 1-2 weeks**
+
+**Microsoft Outlook/Azure AD Integration:**
+- ⏳ **Azure App Registration**: Set up Azure AD application
+- ⏳ **Supabase Configuration**: Add Microsoft as OAuth provider
+- ⏳ **Dual Authentication**: Support both Google and Microsoft login
+- ⏳ **School Account Support**: Enable institutional Microsoft accounts
+
+**Setup Requirements:**
+1. Azure Portal → App registrations → New registration
+2. Configure redirect URIs for Supabase
+3. Get Application (client) ID and Directory (tenant) ID
+4. Add Microsoft provider in Supabase Auth settings
+5. Update login UI to offer both options
+
+**Implementation Guidance Needed:**
+- Azure AD configuration steps
+- Supabase Microsoft OAuth setup
+- Multi-provider UI design
+
+### 🎯 PHASE 8: EXCEL EXPORT FEATURE
+**Priority: MEDIUM | Timeline: 1-2 weeks**
+
+**Excel Export Functionality:**
+- ⏳ **Raw Data Export**: Complete river walk data in Excel format
+- ⏳ **Calculation Formulas**: Embedded Excel formulas for analysis
+- ⏳ **Student-Friendly Sheets**: Pre-formatted for graph creation
+- ⏳ **Multiple Formats**: .xlsx and .csv options
+- ⏳ **Template Sheets**: GCSE Geography coursework templates
+
+**Technical Implementation:**
+```javascript
+// Using SheetJS/xlsx library
+import * as XLSX from 'xlsx';
+
+const exportToExcel = (riverWalkData) => {
+  const workbook = XLSX.utils.book_new();
+  
+  // Sites overview sheet
+  const sitesSheet = XLSX.utils.json_to_sheet(sitesData);
+  XLSX.utils.book_append_sheet(workbook, sitesSheet, "Sites Overview");
+  
+  // Raw measurements sheet  
+  const measurementsSheet = XLSX.utils.json_to_sheet(measurementPoints);
+  XLSX.utils.book_append_sheet(workbook, measurementsSheet, "Raw Data");
+  
+  // Pre-calculated analysis sheet
+  const analysisSheet = createAnalysisSheet(riverWalkData);
+  XLSX.utils.book_append_sheet(workbook, analysisSheet, "Analysis");
+  
+  XLSX.writeFile(workbook, `${riverWalkData.name}_export.xlsx`);
+};
+```
+
+**Dependencies:**
+- `xlsx` or `exceljs` for Excel file generation
+- Enhanced data processing functions
+- Export UI integration
+
+### 🎯 PHASE 9: OFFLINE CAPABILITIES
+**Priority: MEDIUM | Timeline: 3-4 weeks**
+
+**Progressive Web App (PWA):**
+- ⏳ **Service Worker**: Cache critical assets and data
+- ⏳ **Offline Storage**: IndexedDB for offline data persistence  
+- ⏳ **Sync Capability**: Upload data when connection returns
+- ⏳ **Install Prompts**: "Add to Home Screen" functionality
+- ⏳ **Offline UI**: Clear indicators of offline mode
+
+**Technical Requirements:**
+```javascript
+// Service worker for caching
+self.addEventListener('fetch', (event) => {
+  if (event.request.url.includes('/api/')) {
+    // Cache API responses for offline access
+    event.respondWith(cacheFirstStrategy(event.request));
+  }
+});
+
+// IndexedDB for offline storage
+const offlineDB = new IDBStore('riverwalks-offline');
+```
+
+**Implementation:**
+- Next.js PWA plugin configuration
+- Offline-first data architecture
+- Background sync for data upload
+- Cache management strategies
+
+### 🎯 PHASE 10: COLLABORATION FEATURES
+**Priority: MEDIUM | Timeline: 4-5 weeks**
+
+**Multi-User Collaboration:**
+- ⏳ **River Walk Sharing**: Invite other users to collaborate
+- ⏳ **Permission System**: Owner/Editor/Viewer roles
+- ⏳ **Invite System**: Email invitations with signup flow
+- ⏳ **Real-time Updates**: Live collaboration with conflict resolution
+- ⏳ **Activity Log**: Track changes and contributions
+
+**Database Schema Extensions:**
+```sql
+CREATE TABLE river_walk_collaborators (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  river_walk_id UUID NOT NULL REFERENCES river_walks(id),
+  user_id UUID NOT NULL REFERENCES auth.users(id),
+  role TEXT CHECK (role IN ('owner', 'editor', 'viewer')),
+  invited_by UUID REFERENCES auth.users(id),
+  invited_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  accepted_at TIMESTAMP WITH TIME ZONE
+);
+
+CREATE TABLE collaboration_invites (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  river_walk_id UUID NOT NULL REFERENCES river_walks(id),
+  email TEXT NOT NULL,
+  role TEXT CHECK (role IN ('editor', 'viewer')),
+  token TEXT UNIQUE NOT NULL,
+  expires_at TIMESTAMP WITH TIME ZONE,
+  created_by UUID NOT NULL REFERENCES auth.users(id)
+);
+```
+
+**Features:**
+- Email invitation system
+- Role-based access controls
+- Collaboration UI indicators
+- Conflict resolution for simultaneous edits
+
+### 🎯 PHASE 11: MOBILE APP DEVELOPMENT
+**Priority: HIGH | Timeline: 6-8 weeks**
+
+**React Native / Capacitor Implementation:**
+- ⏳ **iOS App Store**: Native iOS application
+- ⏳ **Google Play Store**: Native Android application  
+- ⏳ **Code Sharing**: Maximum code reuse from web app
+- ⏳ **Native Features**: Camera integration, GPS, offline storage
+- ⏳ **App Store Optimization**: Screenshots, descriptions, keywords
+
+**Technology Decision:**
+**Option A: React Native (Recommended)**
+- Maximum code reuse from React web app
+- Native performance and features
+- Established ecosystem
+
+**Option B: Capacitor + Ionic**
+- Direct web app wrapping
+- Faster development time
+- Web technologies throughout
+
+**App Store Requirements:**
+- Apple Developer Account (£79/year)
+- Google Play Developer Account (£20 one-time)
+- App review processes
+- Privacy policy compliance
+
+### 🎯 PHASE 12: PRODUCTION OPTIMIZATION
+**Priority: MEDIUM | Timeline: 2-3 weeks**
+
+**Performance & Scalability:**
+- ⏳ **Performance Monitoring**: Add analytics and error tracking
+- ⏳ **Database Optimization**: Query optimization and indexing
+- ⏳ **CDN Integration**: Static asset optimization
+- ⏳ **Email Service**: Transactional emails (invites, receipts)
+- ⏳ **Customer Support**: Help desk integration
+- ⏳ **Usage Analytics**: User behavior tracking (privacy-compliant)
+
+**Monitoring Stack:**
+- Vercel Analytics for performance
+- Sentry for error tracking
+- PostHog for user analytics
+- Crisp or Intercom for customer support
+
+### 🎯 PHASE 13: LAUNCH & MARKETING
+**Priority: HIGH | Timeline: 4-6 weeks**
+
+**Go-to-Market Strategy:**
+- ⏳ **Landing Page Optimization**: Convert visitors to paid users
+- ⏳ **Free Trial**: 14-30 day trial period
+- ⏳ **Educational Partnerships**: Reach out to schools and teachers
+- ⏳ **Content Marketing**: GCSE Geography study guides and resources
+- ⏳ **Social Proof**: Teacher testimonials and case studies
+- ⏳ **SEO Strategy**: Rank for "GCSE Geography fieldwork" keywords
+
+**Pricing Strategy:**
+- £1.49/year individual subscription
+- Potential school/class discounts
+- Free tier with limited features
+
+### 📊 ESTIMATED TIMELINE & COSTS
+
+**Development Timeline: 20-26 weeks total**
+- Phases 4-6 (Foundation): 4-6 weeks
+- Phases 7-8 (Features): 3-4 weeks  
+- Phases 9-10 (Advanced): 7-9 weeks
+- Phases 11-13 (Launch): 12-17 weeks
+
+**Estimated Costs:**
+- Domain: £10-15/year
+- Apple Developer: £79/year
+- Google Play: £20 one-time
+- Stripe fees: 1.4% + 20p per transaction
+- Supabase: Free tier initially, ~£20/month at scale
+- Total upfront: ~£130, ongoing: ~£100-200/month
+
+### 🎯 PRIORITY RECOMMENDATIONS
+
+**IMMEDIATE (Next 4 weeks):**
+1. **Legal Framework** (Phase 4) - Required for paid service
+2. **Domain Migration** (Phase 5) - Professional credibility  
+3. **Payment System** (Phase 6) - Revenue generation
+
+**SHORT TERM (2-3 months):**
+4. **Excel Export** (Phase 8) - High user value
+5. **Microsoft Auth** (Phase 7) - School compatibility
+6. **PWA/Offline** (Phase 9) - Field work essential
+
+**LONG TERM (6+ months):**
+7. **Mobile Apps** (Phase 11) - Platform expansion
+8. **Collaboration** (Phase 10) - Advanced features
+9. **Production Launch** (Phases 12-13) - Scale and market
+
+This roadmap transforms your educational tool into a sustainable SaaS business serving GCSE Geography students and schools across the UK.
 
 ### 🗄️ Planned Database Extensions
 
@@ -954,5 +1211,5 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 ---
 
 _Last Updated: June 22, 2025_
-_Status: ✅ MAJOR RELEASE: Todo-Based Site Management System + Educational Workflow + Four Specialized Forms + Progress Tracking + Velocity Measurements + **COMPREHENSIVE REPORT RESTRUCTURE WITH ENHANCED ANALYSIS** + Professional Report Generation & **RESPONSIVE PDF GENERATION WITH SMART CHART PROTECTION** + **MOBILE INTERACTION OPTIMIZATION** + Mobile-First Design + All Educational Features Complete_
-_Next Phase: Advanced Educational Features (Enhanced Chart Protection, Additional Analysis Tools, Performance Optimizations)_
+_Status: ✅ **MVP COMPLETE - READY FOR COMMERCIALIZATION**: Todo-Based Site Management System + Educational Workflow + Four Specialized Forms + Progress Tracking + Velocity Measurements + **COMPREHENSIVE REPORT RESTRUCTURE WITH ENHANCED ANALYSIS** + Professional Report Generation & **RESPONSIVE PDF GENERATION WITH SMART CHART PROTECTION** + **MOBILE INTERACTION OPTIMIZATION** + **SAVE CONFIRMATION DIALOGS** + Mobile-First Design + All Educational Features Complete_
+_Next Phase: **PHASE 4-6 FOUNDATION** (Legal Framework, Domain Migration, Payment Infrastructure) - Target: Production SaaS Launch_
