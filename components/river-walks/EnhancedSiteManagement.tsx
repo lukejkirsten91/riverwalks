@@ -408,20 +408,14 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
 
   const handleAddNewSite = async () => {
     try {
-      // Find the next available site number (handles gaps from deleted sites)
-      const existingSiteNumbers = sites.map(site => site.site_number).sort((a, b) => a - b);
-      let nextSiteNumber = 1;
-      
-      // Find the first gap in numbering, or use the next number after the highest
-      for (let i = 0; i < existingSiteNumbers.length; i++) {
-        if (existingSiteNumbers[i] !== nextSiteNumber) {
-          break; // Found a gap
-        }
-        nextSiteNumber++;
-      }
+      // Use sequential numbering: always use next number after highest existing
+      // This is more intuitive - no gap filling that confuses users
+      const existingSiteNumbers = sites.map(site => site.site_number);
+      const maxSiteNumber = existingSiteNumbers.length > 0 ? Math.max(...existingSiteNumbers) : 0;
+      const nextSiteNumber = maxSiteNumber + 1;
       
       console.log('Creating new site with number:', nextSiteNumber);
-      console.log('Existing site numbers:', existingSiteNumbers);
+      console.log('Existing site numbers:', existingSiteNumbers.sort((a, b) => a - b));
       
       const newSite: CreateSiteData = {
         river_walk_id: riverWalk.id,

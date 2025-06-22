@@ -90,7 +90,10 @@ export function SiteList({
                     placeholder="Site name"
                   />
                   <div className="text-xs text-muted-foreground">
-                    Site {site.site_number}
+                    Created {site.site_number}
+                    {site.site_number === 1 ? 'st' : 
+                     site.site_number === 2 ? 'nd' : 
+                     site.site_number === 3 ? 'rd' : 'th'}
                   </div>
                 </div>
               </div>
