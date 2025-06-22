@@ -868,38 +868,29 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
                 if (maxDiff > 0.5) zoom = 8;
                 
                 // Debug: Log API key availability and map parameters
-                console.log('MapTiler API Key available:', !!process.env.NEXT_PUBLIC_MAPTILER_API_KEY);
+                console.log('Google Maps API Key available:', !!process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY);
                 console.log('Map center:', centerLat, centerLng);
                 console.log('Map zoom:', zoom);
-                
-                // Build MapTiler markers string
-                const mapTilerMarkers = sitesWithCoords.map(site => 
-                  `${site.longitude!},${site.latitude!},red`
-                ).join('|');
+                console.log('Sites with coordinates:', sitesWithCoords.length);
+                sitesWithCoords.forEach((site, idx) => {
+                  console.log(`Site ${idx + 1}: ${site.site_name} at ${site.latitude}, ${site.longitude}`);
+                });
                 
                 return (
                   <div className="bg-white rounded-lg border border-gray-300 overflow-hidden">
                     {/* Static Map with Site Markers */}
                     <div className="relative">
-                      {/* MapTiler Static API with UK OS Map */}
+                      {/* Google Maps Static API - clean background without markers */}
                       <img
-                        src={`https://api.maptiler.com/maps/uk-openzoomstack/static/${centerLng},${centerLat},${zoom}/600x400.png?markers=${mapTilerMarkers}&key=${process.env.NEXT_PUBLIC_MAPTILER_API_KEY}`}
+                        src={`https://maps.googleapis.com/maps/api/staticmap?center=${centerLat},${centerLng}&zoom=${zoom}&size=600x400&maptype=roadmap&style=feature:poi|visibility:off&style=feature:transit|visibility:off&style=feature:administrative.locality|element:labels|visibility:simplified&key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}`}
                         alt="Site Location Map"
                         className="w-full h-96 object-cover"
                         onError={(e) => {
-                          console.error('MapTiler UK OS API failed to load, trying fallback...');
-                          console.error('API Key available:', !!process.env.NEXT_PUBLIC_MAPTILER_API_KEY);
-                          console.error('Failed URL:', e.currentTarget.src);
-                          
-                          // Try fallback to basic style
-                          const fallbackUrl = `https://api.maptiler.com/maps/basic-v2/static/${centerLng},${centerLat},${zoom}/600x400.png?markers=${mapTilerMarkers}&key=${process.env.NEXT_PUBLIC_MAPTILER_API_KEY}`;
-                          e.currentTarget.src = fallbackUrl;
-                          e.currentTarget.onerror = () => {
-                            console.error('MapTiler fallback also failed');
-                            console.error('Fallback URL:', fallbackUrl);
-                            const target = e.currentTarget;
-                            target.alt = 'Map could not be loaded - check MapTiler API key in Vercel environment variables';
-                          };
+                          console.error('Google Maps Static API failed to load');
+                          console.error('API Key available:', !!process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY);
+                          console.error('Full URL:', e.currentTarget.src);
+                          const target = e.currentTarget;
+                          target.alt = 'Map could not be loaded - check Google Maps API key';
                         }}
                       />
                       
@@ -934,11 +925,19 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
                         {/* Site markers */}
                         {sitePoints.map((point, index) => (
                           <g key={`site-${point.id}`}>
+                            {/* Marker shadow */}
+                            <circle
+                              cx={point.x + 1}
+                              cy={point.y + 1}
+                              r="15"
+                              fill="rgba(0,0,0,0.2)"
+                            />
+                            
                             {/* Marker circle */}
                             <circle
                               cx={point.x}
                               cy={point.y}
-                              r="12"
+                              r="15"
                               fill="#dc2626"
                               stroke="#ffffff"
                               strokeWidth="3"
@@ -947,19 +946,29 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
                             {/* Site number */}
                             <text
                               x={point.x}
-                              y={point.y + 4}
+                              y={point.y + 5}
                               textAnchor="middle"
-                              fontSize="12"
+                              fontSize="14"
                               fontWeight="bold"
                               fill="white"
                             >
                               {point.site_number}
                             </text>
                             
-                            {/* Site label */}
+                            {/* Site name label with background */}
+                            <rect
+                              x={point.x - (point.site_name.length * 3)}
+                              y={point.y - 35}
+                              width={point.site_name.length * 6}
+                              height="16"
+                              fill="rgba(255,255,255,0.9)"
+                              stroke="#dc2626"
+                              strokeWidth="1"
+                              rx="3"
+                            />
                             <text
                               x={point.x}
-                              y={point.y - 20}
+                              y={point.y - 24}
                               textAnchor="middle"
                               fontSize="10"
                               fontWeight="bold"
@@ -970,17 +979,29 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
                             
                             {/* Distance label (for lines) */}
                             {index > 0 && distances[index - 1] && (
-                              <text
-                                x={(point.x + sitePoints[index - 1].x) / 2}
-                                y={(point.y + sitePoints[index - 1].y) / 2 - 5}
-                                textAnchor="middle"
-                                fontSize="9"
-                                fill="#dc2626"
-                                fontWeight="bold"
-                                style={{ filter: 'drop-shadow(0 0 2px white)' }}
-                              >
-                                {distances[index - 1].toFixed(0)}m
-                              </text>
+                              <g>
+                                {/* Distance label background */}
+                                <rect
+                                  x={(point.x + sitePoints[index - 1].x) / 2 - 15}
+                                  y={(point.y + sitePoints[index - 1].y) / 2 - 18}
+                                  width="30"
+                                  height="14"
+                                  fill="rgba(255,255,255,0.9)"
+                                  stroke="#dc2626"
+                                  strokeWidth="1"
+                                  rx="2"
+                                />
+                                <text
+                                  x={(point.x + sitePoints[index - 1].x) / 2}
+                                  y={(point.y + sitePoints[index - 1].y) / 2 - 8}
+                                  textAnchor="middle"
+                                  fontSize="9"
+                                  fill="#dc2626"
+                                  fontWeight="bold"
+                                >
+                                  {distances[index - 1].toFixed(0)}m
+                                </text>
+                              </g>
                             )}
                           </g>
                         ))}
