@@ -249,13 +249,21 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
     await new Promise(resolve => setTimeout(resolve, 200));
     
     // Find all protected components (charts, tables, etc.) - AFTER style changes
-    const protectedElements = element.querySelectorAll('.plotly-graph-div, table, .pdf-component, .bg-blue-50, .bg-green-50, .bg-amber-50, .overflow-x-auto');
+    // Treat Plotly charts as atomic units by selecting only outer containers
+    const protectedElements = element.querySelectorAll(
+      '.plotly-graph-div, .plotly-graph-div *, table, .pdf-component, .bg-blue-50, .bg-green-50, .bg-amber-50, .overflow-x-auto'
+    );
     const protectedRegions: Array<{top: number, bottom: number, element: Element}> = [];
     
     // Get the root element's bounding rect for coordinate reference
     const elementRect = element.getBoundingClientRect();
     
     protectedElements.forEach(el => {
+      // Ignore nested matches - only take the outer Plotly container
+      if (el.closest('.plotly-graph-div') !== el && !el.classList.contains('plotly-graph-div')) {
+        return;
+      }
+      
       const rect = el.getBoundingClientRect();
       // Calculate position relative to the root element (canvas coordinate system)
       const elementTop = rect.top - elementRect.top + element.scrollTop;
@@ -313,6 +321,13 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
     while (currentY < canvas.height) {
       let targetY = currentY + pageHeightPx;
       const remainingHeight = canvas.height - currentY;
+      
+      // Hard-limit: if less than 40 mm (≈ 113 px @ 2×) remains, push everything
+      const minTail = 40 /* mm */ * pixelsPerMM;
+      if (canvas.height - currentY > pageHeightPx && pageHeightPx - (targetY - currentY) < minTail) {
+        targetY = currentY + pageHeightPx - minTail;
+        console.log(`Applied hard break: insufficient tail space (< 40mm)`);
+      }
       
       // If this is near the end, just take the rest
       if (remainingHeight <= pageHeightPx * 1.1) {
@@ -1250,7 +1265,8 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
                       {/* Wind Rose Chart - Sediment Roundness by Site */}
                       <div className="bg-white rounded-lg border border-gray-300 p-4">
                         <h4 className="text-lg font-semibold mb-4 text-center">Sediment Roundness Distribution by Site</h4>
-                        <div className="flex items-center justify-center" style={{ touchAction: 'pan-y' }}>
+                        <div className="flex items-center justify-center w-full" style={{ touchAction: 'pan-y' }}>
+                          <div className="w-full max-w-2xl mx-auto flex justify-center">
                           <Plot
                             data={siteData}
                             layout={getChartLayout({
@@ -1291,6 +1307,7 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
                             useResizeHandler={!isPDFMode}
                             className="responsive-chart"
                           />
+                          </div>
                         </div>
                         <p className="text-xs text-gray-600 text-center mt-2">
                           Based on Powers Roundness Scale • Total samples: {allSedimentData.length} across {sites.length} sites
