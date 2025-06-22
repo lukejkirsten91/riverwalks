@@ -881,17 +881,25 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
                   <div className="bg-white rounded-lg border border-gray-300 overflow-hidden">
                     {/* Static Map with Site Markers */}
                     <div className="relative">
-                      {/* MapTiler Static API */}
+                      {/* MapTiler Static API with UK OS Map */}
                       <img
-                        src={`https://api.maptiler.com/maps/streets-v2/static/${centerLng},${centerLat},${zoom}/600x400.png?markers=${mapTilerMarkers}&key=${process.env.NEXT_PUBLIC_MAPTILER_API_KEY}`}
+                        src={`https://api.maptiler.com/maps/uk-openzoomstack/static/${centerLng},${centerLat},${zoom}/600x400.png?markers=${mapTilerMarkers}&key=${process.env.NEXT_PUBLIC_MAPTILER_API_KEY}`}
                         alt="Site Location Map"
                         className="w-full h-96 object-cover"
                         onError={(e) => {
-                          console.error('MapTiler Static API failed to load');
+                          console.error('MapTiler UK OS API failed to load, trying fallback...');
                           console.error('API Key available:', !!process.env.NEXT_PUBLIC_MAPTILER_API_KEY);
-                          console.error('Full URL:', e.currentTarget.src);
-                          const target = e.currentTarget;
-                          target.alt = 'Map could not be loaded - check MapTiler API key';
+                          console.error('Failed URL:', e.currentTarget.src);
+                          
+                          // Try fallback to basic style
+                          const fallbackUrl = `https://api.maptiler.com/maps/basic-v2/static/${centerLng},${centerLat},${zoom}/600x400.png?markers=${mapTilerMarkers}&key=${process.env.NEXT_PUBLIC_MAPTILER_API_KEY}`;
+                          e.currentTarget.src = fallbackUrl;
+                          e.currentTarget.onerror = () => {
+                            console.error('MapTiler fallback also failed');
+                            console.error('Fallback URL:', fallbackUrl);
+                            const target = e.currentTarget;
+                            target.alt = 'Map could not be loaded - check MapTiler API key in Vercel environment variables';
+                          };
                         }}
                       />
                       
