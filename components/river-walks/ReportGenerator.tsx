@@ -203,13 +203,17 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
     // Wait for style changes to take effect
     await new Promise(resolve => setTimeout(resolve, 200));
     
-    // Find all protected components (charts, tables, etc.)
+    // Find all protected components (charts, tables, etc.) - AFTER style changes
     const protectedElements = element.querySelectorAll('.plotly-graph-div, table, .pdf-component, .bg-blue-50, .bg-green-50, .bg-amber-50, .overflow-x-auto');
     const protectedRegions: Array<{top: number, bottom: number, element: Element}> = [];
     
+    // Get the root element's bounding rect for coordinate reference
+    const elementRect = element.getBoundingClientRect();
+    
     protectedElements.forEach(el => {
       const rect = el.getBoundingClientRect();
-      const elementTop = (el as HTMLElement).offsetTop;
+      // Calculate position relative to the root element (canvas coordinate system)
+      const elementTop = rect.top - elementRect.top + element.scrollTop;
       const elementBottom = elementTop + rect.height;
       protectedRegions.push({ top: elementTop, bottom: elementBottom, element: el });
     });
@@ -571,6 +575,7 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
             /* Enhanced Plotly chart protection */
             .plotly-graph-div {
               min-height: 400px !important;
+              max-height: 260mm !important; /* Keep charts under page height */
               break-inside: avoid !important;
               page-break-inside: avoid !important;
               position: relative !important;
