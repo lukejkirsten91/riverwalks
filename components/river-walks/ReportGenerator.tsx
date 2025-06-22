@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Download, FileText, X } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import jsPDF from 'jspdf';
@@ -24,6 +24,20 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
   
   // Track if we're in PDF generation mode to adjust chart settings
   const [isPDFMode, setIsPDFMode] = useState(false);
+  
+  // Detect if user is on mobile device
+  const [isMobile, setIsMobile] = useState(false);
+  
+  // Check for mobile device on component mount
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768 || /Mobi|Android/i.test(navigator.userAgent));
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // Get responsive chart layout based on context
   const getChartLayout = (baseLayout: any, containerWidth?: number) => {
@@ -55,11 +69,22 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
         displayModeBar: false,
         staticPlot: true,
         responsive: false,
+        scrollZoom: false,
+      };
+    } else if (isMobile) {
+      // Mobile: disable all interactions to prevent scroll interference
+      return {
+        displayModeBar: false,
+        staticPlot: true,
+        responsive: true,
+        scrollZoom: false,
       };
     } else {
+      // Desktop: allow some interactions
       return {
         displayModeBar: false,
         responsive: true,
+        scrollZoom: false,
       };
     }
   };
@@ -322,11 +347,12 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
       let targetY = currentY + pageHeightPx;
       const remainingHeight = canvas.height - currentY;
       
-      // Hard-limit: if less than 40 mm (≈ 113 px @ 2×) remains, push everything
-      const minTail = 40 /* mm */ * pixelsPerMM;
+      // Hard-limit: if less than 50 mm (≈ 142 px @ 2×) remains, push everything
+      // Increased from 40mm to 50mm for stronger protection
+      const minTail = 50 /* mm */ * pixelsPerMM;
       if (canvas.height - currentY > pageHeightPx && pageHeightPx - (targetY - currentY) < minTail) {
         targetY = currentY + pageHeightPx - minTail;
-        console.log(`Applied hard break: insufficient tail space (< 40mm)`);
+        console.log(`Applied hard break: insufficient tail space (< 50mm)`);
       }
       
       // If this is near the end, just take the rest
@@ -340,9 +366,9 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
           // 1. Are we about to cut through it? (original rule)
           if (region.top < targetY && region.bottom > targetY) {
             // If the component is small enough to fit on the next page
-            if (componentHeight < pageHeightPx * 0.9) {
-              // Move the break to just before this component
-              targetY = region.top - (10 * pixelsPerMM); // 10mm padding
+            if (componentHeight < pageHeightPx * 0.8) { // Reduced from 0.9 to 0.8 for stronger protection
+              // Move the break to just before this component with more padding
+              targetY = region.top - (15 * pixelsPerMM); // Increased from 10mm to 15mm padding
               console.log(`Adjusted page break to protect component at ${region.top}px`);
             } else {
               // Component is too large, try to break at a better spot within it
@@ -361,9 +387,9 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
           if (
             marginAbove >= 0 &&                               // component is on this page
             region.top >= currentY &&                         // component starts after current position
-            marginAbove + componentHeight > pageHeightPx      // but won't fit in remaining space
+            marginAbove + componentHeight > pageHeightPx * 0.85  // but won't fit in 85% of remaining space (more conservative)
           ) {
-            targetY = region.top - (10 * pixelsPerMM);        // move the break above it
+            targetY = region.top - (15 * pixelsPerMM);        // move the break above it with more padding
             console.log(`Moving component starting at ${region.top}px to next page - won't fit in remaining space`);
             break;
           }
@@ -1302,7 +1328,7 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
                               width: '100%',
                               height: '400px',
                               maxWidth: '100%',
-                              pointerEvents: 'none'
+                              pointerEvents: isMobile ? 'none' : 'auto'
                             }}
                             useResizeHandler={!isPDFMode}
                             className="responsive-chart"
@@ -1411,7 +1437,8 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
                               width: '100%', 
                               height: '400px',
                               minWidth: '300px',      /* Minimum width for mobile */
-                              maxWidth: '100%'        /* Prevent overflow */
+                              maxWidth: '100%',       /* Prevent overflow */
+                              pointerEvents: isMobile ? 'none' : 'auto' /* Disable interactions on mobile */
                             }}
                             useResizeHandler={!isPDFMode}  /* Enable resize for web, disable for PDF */
                             className="responsive-chart"
