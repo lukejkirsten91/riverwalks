@@ -272,10 +272,11 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
       } else {
         // Check if we're cutting through a protected component
         for (const region of protectedRegions) {
-          // If the page break would cut through this component
+          const componentHeight = region.bottom - region.top;
+          
+          // 1. Are we about to cut through it? (original rule)
           if (region.top < targetY && region.bottom > targetY) {
             // If the component is small enough to fit on the next page
-            const componentHeight = region.bottom - region.top;
             if (componentHeight < pageHeightPx * 0.9) {
               // Move the break to just before this component
               targetY = region.top - (10 * pixelsPerMM); // 10mm padding
@@ -289,6 +290,18 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
                 console.log(`Found natural break point within large component`);
               }
             }
+            break;
+          }
+          
+          // 2. Will the whole component fit on this page?
+          const marginAbove = region.top - currentY;          // free space before it
+          if (
+            marginAbove >= 0 &&                               // component is on this page
+            region.top >= currentY &&                         // component starts after current position
+            marginAbove + componentHeight > pageHeightPx      // but won't fit in remaining space
+          ) {
+            targetY = region.top - (10 * pixelsPerMM);        // move the break above it
+            console.log(`Moving component starting at ${region.top}px to next page - won't fit in remaining space`);
             break;
           }
         }
