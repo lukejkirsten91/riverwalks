@@ -162,3 +162,21 @@ export interface MeasurementPointFormData {
   distance_from_bank: number;
   depth: number;
 }
+
+// User agreement tracking for legal compliance
+export interface UserAgreement {
+  id: string;
+  user_id: string;
+  terms_accepted_at: string;
+  privacy_accepted_at: string;
+  ip_address?: string;
+  user_agent?: string;
+  created_at: string;
+}
+
+// Form data for terms acceptance
+export interface TermsAcceptanceData {
+  terms_accepted: boolean;
+  privacy_accepted: boolean;
+  marketing_consent?: boolean; // Optional for future use
+}

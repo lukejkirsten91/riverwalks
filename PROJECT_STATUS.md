@@ -484,14 +484,16 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 - ✅ **Terms of Service**: Educational use, liability limitations, data usage rights, GCSE-specific terms
 - ✅ **Privacy Policy**: GDPR-compliant privacy notice covering data collection, storage, usage  
 - ✅ **Cookie Policy**: Required for UK/EU users, analytics tracking consent with preference center
-- ⏳ **User Agreement Modals**: Mandatory acceptance during signup process
+- ✅ **User Agreement System**: Database tracking with legal evidence collection
 - ⏳ **Age Verification**: COPPA/GDPR compliance for under-13 users (parental consent)
 
 **Implementation:**
 - ✅ Professional Terms of Service page with educational focus (/terms)
 - ✅ Comprehensive Privacy Policy with GDPR compliance (/privacy)
 - ✅ Interactive Cookie Policy with preference management (/cookies)
-- ⏳ Add mandatory acceptance checkboxes to signup flow
+- ✅ Terms acceptance component with checkboxes and validation
+- ✅ Database schema for tracking user agreements (user_agreements table)
+- ✅ API functions for recording and checking terms acceptance
 - ⏳ Implement cookie consent banner with granular controls
 - ⏳ Add privacy-compliant analytics setup
 
