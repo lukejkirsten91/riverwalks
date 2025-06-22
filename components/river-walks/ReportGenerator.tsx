@@ -179,8 +179,8 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
     };
   };
 
-  // Simplified CSS-based PDF generation that relies on CSS page-break properties
-  const generateSimplePDF = async (
+  // Enhanced PDF generation with intelligent component detection
+  const generateSmartPDF = async (
     element: HTMLElement, 
     pdf: jsPDF, 
     contentWidth: number, 
@@ -188,7 +188,7 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
     margin: number,
     isFirstPage: boolean = false
   ) => {
-    console.log('Generating PDF using CSS page-break approach...');
+    console.log('Generating PDF with smart component detection...');
     
     // Force desktop layout for PDF generation
     const originalStyle = element.style.cssText;
@@ -203,7 +203,21 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
     // Wait for style changes to take effect
     await new Promise(resolve => setTimeout(resolve, 200));
     
-    // Generate canvas with CSS page-break properties applied
+    // Find all protected components (charts, tables, etc.)
+    const protectedElements = element.querySelectorAll('.plotly-graph-div, table, .pdf-component, .bg-blue-50, .bg-green-50, .bg-amber-50, .overflow-x-auto');
+    const protectedRegions: Array<{top: number, bottom: number, element: Element}> = [];
+    
+    protectedElements.forEach(el => {
+      const rect = el.getBoundingClientRect();
+      const elementTop = (el as HTMLElement).offsetTop;
+      const elementBottom = elementTop + rect.height;
+      protectedRegions.push({ top: elementTop, bottom: elementBottom, element: el });
+    });
+    
+    // Sort regions by top position
+    protectedRegions.sort((a, b) => a.top - b.top);
+    
+    // Generate canvas
     const canvas = await html2canvas(element, {
       scale: 2,
       useCORS: true,
@@ -212,7 +226,6 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
       height: element.scrollHeight,
       backgroundColor: '#ffffff',
       logging: false,
-      // Let CSS handle page breaks
       scrollX: 0,
       scrollY: 0,
     });
@@ -222,8 +235,10 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
     
     const imgWidth = contentWidth;
     const imgHeight = (canvas.height * contentWidth) / canvas.width;
+    const pixelsPerMM = canvas.height / imgHeight;
     
     console.log(`Content dimensions: ${imgWidth}mm x ${imgHeight}mm`);
+    console.log(`Found ${protectedRegions.length} protected components`);
     
     // If content fits on one page, add it directly
     if (imgHeight <= contentHeight) {
@@ -236,40 +251,66 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
       return;
     }
     
-    // For large content, use simple chunking with generous spacing
-    // CSS page-break properties should prevent most splitting issues
-    console.log('Content requires multiple pages - using CSS-guided chunking');
+    // Smart pagination with component protection
+    console.log('Content requires multiple pages - using smart pagination');
     
-    const pixelsPerMM = canvas.height / imgHeight;
-    const chunkHeightMM = contentHeight * 0.85; // Use 85% of page height for safety
-    const chunkHeightPx = chunkHeightMM * pixelsPerMM;
-    
+    const pageHeightPx = contentHeight * pixelsPerMM;
     let currentY = 0;
     let isFirstPageOfContent = isFirstPage;
     
     while (currentY < canvas.height) {
+      let targetY = currentY + pageHeightPx;
       const remainingHeight = canvas.height - currentY;
-      const currentChunkHeight = Math.min(chunkHeightPx, remainingHeight);
-      const currentChunkMM = currentChunkHeight / pixelsPerMM;
       
-      console.log(`Creating page chunk: ${currentY}px to ${currentY + currentChunkHeight}px (${currentChunkMM}mm)`);
+      // If this is near the end, just take the rest
+      if (remainingHeight <= pageHeightPx * 1.1) {
+        targetY = canvas.height;
+      } else {
+        // Check if we're cutting through a protected component
+        for (const region of protectedRegions) {
+          // If the page break would cut through this component
+          if (region.top < targetY && region.bottom > targetY) {
+            // If the component is small enough to fit on the next page
+            const componentHeight = region.bottom - region.top;
+            if (componentHeight < pageHeightPx * 0.9) {
+              // Move the break to just before this component
+              targetY = region.top - (10 * pixelsPerMM); // 10mm padding
+              console.log(`Adjusted page break to protect component at ${region.top}px`);
+            } else {
+              // Component is too large, try to break at a better spot within it
+              // Look for natural break points like section boundaries
+              const breakPoint = findNaturalBreakPoint(region.element, targetY - region.top);
+              if (breakPoint > 0) {
+                targetY = region.top + breakPoint;
+                console.log(`Found natural break point within large component`);
+              }
+            }
+            break;
+          }
+        }
+      }
+      
+      const chunkHeight = Math.min(targetY - currentY, remainingHeight);
+      const chunkHeightMM = chunkHeight / pixelsPerMM;
+      
+      console.log(`Creating page chunk: ${currentY}px to ${currentY + chunkHeight}px (${chunkHeightMM}mm)`);
       
       // Create canvas for this chunk
       const chunkCanvas = document.createElement('canvas');
       chunkCanvas.width = canvas.width;
-      chunkCanvas.height = currentChunkHeight;
+      chunkCanvas.height = chunkHeight;
       const chunkCtx = chunkCanvas.getContext('2d');
       
       if (chunkCtx) {
         // Fill with white background
         chunkCtx.fillStyle = '#ffffff';
-        chunkCtx.fillRect(0, 0, canvas.width, currentChunkHeight);
+        chunkCtx.fillRect(0, 0, canvas.width, chunkHeight);
         
         // Draw the chunk content
         chunkCtx.drawImage(
           canvas,
-          0, currentY, canvas.width, currentChunkHeight,
-          0, 0, canvas.width, currentChunkHeight
+          0, currentY, canvas.width, chunkHeight,
+          0, 0, canvas.width, chunkHeight
         );
         
         const chunkImgData = chunkCanvas.toDataURL('image/png', 0.9);
@@ -278,13 +319,30 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
           pdf.addPage();
         }
         
-        pdf.addImage(chunkImgData, 'PNG', margin, margin, imgWidth, currentChunkMM);
-        console.log(`Added page chunk with ${currentChunkMM}mm height`);
+        pdf.addImage(chunkImgData, 'PNG', margin, margin, imgWidth, chunkHeightMM);
+        console.log(`Added page chunk with ${chunkHeightMM}mm height`);
       }
       
-      currentY += currentChunkHeight;
+      currentY += chunkHeight;
       isFirstPageOfContent = false;
     }
+  };
+  
+  // Helper function to find natural break points within large components
+  const findNaturalBreakPoint = (element: Element, targetOffset: number): number => {
+    // Look for section boundaries, headers, or spacing elements
+    const breakCandidates = element.querySelectorAll('h3, h4, h5, .mb-4, .mb-6, .mb-8, .border-b, .border-t');
+    let bestBreak = 0;
+    
+    breakCandidates.forEach(candidate => {
+      const offset = (candidate as HTMLElement).offsetTop - element.scrollTop;
+      // If this break point is before our target and better than current best
+      if (offset < targetOffset && offset > bestBreak) {
+        bestBreak = offset;
+      }
+    });
+    
+    return bestBreak;
   };
 
   // Export report as PDF
@@ -319,7 +377,7 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
       const headerElement = reportRef.current.querySelector('[data-summary-section]') as HTMLElement;
       if (headerElement) {
         console.log('Processing summary section with CSS page-breaks...');
-        await generateSimplePDF(headerElement, pdf, contentWidth, contentHeight, margin, true);
+        await generateSmartPDF(headerElement, pdf, contentWidth, contentHeight, margin, true);
       }
 
       // Process each site section with CSS page-break approach
@@ -330,7 +388,7 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
         const siteElement = siteElements[i] as HTMLElement;
         console.log(`Processing site ${i + 1}/${siteElements.length} with CSS page-breaks`);
         
-        await generateSimplePDF(siteElement, pdf, contentWidth, contentHeight, margin, false);
+        await generateSmartPDF(siteElement, pdf, contentWidth, contentHeight, margin, false);
       }
 
       // Save the PDF with appropriate method for device
@@ -508,6 +566,20 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
               break-inside: avoid !important;
               page-break-inside: avoid !important;
               -webkit-column-break-inside: avoid !important;
+            }
+            
+            /* Enhanced Plotly chart protection */
+            .plotly-graph-div {
+              min-height: 400px !important;
+              break-inside: avoid !important;
+              page-break-inside: avoid !important;
+              position: relative !important;
+            }
+            
+            /* Protect chart containers */
+            :has(.plotly-graph-div) {
+              break-inside: avoid !important;
+              page-break-inside: avoid !important;
             }
             
             /* Table-specific protection */
