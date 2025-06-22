@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { MapPin, Camera, CloudSun, TreePine, Map } from 'lucide-react';
 import { FileUpload } from '../ui/FileUpload';
 import { LoadingButton } from '../ui/LoadingSpinner';
+import { SaveConfirmationDialog } from '../ui/SaveConfirmationDialog';
 import MapLocationPicker from '../ui/MapLocationPickerWrapper';
 import type { Site, SiteFormData, TodoStatus } from '../../types';
 
@@ -42,6 +43,9 @@ export function SiteInfoForm({
 
   // Track if form has been modified
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  
+  // Confirmation dialog state
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -92,6 +96,31 @@ export function SiteInfoForm({
     const todoStatus: TodoStatus = markComplete ? 'complete' : 'in_progress';
     await onSubmit(formData, sitePhotoFile || undefined, removeSitePhoto, todoStatus);
     setHasUnsavedChanges(false);
+  };
+
+  const handleBackClick = () => {
+    setShowConfirmDialog(true);
+  };
+
+  const handleConfirmSaveComplete = async () => {
+    const todoStatus: TodoStatus = 'complete';
+    await onSubmit(formData, sitePhotoFile || undefined, removeSitePhoto, todoStatus);
+    setHasUnsavedChanges(false);
+    setShowConfirmDialog(false);
+    onCancel();
+  };
+
+  const handleConfirmSaveInProgress = async () => {
+    const todoStatus: TodoStatus = 'in_progress';
+    await onSubmit(formData, sitePhotoFile || undefined, removeSitePhoto, todoStatus);
+    setHasUnsavedChanges(false);
+    setShowConfirmDialog(false);
+    onCancel();
+  };
+
+  const handleConfirmLeaveWithoutSaving = () => {
+    setShowConfirmDialog(false);
+    onCancel();
   };
 
   return (
@@ -302,14 +331,24 @@ export function SiteInfoForm({
           </LoadingButton>
           <button
             type="button"
-            onClick={onCancel}
+            onClick={handleBackClick}
             className="btn-secondary touch-manipulation flex-1 sm:flex-none"
             disabled={loading}
           >
-            Cancel
+            Back
           </button>
         </div>
       </form>
+      
+      <SaveConfirmationDialog
+        isOpen={showConfirmDialog}
+        onClose={() => setShowConfirmDialog(false)}
+        onSaveAndMarkComplete={handleConfirmSaveComplete}
+        onSaveAndMarkInProgress={handleConfirmSaveInProgress}
+        onLeaveWithoutSaving={handleConfirmLeaveWithoutSaving}
+        hasUnsavedChanges={hasUnsavedChanges}
+        loading={loading}
+      />
     </div>
   );
 }

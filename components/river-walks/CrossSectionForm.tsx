@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Ruler, Settings, BarChart3 } from 'lucide-react';
 import { InlineNumberEdit } from '../ui/InlineNumberEdit';
 import { LoadingButton } from '../ui/LoadingSpinner';
+import { SaveConfirmationDialog } from '../ui/SaveConfirmationDialog';
 import type { Site, MeasurementPointFormData, UnitType, TodoStatus } from '../../types';
 
 interface CrossSectionFormProps {
@@ -40,6 +41,9 @@ export function CrossSectionForm({
 
   // Track if form has been modified
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  
+  // Confirmation dialog state
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
   // Initialize measurement data - always auto-update distances when parameters change
   useEffect(() => {
@@ -141,6 +145,31 @@ export function CrossSectionForm({
     const todoStatus: TodoStatus = markComplete ? 'complete' : 'in_progress';
     await onSubmit(riverWidth, measurementData, numMeasurements, depthUnits, todoStatus);
     setHasUnsavedChanges(false);
+  };
+
+  const handleBackClick = () => {
+    setShowConfirmDialog(true);
+  };
+
+  const handleConfirmSaveComplete = async () => {
+    const todoStatus: TodoStatus = 'complete';
+    await onSubmit(riverWidth, measurementData, numMeasurements, depthUnits, todoStatus);
+    setHasUnsavedChanges(false);
+    setShowConfirmDialog(false);
+    onCancel();
+  };
+
+  const handleConfirmSaveInProgress = async () => {
+    const todoStatus: TodoStatus = 'in_progress';
+    await onSubmit(riverWidth, measurementData, numMeasurements, depthUnits, todoStatus);
+    setHasUnsavedChanges(false);
+    setShowConfirmDialog(false);
+    onCancel();
+  };
+
+  const handleConfirmLeaveWithoutSaving = () => {
+    setShowConfirmDialog(false);
+    onCancel();
   };
 
   return (
@@ -495,14 +524,24 @@ export function CrossSectionForm({
           </LoadingButton>
           <button
             type="button"
-            onClick={onCancel}
+            onClick={handleBackClick}
             className="btn-secondary touch-manipulation flex-1 sm:flex-none"
             disabled={loading}
           >
-            Cancel
+            Back
           </button>
         </div>
       </form>
+      
+      <SaveConfirmationDialog
+        isOpen={showConfirmDialog}
+        onClose={() => setShowConfirmDialog(false)}
+        onSaveAndMarkComplete={handleConfirmSaveComplete}
+        onSaveAndMarkInProgress={handleConfirmSaveInProgress}
+        onLeaveWithoutSaving={handleConfirmLeaveWithoutSaving}
+        hasUnsavedChanges={hasUnsavedChanges}
+        loading={loading}
+      />
     </div>
   );
 }

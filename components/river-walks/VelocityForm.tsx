@@ -3,6 +3,7 @@ import { Activity, Clock, Settings } from 'lucide-react';
 import { NumberInput } from '../ui/NumberInput';
 import { InlineNumberEdit } from '../ui/InlineNumberEdit';
 import { LoadingButton } from '../ui/LoadingSpinner';
+import { SaveConfirmationDialog } from '../ui/SaveConfirmationDialog';
 import type { Site, VelocityMeasurement, VelocityData, UnitType, TodoStatus } from '../../types';
 
 interface VelocityFormProps {
@@ -48,6 +49,9 @@ export function VelocityForm({
 
   // Track if form has been modified
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  
+  // Confirmation dialog state
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
   // Initialize velocity measurements
   useEffect(() => {

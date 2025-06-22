@@ -1311,10 +1311,10 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
                       name: `Site ${site.site_number}`,
                       marker: {
                         color: siteColors[siteIndex % siteColors.length],
-                        opacity: 0.7,
+                        opacity: 0.6,
                         line: {
                           color: siteColors[siteIndex % siteColors.length],
-                          width: 2
+                          width: 3
                         }
                       }
                     } as any;
@@ -1323,30 +1323,30 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
                   return (
                     <div className="w-full max-w-4xl mx-auto">
                       {/* Wind Rose Chart - Sediment Roundness by Site */}
-                      <div className="bg-white rounded-lg border border-gray-300 p-4">
+                      <div className="bg-white rounded-lg border border-gray-300 p-2 sm:p-4">
                         <h4 className="text-lg font-semibold mb-4 text-center">Sediment Roundness Distribution by Site</h4>
-                        <div className="flex items-center justify-center w-full" style={{ touchAction: 'pan-y' }}>
-                          <div className="w-full max-w-2xl mx-auto flex justify-center">
+                        <div className="w-full flex justify-center items-center" style={{ touchAction: 'pan-y' }}>
+                          <div className="w-full flex justify-center items-center overflow-hidden">
                           <Plot
                             data={siteData}
                             layout={getChartLayout({
-                              height: 400,
-                              width: 600,
-                              margin: { t: 40, l: 20, r: 20, b: 20 },
+                              height: isMobile ? 350 : 400,
+                              width: isMobile ? 350 : 600,
+                              margin: isMobile ? { t: 40, l: 10, r: 10, b: 60 } : { t: 40, l: 20, r: 20, b: 20 },
                               polar: {
                                 radialaxis: {
                                   visible: true,
                                   range: [0, Math.max(...allSedimentData.map(() => 5)) + 1],
-                                  tickfont: { size: 10 }
+                                  tickfont: { size: isMobile ? 8 : 10 }
                                 },
                                 angularaxis: {
                                   tickvals: [0, 60, 120, 180, 240, 300],
                                   ticktext: roundnessRanges,
                                   direction: 'clockwise',
-                                  tickfont: { size: 9 }
+                                  tickfont: { size: isMobile ? 7 : 9 }
                                 }
                               },
-                              font: { size: 10 },
+                              font: { size: isMobile ? 8 : 10 },
                               paper_bgcolor: 'white',
                               plot_bgcolor: 'white',
                               showlegend: true,
@@ -1354,18 +1354,20 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
                                 orientation: 'h',
                                 x: 0.5,
                                 xanchor: 'center',
-                                y: -0.1
+                                y: isMobile ? -0.2 : -0.1,
+                                font: { size: isMobile ? 8 : 10 }
                               }
                             })}
                             config={getChartConfig()}
                             style={{ 
-                              width: '100%',
-                              height: '400px',
+                              width: isMobile ? '350px' : '100%',
+                              height: isMobile ? '350px' : '400px',
                               maxWidth: '100%',
-                              pointerEvents: isMobile ? 'none' : 'auto'
+                              pointerEvents: isMobile ? 'none' : 'auto',
+                              margin: '0 auto'
                             }}
                             useResizeHandler={!isPDFMode}
-                            className="responsive-chart"
+                            className="responsive-chart mx-auto"
                           />
                           </div>
                         </div>
