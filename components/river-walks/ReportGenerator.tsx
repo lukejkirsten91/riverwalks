@@ -868,25 +868,30 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
                 if (maxDiff > 0.5) zoom = 8;
                 
                 // Debug: Log API key availability and map parameters
-                console.log('Google Maps API Key available:', !!process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY);
+                console.log('MapTiler API Key available:', !!process.env.NEXT_PUBLIC_MAPTILER_API_KEY);
                 console.log('Map center:', centerLat, centerLng);
                 console.log('Map zoom:', zoom);
+                
+                // Build MapTiler markers string
+                const mapTilerMarkers = sitesWithCoords.map(site => 
+                  `${site.longitude!},${site.latitude!},red`
+                ).join('|');
                 
                 return (
                   <div className="bg-white rounded-lg border border-gray-300 overflow-hidden">
                     {/* Static Map with Site Markers */}
                     <div className="relative">
-                      {/* Google Maps Static API */}
+                      {/* MapTiler Static API */}
                       <img
-                        src={`https://maps.googleapis.com/maps/api/staticmap?center=${centerLat},${centerLng}&zoom=${zoom}&size=600x400&maptype=roadmap&style=feature:poi|visibility:off&style=feature:transit|visibility:off&style=element:labels|visibility:off&style=feature:administrative|visibility:off&key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}`}
+                        src={`https://api.maptiler.com/maps/streets-v2/static/${centerLng},${centerLat},${zoom}/600x400.png?markers=${mapTilerMarkers}&key=${process.env.NEXT_PUBLIC_MAPTILER_API_KEY}`}
                         alt="Site Location Map"
                         className="w-full h-96 object-cover"
                         onError={(e) => {
-                          console.error('Google Maps Static API failed to load');
-                          console.error('API Key available:', !!process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY);
+                          console.error('MapTiler Static API failed to load');
+                          console.error('API Key available:', !!process.env.NEXT_PUBLIC_MAPTILER_API_KEY);
                           console.error('Full URL:', e.currentTarget.src);
                           const target = e.currentTarget;
-                          target.alt = 'Map could not be loaded - check Google Maps API key';
+                          target.alt = 'Map could not be loaded - check MapTiler API key';
                         }}
                       />
                       
@@ -952,7 +957,7 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
                               fontWeight="bold"
                               fill="#dc2626"
                             >
-                              Site {point.site_number}
+                              {point.site_name}
                             </text>
                             
                             {/* Distance label (for lines) */}
