@@ -7,7 +7,7 @@ Riverwalks is a web application designed primarily for GCSE Geography students t
 ## 🚀 Live Application
 
 - **Production URL**: https://riverwalks.vercel.app
-- **Current Status**: ✅ Complete Todo-Based Site Management + Educational Workflow + Four Specialized Forms + Progress Tracking + Velocity Measurements + Professional Report Generation & PDF Export + Mobile-First Design + Archive System + **COMPREHENSIVE REPORT RESTRUCTURE WITH ENHANCED ANALYSIS** + **GOOGLE MAPS INTEGRATION** + **SEDIMENT VISUALIZATION CHARTS** + **EDUCATIONAL INSTRUCTIONS**
+- **Current Status**: ✅ Complete Todo-Based Site Management + Educational Workflow + Four Specialized Forms + Progress Tracking + Velocity Measurements + Professional Report Generation & PDF Export + Mobile-First Design + Archive System + **COMPREHENSIVE REPORT RESTRUCTURE WITH ENHANCED ANALYSIS** + **GOOGLE MAPS INTEGRATION** + **SEDIMENT VISUALIZATION CHARTS** + **EDUCATIONAL INSTRUCTIONS** + **RESPONSIVE PDF GENERATION WITH SMART CHART PROTECTION** + **MOBILE INTERACTION OPTIMIZATION**
 
 ## 🏗️ Technical Stack
 
@@ -240,31 +240,37 @@ Riverwalks is a web application designed primarily for GCSE Geography students t
 - **Educational Enhancement**: Clear labeling from 1 (very angular) to 6 (very rounded) with visual examples
 - **Seamless Integration**: Positioned strategically above measurement input section for easy reference
 
-### ✅ **PDF GENERATION IMPROVEMENTS** (COMPLETED - JUNE 2025)
+### ✅ **RESPONSIVE PDF GENERATION WITH SMART CHART PROTECTION** (COMPLETED - JUNE 2025)
 
-#### **Mobile PDF Optimization**
-- **Responsive Canvas Scaling**: Dynamic scale adjustment (1.5x for mobile, 2x for desktop) to prevent stretched/squashed PDFs
-- **Mobile Device Detection**: Improved detection of mobile browsers and small screens for optimized rendering
-- **Enhanced Chart Rendering**: Extended render delay (3 seconds) for complex charts and visualizations
-- **Device-Specific Download**: Mobile-optimized blob download method with proper cleanup
+#### **Dual-Mode Responsive System**
+- **Context-Aware Chart Sizing**: Intelligent switching between web responsive mode and PDF fixed-size mode
+- **Mobile Device Detection**: Dynamic detection with window.innerWidth and userAgent for optimal chart configuration
+- **Responsive Web Design**: Charts fully responsive on desktop/mobile with proper scaling and touch-friendly behavior
+- **PDF Consistency**: Fixed 650x400px chart dimensions for consistent PDF output across all devices
 
-#### **Page Layout and Content Management**
-- **Improved Page Splitting**: Fixed duplicate site pages by implementing proper page segmentation logic
-- **Smart Content Cropping**: Advanced canvas cropping for large content that spans multiple pages
-- **Reduced Margins**: Optimized page margins (15mm vs 20mm) for maximum content space
-- **Better Aspect Ratio Handling**: Consistent width/height calculations across all devices
+#### **Advanced Chart Protection Logic**
+- **Smart Component Detection**: Accurate detection of charts, tables, and protected elements using coordinate system fixes
+- **Intelligent Page Breaking**: Dual protection system - prevents cuts through components AND ensures components fit in remaining space
+- **Hard Break Protection**: 50mm minimum tail space prevents sub-pixel layout issues from splitting charts
+- **Atomic Chart Treatment**: Plotly charts treated as single indivisible units, preventing duplicate protection zones
 
-#### **Visual Quality Enhancements**
-- **Higher Quality Images**: PNG output with 90% quality compression for crisp visuals
-- **Mobile-Specific Styling**: CSS media queries for optimal text sizing on mobile PDF generation
-- **Consistent Typography**: Forced font families and sizing for cross-device consistency
-- **Background Color Enforcement**: White backgrounds with black text for professional appearance
+#### **Mobile Interaction Optimization**
+- **Non-Interactive Charts on Mobile**: `staticPlot: true` with `pointerEvents: 'none'` prevents scroll interference
+- **Context-Sensitive Behavior**: PDF mode (static), Mobile mode (non-interactive), Desktop mode (limited interactions)
+- **Smooth Mobile Scrolling**: Charts remain responsive for sizing but don't capture touch events
+- **Enhanced Chart Configuration**: Dynamic config functions that adapt to device context
 
-#### **Technical Robustness**
-- **Enhanced Error Handling**: Comprehensive logging and fallback mechanisms
-- **Better File Naming**: Improved filename sanitization for cross-platform compatibility
-- **Memory Management**: Proper canvas cleanup and URL object revocation
-- **Console Logging**: Detailed progress tracking for debugging PDF generation issues
+#### **Enhanced PDF Page Management**
+- **Stronger Component Protection**: Increased thresholds (40mm→50mm, 90%→80% fitting, 10mm→15mm padding)
+- **Coordinate System Accuracy**: Fixed getBoundingClientRect calculations relative to root element
+- **Natural Break Point Detection**: Looks for semantic boundaries within large components for cleaner breaks
+- **Advanced Pagination Logic**: Three-layer protection system with logging for debugging
+
+#### **Visual Quality & Layout**
+- **Centered Wind Rose Charts**: Proper centering with max-width constraints for optimal visual balance
+- **Responsive Chart Containers**: Mobile-first design with proper breakpoints and sizing constraints
+- **Enhanced CSS Protection**: Modern page-break properties with mobile-specific chart adjustments
+- **Professional PDF Output**: Desktop layout forced during generation with enhanced component protection
 
 ### ✅ Enhanced Site Management System (COMPLETED - REPLACED BY TODO SYSTEM)
 
@@ -636,6 +642,7 @@ CREATE TABLE measurement_points (
 - Logo sizing and placement needs optimization for better brand integration
 - No advanced analysis features yet (flow rate calculations, hydraulic radius, etc.)
 - 3D visualization could be enhanced with additional interactive features
+- **PDF Component Splitting**: Some components still occasionally split across pages despite enhanced protection (good enough for current use)
 
 ## ✅ Recently Resolved Issues
 
@@ -946,6 +953,6 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 
 ---
 
-_Last Updated: June 21, 2025_
-_Status: ✅ MAJOR RELEASE: Todo-Based Site Management System + Educational Workflow + Four Specialized Forms + Progress Tracking + Velocity Measurements + **COMPREHENSIVE REPORT RESTRUCTURE WITH ENHANCED ANALYSIS** + Professional Report Generation & **OPTIMIZED MOBILE PDF EXPORT** + Mobile-First Design + All Educational Features Complete_
-_Next Phase: Advanced Educational Features (Radial Charts, Wind Rose Diagrams, Additional Analysis Tools)_
+_Last Updated: June 22, 2025_
+_Status: ✅ MAJOR RELEASE: Todo-Based Site Management System + Educational Workflow + Four Specialized Forms + Progress Tracking + Velocity Measurements + **COMPREHENSIVE REPORT RESTRUCTURE WITH ENHANCED ANALYSIS** + Professional Report Generation & **RESPONSIVE PDF GENERATION WITH SMART CHART PROTECTION** + **MOBILE INTERACTION OPTIMIZATION** + Mobile-First Design + All Educational Features Complete_
+_Next Phase: Advanced Educational Features (Enhanced Chart Protection, Additional Analysis Tools, Performance Optimizations)_
