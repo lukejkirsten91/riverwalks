@@ -589,9 +589,19 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
             .plotly-graph-div {
               min-height: 400px !important;
               max-height: 260mm !important; /* Keep charts under page height */
+              max-width: 100% !important;   /* Prevent horizontal overflow */
+              width: 100% !important;       /* Ensure full width utilization */
               break-inside: avoid !important;
               page-break-inside: avoid !important;
               position: relative !important;
+            }
+            
+            /* Scale down Plotly charts for PDF to fit page width */
+            [data-summary-section] .plotly-graph-div,
+            [data-site-section] .plotly-graph-div {
+              transform: scale(0.95) !important;
+              transform-origin: top left !important;
+              width: 105% !important;       /* Compensate for scale down */
             }
             
             /* Protect chart containers */
@@ -1313,21 +1323,23 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
                             data={chartData?.data as any}
                             layout={{
                               ...chartData?.layout,
+                              width: 700,              /* Fixed width for PDF consistency */
                               height: 400,
-                              autosize: true,
-                              responsive: true,
-                              margin: { l: 60, r: 40, t: 60, b: 60 },
+                              autosize: false,         /* Disable autosize for PDF */
+                              responsive: false,       /* Disable responsive for PDF */
+                              margin: { l: 50, r: 30, t: 50, b: 50 }, /* Tighter margins */
                             } as any}
                             config={{
                               displayModeBar: false,
                               staticPlot: true,
-                              responsive: true,
+                              responsive: false,       /* Ensure static sizing */
                             }}
                             style={{ 
                               width: '100%', 
-                              height: '400px' 
+                              height: '400px',
+                              maxWidth: '100%'        /* Prevent overflow */
                             }}
-                            useResizeHandler={true}
+                            useResizeHandler={false}  /* Disable resize handler for PDF */
                           />
                         </div>
                       </div>
