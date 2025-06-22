@@ -21,7 +21,49 @@ interface ReportGeneratorProps {
 export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorProps) {
   const [isExporting, setIsExporting] = useState(false);
   const reportRef = useRef<HTMLDivElement>(null);
+  
+  // Track if we're in PDF generation mode to adjust chart settings
+  const [isPDFMode, setIsPDFMode] = useState(false);
 
+  // Get responsive chart layout based on context
+  const getChartLayout = (baseLayout: any, containerWidth?: number) => {
+    if (isPDFMode) {
+      // PDF mode: fixed dimensions for consistent output
+      return {
+        ...baseLayout,
+        width: 650,
+        height: 400,
+        autosize: false,
+        responsive: false,
+        margin: { l: 50, r: 30, t: 50, b: 50 },
+      };
+    } else {
+      // Web mode: responsive design
+      return {
+        ...baseLayout,
+        autosize: true,
+        responsive: true,
+        margin: { l: 60, r: 40, t: 60, b: 60 },
+      };
+    }
+  };
+  
+  // Get responsive chart config based on context  
+  const getChartConfig = () => {
+    if (isPDFMode) {
+      return {
+        displayModeBar: false,
+        staticPlot: true,
+        responsive: false,
+      };
+    } else {
+      return {
+        displayModeBar: false,
+        responsive: true,
+      };
+    }
+  };
+  
   // Generate cross-section chart data for a site
   const generateCrossSectionData = (site: Site) => {
     if (!site.measurement_points || site.measurement_points.length === 0) {
@@ -190,6 +232,9 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
   ) => {
     console.log('Generating PDF with smart component detection...');
     
+    // Ensure we're in PDF mode for chart sizing
+    setIsPDFMode(true);
+    
     // Force desktop layout for PDF generation
     const originalStyle = element.style.cssText;
     element.style.cssText += `
@@ -236,6 +281,9 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
     
     // Restore original styles
     element.style.cssText = originalStyle;
+    
+    // Allow a moment for style restoration before continuing
+    await new Promise(resolve => setTimeout(resolve, 100));
     
     const imgWidth = contentWidth;
     const imgHeight = (canvas.height * contentWidth) / canvas.width;
@@ -367,6 +415,7 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
     if (!reportRef.current) return;
 
     setIsExporting(true);
+    setIsPDFMode(true); // Enable PDF mode for chart sizing
 
     try {
       // Wait for charts to render fully
@@ -436,6 +485,7 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
       alert('Error generating PDF. Please try again.');
     } finally {
       setIsExporting(false);
+      setIsPDFMode(false); // Restore web mode
     }
   };
 
@@ -557,7 +607,7 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
         </div>
 
         {/* Report content */}
-        <div ref={reportRef} className="p-4 sm:p-6 lg:p-8 bg-white">
+        <div ref={reportRef} className={`p-4 sm:p-6 lg:p-8 bg-white ${isPDFMode ? 'pdf-mode' : ''}`}>
           <style>{`
             @media print {
               .page-break-before {
@@ -587,8 +637,8 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
             
             /* Enhanced Plotly chart protection */
             .plotly-graph-div {
-              min-height: 400px !important;
-              max-height: 260mm !important; /* Keep charts under page height */
+              min-height: 300px !important;
+              max-height: 260mm !important; /* Keep charts under page height for PDF */
               max-width: 100% !important;   /* Prevent horizontal overflow */
               width: 100% !important;       /* Ensure full width utilization */
               break-inside: avoid !important;
@@ -596,12 +646,30 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
               position: relative !important;
             }
             
-            /* Scale down Plotly charts for PDF to fit page width */
-            [data-summary-section] .plotly-graph-div,
-            [data-site-section] .plotly-graph-div {
-              transform: scale(0.95) !important;
-              transform-origin: top left !important;
-              width: 105% !important;       /* Compensate for scale down */
+            /* Responsive chart behavior */
+            .responsive-chart {
+              width: 100% !important;
+              height: auto !important;
+              min-height: 300px !important;
+            }
+            
+            /* Mobile-specific chart adjustments */
+            @media (max-width: 768px) {
+              .plotly-graph-div {
+                min-height: 250px !important;
+                font-size: 12px !important;
+              }
+              
+              .responsive-chart {
+                min-height: 250px !important;
+              }
+            }
+            
+            /* PDF-specific overrides when in PDF mode */
+            .pdf-mode .plotly-graph-div {
+              width: 650px !important;
+              height: 400px !important;
+              transform: none !important;
             }
             
             /* Protect chart containers */
@@ -1185,7 +1253,7 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
                         <div className="flex items-center justify-center" style={{ touchAction: 'pan-y' }}>
                           <Plot
                             data={siteData}
-                            layout={{
+                            layout={getChartLayout({
                               height: 400,
                               width: 600,
                               margin: { t: 40, l: 20, r: 20, b: 20 },
@@ -1212,17 +1280,16 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
                                 xanchor: 'center',
                                 y: -0.1
                               }
+                            })}
+                            config={getChartConfig()}
+                            style={{ 
+                              width: '100%',
+                              height: '400px',
+                              maxWidth: '100%',
+                              pointerEvents: 'none'
                             }}
-                            config={{ 
-                              displayModeBar: false, 
-                              responsive: true,
-                              staticPlot: true,
-                              scrollZoom: false,
-                              doubleClick: false,
-                              showTips: false,
-                              displaylogo: false
-                            }}
-                            style={{ pointerEvents: 'none' }}
+                            useResizeHandler={!isPDFMode}
+                            className="responsive-chart"
                           />
                         </div>
                         <p className="text-xs text-gray-600 text-center mt-2">
@@ -1321,25 +1388,16 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
                         <div className="bg-white border rounded-lg p-4">
                           <Plot
                             data={chartData?.data as any}
-                            layout={{
-                              ...chartData?.layout,
-                              width: 700,              /* Fixed width for PDF consistency */
-                              height: 400,
-                              autosize: false,         /* Disable autosize for PDF */
-                              responsive: false,       /* Disable responsive for PDF */
-                              margin: { l: 50, r: 30, t: 50, b: 50 }, /* Tighter margins */
-                            } as any}
-                            config={{
-                              displayModeBar: false,
-                              staticPlot: true,
-                              responsive: false,       /* Ensure static sizing */
-                            }}
+                            layout={getChartLayout(chartData?.layout) as any}
+                            config={getChartConfig()}
                             style={{ 
                               width: '100%', 
                               height: '400px',
+                              minWidth: '300px',      /* Minimum width for mobile */
                               maxWidth: '100%'        /* Prevent overflow */
                             }}
-                            useResizeHandler={false}  /* Disable resize handler for PDF */
+                            useResizeHandler={!isPDFMode}  /* Enable resize for web, disable for PDF */
+                            className="responsive-chart"
                           />
                         </div>
                       </div>
