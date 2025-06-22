@@ -219,7 +219,7 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
       data,
       layout: {
         title: {
-          text: `Cross-Section: ${site.site_name}`,
+          text: `Cross-Section: Site ${site.site_number}`,
           font: { size: 16 },
         },
         xaxis: {
@@ -873,7 +873,7 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
                 console.log('Map zoom:', zoom);
                 console.log('Sites with coordinates:', sitesWithCoords.length);
                 sitesWithCoords.forEach((site, idx) => {
-                  console.log(`Site ${idx + 1}: ${site.site_name} at ${site.latitude}, ${site.longitude}`);
+                  console.log(`Site ${site.site_number}: at ${site.latitude}, ${site.longitude}`);
                 });
                 
                 return (
@@ -957,9 +957,9 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
                             
                             {/* Site name label with background */}
                             <rect
-                              x={point.x - (point.site_name.length * 3)}
+                              x={point.x - 25}
                               y={point.y - 35}
-                              width={point.site_name.length * 6}
+                              width="50"
                               height="16"
                               fill="rgba(255,255,255,0.9)"
                               stroke="#dc2626"
@@ -974,7 +974,7 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
                               fontWeight="bold"
                               fill="#dc2626"
                             >
-                              {point.site_name}
+                              Site {point.site_number}
                             </text>
                             
                             {/* Distance label (for lines) */}
@@ -1392,10 +1392,7 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
                   {/* SITE HEADER SECTION */}
                   <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-6">
                     <h3 className="text-2xl font-bold mb-2">
-                      {site.site_name.trim() === `Site ${site.site_number}` 
-                        ? `Site ${site.site_number}`
-                        : `Site ${site.site_number}: ${site.site_name}`
-                      }
+                      Site {site.site_number}
                     </h3>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                       <div>
@@ -1436,7 +1433,7 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
                         <div>
                           <img
                             src={site.photo_url}
-                            alt={`Photo of ${site.site_name}`}
+                            alt={`Photo of Site ${site.site_number}`}
                             className="w-full h-64 object-cover rounded-lg border shadow-lg"
                           />
                           <p className="text-center text-sm text-gray-500 mt-2">Primary site photograph</p>
@@ -1445,7 +1442,7 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
                           <div>
                             <img
                               src={site.sedimentation_photo_url}
-                              alt={`Sediment sample at ${site.site_name}`}
+                              alt={`Sediment sample at Site ${site.site_number}`}
                               className="w-full h-64 object-cover rounded-lg border shadow-lg"
                             />
                             <p className="text-center text-sm text-gray-500 mt-2">Sediment sample photograph</p>

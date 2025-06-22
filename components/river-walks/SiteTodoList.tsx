@@ -98,7 +98,7 @@ export function SiteTodoList({ site, onTodoClick }: SiteTodoListProps) {
           <MapPin className="w-5 h-5 text-primary" />
         </div>
         <div>
-          <h3 className="text-xl font-bold text-foreground">{site.site_name}</h3>
+          <h3 className="text-xl font-bold text-foreground">Site {site.site_number}</h3>
           <p className="text-muted-foreground">Complete the following tasks for this site</p>
         </div>
       </div>

@@ -372,17 +372,13 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
   };
 
   // Site management handlers (from SiteList)
-  const handleUpdateSiteField = async (id: string, field: 'site_name' | 'river_width', value: string | number) => {
-    const updateData = field === 'site_name' 
-      ? { site_name: value as string, river_width: 0 }
-      : { site_name: '', river_width: value as number };
-    
+  const handleUpdateSiteField = async (id: string, field: 'river_width', value: number) => {
     const existingSite = sites.find(site => site.id === id);
     if (!existingSite) return;
     
     const completeUpdateData = {
-      site_name: field === 'site_name' ? value as string : existingSite.site_name,
-      river_width: field === 'river_width' ? value as number : parseFloat(existingSite.river_width.toString()),
+      site_name: existingSite.site_name,
+      river_width: value,
       depth_units: existingSite.depth_units,
       sedimentation_units: existingSite.sedimentation_units,
     };

@@ -24,7 +24,7 @@ export function SiteInfoForm({
   loading,
 }: SiteInfoFormProps) {
   const [formData, setFormData] = useState<SiteFormData>({
-    site_name: site.site_name,
+    site_name: `Site ${site.site_number}`, // Auto-generated, not editable
     latitude: site.latitude?.toString() || '',
     longitude: site.longitude?.toString() || '',
     notes: site.notes || '',
@@ -124,20 +124,13 @@ export function SiteInfoForm({
       <form onSubmit={(e) => handleSubmit(e, false)} className="space-y-8">
         {/* Site Details Section */}
         <div className="bg-blue-50/50 rounded-xl p-6 border border-blue-100">
+          {/* Site name header - not editable */}
+          <div className="mb-6 p-4 bg-white/80 rounded-lg border border-blue-200">
+            <h3 className="text-xl font-semibold text-foreground">Site {site.site_number}</h3>
+            <p className="text-sm text-muted-foreground">Measurement site #{site.site_number}</p>
+          </div>
+          
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-foreground mb-3 font-medium">Site Name</label>
-              <input
-                type="text"
-                name="site_name"
-                value={formData.site_name}
-                onChange={handleInputChange}
-                className="input-modern"
-                placeholder="e.g., Site 1, Upstream, Meander"
-                required
-              />
-            </div>
-
             <div>
               <label className="block text-foreground mb-3 font-medium">
                 <span className="flex items-center gap-2">

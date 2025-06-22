@@ -7,7 +7,7 @@ interface SiteListProps {
   sites: Site[];
   onEditMeasurements: (site: Site) => void;
   onEditSite: (site: Site) => void;
-  onUpdateSite: (id: string, field: 'site_name' | 'river_width', value: string | number) => Promise<void>;
+  onUpdateSite: (id: string, field: 'river_width', value: number) => Promise<void>;
   onDeleteSite: (site: Site) => void;
   onAddNewSite: () => void;
 }
@@ -82,18 +82,11 @@ export function SiteList({
                   </div>
                 )}
                 <div className="flex-1 min-w-0">
-                  <InlineEdit
-                    value={site.site_name}
-                    onSave={(value) => onUpdateSite(site.id, 'site_name', value)}
-                    className="text-lg font-semibold text-foreground"
-                    inputClassName="text-lg font-semibold"
-                    placeholder="Site name"
-                  />
+                  <h3 className="text-lg font-semibold text-foreground">
+                    Site {site.site_number}
+                  </h3>
                   <div className="text-xs text-muted-foreground">
-                    Created {site.site_number}
-                    {site.site_number === 1 ? 'st' : 
-                     site.site_number === 2 ? 'nd' : 
-                     site.site_number === 3 ? 'rd' : 'th'}
+                    Measurement site #{site.site_number}
                   </div>
                 </div>
               </div>
