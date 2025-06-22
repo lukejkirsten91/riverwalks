@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useImperativeHandle, forwardRef } from 'react';
 import { MapPin, Camera, CloudSun, TreePine, Map } from 'lucide-react';
 import { FileUpload } from '../ui/FileUpload';
 import { LoadingButton } from '../ui/LoadingSpinner';
@@ -18,12 +18,16 @@ interface SiteInfoFormProps {
   loading: boolean;
 }
 
-export function SiteInfoForm({
+export interface SiteInfoFormRef {
+  triggerSaveConfirmation: () => void;
+}
+
+export const SiteInfoForm = forwardRef<SiteInfoFormRef, SiteInfoFormProps>(({
   site,
   onSubmit,
   onCancel,
   loading,
-}: SiteInfoFormProps) {
+}, ref) => {
   const [formData, setFormData] = useState<SiteFormData>({
     site_name: `Site ${site.site_number}`, // Auto-generated, not editable
     latitude: site.latitude?.toString() || '',
@@ -122,6 +126,13 @@ export function SiteInfoForm({
     setShowConfirmDialog(false);
     onCancel();
   };
+
+  // Expose methods to parent component
+  useImperativeHandle(ref, () => ({
+    triggerSaveConfirmation: () => {
+      setShowConfirmDialog(true);
+    }
+  }));
 
   return (
     <div className="card-modern-xl p-6 bg-card max-w-4xl mx-auto">
@@ -351,4 +362,4 @@ export function SiteInfoForm({
       />
     </div>
   );
-}
+});

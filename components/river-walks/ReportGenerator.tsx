@@ -1323,30 +1323,42 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
                   return (
                     <div className="w-full max-w-4xl mx-auto">
                       {/* Wind Rose Chart - Sediment Roundness by Site */}
-                      <div className="bg-white rounded-lg border border-gray-300 p-2 sm:p-4">
-                        <h4 className="text-lg font-semibold mb-4 text-center">Sediment Roundness Distribution by Site</h4>
-                        <div className="w-full flex justify-center items-center" style={{ touchAction: 'pan-y' }}>
-                          <div className="w-full flex justify-center items-center overflow-hidden">
+                      <div className="bg-white rounded-lg border border-gray-300 p-1 sm:p-4">
+                        <h4 className="text-sm sm:text-lg font-semibold mb-2 sm:mb-4 text-center px-2">
+                          Sediment Roundness Distribution by Site
+                        </h4>
+                        <div className="w-full flex justify-center items-center min-h-0" style={{ touchAction: 'none' }}>
+                          <div className="w-full max-w-full flex justify-center items-center">
                           <Plot
                             data={siteData}
                             layout={getChartLayout({
-                              height: isMobile ? 350 : 400,
-                              width: isMobile ? 350 : 600,
-                              margin: isMobile ? { t: 40, l: 10, r: 10, b: 60 } : { t: 40, l: 20, r: 20, b: 20 },
+                              height: isMobile ? 280 : 400,
+                              width: isMobile ? 320 : 600,
+                              margin: isMobile ? 
+                                { t: 20, l: 5, r: 5, b: 80 } : 
+                                { t: 40, l: 20, r: 20, b: 20 },
                               polar: {
                                 radialaxis: {
                                   visible: true,
                                   range: [0, Math.max(...allSedimentData.map(() => 5)) + 1],
-                                  tickfont: { size: isMobile ? 8 : 10 }
+                                  tickfont: { size: isMobile ? 7 : 10 },
+                                  tickangle: isMobile ? 0 : 0,
+                                  ticklen: isMobile ? 3 : 5
                                 },
                                 angularaxis: {
                                   tickvals: [0, 60, 120, 180, 240, 300],
-                                  ticktext: roundnessRanges,
+                                  ticktext: isMobile ? 
+                                    ['V.Ang', 'Ang', 'S.Ang', 'S.Rnd', 'Rnd', 'W.Rnd'] : 
+                                    roundnessRanges,
                                   direction: 'clockwise',
-                                  tickfont: { size: isMobile ? 7 : 9 }
+                                  tickfont: { size: isMobile ? 6 : 9 },
+                                  rotation: 0
                                 }
                               },
-                              font: { size: isMobile ? 8 : 10 },
+                              font: { 
+                                size: isMobile ? 7 : 10,
+                                family: isMobile ? 'Arial, sans-serif' : undefined
+                              },
                               paper_bgcolor: 'white',
                               plot_bgcolor: 'white',
                               showlegend: true,
@@ -1354,20 +1366,32 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
                                 orientation: 'h',
                                 x: 0.5,
                                 xanchor: 'center',
-                                y: isMobile ? -0.2 : -0.1,
-                                font: { size: isMobile ? 8 : 10 }
+                                y: isMobile ? -0.35 : -0.1,
+                                font: { size: isMobile ? 7 : 10 },
+                                itemsizing: 'constant',
+                                tracegroupgap: isMobile ? 5 : 10
                               }
                             })}
-                            config={getChartConfig()}
-                            style={{ 
-                              width: isMobile ? '350px' : '100%',
-                              height: isMobile ? '350px' : '400px',
-                              maxWidth: '100%',
-                              pointerEvents: isMobile ? 'none' : 'auto',
-                              margin: '0 auto'
+                            config={{
+                              ...getChartConfig(),
+                              toImageButtonOptions: {
+                                format: 'png',
+                                filename: 'sediment_roundness_chart',
+                                height: isMobile ? 280 : 400,
+                                width: isMobile ? 320 : 600,
+                                scale: 2
+                              }
                             }}
-                            useResizeHandler={!isPDFMode}
-                            className="responsive-chart mx-auto"
+                            style={{ 
+                              width: isMobile ? '320px' : '100%',
+                              height: isMobile ? '280px' : '400px',
+                              maxWidth: '100vw',
+                              pointerEvents: isMobile ? 'none' : 'auto',
+                              margin: '0 auto',
+                              display: 'block'
+                            }}
+                            useResizeHandler={!isPDFMode && !isMobile}
+                            className={`responsive-chart mx-auto ${isMobile ? 'touch-none' : ''}`}
                           />
                           </div>
                         </div>

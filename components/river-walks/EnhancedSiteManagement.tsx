@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { formatDate } from '../../lib/utils';
 import { updateSite, createMeasurementPoints, deleteMeasurementPointsForSite } from '../../lib/api/sites';
 import { uploadSitePhoto, deleteSitePhoto } from '../../lib/api/storage';
 import { SiteList } from './SiteList';
 import { SiteTodoList } from './SiteTodoList';
-import { SiteInfoForm } from './SiteInfoForm';
+import { SiteInfoForm, type SiteInfoFormRef } from './SiteInfoForm';
 import { CrossSectionForm } from './CrossSectionForm';
 import { VelocityForm } from './VelocityForm';
 import { SedimentForm } from './SedimentForm';
@@ -55,6 +55,9 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
   // Navigation state
   const [currentView, setCurrentView] = useState<CurrentView>('site_list');
   const [currentSite, setCurrentSite] = useState<Site | null>(null);
+  
+  // Form refs for triggering save confirmations
+  const siteInfoFormRef = useRef<SiteInfoFormRef>(null);
 
   // Handle browser back button
   React.useEffect(() => {
@@ -476,7 +479,17 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
   const renderBackButton = () => {
     if (currentView === 'site_list') return null;
     
-    const handleBack = currentView === 'site_todos' ? handleBackToSites : handleBackToTodos;
+    const handleBack = () => {
+      // If we're on a form, trigger the save confirmation dialog
+      if (currentView === 'site_info_form' && siteInfoFormRef.current) {
+        siteInfoFormRef.current.triggerSaveConfirmation();
+      } else if (currentView === 'site_todos') {
+        handleBackToSites();
+      } else {
+        // For other forms that don't have confirmation yet, use the old behavior
+        handleBackToTodos();
+      }
+    };
     
     return (
       <button
@@ -517,6 +530,7 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
       case 'site_info_form':
         return currentSite ? (
           <SiteInfoForm
+            ref={siteInfoFormRef}
             site={currentSite}
             onSubmit={handleSiteInfoSubmit}
             onCancel={handleBackToTodos}
