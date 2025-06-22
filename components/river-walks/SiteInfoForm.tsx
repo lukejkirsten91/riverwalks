@@ -127,7 +127,6 @@ export function SiteInfoForm({
           {/* Site name header - not editable */}
           <div className="mb-6 p-4 bg-white/80 rounded-lg border border-blue-200">
             <h3 className="text-xl font-semibold text-foreground">Site {site.site_number}</h3>
-            <p className="text-sm text-muted-foreground">Measurement site #{site.site_number}</p>
           </div>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">

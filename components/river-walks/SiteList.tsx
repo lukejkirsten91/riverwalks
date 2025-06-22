@@ -85,9 +85,6 @@ export function SiteList({
                   <h3 className="text-lg font-semibold text-foreground">
                     Site {site.site_number}
                   </h3>
-                  <div className="text-xs text-muted-foreground">
-                    Measurement site #{site.site_number}
-                  </div>
                 </div>
               </div>
               
