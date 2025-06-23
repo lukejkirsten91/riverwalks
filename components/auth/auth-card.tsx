@@ -34,10 +34,19 @@ export default function AuthCard() {
       setLoading(false);
     });
 
+    // Fallback timeout to prevent infinite loading
+    const loadingTimeout = setTimeout(() => {
+      if (loading) {
+        console.warn('Auth loading timeout - forcing loading to false');
+        setLoading(false);
+      }
+    }, 10000); // 10 second timeout
+
     return () => {
       authListener?.subscription.unsubscribe();
+      clearTimeout(loadingTimeout);
     };
-  }, []);
+  }, [loading]);
 
   const handleSignIn = async () => {
     const { protocol, host } = window.location;
