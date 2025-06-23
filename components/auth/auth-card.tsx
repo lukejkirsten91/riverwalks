@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
+import Link from 'next/link';
 import { User } from '@supabase/supabase-js';
 import { supabase } from '../../lib/supabase';
 import { Button } from '../ui/button';
@@ -12,6 +13,7 @@ import {
   CardFooter,
 } from '../ui/card';
 import { LogIn, LogOut, MapPin } from 'lucide-react';
+import { TermsGate } from './TermsGate';
 
 export default function AuthCard() {
   const router = useRouter();
@@ -73,52 +75,54 @@ export default function AuthCard() {
 
   if (user) {
     return (
-      <div className="card-modern-xl backdrop-blur-sm bg-white/95 w-full">
-        <CardHeader className="text-center pb-6">
-          <div className="flex justify-center mb-4">
-            {user.user_metadata?.avatar_url ? (
-              <img
-                src={user.user_metadata.avatar_url}
-                alt="User avatar"
-                className="w-20 h-20 rounded-full shadow-modern border-4 border-white"
-              />
-            ) : (
-              <div className="w-20 h-20 rounded-full bg-gradient-primary flex items-center justify-center text-white text-2xl font-bold shadow-modern">
-                {user.email?.charAt(0).toUpperCase()}
-              </div>
-            )}
-          </div>
-          <CardTitle className="text-2xl text-foreground">
-            Welcome back!
-          </CardTitle>
-          <CardDescription className="text-muted-foreground">
-            Signed in as {user.email}
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="bg-muted/50 rounded-lg p-4 text-center">
-            <p className="text-sm text-muted-foreground">
-              Ready to continue your river studies?
-            </p>
-          </div>
-        </CardContent>
-        <CardFooter className="flex flex-col space-y-3 pt-6">
-          <button
-            onClick={() => router.push('/river-walks')}
-            className="btn-primary w-full touch-manipulation"
-          >
-            <MapPin className="mr-2 h-5 w-5" /> 
-            View River Walks
-          </button>
-          <button 
-            onClick={handleSignOut} 
-            className="btn-secondary w-full touch-manipulation"
-          >
-            <LogOut className="mr-2 h-4 w-4" /> 
-            Sign Out
-          </button>
-        </CardFooter>
-      </div>
+      <TermsGate user={user}>
+        <div className="card-modern-xl backdrop-blur-sm bg-white/95 w-full">
+          <CardHeader className="text-center pb-6">
+            <div className="flex justify-center mb-4">
+              {user.user_metadata?.avatar_url ? (
+                <img
+                  src={user.user_metadata.avatar_url}
+                  alt="User avatar"
+                  className="w-20 h-20 rounded-full shadow-modern border-4 border-white"
+                />
+              ) : (
+                <div className="w-20 h-20 rounded-full bg-gradient-primary flex items-center justify-center text-white text-2xl font-bold shadow-modern">
+                  {user.email?.charAt(0).toUpperCase()}
+                </div>
+              )}
+            </div>
+            <CardTitle className="text-2xl text-foreground">
+              Welcome back!
+            </CardTitle>
+            <CardDescription className="text-muted-foreground">
+              Signed in as {user.email}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="bg-muted/50 rounded-lg p-4 text-center">
+              <p className="text-sm text-muted-foreground">
+                Ready to continue your river studies?
+              </p>
+            </div>
+          </CardContent>
+          <CardFooter className="flex flex-col space-y-3 pt-6">
+            <button
+              onClick={() => router.push('/river-walks')}
+              className="btn-primary w-full touch-manipulation"
+            >
+              <MapPin className="mr-2 h-5 w-5" /> 
+              View River Walks
+            </button>
+            <button 
+              onClick={handleSignOut} 
+              className="btn-secondary w-full touch-manipulation"
+            >
+              <LogOut className="mr-2 h-4 w-4" /> 
+              Sign Out
+            </button>
+          </CardFooter>
+        </div>
+      </TermsGate>
     );
   }
 
@@ -168,8 +172,23 @@ export default function AuthCard() {
         </button>
         
         <div className="text-center">
-          <p className="text-xs text-muted-foreground">
-            By signing in, you agree to our terms of service
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            By signing in, you agree to our{' '}
+            <Link 
+              href="/terms" 
+              target="_blank"
+              className="text-primary hover:text-primary/80 underline"
+            >
+              Terms of Service
+            </Link>
+            {' '}and{' '}
+            <Link 
+              href="/privacy" 
+              target="_blank"
+              className="text-primary hover:text-primary/80 underline"
+            >
+              Privacy Policy
+            </Link>
           </p>
         </div>
       </CardContent>
