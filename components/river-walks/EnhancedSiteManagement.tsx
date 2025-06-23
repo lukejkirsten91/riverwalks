@@ -56,9 +56,9 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
     return await createSite(siteData);
   };
   
-  const handleUpdateSite = async (id: string, data: UpdateSiteData) => {
+  const handleUpdateSite = async (id: string, data: UpdateSiteData, riverWalkId?: string) => {
     // TODO: Implement update in offline hooks
-    console.log('Update site not yet implemented in offline mode', { id, data });
+    console.log('Update site not yet implemented in offline mode', { id, data, riverWalkId });
   };
   
   const handleDeleteSite = async (id: string) => {
@@ -205,7 +205,7 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
       };
 
       await handleUpdateSite(currentSite.id, updateData, riverWalk.id);
-      await fetchSites(riverWalk.id);
+      await fetchSites();
       
       // Update current site state immediately for instant UI update
       setCurrentSite(prev => prev ? { ...prev, ...updateData } : null);
@@ -303,7 +303,7 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
       };
 
       await handleUpdateSite(currentSite.id, updateData, riverWalk.id);
-      await fetchSites(riverWalk.id);
+      await fetchSites();
       
       // Update current site state immediately for instant UI update
       setCurrentSite(prev => prev ? { ...prev, ...updateData } : null);
@@ -372,7 +372,7 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
       };
 
       await handleUpdateSite(currentSite.id, updateData, riverWalk.id);
-      await fetchSites(riverWalk.id);
+      await fetchSites();
       
       // Update current site state immediately for instant UI update
       setCurrentSite(prev => prev ? { ...prev, ...updateData } : null);
