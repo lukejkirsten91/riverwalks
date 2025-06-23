@@ -253,7 +253,7 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
       }));
       await createMeasurementPoints(currentSite.id, measurementPoints);
 
-      await fetchSites(riverWalk.id);
+      await fetchSites();
       
       // Update current site state immediately for instant UI update (including measurement points)
       const updatedMeasurementPoints = measurementPoints.map((point, index) => ({
@@ -447,7 +447,7 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
 
       const createdSite = await handleCreateSite(newSite);
       if (createdSite) {
-        await fetchSites(riverWalk.id);
+        await fetchSites();
         showSuccess('Site Created', `${newSite.site_name} has been successfully created.`);
       }
     } catch (error) {
