@@ -35,19 +35,15 @@ export async function getUserAgreement(userId: string): Promise<UserAgreement | 
     .select('*')
     .eq('user_id', userId)
     .order('created_at', { ascending: false })
-    .limit(1)
-    .single();
+    .limit(1);
 
   if (error) {
-    // If no agreement found, that's ok - return null
-    if (error.code === 'PGRST116') {
-      return null;
-    }
     console.error('Error fetching user agreement:', error);
     throw new Error(`Failed to fetch user agreement: ${error.message}`);
   }
 
-  return data;
+  // Return the first record if found, or null if no records
+  return data && data.length > 0 ? data[0] : null;
 }
 
 // Update existing agreement (for new terms versions)
