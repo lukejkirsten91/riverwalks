@@ -148,7 +148,7 @@ export function useOfflineRiverWalks() {
   // Helper to check if a river walk is synced
   const isRiverWalkSynced = (riverWalk: RiverWalk): boolean => {
     // If it has a server ID (not local_) and doesn't start with local_, it's likely synced
-    return riverWalk.id && !riverWalk.id.startsWith('local_');
+    return Boolean(riverWalk.id && !riverWalk.id.startsWith('local_'));
   };
 
   return {
