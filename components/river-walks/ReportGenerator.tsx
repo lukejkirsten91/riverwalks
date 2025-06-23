@@ -1,8 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Download, FileText, X } from 'lucide-react';
+import { Download, FileText, X, FileSpreadsheet } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
+import * as XLSX from 'xlsx';
 import { formatDate } from '../../lib/utils';
 import type { RiverWalk, Site, MeasurementPoint } from '../../types';
 
@@ -530,6 +531,153 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
     }
   };
 
+  // Excel export function
+  const exportToExcel = () => {
+    try {
+      setIsExporting(true);
+      
+      // Create new workbook
+      const workbook = XLSX.utils.book_new();
+      
+      // Summary sheet data
+      const summaryData = [
+        ['River Walk Report Summary'],
+        ['Name:', riverWalk.name],
+        ['Date:', formatDate(riverWalk.date)],
+        ['Location:', `${riverWalk.county ? riverWalk.county + ', ' : ''}${riverWalk.country || 'UK'}`],
+        ['Notes:', riverWalk.notes || 'None'],
+        [''],
+        ['Key Performance Indicators'],
+        ['Total Sites:', sites.length],
+        ['Total Cross-Sectional Area (m²):', sites.reduce((total, site) => total + calculateCrossSectionalArea(site), 0).toFixed(2)],
+        ['Average Velocity (m/s):', sites.filter(s => s.velocity_data?.average_velocity).length > 0 
+          ? (sites.reduce((sum, s) => sum + (s.velocity_data?.average_velocity || 0), 0) / 
+             sites.filter(s => s.velocity_data?.average_velocity).length).toFixed(2) : 'N/A'],
+        ['Total Discharge (m³/s):', sites.reduce((total, site) => total + calculateDischarge(site), 0).toFixed(2)],
+      ];
+      
+      // Sites overview data
+      const sitesOverviewData = [
+        ['Site Overview'],
+        ['Site Number', 'Width (m)', 'Avg Depth (m)', 'Cross-Sectional Area (m²)', 'Velocity (m/s)', 'Discharge (m³/s)', 'GPS Lat', 'GPS Lng', 'Weather', 'Land Use', 'Notes'],
+        ...sites.map(site => {
+          const avgDepth = site.measurement_points?.length > 0 
+            ? (site.measurement_points.reduce((sum, p) => sum + p.depth, 0) / site.measurement_points.length).toFixed(2)
+            : 'N/A';
+          
+          return [
+            site.site_number,
+            site.river_width,
+            avgDepth,
+            calculateCrossSectionalArea(site).toFixed(2),
+            site.velocity_data?.average_velocity?.toFixed(2) || 'N/A',
+            calculateDischarge(site).toFixed(2),
+            site.latitude?.toFixed(6) || 'N/A',
+            site.longitude?.toFixed(6) || 'N/A',
+            site.weather_conditions || 'N/A',
+            site.land_use || 'N/A',
+            site.notes || 'N/A'
+          ];
+        })
+      ];
+      
+      // Create summary sheet
+      const summarySheet = XLSX.utils.aoa_to_sheet(summaryData);
+      XLSX.utils.book_append_sheet(workbook, summarySheet, 'Summary');
+      
+      // Create sites overview sheet
+      const sitesSheet = XLSX.utils.aoa_to_sheet(sitesOverviewData);
+      XLSX.utils.book_append_sheet(workbook, sitesSheet, 'Sites Overview');
+      
+      // Create individual sheets for each site with detailed data
+      sites.forEach((site, index) => {
+        const siteData = [
+          [`Site ${site.site_number} - Detailed Data`],
+          [''],
+          ['Site Information'],
+          ['Site Number:', site.site_number],
+          ['River Width (m):', site.river_width],
+          ['Depth Units:', site.depth_units || 'm'],
+          ['GPS Latitude:', site.latitude?.toFixed(6) || 'Not recorded'],
+          ['GPS Longitude:', site.longitude?.toFixed(6) || 'Not recorded'],
+          ['Weather Conditions:', site.weather_conditions || 'Not recorded'],
+          ['Land Use:', site.land_use || 'Not recorded'],
+          ['Notes:', site.notes || 'None'],
+          [''],
+          ['Cross-Sectional Measurements'],
+          ['Point', 'Distance from Bank (m)', 'Depth (' + (site.depth_units || 'm') + ')'],
+        ];
+        
+        // Add measurement points
+        if (site.measurement_points && site.measurement_points.length > 0) {
+          site.measurement_points.forEach(point => {
+            siteData.push([point.point_number, point.distance_from_bank, point.depth]);
+          });
+        } else {
+          siteData.push(['No measurement points recorded']);
+        }
+        
+        siteData.push(['']);
+        siteData.push(['Velocity Data']);
+        
+        // Add velocity data
+        if (site.velocity_data) {
+          siteData.push(['Measurement Count:', site.velocity_data.measurement_count || 'N/A']);
+          siteData.push(['Average Velocity (m/s):', site.velocity_data.average_velocity?.toFixed(2) || 'N/A']);
+          
+          if (site.velocity_data.measurements && site.velocity_data.measurements.length > 0) {
+            siteData.push(['']);
+            siteData.push(['Individual Velocity Measurements']);
+            siteData.push(['Measurement', 'Distance (m)', 'Time (s)', 'Velocity (m/s)']);
+            
+            site.velocity_data.measurements.forEach((measurement, idx) => {
+              siteData.push([
+                idx + 1,
+                measurement.distance || 'N/A',
+                measurement.time || 'N/A',
+                measurement.velocity?.toFixed(2) || 'N/A'
+              ]);
+            });
+          }
+        } else {
+          siteData.push(['No velocity data recorded']);
+        }
+        
+        siteData.push(['']);
+        siteData.push(['Sediment Analysis']);
+        
+        // Add sediment data
+        if (site.sedimentation_data?.measurements && site.sedimentation_data.measurements.length > 0) {
+          siteData.push(['Sample', 'Roundness Category', 'Size Category']);
+          site.sedimentation_data.measurements.forEach((measurement, idx) => {
+            siteData.push([
+              idx + 1,
+              measurement.roundness || 'N/A',
+              measurement.size || 'N/A'
+            ]);
+          });
+        } else {
+          siteData.push(['No sediment data recorded']);
+        }
+        
+        // Create sheet for this site
+        const siteSheet = XLSX.utils.aoa_to_sheet(siteData);
+        XLSX.utils.book_append_sheet(workbook, siteSheet, `Site ${site.site_number}`);
+      });
+      
+      // Download the Excel file
+      const fileName = `${riverWalk.name.replace(/[^a-z0-9\s]/gi, '_').replace(/\s+/g, '_')}_data.xlsx`;
+      XLSX.writeFile(workbook, fileName);
+      
+      console.log('Excel export completed successfully');
+    } catch (error) {
+      console.error('Error generating Excel file:', error);
+      alert('Error generating Excel file. Please try again.');
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   // Helper function to calculate cross-sectional area (Width × Average Depth)
   const calculateCrossSectionalArea = (site: Site): number => {
     if (!site.measurement_points || site.measurement_points.length === 0) return 0;
@@ -606,7 +754,7 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
         {/* Header with controls */}
         <div className="sticky top-0 bg-white border-b p-4 sm:p-6 z-10 rounded-t-lg shadow-sm">
           <div className="flex items-start justify-between gap-4">
-            {/* Left side: Report info and export button */}
+            {/* Left side: Report info and export buttons */}
             <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 min-w-0 flex-1">
               <div className="flex items-center gap-3 min-w-0">
                 <FileText className="w-5 h-5 sm:w-6 sm:h-6 text-primary shrink-0" />
@@ -615,25 +763,36 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
                   <p className="text-xs sm:text-sm text-muted-foreground truncate">{riverWalk.name}</p>
                 </div>
               </div>
-              <button
-                onClick={exportToPDF}
-                disabled={isExporting}
-                className="btn-primary flex items-center gap-2 disabled:opacity-50 text-sm sm:text-base px-3 py-2 sm:px-4 sm:py-3 shrink-0"
-              >
-                {isExporting ? (
-                  <>
-                    <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full"></div>
-                    <span className="hidden sm:inline">Generating PDF...</span>
-                    <span className="sm:hidden">PDF...</span>
-                  </>
-                ) : (
-                  <>
-                    <Download className="w-4 h-4" />
-                    <span className="hidden sm:inline">Export PDF</span>
-                    <span className="sm:hidden">PDF</span>
-                  </>
-                )}
-              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={exportToPDF}
+                  disabled={isExporting}
+                  className="btn-primary flex items-center gap-2 disabled:opacity-50 text-sm sm:text-base px-3 py-2 sm:px-4 sm:py-3 shrink-0"
+                >
+                  {isExporting ? (
+                    <>
+                      <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full"></div>
+                      <span className="hidden sm:inline">Generating...</span>
+                      <span className="sm:hidden">Gen...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Download className="w-4 h-4" />
+                      <span className="hidden sm:inline">Export PDF</span>
+                      <span className="sm:hidden">PDF</span>
+                    </>
+                  )}
+                </button>
+                <button
+                  onClick={exportToExcel}
+                  disabled={isExporting}
+                  className="btn-secondary flex items-center gap-2 disabled:opacity-50 text-sm sm:text-base px-3 py-2 sm:px-4 sm:py-3 shrink-0"
+                >
+                  <FileSpreadsheet className="w-4 h-4" />
+                  <span className="hidden sm:inline">Export Excel</span>
+                  <span className="sm:hidden">Excel</span>
+                </button>
+              </div>
             </div>
             
             {/* Right side: Close button - always top-right */}
@@ -1372,15 +1531,15 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
                           Sediment Roundness Distribution by Site
                         </h4>
                         <div className="w-full flex justify-center items-center min-h-0 page-break-avoid" style={{ touchAction: 'none' }}>
-                          <div className="w-full max-w-full flex justify-center items-center">
+                          <div className="w-full flex justify-center items-center">
                           <Plot
                             data={siteData}
                             layout={getChartLayout({
                               height: isMobile ? 280 : 400,
                               width: isMobile ? 320 : 600,
                               margin: isMobile ? 
-                                { t: 20, l: 5, r: 5, b: 80 } : 
-                                { t: 40, l: 20, r: 20, b: 20 },
+                                { t: 30, l: 20, r: 20, b: 30 } : 
+                                { t: 50, l: 50, r: 50, b: 50 },
                               polar: {
                                 radialaxis: {
                                   visible: true,
