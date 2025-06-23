@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { offlineDataService } from '../lib/offlineDataService';
+import { useToast } from '../components/ui/ToastProvider';
 import type { RiverWalk, Site, MeasurementPoint } from '../types';
 
 interface SyncStatus {
@@ -12,6 +13,7 @@ interface SyncStatus {
 
 // Hook for managing offline data operations
 export function useOfflineData() {
+  const { showSuccess, showError } = useToast();
   const [syncStatus, setSyncStatus] = useState<SyncStatus>({
     pendingItems: 0,
     isOnline: true,
@@ -46,6 +48,7 @@ export function useOfflineData() {
         syncError: undefined
       }));
       updateSyncStatus();
+      showSuccess('Sync Complete', 'All your data has been successfully synced to the cloud.');
     };
 
     const handleSyncFailed = (event: CustomEvent) => {
@@ -54,6 +57,7 @@ export function useOfflineData() {
         isSyncing: false, 
         syncError: event.detail?.message || 'Sync failed'
       }));
+      showError('Sync Failed', event.detail?.message || 'Failed to sync data. Please try again.');
     };
 
     window.addEventListener('riverwalks-sync-started', handleSyncStarted);
@@ -147,8 +151,15 @@ export function useOfflineRiverWalks() {
 
   // Helper to check if a river walk is synced
   const isRiverWalkSynced = (riverWalk: RiverWalk): boolean => {
-    // If it has a server ID (not local_) and doesn't start with local_, it's likely synced
-    return Boolean(riverWalk.id && !riverWalk.id.startsWith('local_'));
+    // First check: river walk itself must be synced (server ID, not local)
+    const riverWalkSynced = Boolean(riverWalk.id && !riverWalk.id.startsWith('local_'));
+    
+    // Second check: no pending sync items for this river walk
+    const noPendingItems = syncStatus.pendingItems === 0;
+    
+    // For now, return true only if river walk is synced AND no pending items
+    // TODO: Add comprehensive check for sites and measurement points
+    return riverWalkSynced && noPendingItems;
   };
 
   return {
