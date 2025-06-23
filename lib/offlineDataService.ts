@@ -56,6 +56,7 @@ function fromOfflineMeasurementPoint(offlinePoint: OfflineMeasurementPoint): Par
 
 export class OfflineDataService {
   private isOnline: boolean = true;
+  private cachedUserId: string | null = null;
 
   constructor() {
     if (typeof window !== 'undefined') {
@@ -67,12 +68,44 @@ export class OfflineDataService {
       window.addEventListener('offline', () => {
         this.isOnline = false;
       });
+      
+      // Cache user ID from localStorage if available
+      this.cachedUserId = localStorage.getItem('riverwalks_user_id');
     }
   }
 
   // Check if we're online
   private checkOnline(): boolean {
     return this.isOnline && typeof window !== 'undefined' && navigator.onLine;
+  }
+
+  // Cache user ID for offline use
+  private async cacheUserId(): Promise<string | null> {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user?.id) {
+        this.cachedUserId = user.id;
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('riverwalks_user_id', user.id);
+        }
+        return user.id;
+      }
+    } catch (error) {
+      console.error('Failed to cache user ID:', error);
+    }
+    return null;
+  }
+
+  // Get user ID (cached or from auth)
+  private async getUserId(): Promise<string | null> {
+    // Try to get from auth first if online
+    if (this.checkOnline()) {
+      const userId = await this.cacheUserId();
+      if (userId) return userId;
+    }
+
+    // Fall back to cached user ID
+    return this.cachedUserId;
   }
 
   // Add item to sync queue
@@ -296,14 +329,8 @@ export class OfflineDataService {
     const localId = generateLocalId();
     const timestamp = Date.now();
 
-    // Get user ID for the river walk
-    let userId: string | null = null;
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      userId = user?.id || null;
-    } catch (error) {
-      console.error('Failed to get user ID:', error);
-    }
+    // Get user ID (cached or from auth)
+    const userId = await this.getUserId();
 
     if (!userId) {
       throw new Error('User not authenticated. Please sign in to create river walks.');
@@ -475,8 +502,9 @@ export class OfflineDataService {
     try {
       await offlineDB.init();
       
-      // Download latest data if online
+      // Cache user ID if online
       if (this.checkOnline()) {
+        await this.cacheUserId();
         await this.downloadLatestData();
       }
       
@@ -502,6 +530,14 @@ export class OfflineDataService {
       pendingItems: syncQueue.length,
       isOnline: this.checkOnline()
     };
+  }
+
+  // Clear cached user data (call on sign out)
+  clearUserCache(): void {
+    this.cachedUserId = null;
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('riverwalks_user_id');
+    }
   }
 }
 

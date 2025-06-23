@@ -11,6 +11,7 @@ import {
 import { ReportGenerator } from '../components/river-walks/ReportGenerator';
 import { DiagnosticPanel } from '../components/DiagnosticPanel';
 import { useOfflineRiverWalks } from '../hooks/useOfflineData';
+import { offlineDataService } from '../lib/offlineDataService';
 import type { RiverWalk, RiverWalkFormData, Site } from '../types';
 import { getSitesForRiverWalk } from '../lib/api/sites';
 import type { User } from '@supabase/supabase-js';
@@ -149,6 +150,8 @@ export default function RiverWalksPage() {
   };
 
   const handleSignOut = async () => {
+    // Clear offline cache before signing out
+    offlineDataService.clearUserCache();
     await supabase.auth.signOut();
     router.push('/');
   };
