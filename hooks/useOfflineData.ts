@@ -135,6 +135,21 @@ export function useOfflineRiverWalks() {
     }
   }, [updateSyncStatus]);
 
+  const updateRiverWalk = useCallback(async (riverWalkId: string, riverWalkData: Partial<RiverWalk>) => {
+    try {
+      const updatedRiverWalk = await offlineDataService.updateRiverWalk(riverWalkId, riverWalkData);
+      setRiverWalks(prev => prev.map(rw => 
+        rw.id === riverWalkId ? updatedRiverWalk : rw
+      ));
+      await updateSyncStatus();
+      return updatedRiverWalk;
+    } catch (err) {
+      const error = err instanceof Error ? err.message : 'Failed to update river walk';
+      setError(error);
+      throw err;
+    }
+  }, [updateSyncStatus]);
+
   useEffect(() => {
     fetchRiverWalks();
   }, [fetchRiverWalks]);
@@ -167,6 +182,7 @@ export function useOfflineRiverWalks() {
     loading,
     error,
     createRiverWalk,
+    updateRiverWalk,
     refetch: fetchRiverWalks,
     isRiverWalkSynced
   };
@@ -212,6 +228,21 @@ export function useOfflineSites(riverWalkId?: string) {
     }
   }, [updateSyncStatus]);
 
+  const updateSite = useCallback(async (siteId: string, siteData: Partial<Site>) => {
+    try {
+      const updatedSite = await offlineDataService.updateSite(siteId, siteData);
+      setSites(prev => prev.map(s => 
+        s.id === siteId ? updatedSite : s
+      ));
+      await updateSyncStatus();
+      return updatedSite;
+    } catch (err) {
+      const error = err instanceof Error ? err.message : 'Failed to update site';
+      setError(error);
+      throw err;
+    }
+  }, [updateSyncStatus]);
+
   useEffect(() => {
     fetchSites();
   }, [fetchSites]);
@@ -231,6 +262,7 @@ export function useOfflineSites(riverWalkId?: string) {
     loading,
     error,
     createSite,
+    updateSite,
     refetch: fetchSites
   };
 }

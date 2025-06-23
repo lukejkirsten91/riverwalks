@@ -191,6 +191,27 @@ export class OfflineDataService {
               await offlineDB.addRiverWalk(localItem);
             }
           }
+        } else if (type === 'UPDATE') {
+          // Find the local item to get the server ID
+          const offlineData = await offlineDB.getAll<OfflineRiverWalk>('riverWalks');
+          const localItem = offlineData.find(rw => rw.localId === item.localId);
+          
+          if (localItem && localItem.id && !localItem.id.startsWith('local_')) {
+            const { data: updatedRiverWalk, error } = await supabase
+              .from('river_walks')
+              .update(data)
+              .eq('id', localItem.id)
+              .select()
+              .single();
+            
+            if (error) throw error;
+            
+            if (updatedRiverWalk) {
+              localItem.synced = true;
+              localItem.lastModified = Date.now();
+              await offlineDB.addRiverWalk(localItem);
+            }
+          }
         }
         break;
         
@@ -210,6 +231,27 @@ export class OfflineDataService {
             if (localItem) {
               localItem.id = newSite.id;
               localItem.synced = true;
+              await offlineDB.addSite(localItem);
+            }
+          }
+        } else if (type === 'UPDATE') {
+          // Find the local item to get the server ID
+          const offlineData = await offlineDB.getAll<OfflineSite>('sites');
+          const localItem = offlineData.find(s => s.localId === item.localId);
+          
+          if (localItem && localItem.id && !localItem.id.startsWith('local_')) {
+            const { data: updatedSite, error } = await supabase
+              .from('sites')
+              .update(data)
+              .eq('id', localItem.id)
+              .select()
+              .single();
+            
+            if (error) throw error;
+            
+            if (updatedSite) {
+              localItem.synced = true;
+              localItem.lastModified = Date.now();
               await offlineDB.addSite(localItem);
             }
           }
@@ -399,6 +441,42 @@ export class OfflineDataService {
     return fromOfflineRiverWalk(offlineRiverWalk) as RiverWalk;
   }
 
+  async updateRiverWalk(riverWalkId: string, riverWalkData: Partial<RiverWalk>): Promise<RiverWalk> {
+    console.log('Updating river walk:', { riverWalkId, riverWalkData });
+
+    // Get existing river walk from offline storage
+    const allRiverWalks = await offlineDB.getRiverWalks();
+    const existingRiverWalk = allRiverWalks.find(rw => rw.id === riverWalkId || rw.localId === riverWalkId);
+    
+    if (!existingRiverWalk) {
+      throw new Error('River walk not found');
+    }
+
+    // Update the offline version
+    const updatedRiverWalk: OfflineRiverWalk = {
+      ...existingRiverWalk,
+      ...riverWalkData,
+      synced: false, // Mark as unsynced since it was edited
+      lastModified: Date.now(),
+      updated_at: new Date().toISOString(),
+    };
+
+    // Save locally
+    await offlineDB.addRiverWalk(updatedRiverWalk);
+
+    // Add to sync queue if online or offline
+    const userId = await this.getUserId();
+    if (userId) {
+      const dataToSync = {
+        ...riverWalkData,
+        user_id: userId,
+      };
+      await this.addToSyncQueue('UPDATE', 'river_walks', dataToSync, updatedRiverWalk.localId);
+    }
+
+    return fromOfflineRiverWalk(updatedRiverWalk) as RiverWalk;
+  }
+
   // Sites methods
   async getSitesByRiverWalk(riverWalkId: string): Promise<Site[]> {
     if (this.checkOnline()) {
@@ -511,6 +589,35 @@ export class OfflineDataService {
     }
 
     return fromOfflineSite(offlineSite) as Site;
+  }
+
+  async updateSite(siteId: string, siteData: Partial<Site>): Promise<Site> {
+    console.log('Updating site:', { siteId, siteData });
+
+    // Get existing site from offline storage
+    const allSites = await offlineDB.getSites();
+    const existingSite = allSites.find(s => s.id === siteId || s.localId === siteId);
+    
+    if (!existingSite) {
+      throw new Error('Site not found');
+    }
+
+    // Update the offline version
+    const updatedSite: OfflineSite = {
+      ...existingSite,
+      ...siteData,
+      synced: false, // Mark as unsynced since it was edited
+      lastModified: Date.now(),
+      updated_at: new Date().toISOString(),
+    };
+
+    // Save locally
+    await offlineDB.addSite(updatedSite);
+
+    // Add to sync queue
+    await this.addToSyncQueue('UPDATE', 'sites', siteData, updatedSite.localId);
+
+    return fromOfflineSite(updatedSite) as Site;
   }
 
   // Initialize the service

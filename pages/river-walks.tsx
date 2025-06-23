@@ -36,6 +36,7 @@ export default function RiverWalksPage() {
     loading,
     error,
     createRiverWalk,
+    updateRiverWalk,
     refetch,
     isRiverWalkSynced
   } = useOfflineRiverWalks();
@@ -83,8 +84,7 @@ export default function RiverWalksPage() {
   const handleFormSubmit = async (formData: RiverWalkFormData) => {
     try {
       if (currentRiverWalk) {
-        // TODO: Implement update functionality in offline hooks
-        console.log('Update not yet implemented in offline mode');
+        await updateRiverWalk(currentRiverWalk.id, formData);
       } else {
         await createRiverWalk(formData);
       }
@@ -93,8 +93,8 @@ export default function RiverWalksPage() {
       setShowForm(false);
       setCurrentRiverWalk(null);
     } catch (error) {
-      console.error('Failed to create river walk:', error);
-      setError(error instanceof Error ? error.message : 'Failed to create river walk');
+      console.error('Failed to save river walk:', error);
+      setError(error instanceof Error ? error.message : 'Failed to save river walk');
     }
   };
 
@@ -104,8 +104,13 @@ export default function RiverWalksPage() {
   };
 
   const handleUpdateField = async (id: string, field: keyof RiverWalk, value: string) => {
-    // TODO: Implement update functionality in offline hooks
-    console.log('Update field not yet implemented in offline mode', { id, field, value });
+    try {
+      const updateData = { [field]: value };
+      await updateRiverWalk(id, updateData);
+    } catch (error) {
+      console.error('Failed to update river walk field:', error);
+      setError(error instanceof Error ? error.message : 'Failed to update river walk');
+    }
   };
 
   const handleArchive = async (id: string) => {

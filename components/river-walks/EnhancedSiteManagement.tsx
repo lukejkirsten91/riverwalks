@@ -44,6 +44,7 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
     loading: sitesLoading,
     error: sitesError,
     createSite,
+    updateSite,
     refetch: fetchSites,
   } = useOfflineSites(riverWalk.id);
 
@@ -57,8 +58,14 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
   };
   
   const handleUpdateSite = async (id: string, data: UpdateSiteData, riverWalkId?: string) => {
-    // TODO: Implement update in offline hooks
-    console.log('Update site not yet implemented in offline mode', { id, data, riverWalkId });
+    try {
+      await updateSite(id, data);
+      await fetchSites();
+      showSuccess('Site Updated', 'Site has been successfully updated.');
+    } catch (error) {
+      console.error('Failed to update site:', error);
+      showError('Update Failed', error instanceof Error ? error.message : 'Failed to update site');
+    }
   };
   
   const handleDeleteSite = async (id: string, riverWalkId?: string) => {
