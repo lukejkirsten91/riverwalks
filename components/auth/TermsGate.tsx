@@ -30,8 +30,8 @@ export function TermsGate({ user, children }: TermsGateProps) {
       console.log('TermsGate: Agreement found:', agreement);
       
       // Check if user needs to accept terms
-      const hasAcceptedTerms = agreement?.terms_accepted_at !== null;
-      const hasAcceptedPrivacy = agreement?.privacy_accepted_at !== null;
+      const hasAcceptedTerms = agreement?.terms_accepted_at != null;
+      const hasAcceptedPrivacy = agreement?.privacy_accepted_at != null;
       
       console.log('TermsGate: hasAcceptedTerms:', hasAcceptedTerms, 'hasAcceptedPrivacy:', hasAcceptedPrivacy);
       const needsAcceptance = !hasAcceptedTerms || !hasAcceptedPrivacy;
