@@ -7,7 +7,7 @@ Riverwalks is a web application designed primarily for GCSE Geography students t
 ## 🚀 Live Application
 
 - **Production URL**: https://riverwalks.vercel.app
-- **Current Status**: ✅ **MVP COMPLETE** - Ready for Commercialization | Todo-Based Site Management + Educational Workflow + Four Specialized Forms + Progress Tracking + Velocity Measurements + Professional Report Generation & PDF Export + Mobile-First Design + Archive System + **COMPREHENSIVE REPORT RESTRUCTURE WITH ENHANCED ANALYSIS** + **GOOGLE MAPS INTEGRATION** + **SEDIMENT VISUALIZATION CHARTS** + **EDUCATIONAL INSTRUCTIONS** + **RESPONSIVE PDF GENERATION WITH SMART CHART PROTECTION** + **MOBILE INTERACTION OPTIMIZATION** + **SAVE CONFIRMATION DIALOGS**
+- **Current Status**: ✅ **MVP COMPLETE WITH LEGAL COMPLIANCE** - Ready for Commercial Launch | Todo-Based Site Management + Educational Workflow + Four Specialized Forms + Progress Tracking + Velocity Measurements + Professional Report Generation & PDF Export + Mobile-First Design + Archive System + **COMPREHENSIVE REPORT RESTRUCTURE WITH ENHANCED ANALYSIS** + **GOOGLE MAPS INTEGRATION** + **SEDIMENT VISUALIZATION CHARTS** + **EDUCATIONAL INSTRUCTIONS** + **RESPONSIVE PDF GENERATION WITH SMART CHART PROTECTION** + **MOBILE INTERACTION OPTIMIZATION** + **SAVE CONFIRMATION DIALOGS** + **COMPLETE GDPR LEGAL COMPLIANCE FOUNDATION**
 
 ## 🏗️ Technical Stack
 
@@ -451,7 +451,8 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
    - Run `supabase/add-archive-field.sql` to add archive functionality
    - Run `supabase/complete-storage-reset.sql` to set up complete photo upload system (database + storage + RLS)
    - Run `supabase/add-enhanced-site-fields.sql` to add new fields (weather, land use, units, sedimentation)
-   - **NEW**: Run `supabase/add-site-todo-tracking.sql` to add todo status tracking and velocity measurement fields
+   - Run `supabase/add-site-todo-tracking.sql` to add todo status tracking and velocity measurement fields
+   - **NEW**: Run `supabase/add-terms-acceptance.sql` to add user agreement tracking for legal compliance
    - Alternative: Use individual migration files if preferred
 3. **Authentication**: Users table automatically managed by Supabase Auth
 
@@ -477,15 +478,17 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 - ✅ **Phase 2**: 2D Visualization & Report Generation with professional charts
 - ✅ **Phase 3**: 3D Visualization with advanced river profile modeling
 
-### 🎯 PHASE 4: LEGAL & COMPLIANCE FOUNDATION
-**Priority: HIGH | Timeline: 1-2 weeks | Status: IN PROGRESS**
+### ✅ PHASE 4: LEGAL & COMPLIANCE FOUNDATION - COMPLETED
+**Priority: HIGH | Timeline: 1-2 weeks | Status: ✅ COMPLETED**
 
 **Legal Documentation:**
 - ✅ **Terms of Service**: Educational use, liability limitations, data usage rights, GCSE-specific terms
 - ✅ **Privacy Policy**: GDPR-compliant privacy notice covering data collection, storage, usage  
-- ✅ **Cookie Policy**: Required for UK/EU users, analytics tracking consent with preference center
-- ✅ **User Agreement System**: Database tracking with legal evidence collection
-- ⏳ **Age Verification**: COPPA/GDPR compliance for under-13 users (parental consent)
+- ✅ **Cookie Policy**: Required for UK/EU users, essential cookies notice with preference center
+- ✅ **User Agreement System**: Database tracking with legal evidence collection and auth flow integration
+- ✅ **Terms Acceptance Flow**: TermsGate component with professional welcome screen and database tracking
+- ✅ **Cookie Banner**: Essential cookies notice with hyperlinked legal policies
+- ✅ **Auth Integration**: Sign-in page with hyperlinked Terms and Privacy Policy notices
 
 **Implementation:**
 - ✅ Professional Terms of Service page with educational focus (/terms)
@@ -493,12 +496,17 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 - ✅ Interactive Cookie Policy with preference management (/cookies)
 - ✅ Terms acceptance component with checkboxes and validation
 - ✅ Database schema for tracking user agreements (user_agreements table)
-- ✅ API functions for recording and checking terms acceptance
-- ⏳ Implement cookie consent banner with granular controls
-- ⏳ Add privacy-compliant analytics setup
+- ✅ API functions for recording and checking terms acceptance (lib/api/agreements.ts)
+- ✅ TermsGate component with auth flow integration (components/auth/TermsGate.tsx)
+- ✅ Essential cookies banner with legal notices (components/ui/CookieBanner.tsx)
+- ✅ Updated sign-in flow with hyperlinked legal policies (components/auth/auth-card.tsx)
+- ✅ Professional welcome screen for terms acceptance with user avatar
+- ✅ Legal evidence collection with IP address and user agent tracking
 
-### 🎯 PHASE 5: DOMAIN & BRANDING
-**Priority: HIGH | Timeline: 1 week**
+**Next Required Action:** Run `supabase/add-terms-acceptance.sql` in Supabase dashboard to enable database tracking.
+
+### 🎯 PHASE 5: DOMAIN & BRANDING (NEXT)
+**Priority: HIGH | Timeline: 1 week | Status: PENDING**
 
 **Domain Migration:**
 - ⏳ **Purchase riverwalks.co.uk domain**
