@@ -561,7 +561,7 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
         ['Site Overview'],
         ['Site Number', 'Width (m)', 'Avg Depth (m)', 'Cross-Sectional Area (m²)', 'Velocity (m/s)', 'Discharge (m³/s)', 'GPS Lat', 'GPS Lng', 'Weather', 'Land Use', 'Notes'],
         ...sites.map(site => {
-          const avgDepth = site.measurement_points?.length > 0 
+          const avgDepth = site.measurement_points && site.measurement_points.length > 0 
             ? (site.measurement_points.reduce((sum, p) => sum + p.depth, 0) / site.measurement_points.length).toFixed(2)
             : 'N/A';
           
@@ -622,7 +622,7 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
         
         // Add velocity data
         if (site.velocity_data) {
-          siteData.push(['Measurement Count:', site.velocity_data.measurement_count || 'N/A']);
+          siteData.push(['Measurement Count:', site.velocity_measurement_count || 'N/A']);
           siteData.push(['Average Velocity (m/s):', site.velocity_data.average_velocity?.toFixed(2) || 'N/A']);
           
           if (site.velocity_data.measurements && site.velocity_data.measurements.length > 0) {
@@ -633,9 +633,9 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
             site.velocity_data.measurements.forEach((measurement, idx) => {
               siteData.push([
                 idx + 1,
-                measurement.distance || 'N/A',
-                measurement.time || 'N/A',
-                measurement.velocity?.toFixed(2) || 'N/A'
+                measurement.float_travel_distance || 'N/A',
+                measurement.time_seconds || 'N/A',
+                measurement.velocity_ms?.toFixed(2) || 'N/A'
               ]);
             });
           }
@@ -652,8 +652,8 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
           site.sedimentation_data.measurements.forEach((measurement, idx) => {
             siteData.push([
               idx + 1,
-              measurement.roundness || 'N/A',
-              measurement.size || 'N/A'
+              measurement.sediment_roundness || 'N/A',
+              measurement.sediment_size || 'N/A'
             ]);
           });
         } else {
