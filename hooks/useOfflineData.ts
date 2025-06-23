@@ -106,7 +106,7 @@ export function useOfflineRiverWalks() {
   const [riverWalks, setRiverWalks] = useState<RiverWalk[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { updateSyncStatus } = useOfflineData();
+  const { updateSyncStatus, syncStatus } = useOfflineData();
 
   const fetchRiverWalks = useCallback(async () => {
     try {
