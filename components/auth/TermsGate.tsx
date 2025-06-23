@@ -25,16 +25,23 @@ export function TermsGate({ user, children }: TermsGateProps) {
   const checkTermsAcceptance = async () => {
     try {
       setLoading(true);
+      console.log('TermsGate: Checking terms acceptance for user:', user.id);
       const agreement = await getUserAgreement(user.id);
+      console.log('TermsGate: Agreement found:', agreement);
       
       // Check if user needs to accept terms
       const hasAcceptedTerms = agreement?.terms_accepted_at !== null;
       const hasAcceptedPrivacy = agreement?.privacy_accepted_at !== null;
       
-      setNeedsAcceptance(!hasAcceptedTerms || !hasAcceptedPrivacy);
+      console.log('TermsGate: hasAcceptedTerms:', hasAcceptedTerms, 'hasAcceptedPrivacy:', hasAcceptedPrivacy);
+      const needsAcceptance = !hasAcceptedTerms || !hasAcceptedPrivacy;
+      console.log('TermsGate: needsAcceptance:', needsAcceptance);
+      
+      setNeedsAcceptance(needsAcceptance);
     } catch (error) {
       console.error('Error checking terms acceptance:', error);
       // If there's an error checking, assume they need to accept
+      console.log('TermsGate: Error occurred, setting needsAcceptance to true');
       setNeedsAcceptance(true);
     } finally {
       setLoading(false);
