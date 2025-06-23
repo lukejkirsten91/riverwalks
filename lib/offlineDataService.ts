@@ -296,15 +296,31 @@ export class OfflineDataService {
     const localId = generateLocalId();
     const timestamp = Date.now();
 
+    // Get user ID for the river walk
+    let userId: string | null = null;
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      userId = user?.id || null;
+    } catch (error) {
+      console.error('Failed to get user ID:', error);
+    }
+
+    if (!userId) {
+      throw new Error('User not authenticated. Please sign in to create river walks.');
+    }
+
     // Create offline version
     const offlineRiverWalk: OfflineRiverWalk = {
       ...riverWalkData,
       id: localId, // Use local ID as temp ID
       localId,
+      user_id: userId,
+      archived: false,
       synced: false,
       lastModified: timestamp,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
+      date_created: new Date().toISOString(),
     } as OfflineRiverWalk;
 
     // Save locally first
@@ -312,9 +328,15 @@ export class OfflineDataService {
 
     if (this.checkOnline()) {
       try {
+        const dataToInsert = {
+          ...riverWalkData,
+          user_id: userId,
+          archived: false
+        };
+
         const { data, error } = await supabase
           .from('river_walks')
-          .insert(riverWalkData)
+          .insert(dataToInsert)
           .select()
           .single();
 
@@ -330,11 +352,21 @@ export class OfflineDataService {
       } catch (error) {
         console.error('Failed to create online, will sync later:', error);
         // Add to sync queue
-        await this.addToSyncQueue('CREATE', 'river_walks', riverWalkData, localId);
+        const dataToSync = {
+          ...riverWalkData,
+          user_id: userId,
+          archived: false
+        };
+        await this.addToSyncQueue('CREATE', 'river_walks', dataToSync, localId);
       }
     } else {
       // Add to sync queue
-      await this.addToSyncQueue('CREATE', 'river_walks', riverWalkData, localId);
+      const dataToSync = {
+        ...riverWalkData,
+        user_id: userId,
+        archived: false
+      };
+      await this.addToSyncQueue('CREATE', 'river_walks', dataToSync, localId);
     }
 
     return fromOfflineRiverWalk(offlineRiverWalk) as RiverWalk;

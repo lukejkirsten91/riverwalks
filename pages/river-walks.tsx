@@ -10,7 +10,7 @@ import {
 } from '../components/river-walks';
 import { ReportGenerator } from '../components/river-walks/ReportGenerator';
 import { DiagnosticPanel } from '../components/DiagnosticPanel';
-import { useRiverWalks } from '../hooks/useRiverWalks';
+import { useOfflineRiverWalks } from '../hooks/useOfflineData';
 import type { RiverWalk, RiverWalkFormData, Site } from '../types';
 import { getSitesForRiverWalk } from '../lib/api/sites';
 import type { User } from '@supabase/supabase-js';
@@ -32,16 +32,20 @@ export default function RiverWalksPage() {
 
   const {
     riverWalks,
-    archivedRiverWalks,
     loading,
     error,
-    setError,
-    handleCreateRiverWalk,
-    handleUpdateRiverWalk,
-    handleArchiveRiverWalk,
-    handleRestoreRiverWalk,
-    handleDeleteRiverWalk,
-  } = useRiverWalks();
+    createRiverWalk,
+    refetch
+  } = useOfflineRiverWalks();
+
+  // For now, we'll just use empty array for archived river walks
+  // TODO: Implement archived functionality in offline hooks
+  const archivedRiverWalks: RiverWalk[] = [];
+  
+  const setError = (errorMessage: string | null) => {
+    // Handle error setting for now - we'll need to add this to the hook later
+    console.error(errorMessage);
+  };
 
   // Check if user is authenticated
   useEffect(() => {
@@ -77,16 +81,18 @@ export default function RiverWalksPage() {
   const handleFormSubmit = async (formData: RiverWalkFormData) => {
     try {
       if (currentRiverWalk) {
-        await handleUpdateRiverWalk(currentRiverWalk.id, formData);
+        // TODO: Implement update functionality in offline hooks
+        console.log('Update not yet implemented in offline mode');
       } else {
-        await handleCreateRiverWalk(formData);
+        await createRiverWalk(formData);
       }
 
       // Reset form state
       setShowForm(false);
       setCurrentRiverWalk(null);
     } catch (error) {
-      // Error handling is done in the hook
+      console.error('Failed to create river walk:', error);
+      setError(error instanceof Error ? error.message : 'Failed to create river walk');
     }
   };
 
@@ -96,35 +102,23 @@ export default function RiverWalksPage() {
   };
 
   const handleUpdateField = async (id: string, field: keyof RiverWalk, value: string) => {
-    // Find the existing river walk to get current values
-    const existingRiverWalk = riverWalks.find(rw => rw.id === id);
-    if (!existingRiverWalk) return;
-    
-    // Create complete update data with current values plus the changed field
-    const updateData: RiverWalkFormData = {
-      name: field === 'name' ? value : existingRiverWalk.name,
-      date: field === 'date' ? value : existingRiverWalk.date,
-      country: field === 'country' ? value : existingRiverWalk.country,
-      county: field === 'county' ? value : (existingRiverWalk.county || ''),
-    };
-    
-    await handleUpdateRiverWalk(id, updateData);
+    // TODO: Implement update functionality in offline hooks
+    console.log('Update field not yet implemented in offline mode', { id, field, value });
   };
 
   const handleArchive = async (id: string) => {
-    if (window.confirm('Are you sure you want to archive this river walk? You can restore it later.')) {
-      await handleArchiveRiverWalk(id);
-    }
+    // TODO: Implement archive functionality in offline hooks
+    console.log('Archive not yet implemented in offline mode', id);
   };
 
   const handleRestore = async (id: string) => {
-    await handleRestoreRiverWalk(id);
+    // TODO: Implement restore functionality in offline hooks
+    console.log('Restore not yet implemented in offline mode', id);
   };
 
   const handleDelete = async (id: string) => {
-    if (window.confirm('Are you sure you want to permanently delete this river walk? This cannot be undone.')) {
-      await handleDeleteRiverWalk(id);
-    }
+    // TODO: Implement delete functionality in offline hooks
+    console.log('Delete not yet implemented in offline mode', id);
   };
 
   const handleManageSites = (riverWalk: RiverWalk) => {
