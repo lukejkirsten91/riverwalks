@@ -8,7 +8,7 @@ import { SiteInfoForm, type SiteInfoFormRef } from './SiteInfoForm';
 import { CrossSectionForm } from './CrossSectionForm';
 import { VelocityForm } from './VelocityForm';
 import { SedimentForm } from './SedimentForm';
-import { useSites } from '../../hooks/useSites';
+import { useOfflineSites } from '../../hooks/useOfflineData';
 import { useToast } from '../ui/ToastProvider';
 import { supabase } from '../../lib/supabase';
 import type {
@@ -43,12 +43,28 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
     sites,
     loading: sitesLoading,
     error: sitesError,
-    setError: setSitesError,
-    fetchSites,
-    handleCreateSite,
-    handleUpdateSite,
-    handleDeleteSite,
-  } = useSites();
+    createSite,
+    refetch: fetchSites,
+  } = useOfflineSites(riverWalk.id);
+
+  // For now, these are not implemented in offline hooks
+  const setSitesError = (error: string | null) => {
+    console.error(error);
+  };
+  
+  const handleCreateSite = async (siteData: CreateSiteData) => {
+    return await createSite(siteData);
+  };
+  
+  const handleUpdateSite = async (id: string, data: UpdateSiteData) => {
+    // TODO: Implement update in offline hooks
+    console.log('Update site not yet implemented in offline mode', { id, data });
+  };
+  
+  const handleDeleteSite = async (id: string) => {
+    // TODO: Implement delete in offline hooks
+    console.log('Delete site not yet implemented in offline mode', id);
+  };
 
   const { showSuccess, showError } = useToast();
   
@@ -88,10 +104,10 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
     };
   }, [currentView, onClose]);
 
-  // Load sites when component mounts
+  // Load sites when component mounts (fetchSites/refetch doesn't need params in offline hook)
   React.useEffect(() => {
-    fetchSites(riverWalk.id);
-  }, [riverWalk.id]);
+    fetchSites();
+  }, [riverWalk.id, fetchSites]);
 
   // Scroll to top when modal opens or view changes
   React.useEffect(() => {

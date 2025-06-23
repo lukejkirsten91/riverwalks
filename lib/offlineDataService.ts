@@ -434,8 +434,16 @@ export class OfflineDataService {
       }
     }
 
-    // Use offline data
-    const offlineSites = await offlineDB.getSitesByRiverWalk(riverWalkId);
+    // Use offline data - need to handle both local and server IDs
+    let offlineSites: any[] = [];
+    
+    // First try to find by exact river_walk_id match
+    const allSites = await offlineDB.getSites();
+    offlineSites = allSites.filter(site => 
+      site.river_walk_id === riverWalkId || 
+      site.river_walk_local_id === riverWalkId
+    );
+
     const sites: Site[] = [];
 
     for (const offlineSite of offlineSites) {
@@ -454,6 +462,14 @@ export class OfflineDataService {
   async createSite(siteData: Partial<Site>): Promise<Site> {
     const localId = generateLocalId();
     const timestamp = Date.now();
+
+    console.log('Creating site with data:', siteData);
+
+    // Get user ID for the site
+    const userId = await this.getUserId();
+    if (!userId) {
+      throw new Error('User not authenticated. Please sign in to create sites.');
+    }
 
     // Create offline version
     const offlineSite: OfflineSite = {
