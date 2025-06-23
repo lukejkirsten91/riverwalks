@@ -786,7 +786,7 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
                 <button
                   onClick={exportToExcel}
                   disabled={isExporting}
-                  className="btn-secondary flex items-center gap-2 disabled:opacity-50 text-sm sm:text-base px-3 py-2 sm:px-4 sm:py-3 shrink-0"
+                  className="btn-primary flex items-center gap-2 disabled:opacity-50 text-sm sm:text-base px-3 py-2 sm:px-4 sm:py-3 shrink-0"
                 >
                   <FileSpreadsheet className="w-4 h-4" />
                   <span className="hidden sm:inline">Export Excel</span>
@@ -1093,7 +1093,16 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
                           console.error('API Key available:', !!process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY);
                           console.error('Full URL:', e.currentTarget.src);
                           const target = e.currentTarget;
-                          target.alt = 'Map could not be loaded - check Google Maps API key';
+                          target.alt = 'Map could not be loaded - API key needs domain authorization for riverwalks.co.uk';
+                          // Hide the broken image and show a message
+                          target.style.display = 'none';
+                          const parent = target.parentElement;
+                          if (parent && !parent.querySelector('.map-error-message')) {
+                            const errorDiv = document.createElement('div');
+                            errorDiv.className = 'map-error-message bg-gray-100 h-96 flex items-center justify-center text-center p-8';
+                            errorDiv.innerHTML = '<div><p class="text-gray-600 mb-2">Map currently unavailable</p><p class="text-sm text-gray-500">Google Maps API key needs authorization for riverwalks.co.uk</p></div>';
+                            parent.appendChild(errorDiv);
+                          }
                         }}
                       />
                       
