@@ -61,9 +61,9 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
     console.log('Update site not yet implemented in offline mode', { id, data, riverWalkId });
   };
   
-  const handleDeleteSite = async (id: string) => {
+  const handleDeleteSite = async (id: string, riverWalkId?: string) => {
     // TODO: Implement delete in offline hooks
-    console.log('Delete site not yet implemented in offline mode', id);
+    console.log('Delete site not yet implemented in offline mode', { id, riverWalkId });
   };
 
   const { showSuccess, showError } = useToast();
