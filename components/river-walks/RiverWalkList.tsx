@@ -1,4 +1,4 @@
-import { MapPin, Calendar, Globe, Trash2, Archive, RotateCcw, BarChart3, ChevronUp, ChevronDown } from 'lucide-react';
+import { MapPin, Calendar, Globe, Trash2, Archive, RotateCcw, BarChart3, ChevronUp, ChevronDown, CheckCircle, Clock } from 'lucide-react';
 import { useState } from 'react';
 import { formatDate } from '../../lib/utils';
 import { InlineEdit } from '../ui/InlineEdit';
@@ -13,6 +13,7 @@ interface RiverWalkListProps {
   onDelete: (id: string) => void;
   onManageSites: (riverWalk: RiverWalk) => void;
   onGenerateReport: (riverWalk: RiverWalk) => void;
+  isRiverWalkSynced: (riverWalk: RiverWalk) => boolean;
 }
 
 export function RiverWalkList({
@@ -24,6 +25,7 @@ export function RiverWalkList({
   onDelete,
   onManageSites,
   onGenerateReport,
+  isRiverWalkSynced,
 }: RiverWalkListProps) {
   const [showArchived, setShowArchived] = useState(false);
 
@@ -34,17 +36,34 @@ export function RiverWalkList({
     >
       {/* Header with inline editing - disable editing for archived items */}
       <div className="flex-1 min-w-0 mb-4">
-        {isArchived ? (
-          <h2 className="text-xl sm:text-2xl font-semibold text-foreground mb-3">{riverWalk.name}</h2>
-        ) : (
-          <InlineEdit
-            value={riverWalk.name}
-            onSave={(value) => onUpdateField(riverWalk.id, 'name', value)}
-            className="text-xl sm:text-2xl font-semibold text-foreground mb-3"
-            inputClassName="text-xl sm:text-2xl font-semibold"
-            placeholder="River walk name"
-          />
-        )}
+        <div className="flex items-center gap-2 mb-3">
+          {isArchived ? (
+            <h2 className="text-xl sm:text-2xl font-semibold text-foreground flex-1">{riverWalk.name}</h2>
+          ) : (
+            <InlineEdit
+              value={riverWalk.name}
+              onSave={(value) => onUpdateField(riverWalk.id, 'name', value)}
+              className="text-xl sm:text-2xl font-semibold text-foreground flex-1"
+              inputClassName="text-xl sm:text-2xl font-semibold"
+              placeholder="River walk name"
+            />
+          )}
+          
+          {/* Sync status icon */}
+          <div className="flex-shrink-0">
+            {isRiverWalkSynced(riverWalk) ? (
+              <div className="flex items-center gap-1 text-green-600">
+                <CheckCircle className="w-5 h-5" />
+                <span className="text-sm font-medium">Synced</span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-1 text-amber-600">
+                <Clock className="w-5 h-5" />
+                <span className="text-sm font-medium">Pending</span>
+              </div>
+            )}
+          </div>
+        </div>
         
         {/* Metadata with inline editing */}
         <div className="space-y-2">

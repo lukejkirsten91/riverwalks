@@ -145,12 +145,19 @@ export function useOfflineRiverWalks() {
     return () => window.removeEventListener('riverwalks-sync-completed', handleSyncCompleted);
   }, [fetchRiverWalks]);
 
+  // Helper to check if a river walk is synced
+  const isRiverWalkSynced = (riverWalk: RiverWalk): boolean => {
+    // If it has a server ID (not local_) and doesn't start with local_, it's likely synced
+    return riverWalk.id && !riverWalk.id.startsWith('local_');
+  };
+
   return {
     riverWalks,
     loading,
     error,
     createRiverWalk,
-    refetch: fetchRiverWalks
+    refetch: fetchRiverWalks,
+    isRiverWalkSynced
   };
 }
 

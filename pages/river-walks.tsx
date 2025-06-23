@@ -36,7 +36,8 @@ export default function RiverWalksPage() {
     loading,
     error,
     createRiverWalk,
-    refetch
+    refetch,
+    isRiverWalkSynced
   } = useOfflineRiverWalks();
 
   // For now, we'll just use empty array for archived river walks
@@ -281,6 +282,7 @@ export default function RiverWalksPage() {
           onDelete={handleDelete}
           onManageSites={handleManageSites}
           onGenerateReport={handleGenerateReport}
+          isRiverWalkSynced={isRiverWalkSynced}
         />
 
         {/* Site management modal */}
