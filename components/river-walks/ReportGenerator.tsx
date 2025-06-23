@@ -650,11 +650,54 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
         {/* Report content */}
         <div ref={reportRef} className={`p-4 sm:p-6 lg:p-8 bg-white ${isPDFMode ? 'pdf-mode' : ''}`}>
           <style>{`
+            /* Enhanced Page Break Controls - Based on print/PDF best practices */
             @media print {
               .page-break-before {
-                page-break-before: always;
-                break-before: page;
+                page-break-before: always !important;
+                break-before: page !important;
+                clear: both !important;
               }
+              
+              .page-break-after {
+                page-break-after: always !important;
+                break-after: page !important;
+                clear: both !important;
+              }
+              
+              .page-break-avoid {
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+              }
+              
+              .page-break-avoid-before {
+                page-break-before: avoid !important;
+                break-before: avoid !important;
+              }
+              
+              .page-break-avoid-after {
+                page-break-after: avoid !important;
+                break-after: avoid !important;
+              }
+            }
+            
+            /* Universal page break protection for all rendering contexts */
+            .page-break-before {
+              page-break-before: always !important;
+              break-before: page !important;
+              clear: both !important;
+            }
+            
+            .page-break-after {
+              page-break-after: always !important;
+              break-after: page !important;
+              clear: both !important;
+            }
+            
+            .page-break-avoid {
+              page-break-inside: avoid !important;
+              break-inside: avoid !important;
+              orphans: 3 !important;
+              widows: 3 !important;
             }
             
             /* Modern CSS page-break approach - prevents component splitting */
@@ -666,11 +709,12 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
               widows: 3 !important;
             }
             
-            /* Specific component protection */
+            /* Comprehensive element protection */
             table, .plotly-graph-div, svg, img,
-            .bg-blue-50, .bg-green-50, .bg-amber-50, .bg-gray-50,
+            .bg-blue-50, .bg-green-50, .bg-amber-50, .bg-gray-50, .bg-purple-50,
             .grid, .rounded-lg, .border, .overflow-x-auto,
-            h3, h4, h5, .mb-6, .mb-8 {
+            h1, h2, h3, h4, h5, h6, .mb-6, .mb-8,
+            .chart-container, .kpi-container, .section-header {
               break-inside: avoid !important;
               page-break-inside: avoid !important;
               -webkit-column-break-inside: avoid !important;
@@ -760,9 +804,9 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
             </div>
 
             {/* Key Performance Indicators */}
-            <div className="mb-8 pdf-component">
-              <h3 className="text-lg sm:text-xl font-semibold mb-4 border-b pb-2">Key Performance Indicators</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 sm:gap-4 pdf-component">
+            <div className="mb-8 pdf-component page-break-avoid kpi-container">
+              <h3 className="text-lg sm:text-xl font-semibold mb-4 border-b pb-2 section-header">Key Performance Indicators</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 sm:gap-4 pdf-component page-break-avoid">
                 <div className="bg-blue-50 p-3 sm:p-4 rounded-lg">
                   <h4 className="font-semibold text-blue-800 text-sm sm:text-base">Total Sites</h4>
                   <p className="text-xl sm:text-2xl font-bold text-blue-600">{sites.length}</p>
@@ -1323,11 +1367,11 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
                   return (
                     <div className="w-full max-w-4xl mx-auto">
                       {/* Wind Rose Chart - Sediment Roundness by Site */}
-                      <div className="bg-white rounded-lg border border-gray-300 p-1 sm:p-4">
-                        <h4 className="text-sm sm:text-lg font-semibold mb-2 sm:mb-4 text-center px-2">
+                      <div className="bg-white rounded-lg border border-gray-300 p-1 sm:p-4 page-break-avoid chart-container">
+                        <h4 className="text-sm sm:text-lg font-semibold mb-2 sm:mb-4 text-center px-2 section-header">
                           Sediment Roundness Distribution by Site
                         </h4>
-                        <div className="w-full flex justify-center items-center min-h-0" style={{ touchAction: 'none' }}>
+                        <div className="w-full flex justify-center items-center min-h-0 page-break-avoid" style={{ touchAction: 'none' }}>
                           <div className="w-full max-w-full flex justify-center items-center">
                           <Plot
                             data={siteData}
@@ -1412,11 +1456,11 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
             const chartData = generateCrossSectionData(site);
             
             return (
-              <div key={site.id} className={`${index > 0 ? 'page-break-before' : ''} mb-8`} data-site-section>
-                <div className="border rounded-lg overflow-hidden">
+              <div key={site.id} className={`${index > 0 ? 'page-break-before' : ''} mb-8 page-break-avoid`} data-site-section>
+                <div className="border rounded-lg overflow-hidden page-break-avoid">
                   
                   {/* SITE HEADER SECTION */}
-                  <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-6">
+                  <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-6 page-break-avoid section-header">
                     <h3 className="text-2xl font-bold mb-2">
                       Site {site.site_number}
                     </h3>
@@ -1453,7 +1497,7 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
 
                   {/* SITE PHOTOGRAPHY SECTION */}
                   {site.photo_url && (
-                    <div className="bg-gray-50 p-6 border-b">
+                    <div className="bg-gray-50 p-6 border-b page-break-avoid">
                       <h4 className="text-lg font-semibold mb-4 text-gray-800">Site Photography</h4>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
