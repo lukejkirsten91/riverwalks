@@ -109,7 +109,7 @@ export class OfflineDataService {
   }
 
   // Add item to sync queue
-  private async addToSyncQueue(type: 'CREATE' | 'UPDATE' | 'DELETE', table: 'river_walks' | 'sites' | 'measurement_points', data: any, localId: string): Promise<void> {
+  private async addToSyncQueue(type: 'CREATE' | 'UPDATE' | 'DELETE', table: 'river_walks' | 'sites' | 'measurement_points' | 'photos', data: any, localId: string): Promise<void> {
     const queueItem: SyncQueueItem = {
       id: generateLocalId(),
       type,
@@ -298,6 +298,30 @@ export class OfflineDataService {
             
             if (error) throw error;
             console.log('Measurement point deleted from server:', data.id);
+          }
+        }
+        break;
+        
+      case 'photos':
+        if (type === 'CREATE') {
+          // Upload photo to server
+          try {
+            const { file, type: photoType, relatedId } = data;
+            const photoUrl = await this.uploadPhotoToServer(file, photoType, relatedId);
+            
+            if (photoUrl) {
+              // Mark the local photo as synced
+              const allPhotos = await offlineDB.getAll<OfflinePhoto>('photos');
+              const localPhoto = allPhotos.find(p => p.localId === item.localId);
+              if (localPhoto) {
+                localPhoto.synced = true;
+                await offlineDB.addPhoto(localPhoto);
+              }
+              console.log('Photo uploaded and marked as synced:', photoUrl);
+            }
+          } catch (error) {
+            console.error('Failed to upload photo during sync:', error);
+            throw error;
           }
         }
         break;
@@ -781,6 +805,29 @@ export class OfflineDataService {
     await offlineDB.addPhoto(offlinePhoto);
     console.log('Photo stored offline:', { localId, type, relatedId });
     
+    // Add to sync queue for later upload
+    if (this.checkOnline()) {
+      try {
+        // Try to upload immediately if online
+        const uploadedUrl = await this.uploadPhotoToServer(file, type, relatedId);
+        if (uploadedUrl) {
+          // Mark as synced and store server URL
+          offlinePhoto.synced = true;
+          await offlineDB.addPhoto(offlinePhoto);
+          return uploadedUrl;
+        }
+      } catch (error) {
+        console.log('Immediate upload failed, will sync later:', error);
+      }
+    }
+    
+    // Add to sync queue for later upload
+    await this.addToSyncQueue('CREATE', 'photos', {
+      file,
+      type,
+      relatedId
+    }, localId);
+    
     return localId;
   }
 
@@ -830,6 +877,36 @@ export class OfflineDataService {
     }
   }
 
+  async uploadPhotoToServer(file: File, type: 'site_photo' | 'sediment_photo', relatedId: string): Promise<string | null> {
+    if (!this.checkOnline()) {
+      console.log('Cannot upload photo while offline');
+      return null;
+    }
+
+    try {
+      // Get user session for upload
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) {
+        throw new Error('User not authenticated');
+      }
+
+      // Import upload function dynamically to avoid circular dependencies
+      const { uploadSitePhoto } = await import('./api/storage');
+      
+      // Map photo types to storage types
+      const storageType = type === 'sediment_photo' ? 'sedimentation' : 'site';
+      
+      // Upload to server
+      const photoUrl = await uploadSitePhoto(relatedId, file, session.user.id, storageType);
+      console.log('Photo uploaded to server:', { type, relatedId, photoUrl });
+      
+      return photoUrl;
+    } catch (error) {
+      console.error('Error uploading photo to server:', error);
+      return null;
+    }
+  }
+
   async uploadPhotoWhenOnline(photoId: string): Promise<string | null> {
     if (!this.checkOnline()) {
       console.log('Cannot upload photo while offline');
@@ -837,12 +914,28 @@ export class OfflineDataService {
     }
 
     try {
-      // Implementation would depend on your photo upload service
-      // For now, just return the local photo ID
-      console.log('Photo upload functionality would be implemented here');
-      return photoId;
+      // Find the photo in offline storage
+      const allPhotos = await offlineDB.getAll<OfflinePhoto>('photos');
+      const photo = allPhotos.find(p => p.id === photoId || p.localId === photoId);
+      
+      if (!photo) {
+        console.error('Photo not found for upload:', photoId);
+        return null;
+      }
+
+      // Upload to server
+      const photoUrl = await this.uploadPhotoToServer(photo.file, photo.type, photo.relatedId);
+      
+      if (photoUrl) {
+        // Mark as synced
+        photo.synced = true;
+        await offlineDB.addPhoto(photo);
+        console.log('Photo synced successfully:', photoId);
+      }
+      
+      return photoUrl;
     } catch (error) {
-      console.error('Error uploading photo:', error);
+      console.error('Error uploading photo when online:', error);
       return null;
     }
   }

@@ -41,7 +41,7 @@ export interface OfflineMeasurementPoint extends Omit<MeasurementPoint, 'id' | '
 export interface SyncQueueItem {
   id: string;
   type: 'CREATE' | 'UPDATE' | 'DELETE';
-  table: 'river_walks' | 'sites' | 'measurement_points';
+  table: 'river_walks' | 'sites' | 'measurement_points' | 'photos';
   data: any;
   localId: string;
   timestamp: number;

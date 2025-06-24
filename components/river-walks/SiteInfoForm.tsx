@@ -4,6 +4,7 @@ import { FileUpload } from '../ui/FileUpload';
 import { LoadingButton } from '../ui/LoadingSpinner';
 import { SaveConfirmationDialog } from '../ui/SaveConfirmationDialog';
 import MapLocationPicker from '../ui/MapLocationPickerWrapper';
+import { useOfflinePhoto } from '../../hooks/useOfflinePhoto';
 import type { Site, SiteFormData, TodoStatus } from '../../types';
 
 interface SiteInfoFormProps {

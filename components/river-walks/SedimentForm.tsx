@@ -4,6 +4,7 @@ import { NumberInput } from '../ui/NumberInput';
 import { InlineNumberEdit } from '../ui/InlineNumberEdit';
 import { FileUpload } from '../ui/FileUpload';
 import { LoadingButton } from '../ui/LoadingSpinner';
+import { useOfflinePhoto } from '../../hooks/useOfflinePhoto';
 import type { Site, SedimentationMeasurement, UnitType, TodoStatus } from '../../types';
 
 interface SedimentFormProps {
@@ -44,12 +45,16 @@ export function SedimentForm({
   );
   const [sedimentationMeasurements, setSedimentationMeasurements] = useState<SedimentationMeasurement[]>([]);
 
-  // Photo handling
-  const [sedimentationPhotoFile, setSedimentationPhotoFile] = useState<File | null>(null);
-  const [sedimentationPhotoPreview, setSedimentationPhotoPreview] = useState<string | null>(
-    site.sedimentation_photo_url || null
-  );
-  const [removeSedimentationPhoto, setRemoveSedimentationPhoto] = useState(false);
+  // Enhanced offline-aware photo handling
+  const {
+    photoState,
+    selectPhoto,
+    removePhoto,
+    hasPhoto,
+    isUploading: photoUploading,
+    preview: sedimentationPhotoPreview,
+    isOfflinePhoto
+  } = useOfflinePhoto('sediment_photo', site.id, site.sedimentation_photo_url);
 
   // Track if form has been modified
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
@@ -107,18 +112,13 @@ export function SedimentForm({
     setHasUnsavedChanges(true);
   };
 
-  const handleSedimentationPhotoSelect = (file: File) => {
-    setSedimentationPhotoFile(file);
-    setRemoveSedimentationPhoto(false);
-    const previewUrl = URL.createObjectURL(file);
-    setSedimentationPhotoPreview(previewUrl);
+  const handleSedimentationPhotoSelect = async (file: File) => {
+    await selectPhoto(file);
     setHasUnsavedChanges(true);
   };
 
-  const handleSedimentationPhotoRemove = () => {
-    setSedimentationPhotoFile(null);
-    setSedimentationPhotoPreview(null);
-    setRemoveSedimentationPhoto(true);
+  const handleSedimentationPhotoRemove = async () => {
+    await removePhoto();
     setHasUnsavedChanges(true);
   };
 
@@ -127,7 +127,9 @@ export function SedimentForm({
     const todoStatus: TodoStatus = markComplete ? 'complete' : 'in_progress';
     
     const sedimentationData = {
-      photo: sedimentationPhotoFile || undefined,
+      photo: photoState.file || undefined,
+      photoUrl: photoState.photoUrl || undefined,
+      isOfflinePhoto,
       measurements: sedimentationMeasurements,
     };
 
@@ -135,7 +137,7 @@ export function SedimentForm({
       sedimentationData,
       numSedimentationMeasurements,
       sedimentationUnits,
-      removeSedimentationPhoto,
+      false, // removeSedimentationPhoto - handled by the photo hook now
       todoStatus
     );
     setHasUnsavedChanges(false);
@@ -238,11 +240,17 @@ export function SedimentForm({
               onFileSelect={handleSedimentationPhotoSelect}
               onFileRemove={handleSedimentationPhotoRemove}
               currentImageUrl={sedimentationPhotoPreview}
-              disabled={loading}
-              loading={loading}
-              loadingText="Uploading sediment photo..."
-              uploadText="Upload sediment photo"
+              disabled={loading || photoUploading}
+              loading={photoUploading}
+              loadingText="Saving sediment photo..."
+              uploadText={isOfflinePhoto ? "📱 Sediment photo (offline)" : "Upload sediment photo"}
             />
+            {isOfflinePhoto && (
+              <p className="text-sm text-blue-600 mt-2 flex items-center gap-1">
+                <span>📱</span>
+                Photo saved offline - will upload when online
+              </p>
+            )}
           </div>
 
           {/* Sedimentation measurements */}
