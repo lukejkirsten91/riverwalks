@@ -74,6 +74,7 @@ export function useOfflineData() {
   const updateSyncStatus = useCallback(async () => {
     try {
       const status = await offlineDataService.getSyncStatus();
+      console.log('Updating sync status:', status);
       setSyncStatus(prev => ({ 
         ...prev, 
         pendingItems: status.pendingItems,
@@ -169,12 +170,23 @@ export function useOfflineRiverWalks() {
     // First check: river walk itself must be synced (server ID, not local)
     const riverWalkSynced = Boolean(riverWalk.id && !riverWalk.id.startsWith('local_'));
     
-    // Second check: no pending sync items for this river walk
+    // Second check: no pending sync items globally (this is a simple check for now)
+    // If there are ANY pending items, we consider everything as potentially unsynced
     const noPendingItems = syncStatus.pendingItems === 0;
     
-    // For now, return true only if river walk is synced AND no pending items
-    // TODO: Add comprehensive check for sites and measurement points
-    return riverWalkSynced && noPendingItems;
+    const result = riverWalkSynced && noPendingItems;
+    console.log(`Sync check for ${riverWalk.name}:`, {
+      riverWalkId: riverWalk.id,
+      riverWalkSynced,
+      pendingItems: syncStatus.pendingItems,
+      noPendingItems,
+      result
+    });
+    
+    // Only consider synced if river walk is synced AND no pending sync items
+    // This ensures that ANY offline changes mark ALL river walks as pending
+    // until everything is synced - which is more accurate than partial sync status
+    return result;
   };
 
   return {

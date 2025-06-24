@@ -522,12 +522,15 @@ export class OfflineDataService {
       site.river_walk_local_id === riverWalkId
     );
 
+    // Sort by site_number to match online ordering
+    offlineSites.sort((a, b) => (a.site_number || 0) - (b.site_number || 0));
+
     const sites: Site[] = [];
 
     for (const offlineSite of offlineSites) {
       const site = fromOfflineSite(offlineSite) as Site;
       
-      // Get measurement points for this site
+      // Get measurement points for this site and preserve all data
       const offlinePoints = await offlineDB.getMeasurementPointsBySite(offlineSite.localId);
       site.measurement_points = offlinePoints.map(mp => fromOfflineMeasurementPoint(mp) as MeasurementPoint);
       
@@ -616,6 +619,8 @@ export class OfflineDataService {
 
     // Add to sync queue
     await this.addToSyncQueue('UPDATE', 'sites', siteData, updatedSite.localId);
+    
+    console.log('Site updated and added to sync queue:', { siteId, updatedSite: updatedSite.localId });
 
     return fromOfflineSite(updatedSite) as Site;
   }
