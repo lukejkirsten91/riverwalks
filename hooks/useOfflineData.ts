@@ -50,8 +50,10 @@ export function useOfflineRiverWalks() {
         rw.id === riverWalkId ? updatedRiverWalk : rw
       ));
       
-      // Mark this river walk as modified
-      setModifiedRiverWalks(prev => new Set([...prev, riverWalkId]));
+      // Only mark as modified if the returned river walk has a local ID (meaning it wasn't synced immediately)
+      if (updatedRiverWalk.id && updatedRiverWalk.id.startsWith('local_')) {
+        setModifiedRiverWalks(prev => new Set([...prev, riverWalkId]));
+      }
       
       await updateSyncStatus();
       return updatedRiverWalk;
@@ -166,8 +168,8 @@ export function useOfflineSites(riverWalkId?: string) {
       const newSite = await offlineDataService.createSite(siteData);
       setSites(prev => [...prev, newSite]);
       
-      // Mark the parent river walk as modified when a site is created
-      if (riverWalkId) {
+      // Only mark as modified if the site has a local ID (meaning it wasn't synced immediately)
+      if (riverWalkId && newSite.id && newSite.id.startsWith('local_')) {
         // Dispatch custom event to notify river walk hook
         window.dispatchEvent(new CustomEvent('riverwalks-site-modified', { 
           detail: { riverWalkId } 
@@ -195,8 +197,8 @@ export function useOfflineSites(riverWalkId?: string) {
         s.id === siteId ? updatedSite : s
       ));
       
-      // Mark the parent river walk as modified when a site is updated
-      if (riverWalkId) {
+      // Only mark as modified if the returned site has a local ID (meaning it wasn't synced immediately)
+      if (riverWalkId && updatedSite.id && updatedSite.id.startsWith('local_')) {
         // Dispatch custom event to notify river walk hook
         window.dispatchEvent(new CustomEvent('riverwalks-site-modified', { 
           detail: { riverWalkId } 
