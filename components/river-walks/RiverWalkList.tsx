@@ -14,6 +14,7 @@ interface RiverWalkListProps {
   onManageSites: (riverWalk: RiverWalk) => void;
   onGenerateReport: (riverWalk: RiverWalk) => void;
   isRiverWalkSynced: (riverWalk: RiverWalk) => boolean;
+  archiveLoading?: string | null;
 }
 
 export function RiverWalkList({
@@ -26,6 +27,7 @@ export function RiverWalkList({
   onManageSites,
   onGenerateReport,
   isRiverWalkSynced,
+  archiveLoading,
 }: RiverWalkListProps) {
   const [showArchived, setShowArchived] = useState(false);
 
@@ -132,10 +134,20 @@ export function RiverWalkList({
           <>
             <button
               onClick={() => onRestore(riverWalk.id)}
-              className="bg-success/10 hover:bg-success/20 text-success px-4 py-3 rounded-lg font-medium transition-all duration-200 border border-success/20 shadow-modern hover:shadow-modern-lg touch-manipulation flex-1 sm:flex-none flex items-center justify-center"
+              disabled={archiveLoading === riverWalk.id}
+              className="bg-success/10 hover:bg-success/20 text-success px-4 py-3 rounded-lg font-medium transition-all duration-200 border border-success/20 shadow-modern hover:shadow-modern-lg touch-manipulation flex-1 sm:flex-none flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <RotateCcw className="w-5 h-5 mr-2" />
-              Restore
+              {archiveLoading === riverWalk.id ? (
+                <>
+                  <div className="w-5 h-5 mr-2 animate-spin rounded-full border-2 border-success/30 border-t-success"></div>
+                  Restoring...
+                </>
+              ) : (
+                <>
+                  <RotateCcw className="w-5 h-5 mr-2" />
+                  Restore
+                </>
+              )}
             </button>
             <button
               onClick={() => onDelete(riverWalk.id)}
@@ -149,10 +161,20 @@ export function RiverWalkList({
           // Active view: Archive button
           <button
             onClick={() => onArchive(riverWalk.id)}
-            className="bg-warning/10 hover:bg-warning/20 text-warning px-4 py-3 rounded-lg font-medium transition-all duration-200 border border-warning/20 shadow-modern hover:shadow-modern-lg touch-manipulation flex-1 sm:flex-none flex items-center justify-center"
+            disabled={archiveLoading === riverWalk.id}
+            className="bg-warning/10 hover:bg-warning/20 text-warning px-4 py-3 rounded-lg font-medium transition-all duration-200 border border-warning/20 shadow-modern hover:shadow-modern-lg touch-manipulation flex-1 sm:flex-none flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <Archive className="w-5 h-5 mr-2" />
-            Archive
+            {archiveLoading === riverWalk.id ? (
+              <>
+                <div className="w-5 h-5 mr-2 animate-spin rounded-full border-2 border-warning/30 border-t-warning"></div>
+                Archiving...
+              </>
+            ) : (
+              <>
+                <Archive className="w-5 h-5 mr-2" />
+                Archive
+              </>
+            )}
           </button>
         )}
       </div>

@@ -11,6 +11,7 @@ import {
 import { ReportGenerator } from '../components/river-walks/ReportGenerator';
 import { DiagnosticPanel } from '../components/DiagnosticPanel';
 import { useOfflineRiverWalks } from '../hooks/useOfflineData';
+import { useToast } from '../components/ui/ToastProvider';
 import { offlineDataService } from '../lib/offlineDataService';
 import type { RiverWalk, RiverWalkFormData, Site } from '../types';
 import { getSitesForRiverWalk } from '../lib/api/sites';
@@ -18,6 +19,7 @@ import type { User } from '@supabase/supabase-js';
 
 export default function RiverWalksPage() {
   const router = useRouter();
+  const { showSuccess, showError } = useToast();
   const [user, setUser] = useState<User | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [currentRiverWalk, setCurrentRiverWalk] = useState<RiverWalk | null>(
@@ -30,6 +32,7 @@ export default function RiverWalksPage() {
   const [reportSites, setReportSites] = useState<Site[]>([]);
   const [loadingReport, setLoadingReport] = useState(false);
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
+  const [archiveLoading, setArchiveLoading] = useState<string | null>(null);
 
   const {
     riverWalks,
@@ -118,21 +121,33 @@ export default function RiverWalksPage() {
 
   const handleArchive = async (id: string) => {
     try {
+      setArchiveLoading(id);
+      const riverWalk = activeRiverWalks.find(rw => rw.id === id);
       await archiveRiverWalk(id);
+      showSuccess('River Walk Archived', `${riverWalk?.name || 'River walk'} has been archived.`);
       console.log('River walk archived successfully:', id);
     } catch (error) {
       console.error('Failed to archive river walk:', error);
+      showError('Archive Failed', error instanceof Error ? error.message : 'Failed to archive river walk');
       setError(error instanceof Error ? error.message : 'Failed to archive river walk');
+    } finally {
+      setArchiveLoading(null);
     }
   };
 
   const handleRestore = async (id: string) => {
     try {
+      setArchiveLoading(id);
+      const riverWalk = archivedRiverWalks.find(rw => rw.id === id);
       await restoreRiverWalk(id);
+      showSuccess('River Walk Restored', `${riverWalk?.name || 'River walk'} has been restored.`);
       console.log('River walk restored successfully:', id);
     } catch (error) {
       console.error('Failed to restore river walk:', error);
+      showError('Restore Failed', error instanceof Error ? error.message : 'Failed to restore river walk');
       setError(error instanceof Error ? error.message : 'Failed to restore river walk');
+    } finally {
+      setArchiveLoading(null);
     }
   };
 
@@ -301,6 +316,7 @@ export default function RiverWalksPage() {
           onManageSites={handleManageSites}
           onGenerateReport={handleGenerateReport}
           isRiverWalkSynced={isRiverWalkSynced}
+          archiveLoading={archiveLoading}
         />
 
         {/* Site management modal */}

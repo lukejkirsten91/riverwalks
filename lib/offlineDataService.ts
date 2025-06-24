@@ -803,8 +803,15 @@ export class OfflineDataService {
       throw new Error('Site not found');
     }
 
+    // Store site info for renumbering
+    const deletedSiteNumber = existingSite.site_number;
+    const riverWalkId = existingSite.river_walk_id;
+
     // Remove from local storage
     await offlineDB.deleteSite(existingSite.localId);
+
+    // Auto-renumber remaining sites
+    await this.renumberSitesAfterDeletion(riverWalkId, deletedSiteNumber);
 
     // Only try to delete from server if the site exists on server (has server ID)
     if (existingSite.id && !existingSite.id.startsWith('local_')) {
@@ -844,6 +851,80 @@ export class OfflineDataService {
     }
 
     return true;
+  }
+
+  // Auto-renumber sites after deletion
+  private async renumberSitesAfterDeletion(riverWalkId: string, deletedSiteNumber: number): Promise<void> {
+    try {
+      // Get all sites for this river walk
+      const allSites = await offlineDB.getSites();
+      const riverWalkSites = allSites.filter(site => 
+        (site.river_walk_id === riverWalkId || site.river_walk_local_id === riverWalkId) &&
+        site.site_number > deletedSiteNumber
+      );
+
+      console.log(`Renumbering ${riverWalkSites.length} sites after deleting site ${deletedSiteNumber}`);
+
+      // Renumber sites that come after the deleted site
+      for (const site of riverWalkSites) {
+        const newSiteNumber = site.site_number - 1;
+        const newSiteName = `Site ${newSiteNumber}`;
+        
+        // Update site number and name
+        const updatedSite = {
+          ...site,
+          site_number: newSiteNumber,
+          site_name: newSiteName,
+          synced: false, // Mark as unsynced since we're changing it
+          lastModified: Date.now()
+        };
+
+        await offlineDB.addSite(updatedSite);
+
+        // If online and site has server ID, update on server or queue for sync
+        if (site.id && !site.id.startsWith('local_')) {
+          if (this.checkOnline()) {
+            try {
+              const { error } = await supabase
+                .from('sites')
+                .update({ 
+                  site_number: newSiteNumber,
+                  site_name: newSiteName
+                })
+                .eq('id', site.id);
+
+              if (error) throw error;
+              
+              // Mark as synced if server update succeeded
+              updatedSite.synced = true;
+              await offlineDB.addSite(updatedSite);
+              
+              console.log(`Site ${site.id} renumbered on server: ${site.site_number} → ${newSiteNumber}`);
+            } catch (error) {
+              console.error('Failed to renumber site on server, will sync later:', error);
+              // Add to sync queue for later
+              await this.addToSyncQueue('UPDATE', 'sites', { 
+                site_number: newSiteNumber,
+                site_name: newSiteName
+              }, site.localId);
+            }
+          } else {
+            // Offline - add to sync queue
+            await this.addToSyncQueue('UPDATE', 'sites', { 
+              site_number: newSiteNumber,
+              site_name: newSiteName
+            }, site.localId);
+          }
+        }
+      }
+
+      // Trigger data change event to update UI
+      window.dispatchEvent(new CustomEvent('riverwalks-data-changed'));
+      
+    } catch (error) {
+      console.error('Error renumbering sites:', error);
+      // Don't throw - deletion should still succeed even if renumbering fails
+    }
   }
 
   // Measurement Points methods
