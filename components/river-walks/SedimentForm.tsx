@@ -178,7 +178,25 @@ export function SedimentForm({
             alt="Powers Roundness Scale showing sediment shape categories from 1 (very angular) to 6 (very rounded)"
             className="max-w-full h-auto rounded border border-gray-300 shadow-sm"
             style={{ maxHeight: '200px' }}
+            onError={(e) => {
+              console.error('Powers roundness scale image failed to load');
+              const target = e.target as HTMLImageElement;
+              target.style.display = 'none';
+              target.nextElementSibling?.classList.remove('hidden');
+            }}
           />
+          <div className="hidden bg-gray-100 border border-gray-300 rounded p-8 text-center" style={{ maxHeight: '200px', minWidth: '300px' }}>
+            <p className="text-gray-600 font-medium mb-2">Powers Roundness Scale</p>
+            <p className="text-sm text-gray-500 mb-4">Image unavailable offline</p>
+            <div className="text-xs text-gray-600 grid grid-cols-2 gap-2">
+              <div>1 = Very Angular</div>
+              <div>4 = Sub-rounded</div>
+              <div>2 = Angular</div>
+              <div>5 = Rounded</div>
+              <div>3 = Sub-angular</div>
+              <div>6 = Very Rounded</div>
+            </div>
+          </div>
         </div>
         <p className="text-xs text-gray-600 text-center mt-2">
           Use this scale to rate sediment roundness: 1 = Very Angular, 6 = Very Rounded

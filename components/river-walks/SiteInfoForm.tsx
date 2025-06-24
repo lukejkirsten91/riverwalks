@@ -38,10 +38,16 @@ export const SiteInfoForm = forwardRef<SiteInfoFormRef, SiteInfoFormProps>(({
     land_use: site.land_use || '',
   });
 
-  // Site photo handling
-  const [sitePhotoFile, setSitePhotoFile] = useState<File | null>(null);
-  const [sitePhotoPreview, setSitePhotoPreview] = useState<string | null>(site.photo_url || null);
-  const [removeSitePhoto, setRemoveSitePhoto] = useState(false);
+  // Enhanced offline-aware photo handling
+  const {
+    photoState,
+    selectPhoto,
+    removePhoto,
+    hasPhoto,
+    isUploading: photoUploading,
+    preview: sitePhotoPreview,
+    isOfflinePhoto
+  } = useOfflinePhoto('site_photo', site.id, site.photo_url);
 
   // Map state
   const [showMap, setShowMap] = useState(false);
@@ -81,25 +87,20 @@ export const SiteInfoForm = forwardRef<SiteInfoFormRef, SiteInfoFormProps>(({
     setHasUnsavedChanges(true);
   };
 
-  const handleSitePhotoSelect = (file: File) => {
-    setSitePhotoFile(file);
-    setRemoveSitePhoto(false);
-    const previewUrl = URL.createObjectURL(file);
-    setSitePhotoPreview(previewUrl);
+  const handleSitePhotoSelect = async (file: File) => {
+    await selectPhoto(file);
     setHasUnsavedChanges(true);
   };
 
-  const handleSitePhotoRemove = () => {
-    setSitePhotoFile(null);
-    setSitePhotoPreview(null);
-    setRemoveSitePhoto(true);
+  const handleSitePhotoRemove = async () => {
+    await removePhoto();
     setHasUnsavedChanges(true);
   };
 
   const handleSubmit = async (e: React.FormEvent, markComplete: boolean = false) => {
     e.preventDefault();
     const todoStatus: TodoStatus = markComplete ? 'complete' : 'in_progress';
-    await onSubmit(formData, sitePhotoFile || undefined, removeSitePhoto, todoStatus);
+    await onSubmit(formData, photoState.file || undefined, false, todoStatus);
     setHasUnsavedChanges(false);
   };
 
@@ -109,7 +110,7 @@ export const SiteInfoForm = forwardRef<SiteInfoFormRef, SiteInfoFormProps>(({
 
   const handleConfirmSaveComplete = async () => {
     const todoStatus: TodoStatus = 'complete';
-    await onSubmit(formData, sitePhotoFile || undefined, removeSitePhoto, todoStatus);
+    await onSubmit(formData, photoState.file || undefined, false, todoStatus);
     setHasUnsavedChanges(false);
     setShowConfirmDialog(false);
     onCancel();
@@ -117,7 +118,7 @@ export const SiteInfoForm = forwardRef<SiteInfoFormRef, SiteInfoFormProps>(({
 
   const handleConfirmSaveInProgress = async () => {
     const todoStatus: TodoStatus = 'in_progress';
-    await onSubmit(formData, sitePhotoFile || undefined, removeSitePhoto, todoStatus);
+    await onSubmit(formData, photoState.file || undefined, false, todoStatus);
     setHasUnsavedChanges(false);
     setShowConfirmDialog(false);
     onCancel();
@@ -302,10 +303,17 @@ export const SiteInfoForm = forwardRef<SiteInfoFormRef, SiteInfoFormProps>(({
               onFileSelect={handleSitePhotoSelect}
               onFileRemove={handleSitePhotoRemove}
               currentImageUrl={sitePhotoPreview}
-              disabled={loading}
-              loading={loading}
-              loadingText="Uploading site photo..."
+              disabled={loading || photoUploading}
+              loading={photoUploading}
+              loadingText="Saving site photo..."
+              uploadText={isOfflinePhoto ? "📱 Site photo (offline)" : "Upload site photo"}
             />
+            {isOfflinePhoto && (
+              <p className="text-sm text-blue-600 mt-2 flex items-center gap-1">
+                <span>📱</span>
+                Photo saved offline - will upload when online
+              </p>
+            )}
           </div>
 
           {/* Notes */}

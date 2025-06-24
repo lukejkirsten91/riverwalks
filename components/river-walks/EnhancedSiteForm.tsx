@@ -5,6 +5,7 @@ import { InlineNumberEdit } from '../ui/InlineNumberEdit';
 import { FileUpload } from '../ui/FileUpload';
 import { LoadingButton } from '../ui/LoadingSpinner';
 import MapLocationPicker from '../ui/MapLocationPickerWrapper';
+import { useOfflinePhoto } from '../../hooks/useOfflinePhoto';
 import type { Site, SiteFormData, MeasurementPointFormData, SedimentationMeasurement, UnitType } from '../../types';
 
 interface EnhancedSiteFormProps {
@@ -57,10 +58,16 @@ export function EnhancedSiteForm({
     sedimentation_units: editingSite?.sedimentation_units || 'mm',
   });
 
-  // Site photo handling
-  const [sitePhotoFile, setSitePhotoFile] = useState<File | null>(null);
-  const [sitePhotoPreview, setSitePhotoPreview] = useState<string | null>(editingSite?.photo_url || null);
-  const [removeSitePhoto, setRemoveSitePhoto] = useState(false);
+  // Enhanced offline-aware site photo handling
+  const {
+    photoState: sitePhotoState,
+    selectPhoto: selectSitePhoto,
+    removePhoto: removeSitePhoto,
+    hasPhoto: hasSitePhoto,
+    isUploading: sitePhotoUploading,
+    preview: sitePhotoPreview,
+    isOfflinePhoto: isSitePhotoOffline
+  } = useOfflinePhoto('site_photo', editingSite?.id || '', editingSite?.photo_url);
 
   // Measurement data
   const [numMeasurements, setNumMeasurements] = useState(
@@ -72,11 +79,17 @@ export function EnhancedSiteForm({
   // Sedimentation data
   const [numSedimentationMeasurements, setNumSedimentationMeasurements] = useState(3);
   const [sedimentationMeasurements, setSedimentationMeasurements] = useState<SedimentationMeasurement[]>([]);
-  const [sedimentationPhotoFile, setSedimentationPhotoFile] = useState<File | null>(null);
-  const [sedimentationPhotoPreview, setSedimentationPhotoPreview] = useState<string | null>(
-    editingSite?.sedimentation_photo_url || null
-  );
-  const [removeSedimentationPhoto, setRemoveSedimentationPhoto] = useState(false);
+  
+  // Enhanced offline-aware sedimentation photo handling
+  const {
+    photoState: sedimentPhotoState,
+    selectPhoto: selectSedimentPhoto,
+    removePhoto: removeSedimentPhoto,
+    hasPhoto: hasSedimentPhoto,
+    isUploading: sedimentPhotoUploading,
+    preview: sedimentationPhotoPreview,
+    isOfflinePhoto: isSedimentPhotoOffline
+  } = useOfflinePhoto('sediment_photo', editingSite?.id || '', editingSite?.sedimentation_photo_url);
 
   // Track if form has been modified
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
@@ -247,33 +260,23 @@ export function EnhancedSiteForm({
     setHasUnsavedChanges(true);
   };
 
-  const handleSitePhotoSelect = (file: File) => {
-    setSitePhotoFile(file);
-    setRemoveSitePhoto(false);
-    const previewUrl = URL.createObjectURL(file);
-    setSitePhotoPreview(previewUrl);
+  const handleSitePhotoSelect = async (file: File) => {
+    await selectSitePhoto(file);
     setHasUnsavedChanges(true);
   };
 
-  const handleSitePhotoRemove = () => {
-    setSitePhotoFile(null);
-    setSitePhotoPreview(null);
-    setRemoveSitePhoto(true);
+  const handleSitePhotoRemove = async () => {
+    await removeSitePhoto();
     setHasUnsavedChanges(true);
   };
 
-  const handleSedimentationPhotoSelect = (file: File) => {
-    setSedimentationPhotoFile(file);
-    setRemoveSedimentationPhoto(false);
-    const previewUrl = URL.createObjectURL(file);
-    setSedimentationPhotoPreview(previewUrl);
+  const handleSedimentationPhotoSelect = async (file: File) => {
+    await selectSedimentPhoto(file);
     setHasUnsavedChanges(true);
   };
 
-  const handleSedimentationPhotoRemove = () => {
-    setSedimentationPhotoFile(null);
-    setSedimentationPhotoPreview(null);
-    setRemoveSedimentationPhoto(true);
+  const handleSedimentationPhotoRemove = async () => {
+    await removeSedimentPhoto();
     setHasUnsavedChanges(true);
   };
 
@@ -285,12 +288,12 @@ export function EnhancedSiteForm({
       numMeasurements,
       riverWidth,
       {
-        photo: sedimentationPhotoFile || undefined,
+        photo: sedimentPhotoState.file || undefined,
         measurements: sedimentationMeasurements,
       },
-      sitePhotoFile || undefined,
-      removeSitePhoto,
-      removeSedimentationPhoto
+      sitePhotoState.file || undefined,
+      false, // removeSitePhoto - handled by the photo hook now
+      false  // removeSedimentationPhoto - handled by the photo hook now
     );
     setHasUnsavedChanges(false);
   };
@@ -493,10 +496,17 @@ export function EnhancedSiteForm({
                 onFileSelect={handleSitePhotoSelect}
                 onFileRemove={handleSitePhotoRemove}
                 currentImageUrl={sitePhotoPreview}
-                disabled={loading}
-                loading={loading}
-                loadingText="Uploading site photo..."
+                disabled={loading || sitePhotoUploading}
+                loading={sitePhotoUploading}
+                loadingText="Saving site photo..."
+                uploadText={isSitePhotoOffline ? "📱 Site photo (offline)" : "Upload site photo"}
               />
+              {isSitePhotoOffline && (
+                <p className="text-sm text-blue-600 mt-2 flex items-center gap-1">
+                  <span>📱</span>
+                  Photo saved offline - will upload when online
+                </p>
+              )}
             </div>
 
             {/* Notes */}
@@ -712,11 +722,17 @@ export function EnhancedSiteForm({
                 onFileSelect={handleSedimentationPhotoSelect}
                 onFileRemove={handleSedimentationPhotoRemove}
                 currentImageUrl={sedimentationPhotoPreview}
-                disabled={loading}
-                loading={loading}
-                loadingText="Uploading sediment photo..."
-                uploadText="Upload sediment photo"
+                disabled={loading || sedimentPhotoUploading}
+                loading={sedimentPhotoUploading}
+                loadingText="Saving sediment photo..."
+                uploadText={isSedimentPhotoOffline ? "📱 Sediment photo (offline)" : "Upload sediment photo"}
               />
+              {isSedimentPhotoOffline && (
+                <p className="text-sm text-blue-600 mt-2 flex items-center gap-1">
+                  <span>📱</span>
+                  Photo saved offline - will upload when online
+                </p>
+              )}
             </div>
 
             {/* Sedimentation measurements */}

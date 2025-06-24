@@ -1,7 +1,7 @@
 // Riverwalks Service Worker for Offline Capabilities
-const CACHE_NAME = 'riverwalks-v2';
-const STATIC_CACHE_NAME = 'riverwalks-static-v2';
-const DYNAMIC_CACHE_NAME = 'riverwalks-dynamic-v2';
+const CACHE_NAME = 'riverwalks-v3';
+const STATIC_CACHE_NAME = 'riverwalks-static-v3';
+const DYNAMIC_CACHE_NAME = 'riverwalks-dynamic-v3';
 
 // App shell - critical files for offline functionality
 const APP_SHELL = [
@@ -171,17 +171,32 @@ async function handleImageAssets(request) {
   } catch (error) {
     console.log('Service Worker: Failed to fetch image, offline mode', request.url);
     
-    // For critical images like Powers roundness scale, provide a fallback
+    // For critical images like Powers roundness scale, provide a better fallback
     if (request.url.includes('powers_roundness_scale')) {
-      return new Response(
-        '<svg width="400" height="200" xmlns="http://www.w3.org/2000/svg"><text x="200" y="100" text-anchor="middle" font-family="Arial" font-size="16" fill="black">Powers Roundness Scale - Offline Mode</text></svg>',
-        {
-          headers: {
-            'Content-Type': 'image/svg+xml',
-            'Cache-Control': 'no-cache'
-          }
+      const fallbackSvg = `
+        <svg width="400" height="200" xmlns="http://www.w3.org/2000/svg" style="background: #f9fafb; border: 1px solid #e5e7eb;">
+          <text x="200" y="40" text-anchor="middle" font-family="Arial" font-size="14" font-weight="bold" fill="#374151">Powers Roundness Scale</text>
+          <text x="200" y="60" text-anchor="middle" font-family="Arial" font-size="12" fill="#6b7280">Reference unavailable offline</text>
+          
+          <g font-family="Arial" font-size="11" fill="#374151">
+            <text x="80" y="90">1 = Very Angular</text>
+            <text x="80" y="110">2 = Angular</text>
+            <text x="80" y="130">3 = Sub-angular</text>
+            <text x="280" y="90">4 = Sub-rounded</text>
+            <text x="280" y="110">5 = Rounded</text>
+            <text x="280" y="130">6 = Very Rounded</text>
+          </g>
+          
+          <text x="200" y="170" text-anchor="middle" font-family="Arial" font-size="10" fill="#9ca3af">Image will load when online</text>
+        </svg>
+      `;
+      
+      return new Response(fallbackSvg, {
+        headers: {
+          'Content-Type': 'image/svg+xml',
+          'Cache-Control': 'no-cache'
         }
-      );
+      });
     }
     
     throw error;

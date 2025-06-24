@@ -462,6 +462,8 @@ export class OfflineDataService {
           offlineRiverWalk.id = data.id;
           offlineRiverWalk.synced = true;
           await offlineDB.addRiverWalk(offlineRiverWalk);
+          // Trigger sync status update
+          window.dispatchEvent(new CustomEvent('riverwalks-data-changed'));
           return data;
         }
       } catch (error) {
@@ -473,6 +475,8 @@ export class OfflineDataService {
           archived: false
         };
         await this.addToSyncQueue('CREATE', 'river_walks', dataToSync, localId);
+        // Trigger sync status update
+        window.dispatchEvent(new CustomEvent('riverwalks-data-changed'));
       }
     } else {
       // Add to sync queue
@@ -482,6 +486,8 @@ export class OfflineDataService {
         archived: false
       };
       await this.addToSyncQueue('CREATE', 'river_walks', dataToSync, localId);
+      // Trigger sync status update
+      window.dispatchEvent(new CustomEvent('riverwalks-data-changed'));
     }
 
     return fromOfflineRiverWalk(offlineRiverWalk) as RiverWalk;
@@ -502,22 +508,64 @@ export class OfflineDataService {
     const updatedRiverWalk: OfflineRiverWalk = {
       ...existingRiverWalk,
       ...riverWalkData,
-      synced: false, // Mark as unsynced since it was edited
+      synced: false, // Initially mark as unsynced
       lastModified: Date.now(),
       updated_at: new Date().toISOString(),
     };
 
-    // Save locally
+    // Save locally first
     await offlineDB.addRiverWalk(updatedRiverWalk);
 
-    // Add to sync queue if online or offline
     const userId = await this.getUserId();
-    if (userId) {
-      const dataToSync = {
+    if (!userId) {
+      throw new Error('User not authenticated');
+    }
+
+    // Try to update online immediately if connected
+    if (this.checkOnline()) {
+      try {
+        // Only attempt server update if we have a real server ID (not local)
+        if (existingRiverWalk.id && !existingRiverWalk.id.startsWith('local_')) {
+          const { data, error } = await supabase
+            .from('river_walks')
+            .update({
+              ...riverWalkData,
+              user_id: userId,
+            })
+            .eq('id', existingRiverWalk.id)
+            .select()
+            .single();
+
+          if (error) throw error;
+
+          if (data) {
+            // Successfully updated online - mark as synced
+            updatedRiverWalk.synced = true;
+            await offlineDB.addRiverWalk(updatedRiverWalk);
+            console.log('River walk updated online successfully:', riverWalkId);
+            // Trigger sync status update
+            window.dispatchEvent(new CustomEvent('riverwalks-data-changed'));
+            return data;
+          }
+        }
+      } catch (error) {
+        console.error('Failed to update online, will sync later:', error);
+        // Add to sync queue for later
+        await this.addToSyncQueue('UPDATE', 'river_walks', {
+          ...riverWalkData,
+          user_id: userId,
+        }, updatedRiverWalk.localId);
+        // Trigger sync status update
+        window.dispatchEvent(new CustomEvent('riverwalks-data-changed'));
+      }
+    } else {
+      // Offline - add to sync queue
+      await this.addToSyncQueue('UPDATE', 'river_walks', {
         ...riverWalkData,
         user_id: userId,
-      };
-      await this.addToSyncQueue('UPDATE', 'river_walks', dataToSync, updatedRiverWalk.localId);
+      }, updatedRiverWalk.localId);
+      // Trigger sync status update
+      window.dispatchEvent(new CustomEvent('riverwalks-data-changed'));
     }
 
     return fromOfflineRiverWalk(updatedRiverWalk) as RiverWalk;
@@ -627,14 +675,20 @@ export class OfflineDataService {
           offlineSite.id = data.id;
           offlineSite.synced = true;
           await offlineDB.addSite(offlineSite);
+          // Trigger sync status update
+          window.dispatchEvent(new CustomEvent('riverwalks-data-changed'));
           return data;
         }
       } catch (error) {
         console.error('Failed to create site online, will sync later:', error);
         await this.addToSyncQueue('CREATE', 'sites', siteData, localId);
+        // Trigger sync status update
+        window.dispatchEvent(new CustomEvent('riverwalks-data-changed'));
       }
     } else {
       await this.addToSyncQueue('CREATE', 'sites', siteData, localId);
+      // Trigger sync status update
+      window.dispatchEvent(new CustomEvent('riverwalks-data-changed'));
     }
 
     return fromOfflineSite(offlineSite) as Site;
@@ -655,18 +709,53 @@ export class OfflineDataService {
     const updatedSite: OfflineSite = {
       ...existingSite,
       ...siteData,
-      synced: false, // Mark as unsynced since it was edited
+      synced: false, // Initially mark as unsynced
       lastModified: Date.now(),
       updated_at: new Date().toISOString(),
     };
 
-    // Save locally
+    // Save locally first
     await offlineDB.addSite(updatedSite);
 
-    // Add to sync queue
-    await this.addToSyncQueue('UPDATE', 'sites', siteData, updatedSite.localId);
+    // Try to update online immediately if connected
+    if (this.checkOnline()) {
+      try {
+        // Only attempt server update if we have a real server ID (not local)
+        if (existingSite.id && !existingSite.id.startsWith('local_')) {
+          const { data, error } = await supabase
+            .from('sites')
+            .update(siteData)
+            .eq('id', existingSite.id)
+            .select()
+            .single();
+
+          if (error) throw error;
+
+          if (data) {
+            // Successfully updated online - mark as synced
+            updatedSite.synced = true;
+            await offlineDB.addSite(updatedSite);
+            console.log('Site updated online successfully:', siteId);
+            // Trigger sync status update
+            window.dispatchEvent(new CustomEvent('riverwalks-data-changed'));
+            return data;
+          }
+        }
+      } catch (error) {
+        console.error('Failed to update site online, will sync later:', error);
+        // Add to sync queue for later
+        await this.addToSyncQueue('UPDATE', 'sites', siteData, updatedSite.localId);
+        // Trigger sync status update
+        window.dispatchEvent(new CustomEvent('riverwalks-data-changed'));
+      }
+    } else {
+      // Offline - add to sync queue
+      await this.addToSyncQueue('UPDATE', 'sites', siteData, updatedSite.localId);
+      // Trigger sync status update
+      window.dispatchEvent(new CustomEvent('riverwalks-data-changed'));
+    }
     
-    console.log('Site updated and added to sync queue:', { siteId, updatedSite: updatedSite.localId });
+    console.log('Site updated:', { siteId, synced: updatedSite.synced });
 
     return fromOfflineSite(updatedSite) as Site;
   }
