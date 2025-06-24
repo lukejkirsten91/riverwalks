@@ -121,6 +121,7 @@ export function SyncStatusProvider({ children }: SyncStatusProviderProps) {
 
     const handleDataChanged = () => {
       // Update sync status when data changes
+      console.log('Data changed event received - updating sync status');
       updateSyncStatus();
     };
 

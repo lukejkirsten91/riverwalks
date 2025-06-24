@@ -526,6 +526,7 @@ export class OfflineDataService {
       try {
         // Only attempt server update if we have a real server ID (not local)
         if (existingRiverWalk.id && !existingRiverWalk.id.startsWith('local_')) {
+          console.log('Attempting online update for river walk:', { riverWalkId, serverId: existingRiverWalk.id });
           const { data, error } = await supabase
             .from('river_walks')
             .update({
@@ -542,11 +543,20 @@ export class OfflineDataService {
             // Successfully updated online - mark as synced
             updatedRiverWalk.synced = true;
             await offlineDB.addRiverWalk(updatedRiverWalk);
-            console.log('River walk updated online successfully:', riverWalkId);
+            console.log('River walk updated online successfully - marked as synced:', riverWalkId);
             // Trigger sync status update
             window.dispatchEvent(new CustomEvent('riverwalks-data-changed'));
             return data;
           }
+        } else {
+          console.log('River walk has local ID, adding to sync queue:', { riverWalkId, localId: existingRiverWalk.id });
+          // Local item - add to sync queue
+          await this.addToSyncQueue('UPDATE', 'river_walks', {
+            ...riverWalkData,
+            user_id: userId,
+          }, updatedRiverWalk.localId);
+          // Trigger sync status update
+          window.dispatchEvent(new CustomEvent('riverwalks-data-changed'));
         }
       } catch (error) {
         console.error('Failed to update online, will sync later:', error);
@@ -560,6 +570,7 @@ export class OfflineDataService {
       }
     } else {
       // Offline - add to sync queue
+      console.log('Offline - adding river walk to sync queue:', riverWalkId);
       await this.addToSyncQueue('UPDATE', 'river_walks', {
         ...riverWalkData,
         user_id: userId,
@@ -722,6 +733,7 @@ export class OfflineDataService {
       try {
         // Only attempt server update if we have a real server ID (not local)
         if (existingSite.id && !existingSite.id.startsWith('local_')) {
+          console.log('Attempting online update for site:', { siteId, serverId: existingSite.id });
           const { data, error } = await supabase
             .from('sites')
             .update(siteData)
@@ -735,11 +747,17 @@ export class OfflineDataService {
             // Successfully updated online - mark as synced
             updatedSite.synced = true;
             await offlineDB.addSite(updatedSite);
-            console.log('Site updated online successfully:', siteId);
+            console.log('Site updated online successfully - marked as synced:', siteId);
             // Trigger sync status update
             window.dispatchEvent(new CustomEvent('riverwalks-data-changed'));
             return data;
           }
+        } else {
+          console.log('Site has local ID, adding to sync queue:', { siteId, localId: existingSite.id });
+          // Local item - add to sync queue
+          await this.addToSyncQueue('UPDATE', 'sites', siteData, updatedSite.localId);
+          // Trigger sync status update
+          window.dispatchEvent(new CustomEvent('riverwalks-data-changed'));
         }
       } catch (error) {
         console.error('Failed to update site online, will sync later:', error);
@@ -750,6 +768,7 @@ export class OfflineDataService {
       }
     } else {
       // Offline - add to sync queue
+      console.log('Offline - adding site to sync queue:', siteId);
       await this.addToSyncQueue('UPDATE', 'sites', siteData, updatedSite.localId);
       // Trigger sync status update
       window.dispatchEvent(new CustomEvent('riverwalks-data-changed'));
@@ -1058,6 +1077,14 @@ export class OfflineDataService {
   // Get sync status
   async getSyncStatus(): Promise<{ pendingItems: number; isOnline: boolean }> {
     const syncQueue = await offlineDB.getSyncQueue();
+    console.log('Getting sync status:', { 
+      queueLength: syncQueue.length, 
+      queueItems: syncQueue.map(item => ({ 
+        type: item.type, 
+        table: item.table, 
+        localId: item.localId 
+      }))
+    });
     return {
       pendingItems: syncQueue.length,
       isOnline: this.checkOnline()
