@@ -126,10 +126,10 @@ export function useOfflineRiverWalks() {
 
   const archiveRiverWalk = useCallback(async (riverWalkId: string) => {
     try {
-      await offlineDataService.archiveRiverWalk(riverWalkId);
+      const archivedRiverWalk = await offlineDataService.archiveRiverWalk(riverWalkId);
       await fetchRiverWalks(); // Refresh the list
       await updateSyncStatus();
-      return true;
+      return archivedRiverWalk;
     } catch (err) {
       const error = err instanceof Error ? err.message : 'Failed to archive river walk';
       setError(error);
@@ -139,10 +139,10 @@ export function useOfflineRiverWalks() {
 
   const restoreRiverWalk = useCallback(async (riverWalkId: string) => {
     try {
-      await offlineDataService.restoreRiverWalk(riverWalkId);
+      const restoredRiverWalk = await offlineDataService.restoreRiverWalk(riverWalkId);
       await fetchRiverWalks(); // Refresh the list
       await updateSyncStatus();
-      return true;
+      return restoredRiverWalk;
     } catch (err) {
       const error = err instanceof Error ? err.message : 'Failed to restore river walk';
       setError(error);

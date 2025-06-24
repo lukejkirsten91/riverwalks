@@ -585,12 +585,12 @@ export class OfflineDataService {
     return fromOfflineRiverWalk(updatedRiverWalk) as RiverWalk;
   }
 
-  async archiveRiverWalk(riverWalkId: string): Promise<boolean> {
+  async archiveRiverWalk(riverWalkId: string): Promise<RiverWalk> {
     console.log('Archiving river walk:', { riverWalkId });
     return await this.updateRiverWalk(riverWalkId, { archived: true });
   }
 
-  async restoreRiverWalk(riverWalkId: string): Promise<boolean> {
+  async restoreRiverWalk(riverWalkId: string): Promise<RiverWalk> {
     console.log('Restoring river walk:', { riverWalkId });
     return await this.updateRiverWalk(riverWalkId, { archived: false });
   }
