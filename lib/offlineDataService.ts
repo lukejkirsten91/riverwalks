@@ -793,10 +793,33 @@ export class OfflineDataService {
     // Remove from local storage
     await offlineDB.deleteSite(existingSite.localId);
 
-    // Only add to sync queue if the site exists on server (has server ID)
+    // Only try to delete from server if the site exists on server (has server ID)
     if (existingSite.id && !existingSite.id.startsWith('local_')) {
-      await this.addToSyncQueue('DELETE', 'sites', { id: existingSite.id }, existingSite.localId);
-      console.log('Site deleted locally and added to sync queue:', { siteId, localId: existingSite.localId });
+      if (this.checkOnline()) {
+        try {
+          // Try to delete from server immediately
+          const { error } = await supabase
+            .from('sites')
+            .delete()
+            .eq('id', existingSite.id);
+
+          if (error) throw error;
+          
+          console.log('Site deleted from server immediately:', { siteId, serverId: existingSite.id });
+          // Trigger sync status update
+          window.dispatchEvent(new CustomEvent('riverwalks-data-changed'));
+          return true;
+        } catch (error) {
+          console.error('Failed to delete from server, adding to sync queue:', error);
+          // Add to sync queue as fallback
+          await this.addToSyncQueue('DELETE', 'sites', { id: existingSite.id }, existingSite.localId);
+          console.log('Site deleted locally and added to sync queue:', { siteId, localId: existingSite.localId });
+        }
+      } else {
+        // Offline - add to sync queue
+        await this.addToSyncQueue('DELETE', 'sites', { id: existingSite.id }, existingSite.localId);
+        console.log('Site deleted locally and added to sync queue (offline):', { siteId, localId: existingSite.localId });
+      }
     } else {
       console.log('Site deleted locally (was local-only):', { siteId, localId: existingSite.localId });
     }

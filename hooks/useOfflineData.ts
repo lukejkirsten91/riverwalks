@@ -224,7 +224,8 @@ export function useOfflineSites(riverWalkId?: string) {
       await offlineDataService.deleteSite(siteId);
       setSites(prev => prev.filter(s => s.id !== siteId));
       
-      // Mark the parent river walk as modified when a site is deleted
+      // NOTE: Delete operations always go to sync queue, so we always mark as modified
+      // The sync status will correctly show pending items for the delete operation
       if (riverWalkId) {
         // Dispatch custom event to notify river walk hook
         window.dispatchEvent(new CustomEvent('riverwalks-site-modified', { 
