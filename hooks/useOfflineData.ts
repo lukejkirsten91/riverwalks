@@ -155,7 +155,7 @@ export function useOfflineRiverWalks() {
     fetchRiverWalks();
   }, [fetchRiverWalks]);
 
-  // Refresh when sync completes
+  // Refresh when sync completes or status changes
   useEffect(() => {
     const handleSyncCompleted = () => {
       fetchRiverWalks();
@@ -164,6 +164,12 @@ export function useOfflineRiverWalks() {
     window.addEventListener('riverwalks-sync-completed', handleSyncCompleted);
     return () => window.removeEventListener('riverwalks-sync-completed', handleSyncCompleted);
   }, [fetchRiverWalks]);
+
+  // Force UI update when sync status changes
+  useEffect(() => {
+    // Force a re-render when sync status changes to update sync icons
+    setRiverWalks(prev => [...prev]);
+  }, [syncStatus.pendingItems]);
 
   // Helper to check if a river walk is synced
   const isRiverWalkSynced = (riverWalk: RiverWalk): boolean => {
@@ -246,7 +252,13 @@ export function useOfflineSites(riverWalkId?: string) {
       setSites(prev => prev.map(s => 
         s.id === siteId ? updatedSite : s
       ));
-      await updateSyncStatus();
+      
+      // Force immediate sync status update with a small delay to ensure IndexedDB write completes
+      setTimeout(async () => {
+        await updateSyncStatus();
+        console.log('Sync status updated after site change');
+      }, 100);
+      
       return updatedSite;
     } catch (err) {
       const error = err instanceof Error ? err.message : 'Failed to update site';
