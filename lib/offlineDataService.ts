@@ -1099,6 +1099,13 @@ export class OfflineDataService {
       if (this.checkOnline()) {
         await this.cacheUserId();
         await this.downloadLatestData();
+        
+        // Auto-sync any pending items when coming online
+        const syncQueue = await offlineDB.getSyncQueue();
+        if (syncQueue.length > 0) {
+          console.log('Found pending sync items, starting auto-sync...');
+          setTimeout(() => this.syncWhenOnline(), 1000); // Small delay to ensure everything is initialized
+        }
       }
       
       console.log('OfflineDataService initialized');

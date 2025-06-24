@@ -37,13 +37,16 @@ export default function RiverWalksPage() {
     error,
     createRiverWalk,
     updateRiverWalk,
+    archiveRiverWalk,
+    restoreRiverWalk,
     refetch,
     isRiverWalkSynced
   } = useOfflineRiverWalks();
 
-  // For now, we'll just use empty array for archived river walks
-  // TODO: Implement archived functionality in offline hooks
-  const archivedRiverWalks: RiverWalk[] = [];
+  // TODO: Add archived river walks support to offline hooks
+  // For now, filter archived from main list (they have archived: true)
+  const activeRiverWalks = riverWalks.filter(rw => !rw.archived);
+  const archivedRiverWalks = riverWalks.filter(rw => rw.archived);
   
   const setError = (errorMessage: string | null) => {
     // Handle error setting for now - we'll need to add this to the hook later
@@ -114,13 +117,23 @@ export default function RiverWalksPage() {
   };
 
   const handleArchive = async (id: string) => {
-    // TODO: Implement archive functionality in offline hooks
-    console.log('Archive not yet implemented in offline mode', id);
+    try {
+      await archiveRiverWalk(id);
+      console.log('River walk archived successfully:', id);
+    } catch (error) {
+      console.error('Failed to archive river walk:', error);
+      setError(error instanceof Error ? error.message : 'Failed to archive river walk');
+    }
   };
 
   const handleRestore = async (id: string) => {
-    // TODO: Implement restore functionality in offline hooks
-    console.log('Restore not yet implemented in offline mode', id);
+    try {
+      await restoreRiverWalk(id);
+      console.log('River walk restored successfully:', id);
+    } catch (error) {
+      console.error('Failed to restore river walk:', error);
+      setError(error instanceof Error ? error.message : 'Failed to restore river walk');
+    }
   };
 
   const handleDelete = async (id: string) => {
@@ -279,7 +292,7 @@ export default function RiverWalksPage() {
 
         {/* River walks list */}
         <RiverWalkList
-          riverWalks={riverWalks}
+          riverWalks={activeRiverWalks}
           archivedRiverWalks={archivedRiverWalks}
           onUpdateField={handleUpdateField}
           onArchive={handleArchive}
