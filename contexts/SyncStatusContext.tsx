@@ -99,6 +99,7 @@ export function SyncStatusProvider({ children }: SyncStatusProviderProps) {
     const handleSyncCompleted = () => {
       setSyncStatus(prev => ({ 
         ...prev, 
+        pendingItems: 0, // Force pending items to 0 after sync completion
         isSyncing: false, 
         lastSyncTime: Date.now(),
         syncError: undefined

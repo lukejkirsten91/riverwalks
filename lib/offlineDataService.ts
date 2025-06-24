@@ -157,6 +157,9 @@ export class OfflineDataService {
       // Refresh local data from server
       await this.downloadLatestData();
       
+      // Force sync status update before dispatching completion event
+      window.dispatchEvent(new CustomEvent('riverwalks-data-changed'));
+      
       window.dispatchEvent(new CustomEvent('riverwalks-sync-completed'));
       console.log('Sync completed successfully');
       
@@ -580,6 +583,16 @@ export class OfflineDataService {
     }
 
     return fromOfflineRiverWalk(updatedRiverWalk) as RiverWalk;
+  }
+
+  async archiveRiverWalk(riverWalkId: string): Promise<boolean> {
+    console.log('Archiving river walk:', { riverWalkId });
+    return await this.updateRiverWalk(riverWalkId, { archived: true });
+  }
+
+  async restoreRiverWalk(riverWalkId: string): Promise<boolean> {
+    console.log('Restoring river walk:', { riverWalkId });
+    return await this.updateRiverWalk(riverWalkId, { archived: false });
   }
 
   // Sites methods

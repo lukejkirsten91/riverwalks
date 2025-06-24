@@ -124,12 +124,40 @@ export function useOfflineRiverWalks() {
     return result;
   }, [modifiedRiverWalks, syncStatus.pendingItems]);
 
+  const archiveRiverWalk = useCallback(async (riverWalkId: string) => {
+    try {
+      await offlineDataService.archiveRiverWalk(riverWalkId);
+      await fetchRiverWalks(); // Refresh the list
+      await updateSyncStatus();
+      return true;
+    } catch (err) {
+      const error = err instanceof Error ? err.message : 'Failed to archive river walk';
+      setError(error);
+      throw err;
+    }
+  }, [fetchRiverWalks, updateSyncStatus]);
+
+  const restoreRiverWalk = useCallback(async (riverWalkId: string) => {
+    try {
+      await offlineDataService.restoreRiverWalk(riverWalkId);
+      await fetchRiverWalks(); // Refresh the list
+      await updateSyncStatus();
+      return true;
+    } catch (err) {
+      const error = err instanceof Error ? err.message : 'Failed to restore river walk';
+      setError(error);
+      throw err;
+    }
+  }, [fetchRiverWalks, updateSyncStatus]);
+
   return {
     riverWalks,
     loading,
     error,
     createRiverWalk,
     updateRiverWalk,
+    archiveRiverWalk,
+    restoreRiverWalk,
     refetch: fetchRiverWalks,
     isRiverWalkSynced
   };
