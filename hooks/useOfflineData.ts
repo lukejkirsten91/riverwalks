@@ -221,12 +221,24 @@ export function useOfflineSites(riverWalkId?: string) {
 
   const deleteSite = useCallback(async (siteId: string) => {
     try {
+      // Track whether this was an immediate deletion
+      let wasImmediateDeletion = false;
+      
+      // Listen for immediate deletion event
+      const handleImmediateDeletion = () => {
+        wasImmediateDeletion = true;
+      };
+      
+      window.addEventListener('riverwalks-site-deleted-immediately', handleImmediateDeletion);
+      
       await offlineDataService.deleteSite(siteId);
       setSites(prev => prev.filter(s => s.id !== siteId));
       
-      // NOTE: Delete operations always go to sync queue, so we always mark as modified
-      // The sync status will correctly show pending items for the delete operation
-      if (riverWalkId) {
+      // Clean up listener
+      window.removeEventListener('riverwalks-site-deleted-immediately', handleImmediateDeletion);
+      
+      // Only mark as modified if the deletion was queued (not immediate)
+      if (riverWalkId && !wasImmediateDeletion) {
         // Dispatch custom event to notify river walk hook
         window.dispatchEvent(new CustomEvent('riverwalks-site-modified', { 
           detail: { riverWalkId } 

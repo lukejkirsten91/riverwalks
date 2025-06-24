@@ -806,8 +806,12 @@ export class OfflineDataService {
           if (error) throw error;
           
           console.log('Site deleted from server immediately:', { siteId, serverId: existingSite.id });
-          // Trigger sync status update
+          // Trigger sync status update but don't mark as modified since it completed immediately
           window.dispatchEvent(new CustomEvent('riverwalks-data-changed'));
+          // Signal that this was an immediate deletion (not queued)
+          window.dispatchEvent(new CustomEvent('riverwalks-site-deleted-immediately', { 
+            detail: { siteId, riverWalkId: existingSite.river_walk_id } 
+          }));
           return true;
         } catch (error) {
           console.error('Failed to delete from server, adding to sync queue:', error);
