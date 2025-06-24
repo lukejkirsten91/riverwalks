@@ -20,6 +20,8 @@ export function useOfflineData() {
     isSyncing: false
   });
 
+  console.log('useOfflineData hook instance, current syncStatus:', syncStatus);
+
   // Initialize the service
   useEffect(() => {
     const initService = async () => {
@@ -167,9 +169,10 @@ export function useOfflineRiverWalks() {
 
   // Force UI update when sync status changes
   useEffect(() => {
+    console.log('River walks sync status changed, pending items:', syncStatus.pendingItems);
     // Force a re-render when sync status changes to update sync icons
     setRiverWalks(prev => [...prev]);
-  }, [syncStatus.pendingItems]);
+  }, [syncStatus.pendingItems, syncStatus.isSyncing]);
 
   // Helper to check if a river walk is synced
   const isRiverWalkSynced = (riverWalk: RiverWalk): boolean => {
@@ -237,7 +240,13 @@ export function useOfflineSites(riverWalkId?: string) {
     try {
       const newSite = await offlineDataService.createSite(siteData);
       setSites(prev => [...prev, newSite]);
-      await updateSyncStatus();
+      
+      // Force immediate sync status update
+      setTimeout(async () => {
+        await updateSyncStatus();
+        console.log('Sync status updated after site creation');
+      }, 100);
+      
       return newSite;
     } catch (err) {
       const error = err instanceof Error ? err.message : 'Failed to create site';
