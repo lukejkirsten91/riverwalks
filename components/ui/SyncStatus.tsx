@@ -1,6 +1,6 @@
 import React from 'react';
 import { RefreshCw, CloudOff, CheckCircle, AlertCircle, Clock } from 'lucide-react';
-import { useOfflineData } from '../../hooks/useOfflineData';
+import { useSyncStatus } from '../../contexts/SyncStatusContext';
 
 interface SyncStatusProps {
   className?: string;
@@ -8,7 +8,7 @@ interface SyncStatusProps {
 }
 
 export function SyncStatus({ className = '', showText = true }: SyncStatusProps) {
-  const { syncStatus, forceSync } = useOfflineData();
+  const { syncStatus, forceSync } = useSyncStatus();
   const { pendingItems, isOnline, isSyncing, lastSyncTime, syncError } = syncStatus;
 
   const handleForceSync = async () => {
@@ -107,7 +107,7 @@ export function SyncStatus({ className = '', showText = true }: SyncStatusProps)
 
 // Compact version for navigation
 export function SyncStatusIcon() {
-  const { syncStatus } = useOfflineData();
+  const { syncStatus } = useSyncStatus();
   const { pendingItems, isSyncing, syncError } = syncStatus;
 
   // Only show if there's something to indicate
