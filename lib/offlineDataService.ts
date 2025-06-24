@@ -660,6 +660,42 @@ export class OfflineDataService {
     };
   }
 
+  // Check if a specific river walk has pending sync items
+  async isRiverWalkSynced(riverWalkId: string): Promise<boolean> {
+    try {
+      // Check if river walk itself is synced (has server ID)
+      const riverWalkSynced = Boolean(riverWalkId && !riverWalkId.startsWith('local_'));
+      
+      // Check sync queue for items related to this river walk
+      const syncQueue = await offlineDB.getSyncQueue();
+      const riverWalkPendingItems = syncQueue.filter(item => {
+        if (item.table === 'river_walks') {
+          // Check if this sync item is for this river walk
+          return item.localId === riverWalkId || item.data?.id === riverWalkId;
+        }
+        if (item.table === 'sites') {
+          // Check if this site belongs to this river walk
+          return item.data?.river_walk_id === riverWalkId;
+        }
+        return false;
+      });
+
+      const hasPendingItems = riverWalkPendingItems.length > 0;
+      
+      console.log(`River walk ${riverWalkId} sync check:`, {
+        riverWalkSynced,
+        hasPendingItems,
+        pendingItemsCount: riverWalkPendingItems.length,
+        result: riverWalkSynced && !hasPendingItems
+      });
+
+      return riverWalkSynced && !hasPendingItems;
+    } catch (error) {
+      console.error('Error checking river walk sync status:', error);
+      return false;
+    }
+  }
+
   // Clear cached user data (call on sign out)
   clearUserCache(): void {
     this.cachedUserId = null;

@@ -13,6 +13,7 @@ export function useOfflineRiverWalks() {
   const [riverWalks, setRiverWalks] = useState<RiverWalk[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [modifiedRiverWalks, setModifiedRiverWalks] = useState<Set<string>>(new Set());
   const { updateSyncStatus, syncStatus } = useSyncStatus();
 
   const fetchRiverWalks = useCallback(async () => {
@@ -48,6 +49,10 @@ export function useOfflineRiverWalks() {
       setRiverWalks(prev => prev.map(rw => 
         rw.id === riverWalkId ? updatedRiverWalk : rw
       ));
+      
+      // Mark this river walk as modified
+      setModifiedRiverWalks(prev => new Set([...prev, riverWalkId]));
+      
       await updateSyncStatus();
       return updatedRiverWalk;
     } catch (err) {
@@ -67,8 +72,21 @@ export function useOfflineRiverWalks() {
       fetchRiverWalks();
     };
 
+    const handleSiteModified = (event: CustomEvent) => {
+      const { riverWalkId } = event.detail;
+      if (riverWalkId) {
+        console.log('Site modified, marking river walk as pending:', riverWalkId);
+        setModifiedRiverWalks(prev => new Set([...prev, riverWalkId]));
+      }
+    };
+
     window.addEventListener('riverwalks-sync-completed', handleSyncCompleted);
-    return () => window.removeEventListener('riverwalks-sync-completed', handleSyncCompleted);
+    window.addEventListener('riverwalks-site-modified', handleSiteModified as EventListener);
+    
+    return () => {
+      window.removeEventListener('riverwalks-sync-completed', handleSyncCompleted);
+      window.removeEventListener('riverwalks-site-modified', handleSiteModified as EventListener);
+    };
   }, [fetchRiverWalks]);
 
   // Force UI update when sync status changes
@@ -76,31 +94,33 @@ export function useOfflineRiverWalks() {
     console.log('River walks sync status changed, pending items:', syncStatus.pendingItems);
     // Force a re-render when sync status changes to update sync icons
     setRiverWalks(prev => [...prev]);
+    
+    // Clear modified tracking when sync completes
+    if (syncStatus.pendingItems === 0 && !syncStatus.isSyncing) {
+      setModifiedRiverWalks(new Set());
+    }
   }, [syncStatus.pendingItems, syncStatus.isSyncing]);
 
   // Helper to check if a river walk is synced
-  const isRiverWalkSynced = (riverWalk: RiverWalk): boolean => {
-    // First check: river walk itself must be synced (server ID, not local)
+  const isRiverWalkSynced = useCallback((riverWalk: RiverWalk): boolean => {
+    // Check if river walk itself is synced (has server ID, not local)
     const riverWalkSynced = Boolean(riverWalk.id && !riverWalk.id.startsWith('local_'));
     
-    // Second check: no pending sync items globally (this is a simple check for now)
-    // If there are ANY pending items, we consider everything as potentially unsynced
-    const noPendingItems = syncStatus.pendingItems === 0;
+    // Check if this specific river walk has been modified (has pending changes)
+    const hasBeenModified = modifiedRiverWalks.has(riverWalk.id);
     
-    const result = riverWalkSynced && noPendingItems;
+    const result = riverWalkSynced && !hasBeenModified;
+    
     console.log(`Sync check for ${riverWalk.name}:`, {
       riverWalkId: riverWalk.id,
       riverWalkSynced,
+      hasBeenModified,
       pendingItems: syncStatus.pendingItems,
-      noPendingItems,
       result
     });
     
-    // Only consider synced if river walk is synced AND no pending sync items
-    // This ensures that ANY offline changes mark ALL river walks as pending
-    // until everything is synced - which is more accurate than partial sync status
     return result;
-  };
+  }, [modifiedRiverWalks, syncStatus.pendingItems]);
 
   return {
     riverWalks,
@@ -119,6 +139,7 @@ export function useOfflineSites(riverWalkId?: string) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { updateSyncStatus } = useSyncStatus();
+  
 
   const fetchSites = useCallback(async () => {
     if (!riverWalkId) {
@@ -145,6 +166,14 @@ export function useOfflineSites(riverWalkId?: string) {
       const newSite = await offlineDataService.createSite(siteData);
       setSites(prev => [...prev, newSite]);
       
+      // Mark the parent river walk as modified when a site is created
+      if (riverWalkId) {
+        // Dispatch custom event to notify river walk hook
+        window.dispatchEvent(new CustomEvent('riverwalks-site-modified', { 
+          detail: { riverWalkId } 
+        }));
+      }
+      
       // Force immediate sync status update
       setTimeout(async () => {
         await updateSyncStatus();
@@ -157,7 +186,7 @@ export function useOfflineSites(riverWalkId?: string) {
       setError(error);
       throw err;
     }
-  }, [updateSyncStatus]);
+  }, [updateSyncStatus, riverWalkId]);
 
   const updateSite = useCallback(async (siteId: string, siteData: Partial<Site>) => {
     try {
@@ -165,6 +194,14 @@ export function useOfflineSites(riverWalkId?: string) {
       setSites(prev => prev.map(s => 
         s.id === siteId ? updatedSite : s
       ));
+      
+      // Mark the parent river walk as modified when a site is updated
+      if (riverWalkId) {
+        // Dispatch custom event to notify river walk hook
+        window.dispatchEvent(new CustomEvent('riverwalks-site-modified', { 
+          detail: { riverWalkId } 
+        }));
+      }
       
       // Force immediate sync status update with a small delay to ensure IndexedDB write completes
       setTimeout(async () => {
@@ -178,7 +215,7 @@ export function useOfflineSites(riverWalkId?: string) {
       setError(error);
       throw err;
     }
-  }, [updateSyncStatus]);
+  }, [updateSyncStatus, riverWalkId]);
 
   useEffect(() => {
     fetchSites();
