@@ -255,6 +255,17 @@ export class OfflineDataService {
               await offlineDB.addSite(localItem);
             }
           }
+        } else if (type === 'DELETE') {
+          // Delete from server using the ID provided in data
+          if (data.id) {
+            const { error } = await supabase
+              .from('sites')
+              .delete()
+              .eq('id', data.id);
+            
+            if (error) throw error;
+            console.log('Site deleted from server:', data.id);
+          }
         }
         break;
         
@@ -276,6 +287,17 @@ export class OfflineDataService {
               localItem.synced = true;
               await offlineDB.addMeasurementPoint(localItem);
             }
+          }
+        } else if (type === 'DELETE') {
+          // Delete from server using the ID provided in data
+          if (data.id) {
+            const { error } = await supabase
+              .from('measurement_points')
+              .delete()
+              .eq('id', data.id);
+            
+            if (error) throw error;
+            console.log('Measurement point deleted from server:', data.id);
           }
         }
         break;
@@ -623,6 +645,122 @@ export class OfflineDataService {
     console.log('Site updated and added to sync queue:', { siteId, updatedSite: updatedSite.localId });
 
     return fromOfflineSite(updatedSite) as Site;
+  }
+
+  async deleteSite(siteId: string): Promise<boolean> {
+    console.log('Deleting site:', { siteId });
+
+    // Get existing site from offline storage
+    const allSites = await offlineDB.getSites();
+    const existingSite = allSites.find(s => s.id === siteId || s.localId === siteId);
+    
+    if (!existingSite) {
+      throw new Error('Site not found');
+    }
+
+    // Remove from local storage
+    await offlineDB.deleteSite(existingSite.localId);
+
+    // Only add to sync queue if the site exists on server (has server ID)
+    if (existingSite.id && !existingSite.id.startsWith('local_')) {
+      await this.addToSyncQueue('DELETE', 'sites', { id: existingSite.id }, existingSite.localId);
+      console.log('Site deleted locally and added to sync queue:', { siteId, localId: existingSite.localId });
+    } else {
+      console.log('Site deleted locally (was local-only):', { siteId, localId: existingSite.localId });
+    }
+
+    return true;
+  }
+
+  // Measurement Points methods
+  async getMeasurementPointsBySite(siteId: string): Promise<MeasurementPoint[]> {
+    // Use offline data - need to handle both local and server IDs
+    const offlinePoints = await offlineDB.getMeasurementPointsBySite(siteId);
+    return offlinePoints.map(mp => fromOfflineMeasurementPoint(mp) as MeasurementPoint);
+  }
+
+  async createMeasurementPoint(pointData: Partial<MeasurementPoint>): Promise<MeasurementPoint> {
+    const localId = generateLocalId();
+    const timestamp = Date.now();
+
+    console.log('Creating measurement point with data:', pointData);
+
+    // Create offline version
+    const offlinePoint: OfflineMeasurementPoint = {
+      ...pointData,
+      id: localId,
+      localId,
+      site_local_id: pointData.site_id || '',
+      synced: false,
+      lastModified: timestamp,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    } as OfflineMeasurementPoint;
+
+    // Save locally first
+    await offlineDB.addMeasurementPoint(offlinePoint);
+
+    if (this.checkOnline()) {
+      try {
+        const { data, error } = await supabase
+          .from('measurement_points')
+          .insert(pointData)
+          .select()
+          .single();
+
+        if (error) throw error;
+
+        if (data) {
+          offlinePoint.id = data.id;
+          offlinePoint.synced = true;
+          await offlineDB.addMeasurementPoint(offlinePoint);
+          return data;
+        }
+      } catch (error) {
+        console.error('Failed to create measurement point online, will sync later:', error);
+        await this.addToSyncQueue('CREATE', 'measurement_points', pointData, localId);
+      }
+    } else {
+      await this.addToSyncQueue('CREATE', 'measurement_points', pointData, localId);
+    }
+
+    return fromOfflineMeasurementPoint(offlinePoint) as MeasurementPoint;
+  }
+
+  async deleteMeasurementPointsForSite(siteId: string): Promise<boolean> {
+    console.log('Deleting measurement points for site:', { siteId });
+
+    // Get all measurement points for this site
+    const allPoints = await offlineDB.getMeasurementPointsBySite(siteId);
+    
+    for (const point of allPoints) {
+      // Remove from local storage
+      await offlineDB.deleteMeasurementPoint(point.localId);
+
+      // Only add to sync queue if the point exists on server (has server ID)
+      if (point.id && !point.id.startsWith('local_')) {
+        await this.addToSyncQueue('DELETE', 'measurement_points', { id: point.id }, point.localId);
+        console.log('Measurement point deleted locally and added to sync queue:', { pointId: point.id, localId: point.localId });
+      } else {
+        console.log('Measurement point deleted locally (was local-only):', { localId: point.localId });
+      }
+    }
+
+    return true;
+  }
+
+  async createMeasurementPoints(siteId: string, pointsData: Partial<MeasurementPoint>[]): Promise<MeasurementPoint[]> {
+    console.log('Creating multiple measurement points for site:', { siteId, count: pointsData.length });
+
+    const createdPoints: MeasurementPoint[] = [];
+    
+    for (const pointData of pointsData) {
+      const pointWithSiteId = { ...pointData, site_id: siteId };
+      const createdPoint = await this.createMeasurementPoint(pointWithSiteId);
+      createdPoints.push(createdPoint);
+    }
+
+    return createdPoints;
   }
 
   // Initialize the service

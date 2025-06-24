@@ -217,6 +217,33 @@ export function useOfflineSites(riverWalkId?: string) {
     }
   }, [updateSyncStatus, riverWalkId]);
 
+  const deleteSite = useCallback(async (siteId: string) => {
+    try {
+      await offlineDataService.deleteSite(siteId);
+      setSites(prev => prev.filter(s => s.id !== siteId));
+      
+      // Mark the parent river walk as modified when a site is deleted
+      if (riverWalkId) {
+        // Dispatch custom event to notify river walk hook
+        window.dispatchEvent(new CustomEvent('riverwalks-site-modified', { 
+          detail: { riverWalkId } 
+        }));
+      }
+      
+      // Force immediate sync status update
+      setTimeout(async () => {
+        await updateSyncStatus();
+        console.log('Sync status updated after site deletion');
+      }, 100);
+      
+      return true;
+    } catch (err) {
+      const error = err instanceof Error ? err.message : 'Failed to delete site';
+      setError(error);
+      throw err;
+    }
+  }, [updateSyncStatus, riverWalkId]);
+
   useEffect(() => {
     fetchSites();
   }, [fetchSites]);
@@ -237,6 +264,7 @@ export function useOfflineSites(riverWalkId?: string) {
     error,
     createSite,
     updateSite,
+    deleteSite,
     refetch: fetchSites
   };
 }

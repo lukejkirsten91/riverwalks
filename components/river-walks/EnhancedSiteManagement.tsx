@@ -1,7 +1,8 @@
 import React, { useState, useRef } from 'react';
 import { formatDate } from '../../lib/utils';
-import { updateSite, createMeasurementPoints, deleteMeasurementPointsForSite } from '../../lib/api/sites';
+import { updateSite } from '../../lib/api/sites';
 import { uploadSitePhoto, deleteSitePhoto } from '../../lib/api/storage';
+import { offlineDataService } from '../../lib/offlineDataService';
 import { SiteList } from './SiteList';
 import { SiteTodoList } from './SiteTodoList';
 import { SiteInfoForm, type SiteInfoFormRef } from './SiteInfoForm';
@@ -39,12 +40,15 @@ type CurrentView =
   | 'sediment_form';
 
 export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManagementProps) {
+  const { showSuccess, showError } = useToast();
+  
   const {
     sites,
     loading: sitesLoading,
     error: sitesError,
     createSite,
     updateSite,
+    deleteSite,
     refetch: fetchSites,
   } = useOfflineSites(riverWalk.id);
 
@@ -57,23 +61,37 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
     return await createSite(siteData);
   };
   
-  const handleUpdateSite = async (id: string, data: UpdateSiteData, riverWalkId?: string) => {
+  const handleUpdateSite = async (id: string, data: UpdateSiteData, riverWalkId?: string, showToast: boolean = true) => {
     try {
       await updateSite(id, data);
       await fetchSites();
-      showSuccess('Site Updated', 'Site has been successfully updated.');
+      if (showToast) {
+        showSuccess('Site Updated', 'Site has been successfully updated.');
+      }
     } catch (error) {
       console.error('Failed to update site:', error);
-      showError('Update Failed', error instanceof Error ? error.message : 'Failed to update site');
+      if (showToast) {
+        showError('Update Failed', error instanceof Error ? error.message : 'Failed to update site');
+      }
+      throw error; // Re-throw so calling function can handle the error appropriately
     }
   };
   
   const handleDeleteSite = async (id: string, riverWalkId?: string) => {
-    // TODO: Implement delete in offline hooks
-    console.log('Delete site not yet implemented in offline mode', { id, riverWalkId });
+    try {
+      await deleteSite(id);
+      showSuccess('Site Deleted', 'Site has been successfully deleted.');
+      
+      // If we're currently viewing this site, go back to site list
+      if (currentSite?.id === id) {
+        setCurrentView('site_list');
+        setCurrentSite(null);
+      }
+    } catch (error) {
+      console.error('Failed to delete site:', error);
+      showError('Delete Failed', error instanceof Error ? error.message : 'Failed to delete site. Please try again.');
+    }
   };
-
-  const { showSuccess, showError } = useToast();
   
   // Navigation state
   const [currentView, setCurrentView] = useState<CurrentView>('site_list');
@@ -249,16 +267,16 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
         todo_cross_section_status: todoStatus || 'in_progress',
       };
 
-      await handleUpdateSite(currentSite.id, updateData, riverWalk.id);
+      await handleUpdateSite(currentSite.id, updateData, riverWalk.id, false); // Don't show toast here
 
-      // Update measurement points
-      await deleteMeasurementPointsForSite(currentSite.id);
+      // Update measurement points using offline service
+      await offlineDataService.deleteMeasurementPointsForSite(currentSite.id);
       const measurementPoints: CreateMeasurementPointData[] = measurementData.map((point, index) => ({
         point_number: index + 1,
         distance_from_bank: point.distance_from_bank,
         depth: point.depth,
       }));
-      await createMeasurementPoints(currentSite.id, measurementPoints);
+      await offlineDataService.createMeasurementPoints(currentSite.id, measurementPoints);
 
       await fetchSites();
       
