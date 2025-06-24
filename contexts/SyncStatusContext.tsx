@@ -29,6 +29,8 @@ export function SyncStatusProvider({ children }: SyncStatusProviderProps) {
     isOnline: true,
     isSyncing: false
   });
+  
+  const [hasShownOfflineMessage, setHasShownOfflineMessage] = useState(false);
 
   console.log('SyncStatusProvider instance, current syncStatus:', syncStatus);
 
@@ -87,15 +89,33 @@ export function SyncStatusProvider({ children }: SyncStatusProviderProps) {
     try {
       const status = await offlineDataService.getSyncStatus();
       console.log('Context updating sync status:', status);
+      
+      const wasOnline = syncStatus.isOnline;
+      const isNowOffline = !status.isOnline;
+      
       setSyncStatus(prev => ({ 
         ...prev, 
         pendingItems: status.pendingItems,
         isOnline: status.isOnline
       }));
+      
+      // Show helpful message when first going offline
+      if (wasOnline && isNowOffline && !hasShownOfflineMessage) {
+        setHasShownOfflineMessage(true);
+        showSuccess(
+          '📱 Working Offline', 
+          'No worries! You can keep working on your river studies. All changes will be saved and synced when you get signal again.'
+        );
+      }
+      
+      // Reset message flag when back online
+      if (!wasOnline && status.isOnline) {
+        setHasShownOfflineMessage(false);
+      }
     } catch (error) {
       console.error('Failed to get sync status:', error);
     }
-  }, []);
+  }, [syncStatus.isOnline, hasShownOfflineMessage, showSuccess]);
 
   const forceSync = useCallback(async () => {
     try {

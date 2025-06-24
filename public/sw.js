@@ -1,7 +1,7 @@
 // Riverwalks Service Worker for Offline Capabilities
-const CACHE_NAME = 'riverwalks-v1';
-const STATIC_CACHE_NAME = 'riverwalks-static-v1';
-const DYNAMIC_CACHE_NAME = 'riverwalks-dynamic-v1';
+const CACHE_NAME = 'riverwalks-v2';
+const STATIC_CACHE_NAME = 'riverwalks-static-v2';
+const DYNAMIC_CACHE_NAME = 'riverwalks-dynamic-v2';
 
 // App shell - critical files for offline functionality
 const APP_SHELL = [
@@ -9,6 +9,8 @@ const APP_SHELL = [
   '/river-walks',
   '/_next/static/css/app.css',
   '/favicon.ico',
+  '/logo.png',
+  '/powers_roundness_scale.png',
   // Add more critical assets as needed
 ];
 
@@ -77,6 +79,9 @@ self.addEventListener('fetch', (event) => {
   } else if (url.pathname.startsWith('/_next/static/')) {
     // Static assets - cache first
     event.respondWith(handleStaticAssets(request));
+  } else if (url.pathname.match(/\.(png|jpg|jpeg|gif|svg|ico)$/)) {
+    // Images and static files - cache first with long expiry
+    event.respondWith(handleImageAssets(request));
   } else {
     // Pages - network first, fallback to cache
     event.respondWith(handlePageRequest(request));
@@ -140,6 +145,45 @@ async function handleStaticAssets(request) {
     return response;
   } catch (error) {
     console.log('Service Worker: Failed to fetch static asset', request.url);
+    throw error;
+  }
+}
+
+// Handle image assets with cache first strategy and long expiry
+async function handleImageAssets(request) {
+  const cachedResponse = await caches.match(request);
+  
+  if (cachedResponse) {
+    console.log('Service Worker: Serving cached image', request.url);
+    return cachedResponse;
+  }
+  
+  try {
+    const response = await fetch(request);
+    
+    if (response.ok) {
+      console.log('Service Worker: Caching new image', request.url);
+      const cache = await caches.open(STATIC_CACHE_NAME);
+      cache.put(request, response.clone());
+    }
+    
+    return response;
+  } catch (error) {
+    console.log('Service Worker: Failed to fetch image, offline mode', request.url);
+    
+    // For critical images like Powers roundness scale, provide a fallback
+    if (request.url.includes('powers_roundness_scale')) {
+      return new Response(
+        '<svg width="400" height="200" xmlns="http://www.w3.org/2000/svg"><text x="200" y="100" text-anchor="middle" font-family="Arial" font-size="16" fill="black">Powers Roundness Scale - Offline Mode</text></svg>',
+        {
+          headers: {
+            'Content-Type': 'image/svg+xml',
+            'Cache-Control': 'no-cache'
+          }
+        }
+      );
+    }
+    
     throw error;
   }
 }

@@ -16,11 +16,11 @@ export function OfflineIndicator({ className = '', showText = true }: OfflineInd
 
   if (showOfflineMode) {
     return (
-      <div className={`flex items-center gap-2 bg-blue-50 text-blue-800 px-3 py-2 rounded-lg ${className}`}>
+      <div className={`flex items-center gap-2 bg-blue-50 text-blue-800 px-3 py-2 rounded-lg border border-blue-200 ${className}`}>
         <CloudOff className="w-4 h-4" />
         {showText && (
           <span className="text-sm font-medium">
-            Working offline - data will sync when connected
+            📱 Working offline - You can keep working! All changes will sync when you get signal again.
           </span>
         )}
       </div>

@@ -1,6 +1,6 @@
 // Offline-aware data service that handles both online and offline operations
 import { supabase } from './supabase';
-import { offlineDB, type OfflineRiverWalk, type OfflineSite, type OfflineMeasurementPoint, type SyncQueueItem } from './indexedDB';
+import { offlineDB, type OfflineRiverWalk, type OfflineSite, type OfflineMeasurementPoint, type SyncQueueItem, type OfflinePhoto } from './indexedDB';
 import type { RiverWalk, Site, MeasurementPoint } from '../types';
 
 // Generate unique local IDs for offline items
@@ -761,6 +761,90 @@ export class OfflineDataService {
     }
 
     return createdPoints;
+  }
+
+  // Photo handling methods
+  async storePhotoOffline(file: File, type: 'site_photo' | 'sediment_photo', relatedId: string): Promise<string> {
+    const localId = generateLocalId();
+    const timestamp = Date.now();
+
+    const offlinePhoto: OfflinePhoto = {
+      id: localId,
+      localId,
+      file,
+      type,
+      relatedId,
+      synced: false,
+      timestamp
+    };
+
+    await offlineDB.addPhoto(offlinePhoto);
+    console.log('Photo stored offline:', { localId, type, relatedId });
+    
+    return localId;
+  }
+
+  async getPhotosByRelatedId(relatedId: string): Promise<OfflinePhoto[]> {
+    return await offlineDB.getPhotosByRelatedId(relatedId);
+  }
+
+  async getPhotoUrl(photoId: string, relatedId: string): Promise<string | null> {
+    try {
+      // First try to get from offline storage
+      const photos = await this.getPhotosByRelatedId(relatedId);
+      const photo = photos.find(p => p.id === photoId || p.localId === photoId);
+      
+      if (photo) {
+        // Create blob URL for offline photo
+        return URL.createObjectURL(photo.file);
+      }
+      
+      // If not found offline and we're online, it might be a server photo
+      if (this.checkOnline() && !photoId.startsWith('local_')) {
+        // This would be a server photo URL - implement based on your storage solution
+        return null; // For now, return null for server photos
+      }
+      
+      return null;
+    } catch (error) {
+      console.error('Error getting photo URL:', error);
+      return null;
+    }
+  }
+
+  async deletePhotoOffline(photoId: string, relatedId: string): Promise<boolean> {
+    try {
+      const photos = await this.getPhotosByRelatedId(relatedId);
+      const photo = photos.find(p => p.id === photoId || p.localId === photoId);
+      
+      if (photo) {
+        await offlineDB.deletePhoto(photo.localId);
+        console.log('Photo deleted offline:', photoId);
+        return true;
+      }
+      
+      return false;
+    } catch (error) {
+      console.error('Error deleting photo offline:', error);
+      return false;
+    }
+  }
+
+  async uploadPhotoWhenOnline(photoId: string): Promise<string | null> {
+    if (!this.checkOnline()) {
+      console.log('Cannot upload photo while offline');
+      return null;
+    }
+
+    try {
+      // Implementation would depend on your photo upload service
+      // For now, just return the local photo ID
+      console.log('Photo upload functionality would be implemented here');
+      return photoId;
+    } catch (error) {
+      console.error('Error uploading photo:', error);
+      return null;
+    }
   }
 
   // Initialize the service
