@@ -807,7 +807,9 @@ export class OfflineDataService {
           
           console.log('Site deleted from server immediately:', { siteId, serverId: existingSite.id });
           // Trigger sync status update but don't mark as modified since it completed immediately
-          window.dispatchEvent(new CustomEvent('riverwalks-data-changed'));
+          window.dispatchEvent(new CustomEvent('riverwalks-data-changed', {
+            detail: { skipSyncCompleteToast: true } // Skip the sync complete toast for immediate operations
+          }));
           // Signal that this was an immediate deletion (not queued)
           window.dispatchEvent(new CustomEvent('riverwalks-site-deleted-immediately', { 
             detail: { siteId, riverWalkId: existingSite.river_walk_id } 
