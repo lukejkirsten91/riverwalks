@@ -24,6 +24,15 @@ export default function RiverWalksPage() {
   const { showSuccess, showError } = useToast();
   const { collaborationEnabled } = useCollaborationFeatureFlag();
   const { pendingInvites, acceptInvite } = useCollaboration();
+  
+  // Debug logging for collaboration state
+  console.log('🔍 [DEBUG] RiverWalksPage: Collaboration state', {
+    collaborationEnabled,
+    pendingInvites,
+    pendingInvitesCount: pendingInvites?.length || 0,
+    shouldShowNotification: collaborationEnabled && pendingInvites && pendingInvites.length > 0,
+    timestamp: new Date().toISOString()
+  });
   const [user, setUser] = useState<User | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [currentRiverWalk, setCurrentRiverWalk] = useState<RiverWalk | null>(
@@ -75,6 +84,12 @@ export default function RiverWalksPage() {
       }
 
       setUser(session.user);
+      console.log('🔍 [DEBUG] RiverWalksPage: User authentication check', {
+        hasSession: !!session,
+        userEmail: session.user?.email,
+        userId: session.user?.id,
+        timestamp: new Date().toISOString()
+      });
     };
 
     checkUser();
@@ -346,7 +361,17 @@ export default function RiverWalksPage() {
         </div>
 
         {/* Pending Invites Notification */}
-        {collaborationEnabled && pendingInvites && pendingInvites.length > 0 && (
+        {(() => {
+          const shouldShow = collaborationEnabled && pendingInvites && pendingInvites.length > 0;
+          console.log('🔍 [DEBUG] RiverWalksPage: Notification panel render check', {
+            collaborationEnabled,
+            hasPendingInvites: !!pendingInvites,
+            pendingInvitesLength: pendingInvites?.length || 0,
+            shouldShow,
+            timestamp: new Date().toISOString()
+          });
+          return shouldShow;
+        })() && (
           <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
             <div className="flex items-start gap-3">
               <div className="bg-blue-100 rounded-full p-2 flex-shrink-0">

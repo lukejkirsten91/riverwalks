@@ -83,16 +83,55 @@ export function useCollaboration(riverWalkId?: string) {
   );
 
   // Fetch pending invites for current user
+  const swrKey = collaborationEnabled ? 'user-pending-invites' : null;
+  console.log('🔍 [DEBUG] useCollaboration: SWR key for pending invites', {
+    collaborationEnabled,
+    swrKey,
+    timestamp: new Date().toISOString()
+  });
+  
   const {
     data: pendingInvites,
     error: pendingError,
     mutate: mutatePendingInvites
   } = useSWR(
-    collaborationEnabled ? 'user-pending-invites' : null,
-    getUserPendingInvites,
+    swrKey,
+    async () => {
+      console.log('🔍 [DEBUG] useCollaboration: SWR fetcher called for pending invites', {
+        collaborationEnabled,
+        timestamp: new Date().toISOString()
+      });
+      
+      try {
+        const result = await getUserPendingInvites();
+        console.log('🔍 [DEBUG] useCollaboration: SWR fetcher result', {
+          success: true,
+          inviteCount: result.length,
+          invites: result.map(invite => ({
+            id: invite.id,
+            user_email: invite.user_email,
+            role: invite.role,
+            expires_at: invite.invite_expires_at
+          }))
+        });
+        return result;
+      } catch (error) {
+        console.error('🔍 [DEBUG] useCollaboration: SWR fetcher error', error);
+        throw error;
+      }
+    },
     {
       revalidateOnFocus: false,
-      dedupingInterval: 30000 // 30 seconds
+      dedupingInterval: 30000, // 30 seconds
+      onSuccess: (data) => {
+        console.log('🔍 [DEBUG] useCollaboration: SWR onSuccess callback', {
+          inviteCount: data.length,
+          timestamp: new Date().toISOString()
+        });
+      },
+      onError: (error) => {
+        console.error('🔍 [DEBUG] useCollaboration: SWR onError callback', error);
+      }
     }
   );
 
@@ -216,6 +255,16 @@ export function useCollaboration(riverWalkId?: string) {
   // Combine all errors
   const combinedError = error || metadataError?.message || collaboratorsError?.message || 
                        accessError?.message || accessibleError?.message || pendingError?.message;
+
+  // Debug logging for the hook return values
+  console.log('🔍 [DEBUG] useCollaboration: Hook return values', {
+    collaborationEnabled,
+    pendingInvitesData: pendingInvites,
+    pendingInvitesCount: pendingInvites?.length || 0,
+    pendingError: pendingError?.message,
+    combinedError,
+    timestamp: new Date().toISOString()
+  });
 
   return {
     // Data

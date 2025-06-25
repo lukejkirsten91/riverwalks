@@ -226,17 +226,44 @@ export async function updateCollaborationSettings(
  * Checks if collaboration is enabled for the application
  */
 export function isCollaborationEnabled(): boolean {
-  return process.env.NEXT_PUBLIC_ENABLE_COLLAB === 'true';
+  const enabled = process.env.NEXT_PUBLIC_ENABLE_COLLAB === 'true';
+  console.log('🔍 [DEBUG] isCollaborationEnabled:', {
+    envValue: process.env.NEXT_PUBLIC_ENABLE_COLLAB,
+    enabled,
+    timestamp: new Date().toISOString()
+  });
+  return enabled;
 }
 
 /**
  * Gets pending invites for the current user
  */
 export async function getUserPendingInvites(): Promise<CollaboratorAccess[]> {
+  console.log('🔍 [DEBUG] getUserPendingInvites: Starting function');
+  
   const { data: user } = await supabase.auth.getUser();
+  console.log('🔍 [DEBUG] getUserPendingInvites: User data retrieved', {
+    hasUser: !!user.user,
+    email: user.user?.email,
+    userId: user.user?.id
+  });
+  
   if (!user.user?.email) {
+    console.log('🔍 [DEBUG] getUserPendingInvites: No user email found, returning empty array');
     return [];
   }
+
+  const userEmail = user.user.email;
+  const currentTime = new Date().toISOString();
+  console.log('🔍 [DEBUG] getUserPendingInvites: Query parameters', {
+    userEmail,
+    currentTime,
+    queryConditions: {
+      user_email: userEmail,
+      accepted_at: 'null',
+      invite_expires_at_gt: currentTime
+    }
+  });
 
   const { data, error } = await supabase
     .from('collaborator_access')
@@ -247,17 +274,51 @@ export async function getUserPendingInvites(): Promise<CollaboratorAccess[]> {
         owner_id
       )
     `)
-    .eq('user_email', user.user.email)
+    .eq('user_email', userEmail)
     .is('accepted_at', null)
-    .gt('invite_expires_at', new Date().toISOString())
+    .gt('invite_expires_at', currentTime)
     .order('invited_at', { ascending: false });
 
+  console.log('🔍 [DEBUG] getUserPendingInvites: Database query result', {
+    hasError: !!error,
+    error: error ? {
+      message: error.message,
+      details: error.details,
+      hint: error.hint,
+      code: error.code
+    } : null,
+    dataCount: data ? data.length : 0,
+    data: data ? data.map(invite => ({
+      id: invite.id,
+      user_email: invite.user_email,
+      role: invite.role,
+      invited_at: invite.invited_at,
+      accepted_at: invite.accepted_at,
+      invite_expires_at: invite.invite_expires_at,
+      invite_token: invite.invite_token ? 'present' : 'missing',
+      collaboration_id: invite.collaboration_id,
+      river_walk_id: invite.collaboration_metadata?.river_walk_reference_id
+    })) : null
+  });
+
   if (error) {
-    console.error('Error fetching user pending invites:', error);
+    console.error('🔍 [DEBUG] getUserPendingInvites: Database error', error);
     return [];
   }
 
-  return data || [];
+  const result = data || [];
+  console.log('🔍 [DEBUG] getUserPendingInvites: Final result', {
+    count: result.length,
+    invites: result.map(invite => ({
+      id: invite.id,
+      user_email: invite.user_email,
+      role: invite.role,
+      expires_at: invite.invite_expires_at,
+      is_expired: new Date(invite.invite_expires_at) <= new Date()
+    }))
+  });
+
+  return result;
 }
 
 /**
