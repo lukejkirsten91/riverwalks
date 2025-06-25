@@ -420,7 +420,7 @@ export async function getUserPendingInvites(): Promise<CollaboratorAccess[]> {
     hasError: !!testError3,
     error: testError3,
     dataCount: testData3 ? testData3.length : 0,
-    data: testData3 ? testData3.map(invite => ({
+    data: testData3 ? testData3.map((invite: any) => ({
       id: invite.id,
       user_email: invite.user_email,
       user_email_match_exact: invite.user_email === userEmail,
@@ -455,7 +455,7 @@ export async function getUserPendingInvites(): Promise<CollaboratorAccess[]> {
       code: error.code
     } : null,
     dataCount: data ? data.length : 0,
-    data: data ? data.map(invite => ({
+    data: data ? data.map((invite: any) => ({
       id: invite.id,
       user_email: invite.user_email,
       role: invite.role,
@@ -476,7 +476,7 @@ export async function getUserPendingInvites(): Promise<CollaboratorAccess[]> {
   const result = data || [];
   console.log('🔍 [DEBUG] getUserPendingInvites: Final result', {
     count: result.length,
-    invites: result.map(invite => ({
+    invites: result.map((invite: any) => ({
       id: invite.id,
       user_email: invite.user_email,
       role: invite.role,
@@ -505,7 +505,7 @@ export async function getUserPendingInvitesRPC(): Promise<CollaboratorAccess[]> 
       code: error.code
     } : null,
     dataCount: data ? data.length : 0,
-    data: data ? data.map(invite => ({
+    data: data ? data.map((invite: any) => ({
       id: invite.id,
       user_email: invite.user_email,
       role: invite.role,
