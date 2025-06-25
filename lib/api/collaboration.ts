@@ -436,7 +436,7 @@ export async function getUserPendingInvites(): Promise<CollaboratorAccess[]> {
     .from('collaborator_access')
     .select(`
       *,
-      collaboration_metadata!inner (
+      collaboration_metadata (
         river_walk_reference_id,
         owner_id
       )
