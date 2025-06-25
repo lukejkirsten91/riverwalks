@@ -12,7 +12,7 @@ import {
   CardContent,
   CardFooter,
 } from '../ui/card';
-import { LogIn, LogOut, MapPin } from 'lucide-react';
+import { LogIn, LogOut, MapPin, UserCheck } from 'lucide-react';
 import { TermsGate } from './TermsGate';
 
 export default function AuthCard() {
@@ -57,6 +57,10 @@ export default function AuthCard() {
       provider: 'google',
       options: {
         redirectTo: redirectUrl,
+        queryParams: {
+          prompt: 'select_account', // Force Google to show account selection
+          access_type: 'online'
+        }
       },
     });
   };
@@ -64,6 +68,27 @@ export default function AuthCard() {
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     router.push('/');
+  };
+
+  const handleSwitchAccount = async () => {
+    // Sign out current user
+    await supabase.auth.signOut();
+    // Force account selection on next sign in
+    setTimeout(() => {
+      const { protocol, host } = window.location;
+      const redirectUrl = `${protocol}//${host}/api/auth/callback`;
+      
+      supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: redirectUrl,
+          queryParams: {
+            prompt: 'select_account',
+            access_type: 'online'
+          }
+        }
+      });
+    }, 500); // Small delay to ensure sign out completes
   };
 
   if (loading) {
@@ -121,6 +146,13 @@ export default function AuthCard() {
             >
               <MapPin className="mr-2 h-5 w-5" /> 
               View River Walks
+            </button>
+            <button 
+              onClick={handleSwitchAccount} 
+              className="btn-secondary w-full touch-manipulation"
+            >
+              <UserCheck className="mr-2 h-4 w-4" /> 
+              Switch Account
             </button>
             <button 
               onClick={handleSignOut} 

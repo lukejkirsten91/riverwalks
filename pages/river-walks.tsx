@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { supabase } from '../lib/supabase';
-import { LogOut, MapPin, User as UserIcon, Users } from 'lucide-react';
+import { LogOut, MapPin, User as UserIcon, Users, UserCheck } from 'lucide-react';
 import {
   RiverWalkForm,
   RiverWalkList,
@@ -235,6 +235,26 @@ export default function RiverWalksPage() {
     router.push('/');
   };
 
+  const handleSwitchAccount = async () => {
+    // Clear offline cache first
+    offlineDataService.clearUserCache();
+    // Sign out current user
+    await supabase.auth.signOut();
+    // Force account selection on next sign in
+    setTimeout(() => {
+      supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/river-walks`,
+          queryParams: {
+            prompt: 'select_account',
+            access_type: 'online'
+          }
+        }
+      });
+    }, 500); // Small delay to ensure sign out completes
+  };
+
   const handleAddNewRiverWalk = () => {
     setShowForm(!showForm);
     setCurrentRiverWalk(null);
@@ -298,6 +318,16 @@ export default function RiverWalksPage() {
                     <div className="px-4 py-2 text-sm font-medium text-foreground border-b border-border">
                       {user.email}
                     </div>
+                    <button
+                      onClick={() => {
+                        setShowProfileDropdown(false);
+                        handleSwitchAccount();
+                      }}
+                      className="w-full text-left px-4 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors flex items-center gap-2"
+                    >
+                      <UserCheck className="w-4 h-4" />
+                      Switch Account
+                    </button>
                     <button
                       onClick={() => {
                         setShowProfileDropdown(false);
