@@ -1,4 +1,4 @@
-import { MapPin, Calendar, Globe, Trash2, Archive, RotateCcw, BarChart3, ChevronUp, ChevronDown, CheckCircle, Clock } from 'lucide-react';
+import { MapPin, Calendar, Globe, Trash2, Archive, RotateCcw, BarChart3, ChevronUp, ChevronDown, CheckCircle, Clock, Link } from 'lucide-react';
 import { useState } from 'react';
 import { formatDate } from '../../lib/utils';
 import { InlineEdit } from '../ui/InlineEdit';
@@ -13,6 +13,7 @@ interface RiverWalkListProps {
   onDelete: (id: string) => void;
   onManageSites: (riverWalk: RiverWalk) => void;
   onGenerateReport: (riverWalk: RiverWalk) => void;
+  onShare?: (riverWalk: RiverWalk) => void;
   isRiverWalkSynced: (riverWalk: RiverWalk) => boolean;
   archiveLoading?: string | null;
 }
@@ -26,6 +27,7 @@ export function RiverWalkList({
   onDelete,
   onManageSites,
   onGenerateReport,
+  onShare,
   isRiverWalkSynced,
   archiveLoading,
 }: RiverWalkListProps) {
@@ -126,6 +128,16 @@ export function RiverWalkList({
           >
             <BarChart3 className="w-5 h-5 mr-2" />
             Visualize Report
+          </button>
+        )}
+        
+        {!isArchived && onShare && (
+          <button
+            onClick={() => onShare(riverWalk)}
+            className="bg-blue-50 hover:bg-blue-100 text-blue-600 px-4 py-3 rounded-lg font-medium transition-all duration-200 border border-blue-200 shadow-modern hover:shadow-modern-lg touch-manipulation flex-1 sm:flex-none flex items-center justify-center"
+          >
+            <Link className="w-5 h-5 mr-2" />
+            Share
           </button>
         )}
         

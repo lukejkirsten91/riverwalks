@@ -1,0 +1,251 @@
+import { supabase } from '../supabase';
+
+// Types for collaboration
+export interface CollaborationMetadata {
+  id: string;
+  river_walk_reference_id: string;
+  owner_id: string;
+  collaboration_enabled: boolean;
+  created_at: string;
+}
+
+export interface CollaboratorAccess {
+  id: string;
+  collaboration_id: string;
+  user_email: string;
+  role: 'editor' | 'viewer';
+  invited_at: string;
+  accepted_at: string | null;
+  invite_token: string | null;
+  invite_expires_at: string | null;
+}
+
+export interface InviteResult {
+  invite_token: string;
+  invite_url: string;
+}
+
+export interface AcceptInviteResult {
+  success: boolean;
+  river_walk_id: string | null;
+  message: string;
+}
+
+export interface UserAccess {
+  has_access: boolean;
+  role: string | null;
+}
+
+/**
+ * Creates a collaboration invite for a river walk
+ */
+export async function createCollaborationInvite(
+  riverWalkId: string,
+  userEmail: string = '*',
+  role: 'editor' | 'viewer' = 'editor'
+): Promise<InviteResult> {
+  const { data, error } = await supabase.rpc('create_collaboration_invite', {
+    p_river_walk_id: riverWalkId,
+    p_user_email: userEmail,
+    p_role: role
+  });
+
+  if (error) {
+    console.error('Error creating collaboration invite:', error);
+    throw new Error(`Failed to create invite: ${error.message}`);
+  }
+
+  if (!data || data.length === 0) {
+    throw new Error('No invite data returned');
+  }
+
+  return data[0];
+}
+
+/**
+ * Accepts a collaboration invite using a token
+ */
+export async function acceptCollaborationInvite(token: string): Promise<AcceptInviteResult> {
+  const { data, error } = await supabase.rpc('accept_collaboration_invite', {
+    p_token: token
+  });
+
+  if (error) {
+    console.error('Error accepting collaboration invite:', error);
+    throw new Error(`Failed to accept invite: ${error.message}`);
+  }
+
+  if (!data || data.length === 0) {
+    throw new Error('No response from invite acceptance');
+  }
+
+  return data[0];
+}
+
+/**
+ * Checks if the current user has access to a river walk
+ */
+export async function checkUserAccess(riverWalkId: string): Promise<UserAccess> {
+  const { data, error } = await supabase.rpc('user_has_collaboration_access', {
+    p_river_walk_id: riverWalkId
+  });
+
+  if (error) {
+    console.error('Error checking user access:', error);
+    return { has_access: false, role: null };
+  }
+
+  if (!data || data.length === 0) {
+    return { has_access: false, role: null };
+  }
+
+  return data[0];
+}
+
+/**
+ * Gets collaboration metadata for a river walk
+ */
+export async function getCollaborationMetadata(riverWalkId: string): Promise<CollaborationMetadata | null> {
+  const { data, error } = await supabase
+    .from('collaboration_metadata')
+    .select('*')
+    .eq('river_walk_reference_id', riverWalkId)
+    .maybeSingle();
+
+  if (error) {
+    console.error('Error fetching collaboration metadata:', error);
+    throw new Error(`Failed to fetch collaboration metadata: ${error.message}`);
+  }
+
+  return data;
+}
+
+/**
+ * Gets all collaborators for a river walk
+ */
+export async function getCollaborators(riverWalkId: string): Promise<CollaboratorAccess[]> {
+  // First get the collaboration metadata
+  const collaborationMetadata = await getCollaborationMetadata(riverWalkId);
+  if (!collaborationMetadata) {
+    return [];
+  }
+
+  const { data, error } = await supabase
+    .from('collaborator_access')
+    .select('*')
+    .eq('collaboration_id', collaborationMetadata.id)
+    .order('invited_at', { ascending: false });
+
+  if (error) {
+    console.error('Error fetching collaborators:', error);
+    throw new Error(`Failed to fetch collaborators: ${error.message}`);
+  }
+
+  return data || [];
+}
+
+/**
+ * Revokes access for a collaborator
+ */
+export async function revokeCollaboratorAccess(collaboratorId: string): Promise<void> {
+  const { error } = await supabase
+    .from('collaborator_access')
+    .delete()
+    .eq('id', collaboratorId);
+
+  if (error) {
+    console.error('Error revoking collaborator access:', error);
+    throw new Error(`Failed to revoke access: ${error.message}`);
+  }
+}
+
+/**
+ * Updates collaboration settings for a river walk
+ */
+export async function updateCollaborationSettings(
+  riverWalkId: string,
+  enabled: boolean
+): Promise<void> {
+  const { error } = await supabase
+    .from('collaboration_metadata')
+    .update({ collaboration_enabled: enabled })
+    .eq('river_walk_reference_id', riverWalkId);
+
+  if (error) {
+    console.error('Error updating collaboration settings:', error);
+    throw new Error(`Failed to update collaboration settings: ${error.message}`);
+  }
+}
+
+/**
+ * Checks if collaboration is enabled for the application
+ */
+export function isCollaborationEnabled(): boolean {
+  return process.env.NEXT_PUBLIC_ENABLE_COLLAB === 'true';
+}
+
+/**
+ * Gets all river walks that the user has access to (owned or collaborated)
+ */
+export async function getAccessibleRiverWalks() {
+  const { data: user } = await supabase.auth.getUser();
+  if (!user.user) {
+    throw new Error('User not authenticated');
+  }
+
+  // Get owned river walks
+  const { data: ownedWalks, error: ownedError } = await supabase
+    .from('river_walks')
+    .select('*')
+    .eq('user_id', user.user.id)
+    .eq('archived', false)
+    .order('date', { ascending: false });
+
+  if (ownedError) {
+    console.error('Error fetching owned river walks:', ownedError);
+    throw new Error(`Failed to fetch owned river walks: ${ownedError.message}`);
+  }
+
+  // Get collaborated river walks
+  const { data: collaboratedWalks, error: collabError } = await supabase
+    .from('collaborator_access')
+    .select(`
+      collaboration_metadata!inner (
+        river_walk_reference_id
+      )
+    `)
+    .eq('user_email', user.user.email)
+    .not('accepted_at', 'is', null);
+
+  if (collabError) {
+    console.error('Error fetching collaborated river walks:', collabError);
+    // Don't throw error here, just continue with owned walks
+  }
+
+  // Fetch the actual river walk data for collaborated walks
+  const collaboratedWalkIds = collaboratedWalks?.map(
+    (item: any) => item.collaboration_metadata.river_walk_reference_id
+  ) || [];
+
+  let collaboratedWalkData = [];
+  if (collaboratedWalkIds.length > 0) {
+    const { data, error } = await supabase
+      .from('river_walks')
+      .select('*')
+      .in('id', collaboratedWalkIds)
+      .eq('archived', false)
+      .order('date', { ascending: false });
+
+    if (!error && data) {
+      collaboratedWalkData = data;
+    }
+  }
+
+  // Combine and deduplicate
+  const allWalks = [...(ownedWalks || []), ...collaboratedWalkData];
+  const uniqueWalks = allWalks.filter((walk, index, self) => 
+    index === self.findIndex(w => w.id === walk.id)
+  );
+
+  return uniqueWalks;
+}

@@ -9,8 +9,10 @@ import {
   EnhancedSiteManagement,
 } from '../components/river-walks';
 import { ReportGenerator } from '../components/river-walks/ReportGenerator';
+import { ShareModal } from '../components/river-walks/ShareModal';
 import { DiagnosticPanel } from '../components/DiagnosticPanel';
 import { useOfflineRiverWalks } from '../hooks/useOfflineData';
+import { useCollaborationFeatureFlag } from '../hooks/useCollaboration';
 import { useToast } from '../components/ui/ToastProvider';
 import { offlineDataService } from '../lib/offlineDataService';
 import type { RiverWalk, RiverWalkFormData, Site } from '../types';
@@ -20,6 +22,7 @@ import type { User } from '@supabase/supabase-js';
 export default function RiverWalksPage() {
   const router = useRouter();
   const { showSuccess, showError } = useToast();
+  const { collaborationEnabled } = useCollaborationFeatureFlag();
   const [user, setUser] = useState<User | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [currentRiverWalk, setCurrentRiverWalk] = useState<RiverWalk | null>(
@@ -33,6 +36,7 @@ export default function RiverWalksPage() {
   const [loadingReport, setLoadingReport] = useState(false);
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const [archiveLoading, setArchiveLoading] = useState<string | null>(null);
+  const [shareRiverWalk, setShareRiverWalk] = useState<RiverWalk | null>(null);
 
   const {
     riverWalks,
@@ -215,6 +219,14 @@ export default function RiverWalksPage() {
     setReportSites([]);
   };
 
+  const handleShare = (riverWalk: RiverWalk) => {
+    setShareRiverWalk(riverWalk);
+  };
+
+  const handleCloseShare = () => {
+    setShareRiverWalk(null);
+  };
+
   const handleSignOut = async () => {
     // Clear offline cache before signing out
     offlineDataService.clearUserCache();
@@ -347,6 +359,7 @@ export default function RiverWalksPage() {
           onDelete={handleDelete}
           onManageSites={handleManageSites}
           onGenerateReport={handleGenerateReport}
+          onShare={collaborationEnabled ? handleShare : undefined}
           isRiverWalkSynced={isRiverWalkSynced}
           archiveLoading={archiveLoading}
         />
@@ -365,6 +378,15 @@ export default function RiverWalksPage() {
             riverWalk={reportRiverWalk}
             sites={reportSites}
             onClose={handleCloseReport}
+          />
+        )}
+
+        {/* Share modal */}
+        {shareRiverWalk && collaborationEnabled && (
+          <ShareModal
+            riverWalk={shareRiverWalk}
+            isOpen={true}
+            onClose={handleCloseShare}
           />
         )}
 
