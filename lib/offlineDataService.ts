@@ -529,18 +529,37 @@ export class OfflineDataService {
       try {
         // Only attempt server update if we have a real server ID (not local)
         if (existingRiverWalk.id && !existingRiverWalk.id.startsWith('local_')) {
-          console.log('Attempting online update for river walk:', { riverWalkId, serverId: existingRiverWalk.id });
+          console.log('Attempting online update for river walk:', { 
+            riverWalkId, 
+            serverId: existingRiverWalk.id, 
+            updateData: riverWalkData,
+            isOnline: this.checkOnline()
+          });
+          
+          const updatePayload = {
+            ...riverWalkData,
+            user_id: userId,
+          };
+          console.log('Update payload:', updatePayload);
+          
           const { data, error } = await supabase
             .from('river_walks')
-            .update({
-              ...riverWalkData,
-              user_id: userId,
-            })
+            .update(updatePayload)
             .eq('id', existingRiverWalk.id)
             .select()
             .single();
 
-          if (error) throw error;
+          console.log('Supabase update result:', { data, error });
+
+          if (error) {
+            console.error('Supabase update error details:', {
+              message: error.message,
+              code: error.code,
+              details: error.details,
+              hint: error.hint
+            });
+            throw error;
+          }
 
           if (data) {
             // Successfully updated online - mark as synced
@@ -550,6 +569,9 @@ export class OfflineDataService {
             // Trigger sync status update
             window.dispatchEvent(new CustomEvent('riverwalks-data-changed'));
             return data;
+          } else {
+            console.error('No data returned from update operation');
+            throw new Error('No data returned from update operation');
           }
         } else {
           console.log('River walk has local ID, adding to sync queue:', { riverWalkId, localId: existingRiverWalk.id });
@@ -562,7 +584,13 @@ export class OfflineDataService {
           window.dispatchEvent(new CustomEvent('riverwalks-data-changed'));
         }
       } catch (error) {
-        console.error('Failed to update online, will sync later:', error);
+        console.error('Failed to update online, will sync later. Error details:', {
+          error,
+          message: error instanceof Error ? error.message : 'Unknown error',
+          stack: error instanceof Error ? error.stack : undefined,
+          riverWalkId,
+          serverId: existingRiverWalk.id
+        });
         // Add to sync queue for later
         await this.addToSyncQueue('UPDATE', 'river_walks', {
           ...riverWalkData,
