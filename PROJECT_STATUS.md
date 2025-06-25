@@ -376,6 +376,43 @@ Riverwalks is a web application designed primarily for GCSE Geography students t
   - Interactive 3D river profiles with depth-based coloring available for future re-integration
   - Complete React component with TypeScript integration preserved
 
+### ❌ Collaboration System (ATTEMPTED - REVERTED)
+
+**Attempted Implementation (June 25, 2025)**: Multi-user collaboration system with shareable links
+
+#### **What Was Built:**
+- **Database Schema**: `collaboration_invites`, `river_walk_collaborators`, `change_log` tables
+- **Invite System**: Token-based invitations with 7-day expiration
+- **Permission Roles**: Owner, Editor, Viewer role hierarchy
+- **UI Components**: ShareableLinksModal with tabbed interface for sharing and managing collaborators
+- **Generic Sharing**: Links that work for any authenticated user (email='*' system)
+- **Conflict Resolution**: Smart handling of offline/online sync conflicts
+
+#### **Issues Encountered:**
+1. **Sync Compatibility**: Adding new database columns (`collaboration_enabled`, `last_modified_by`, `last_modified_at`) broke existing sync functionality
+2. **Token Generation Failures**: `generate_invite_token` RPC function failed on local river walks
+3. **Complex Dependencies**: Collaboration system created circular dependencies with sync process
+4. **UX Confusion**: Users expected immediate collaboration but were blocked by sync requirements
+
+#### **Root Cause:**
+The collaboration system was added **after** the core sync functionality was already perfected. Adding new required database columns without updating all sync operations caused existing river walks to fail synchronization.
+
+#### **Decision:**
+**Reverted to commit `3ba2020`** (pre-collaboration) to restore stable sync functionality. The platform's core educational value (offline-first data collection) takes precedence over collaboration features.
+
+#### **Lessons Learned:**
+- **Database Migrations**: Any schema changes must include comprehensive updates to all data insertion/sync operations
+- **Feature Dependencies**: New features should not break existing core functionality
+- **Progressive Development**: Collaboration should be built as an optional layer, not integrated into core sync
+- **Testing Approach**: Need better isolated testing of sync functionality before adding complex features
+
+#### **Future Collaboration Approach:**
+If collaboration is attempted again, consider:
+- **Export/Import Workflow**: Users share Excel exports instead of live collaboration
+- **Separate Collaboration Database**: Keep collaboration metadata separate from core river walk data
+- **Post-Sync Integration**: Only enable collaboration after successful sync to server
+- **Optional Feature**: Make collaboration completely optional without affecting core functionality
+
 ## 🗄️ Database Schema
 
 ### river_walks table
