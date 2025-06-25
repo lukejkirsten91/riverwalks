@@ -562,6 +562,7 @@ export async function getUserPendingInvitesRPC(): Promise<CollaboratorAccess[]> 
 
 /**
  * Gets all river walks that the user has access to (owned or collaborated)
+ * Uses RPC functions to bypass RLS recursion issues
  */
 export async function getAccessibleRiverWalks() {
   console.log('🔍 [DEBUG] getAccessibleRiverWalks: Starting function');
@@ -594,82 +595,30 @@ export async function getAccessibleRiverWalks() {
     riverWalkIds: ownedWalks?.map(rw => rw.id) || []
   });
 
-  // Get collaborated river walks - fetch the collaboration_id first, then get metadata separately
-  const { data: collaboratedWalks, error: collabError } = await supabase
-    .from('collaborator_access')
-    .select('*')
-    .eq('user_email', user.user.email)
-    .not('accepted_at', 'is', null);
-
-  console.log('🔍 [DEBUG] getAccessibleRiverWalks: Collaborated access query result', {
-    hasError: !!collabError,
-    error: collabError,
-    dataCount: collaboratedWalks?.length || 0,
-    collaborations: collaboratedWalks?.map(cw => ({
-      id: cw.id,
-      collaboration_id: cw.collaboration_id,
-      user_email: cw.user_email,
-      role: cw.role,
-      accepted_at: cw.accepted_at
-    })) || []
-  });
-
-  if (collabError) {
-    console.error('Error fetching collaborated river walks:', collabError);
-    // Don't throw error here, just continue with owned walks
-  }
-
-  // Now fetch the collaboration metadata separately for each collaboration_id
-  let collaboratedWalkIds: string[] = [];
-  if (collaboratedWalks && collaboratedWalks.length > 0) {
-    console.log('🔍 [DEBUG] getAccessibleRiverWalks: Fetching collaboration metadata for collaboration IDs:', 
-      collaboratedWalks.map(cw => cw.collaboration_id));
-    
-    const { data: collaborationMetadata, error: metadataError } = await supabase
-      .from('collaboration_metadata')
-      .select('river_walk_reference_id')
-      .in('id', collaboratedWalks.map(cw => cw.collaboration_id));
-
-    console.log('🔍 [DEBUG] getAccessibleRiverWalks: Collaboration metadata query result', {
-      hasError: !!metadataError,
-      error: metadataError,
-      dataCount: collaborationMetadata?.length || 0,
-      metadata: collaborationMetadata || []
-    });
-
-    if (!metadataError && collaborationMetadata) {
-      collaboratedWalkIds = collaborationMetadata.map(cm => cm.river_walk_reference_id);
-    }
-  }
-
-  console.log('🔍 [DEBUG] getAccessibleRiverWalks: Collaborated river walk IDs to fetch', {
-    collaboratedWalkIds,
-    count: collaboratedWalkIds.length
-  });
-
+  // Use RPC function to get collaborated river walks - this bypasses RLS recursion
   let collaboratedWalkData = [];
-  if (collaboratedWalkIds.length > 0) {
-    const { data, error } = await supabase
-      .from('river_walks')
-      .select('*')
-      .in('id', collaboratedWalkIds)
-      .eq('archived', false)
-      .order('date', { ascending: false });
-
-    console.log('🔍 [DEBUG] getAccessibleRiverWalks: Collaborated river walks fetch result', {
-      hasError: !!error,
-      error,
-      dataCount: data?.length || 0,
-      riverWalks: data?.map(rw => ({
+  try {
+    console.log('🔍 [DEBUG] getAccessibleRiverWalks: Calling RPC function to get collaborated river walks');
+    
+    const { data: rpcData, error: rpcError } = await supabase.rpc('get_collaborated_river_walks');
+    
+    console.log('🔍 [DEBUG] getAccessibleRiverWalks: RPC result', {
+      hasError: !!rpcError,
+      error: rpcError,
+      dataCount: rpcData?.length || 0,
+      riverWalks: rpcData?.map((rw: any) => ({
         id: rw.id,
         name: rw.name,
         user_id: rw.user_id
       })) || []
     });
 
-    if (!error && data) {
-      collaboratedWalkData = data;
+    if (!rpcError && rpcData) {
+      collaboratedWalkData = rpcData;
     }
+  } catch (rpcError) {
+    console.error('Error fetching collaborated river walks via RPC:', rpcError);
+    // Continue with owned walks only
   }
 
   // Combine and deduplicate
