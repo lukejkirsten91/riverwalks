@@ -594,15 +594,10 @@ export async function getAccessibleRiverWalks() {
     riverWalkIds: ownedWalks?.map(rw => rw.id) || []
   });
 
-  // Get collaborated river walks - use LEFT JOIN instead of INNER JOIN
+  // Get collaborated river walks - fetch the collaboration_id first, then get metadata separately
   const { data: collaboratedWalks, error: collabError } = await supabase
     .from('collaborator_access')
-    .select(`
-      *,
-      collaboration_metadata (
-        river_walk_reference_id
-      )
-    `)
+    .select('*')
     .eq('user_email', user.user.email)
     .not('accepted_at', 'is', null);
 
@@ -615,8 +610,7 @@ export async function getAccessibleRiverWalks() {
       collaboration_id: cw.collaboration_id,
       user_email: cw.user_email,
       role: cw.role,
-      accepted_at: cw.accepted_at,
-      river_walk_id: cw.collaboration_metadata?.river_walk_reference_id
+      accepted_at: cw.accepted_at
     })) || []
   });
 
@@ -625,10 +619,28 @@ export async function getAccessibleRiverWalks() {
     // Don't throw error here, just continue with owned walks
   }
 
-  // Fetch the actual river walk data for collaborated walks
-  const collaboratedWalkIds = collaboratedWalks?.map(
-    (item: any) => item.collaboration_metadata?.river_walk_reference_id
-  ).filter(Boolean) || [];
+  // Now fetch the collaboration metadata separately for each collaboration_id
+  let collaboratedWalkIds: string[] = [];
+  if (collaboratedWalks && collaboratedWalks.length > 0) {
+    console.log('🔍 [DEBUG] getAccessibleRiverWalks: Fetching collaboration metadata for collaboration IDs:', 
+      collaboratedWalks.map(cw => cw.collaboration_id));
+    
+    const { data: collaborationMetadata, error: metadataError } = await supabase
+      .from('collaboration_metadata')
+      .select('river_walk_reference_id')
+      .in('id', collaboratedWalks.map(cw => cw.collaboration_id));
+
+    console.log('🔍 [DEBUG] getAccessibleRiverWalks: Collaboration metadata query result', {
+      hasError: !!metadataError,
+      error: metadataError,
+      dataCount: collaborationMetadata?.length || 0,
+      metadata: collaborationMetadata || []
+    });
+
+    if (!metadataError && collaborationMetadata) {
+      collaboratedWalkIds = collaborationMetadata.map(cm => cm.river_walk_reference_id);
+    }
+  }
 
   console.log('🔍 [DEBUG] getAccessibleRiverWalks: Collaborated river walk IDs to fetch', {
     collaboratedWalkIds,
