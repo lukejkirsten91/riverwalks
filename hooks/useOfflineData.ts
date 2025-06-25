@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { offlineDataService } from '../lib/offlineDataService';
 import { useSyncStatus } from '../contexts/SyncStatusContext';
+import { getAccessibleRiverWalks, isCollaborationEnabled } from '../lib/api/collaboration';
 import type { RiverWalk, Site, MeasurementPoint } from '../types';
 
 // Hook for accessing shared sync status (now just a wrapper around context)
@@ -20,8 +21,47 @@ export function useOfflineRiverWalks() {
     try {
       setLoading(true);
       setError(null);
-      const data = await offlineDataService.getRiverWalks();
-      setRiverWalks(data);
+      
+      // Get owned river walks from offline service
+      const ownedRiverWalks = await offlineDataService.getRiverWalks();
+      
+      // Get shared river walks if collaboration is enabled
+      let allRiverWalks = ownedRiverWalks;
+      if (isCollaborationEnabled()) {
+        try {
+          console.log('🔍 [DEBUG] useOfflineRiverWalks: Fetching accessible river walks (including shared)');
+          const accessibleRiverWalks = await getAccessibleRiverWalks();
+          
+          // Combine and deduplicate (owned + shared)
+          const riverWalkMap = new Map();
+          
+          // Add owned river walks first
+          ownedRiverWalks.forEach(rw => riverWalkMap.set(rw.id, rw));
+          
+          // Add shared river walks (will not overwrite owned ones due to map behavior)
+          accessibleRiverWalks.forEach(rw => {
+            if (!riverWalkMap.has(rw.id)) {
+              riverWalkMap.set(rw.id, rw);
+            }
+          });
+          
+          allRiverWalks = Array.from(riverWalkMap.values());
+          
+          console.log('🔍 [DEBUG] useOfflineRiverWalks: Combined river walks', {
+            ownedCount: ownedRiverWalks.length,
+            accessibleCount: accessibleRiverWalks.length,
+            totalCount: allRiverWalks.length,
+            ownedIds: ownedRiverWalks.map(rw => rw.id),
+            accessibleIds: accessibleRiverWalks.map(rw => rw.id),
+            allIds: allRiverWalks.map(rw => rw.id)
+          });
+        } catch (collabError) {
+          console.error('Failed to fetch shared river walks, using owned only:', collabError);
+          // Continue with owned river walks only
+        }
+      }
+      
+      setRiverWalks(allRiverWalks);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch river walks');
       console.error('Error fetching river walks:', err);
