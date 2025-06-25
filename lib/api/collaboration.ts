@@ -564,10 +564,17 @@ export async function getUserPendingInvitesRPC(): Promise<CollaboratorAccess[]> 
  * Gets all river walks that the user has access to (owned or collaborated)
  */
 export async function getAccessibleRiverWalks() {
+  console.log('🔍 [DEBUG] getAccessibleRiverWalks: Starting function');
+  
   const { data: user } = await supabase.auth.getUser();
   if (!user.user) {
     throw new Error('User not authenticated');
   }
+
+  console.log('🔍 [DEBUG] getAccessibleRiverWalks: User info', {
+    userId: user.user.id,
+    userEmail: user.user.email
+  });
 
   // Get owned river walks
   const { data: ownedWalks, error: ownedError } = await supabase
@@ -582,16 +589,36 @@ export async function getAccessibleRiverWalks() {
     throw new Error(`Failed to fetch owned river walks: ${ownedError.message}`);
   }
 
-  // Get collaborated river walks
+  console.log('🔍 [DEBUG] getAccessibleRiverWalks: Owned river walks', {
+    count: ownedWalks?.length || 0,
+    riverWalkIds: ownedWalks?.map(rw => rw.id) || []
+  });
+
+  // Get collaborated river walks - use LEFT JOIN instead of INNER JOIN
   const { data: collaboratedWalks, error: collabError } = await supabase
     .from('collaborator_access')
     .select(`
-      collaboration_metadata!inner (
+      *,
+      collaboration_metadata (
         river_walk_reference_id
       )
     `)
     .eq('user_email', user.user.email)
     .not('accepted_at', 'is', null);
+
+  console.log('🔍 [DEBUG] getAccessibleRiverWalks: Collaborated access query result', {
+    hasError: !!collabError,
+    error: collabError,
+    dataCount: collaboratedWalks?.length || 0,
+    collaborations: collaboratedWalks?.map(cw => ({
+      id: cw.id,
+      collaboration_id: cw.collaboration_id,
+      user_email: cw.user_email,
+      role: cw.role,
+      accepted_at: cw.accepted_at,
+      river_walk_id: cw.collaboration_metadata?.river_walk_reference_id
+    })) || []
+  });
 
   if (collabError) {
     console.error('Error fetching collaborated river walks:', collabError);
@@ -600,8 +627,13 @@ export async function getAccessibleRiverWalks() {
 
   // Fetch the actual river walk data for collaborated walks
   const collaboratedWalkIds = collaboratedWalks?.map(
-    (item: any) => item.collaboration_metadata.river_walk_reference_id
-  ) || [];
+    (item: any) => item.collaboration_metadata?.river_walk_reference_id
+  ).filter(Boolean) || [];
+
+  console.log('🔍 [DEBUG] getAccessibleRiverWalks: Collaborated river walk IDs to fetch', {
+    collaboratedWalkIds,
+    count: collaboratedWalkIds.length
+  });
 
   let collaboratedWalkData = [];
   if (collaboratedWalkIds.length > 0) {
@@ -611,6 +643,17 @@ export async function getAccessibleRiverWalks() {
       .in('id', collaboratedWalkIds)
       .eq('archived', false)
       .order('date', { ascending: false });
+
+    console.log('🔍 [DEBUG] getAccessibleRiverWalks: Collaborated river walks fetch result', {
+      hasError: !!error,
+      error,
+      dataCount: data?.length || 0,
+      riverWalks: data?.map(rw => ({
+        id: rw.id,
+        name: rw.name,
+        user_id: rw.user_id
+      })) || []
+    });
 
     if (!error && data) {
       collaboratedWalkData = data;
@@ -622,6 +665,14 @@ export async function getAccessibleRiverWalks() {
   const uniqueWalks = allWalks.filter((walk, index, self) => 
     index === self.findIndex(w => w.id === walk.id)
   );
+
+  console.log('🔍 [DEBUG] getAccessibleRiverWalks: Final result', {
+    ownedCount: ownedWalks?.length || 0,
+    collaboratedCount: collaboratedWalkData.length,
+    totalBeforeDedup: allWalks.length,
+    totalAfterDedup: uniqueWalks.length,
+    finalRiverWalkIds: uniqueWalks.map(rw => rw.id)
+  });
 
   return uniqueWalks;
 }
