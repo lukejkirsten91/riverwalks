@@ -397,10 +397,33 @@ export default function RiverWalksPage() {
                       </div>
                       <button
                         onClick={async () => {
+                          console.log('🔍 [DEBUG] RiverWalksPage: Accept button clicked', {
+                            inviteId: invite.id,
+                            inviteToken: invite.invite_token ? invite.invite_token.substring(0, 10) + '...' : null,
+                            inviteRole: invite.role,
+                            timestamp: new Date().toISOString()
+                          });
+                          
                           try {
-                            await acceptInvite(invite.invite_token);
+                            console.log('🔍 [DEBUG] RiverWalksPage: Calling acceptInvite');
+                            const result = await acceptInvite(invite.invite_token);
+                            
+                            console.log('🔍 [DEBUG] RiverWalksPage: Accept successful', {
+                              success: result.success,
+                              message: result.message,
+                              riverWalkId: result.river_walk_id
+                            });
+                            
+                            console.log('🔍 [DEBUG] RiverWalksPage: Refreshing main river walks list');
+                            await refetch();
+                            console.log('🔍 [DEBUG] RiverWalksPage: River walks list refreshed');
+                            
                             showSuccess('Invite Accepted', 'You now have access to this river walk!');
                           } catch (error) {
+                            console.error('🔍 [DEBUG] RiverWalksPage: Accept failed', {
+                              error: error,
+                              errorMessage: error instanceof Error ? error.message : String(error)
+                            });
                             showError('Accept Failed', error instanceof Error ? error.message : 'Failed to accept invite');
                           }
                         }}

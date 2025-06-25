@@ -162,20 +162,54 @@ export async function getInviteDetails(token: string): Promise<InviteDetails> {
  * Accepts a collaboration invite using a token
  */
 export async function acceptCollaborationInvite(token: string): Promise<AcceptInviteResult> {
+  console.log('🔍 [DEBUG] acceptCollaborationInvite: Starting function', {
+    token: token ? token.substring(0, 10) + '...' : null,
+    tokenLength: token ? token.length : 0,
+    timestamp: new Date().toISOString()
+  });
+
+  console.log('🔍 [DEBUG] acceptCollaborationInvite: Calling Supabase RPC function', {
+    functionName: 'accept_collaboration_invite',
+    parameters: { p_token: token ? token.substring(0, 10) + '...' : null }
+  });
+
   const { data, error } = await supabase.rpc('accept_collaboration_invite', {
     p_token: token
   });
 
+  console.log('🔍 [DEBUG] acceptCollaborationInvite: Supabase RPC response', {
+    hasError: !!error,
+    error: error ? {
+      message: error.message,
+      details: error.details,
+      hint: error.hint,
+      code: error.code
+    } : null,
+    hasData: !!data,
+    dataType: data ? typeof data : null,
+    dataIsArray: Array.isArray(data),
+    dataLength: data ? data.length : 0
+  });
+
   if (error) {
-    console.error('Error accepting collaboration invite:', error);
+    console.error('🔍 [DEBUG] acceptCollaborationInvite: Database error', error);
     throw new Error(`Failed to accept invite: ${error.message}`);
   }
 
   if (!data || data.length === 0) {
+    console.error('🔍 [DEBUG] acceptCollaborationInvite: No data returned');
     throw new Error('No response from invite acceptance');
   }
 
-  return data[0];
+  const result = data[0];
+  console.log('🔍 [DEBUG] acceptCollaborationInvite: Successful result', {
+    success: result.success,
+    message: result.message,
+    riverWalkId: result.river_walk_id,
+    hasRiverWalkId: !!result.river_walk_id
+  });
+
+  return result;
 }
 
 /**
