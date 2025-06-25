@@ -53,22 +53,73 @@ export async function createCollaborationInvite(
   userEmail: string = '*',
   role: 'editor' | 'viewer' = 'editor'
 ): Promise<InviteResult> {
+  console.log('🔍 [DEBUG] createCollaborationInvite: Starting function', {
+    riverWalkId,
+    userEmail: userEmail === '*' ? 'WILDCARD' : '[EMAIL_PROVIDED]',
+    role,
+    timestamp: new Date().toISOString()
+  });
+
+  console.log('🔍 [DEBUG] createCollaborationInvite: Calling Supabase RPC function', {
+    functionName: 'create_collaboration_invite',
+    parameters: {
+      p_river_walk_id: riverWalkId,
+      p_user_email: userEmail === '*' ? 'WILDCARD' : '[EMAIL_PROVIDED]',
+      p_role: role
+    }
+  });
+
   const { data, error } = await supabase.rpc('create_collaboration_invite', {
     p_river_walk_id: riverWalkId,
     p_user_email: userEmail,
     p_role: role
   });
 
+  console.log('🔍 [DEBUG] createCollaborationInvite: Supabase RPC response', {
+    hasError: !!error,
+    error: error ? {
+      message: error.message,
+      details: error.details,
+      hint: error.hint,
+      code: error.code
+    } : null,
+    hasData: !!data,
+    dataType: typeof data,
+    dataIsArray: Array.isArray(data),
+    dataLength: data ? (Array.isArray(data) ? data.length : 'not-array') : 0,
+    dataKeys: data && typeof data === 'object' ? Object.keys(data) : null
+  });
+
   if (error) {
+    console.error('🔍 [DEBUG] createCollaborationInvite: Database error occurred', {
+      error,
+      errorMessage: error.message,
+      errorDetails: error.details,
+      errorHint: error.hint,
+      errorCode: error.code
+    });
     console.error('Error creating collaboration invite:', error);
     throw new Error(`Failed to create invite: ${error.message}`);
   }
 
   if (!data || data.length === 0) {
+    console.error('🔍 [DEBUG] createCollaborationInvite: No data returned from RPC', {
+      data,
+      dataLength: data ? data.length : 'null/undefined'
+    });
     throw new Error('No invite data returned');
   }
 
-  return data[0];
+  const result = data[0];
+  console.log('🔍 [DEBUG] createCollaborationInvite: Successful result', {
+    hasInviteToken: !!result.invite_token,
+    hasInviteUrl: !!result.invite_url,
+    inviteTokenLength: result.invite_token ? result.invite_token.length : 0,
+    inviteUrlLength: result.invite_url ? result.invite_url.length : 0,
+    inviteUrlPreview: result.invite_url ? result.invite_url.substring(0, 50) + '...' : null
+  });
+
+  return result;
 }
 
 /**
