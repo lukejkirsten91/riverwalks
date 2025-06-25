@@ -208,7 +208,7 @@ export function ShareModal({ riverWalk, isOpen, onClose }: ShareModalProps) {
                 <div>
                   <h3 className="text-sm font-medium text-foreground mb-3">Pending Invites</h3>
                   <div className="space-y-2">
-                    {pendingInvites.map((invite) => (
+                    {pendingInvites.map((invite: CollaboratorAccess) => (
                       <div
                         key={invite.id}
                         className="flex items-center justify-between p-3 bg-muted rounded-lg"
@@ -266,7 +266,7 @@ export function ShareModal({ riverWalk, isOpen, onClose }: ShareModalProps) {
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {activeCollaborators.map((collaborator) => (
+                  {activeCollaborators.map((collaborator: CollaboratorAccess) => (
                     <div
                       key={collaborator.id}
                       className="flex items-center justify-between p-3 border border-border rounded-lg"
