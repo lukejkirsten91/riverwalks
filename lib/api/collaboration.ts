@@ -305,9 +305,12 @@ export async function getUserPendingInvites(): Promise<CollaboratorAccess[]> {
   }
 
   const userEmail = user.user.email;
+  const userEmailLower = userEmail.toLowerCase();
   const currentTime = new Date().toISOString();
+  
   console.log('🔍 [DEBUG] getUserPendingInvites: Query parameters', {
     userEmail,
+    userEmailLower,
     currentTime,
     queryConditions: {
       user_email: userEmail,
@@ -316,6 +319,119 @@ export async function getUserPendingInvites(): Promise<CollaboratorAccess[]> {
     }
   });
 
+  // First, let's check what invites exist in the database regardless of RLS
+  console.log('🔍 [DEBUG] getUserPendingInvites: Testing auth.email() vs user.email equivalency');
+  const { data: authTest } = await supabase.rpc('debug_auth_email_test');
+  console.log('🔍 [DEBUG] getUserPendingInvites: Auth email test result', authTest);
+
+  // Run comprehensive debug check
+  console.log('🔍 [DEBUG] getUserPendingInvites: Running comprehensive debug check');
+  const { data: debugData } = await supabase.rpc('debug_comprehensive_invite_check', { test_email: userEmail });
+  console.log('🔍 [DEBUG] getUserPendingInvites: Comprehensive debug results', debugData);
+
+  // Test RLS bypass to see if RLS is blocking the results
+  console.log('🔍 [DEBUG] getUserPendingInvites: Testing RLS bypass');
+  const { data: rlsBypassData, error: rlsBypassError } = await supabase.rpc('debug_get_user_pending_invites_bypass_rls', { test_email: userEmail });
+  console.log('🔍 [DEBUG] getUserPendingInvites: RLS bypass result', {
+    hasError: !!rlsBypassError,
+    error: rlsBypassError,
+    dataCount: rlsBypassData ? rlsBypassData.length : 0,
+    data: rlsBypassData
+  });
+
+  // Test 1: Query without the inner join to see if that's the issue
+  console.log('🔍 [DEBUG] getUserPendingInvites: Test query WITHOUT inner join');
+  const { data: testData1, error: testError1 } = await supabase
+    .from('collaborator_access')
+    .select('*')
+    .eq('user_email', userEmail)
+    .is('accepted_at', null)
+    .gt('invite_expires_at', currentTime);
+
+  console.log('🔍 [DEBUG] getUserPendingInvites: Test 1 result (no join)', {
+    hasError: !!testError1,
+    error: testError1,
+    dataCount: testData1 ? testData1.length : 0,
+    data: testData1 ? testData1.map(record => ({
+      id: record.id,
+      collaboration_id: record.collaboration_id,
+      user_email: record.user_email,
+      role: record.role,
+      invite_expires_at: record.invite_expires_at,
+      accepted_at: record.accepted_at,
+      invite_token: record.invite_token ? 'present' : 'missing'
+    })) : null
+  });
+
+  // Test 1b: Query with LEFT join instead of INNER join
+  console.log('🔍 [DEBUG] getUserPendingInvites: Test query with LEFT join');
+  const { data: testData1b, error: testError1b } = await supabase
+    .from('collaborator_access')
+    .select(`
+      *,
+      collaboration_metadata (
+        river_walk_reference_id,
+        owner_id
+      )
+    `)
+    .eq('user_email', userEmail)
+    .is('accepted_at', null)
+    .gt('invite_expires_at', currentTime);
+
+  console.log('🔍 [DEBUG] getUserPendingInvites: Test 1b result (left join)', {
+    hasError: !!testError1b,
+    error: testError1b,
+    dataCount: testData1b ? testData1b.length : 0,
+    data: testData1b ? testData1b.map(record => ({
+      id: record.id,
+      collaboration_id: record.collaboration_id,
+      user_email: record.user_email,
+      role: record.role,
+      has_collaboration_metadata: !!record.collaboration_metadata,
+      collaboration_metadata: record.collaboration_metadata
+    })) : null
+  });
+
+  // Test 2: Query with case-insensitive email matching
+  console.log('🔍 [DEBUG] getUserPendingInvites: Test query with LOWER email comparison');
+  const { data: testData2, error: testError2 } = await supabase
+    .from('collaborator_access')
+    .select('*')
+    .ilike('user_email', userEmailLower)
+    .is('accepted_at', null)
+    .gt('invite_expires_at', currentTime);
+
+  console.log('🔍 [DEBUG] getUserPendingInvites: Test 2 result (case insensitive)', {
+    hasError: !!testError2,
+    error: testError2,
+    dataCount: testData2 ? testData2.length : 0,
+    data: testData2
+  });
+
+  // Test 3: Query all unexpired invites to see what's there
+  console.log('🔍 [DEBUG] getUserPendingInvites: Test query for ALL unexpired invites');
+  const { data: testData3, error: testError3 } = await supabase
+    .from('collaborator_access')
+    .select('*')
+    .is('accepted_at', null)
+    .gt('invite_expires_at', currentTime);
+
+  console.log('🔍 [DEBUG] getUserPendingInvites: Test 3 result (all unexpired)', {
+    hasError: !!testError3,
+    error: testError3,
+    dataCount: testData3 ? testData3.length : 0,
+    data: testData3 ? testData3.map(invite => ({
+      id: invite.id,
+      user_email: invite.user_email,
+      user_email_match_exact: invite.user_email === userEmail,
+      user_email_match_lower: invite.user_email.toLowerCase() === userEmailLower,
+      role: invite.role,
+      invited_at: invite.invited_at,
+      invite_expires_at: invite.invite_expires_at
+    })) : null
+  });
+
+  // Now try the actual query
   const { data, error } = await supabase
     .from('collaborator_access')
     .select(`
@@ -330,7 +446,7 @@ export async function getUserPendingInvites(): Promise<CollaboratorAccess[]> {
     .gt('invite_expires_at', currentTime)
     .order('invited_at', { ascending: false });
 
-  console.log('🔍 [DEBUG] getUserPendingInvites: Database query result', {
+  console.log('🔍 [DEBUG] getUserPendingInvites: Main query result', {
     hasError: !!error,
     error: error ? {
       message: error.message,
@@ -370,6 +486,44 @@ export async function getUserPendingInvites(): Promise<CollaboratorAccess[]> {
   });
 
   return result;
+}
+
+/**
+ * Alternative implementation using RPC to ensure auth.email() consistency
+ */
+export async function getUserPendingInvitesRPC(): Promise<CollaboratorAccess[]> {
+  console.log('🔍 [DEBUG] getUserPendingInvitesRPC: Starting RPC-based function');
+  
+  const { data, error } = await supabase.rpc('get_user_pending_invites');
+  
+  console.log('🔍 [DEBUG] getUserPendingInvitesRPC: RPC result', {
+    hasError: !!error,
+    error: error ? {
+      message: error.message,
+      details: error.details,
+      hint: error.hint,
+      code: error.code
+    } : null,
+    dataCount: data ? data.length : 0,
+    data: data ? data.map(invite => ({
+      id: invite.id,
+      user_email: invite.user_email,
+      role: invite.role,
+      invited_at: invite.invited_at,
+      accepted_at: invite.accepted_at,
+      invite_expires_at: invite.invite_expires_at,
+      invite_token: invite.invite_token ? 'present' : 'missing',
+      collaboration_id: invite.collaboration_id,
+      river_walk_id: invite.river_walk_reference_id
+    })) : null
+  });
+
+  if (error) {
+    console.error('🔍 [DEBUG] getUserPendingInvitesRPC: Database error', error);
+    return [];
+  }
+
+  return data || [];
 }
 
 /**
