@@ -11,10 +11,10 @@ function MyApp({ Component, pageProps }: AppProps) {
     <ToastProvider>
       <SyncStatusProvider>
         <div className="relative">
-          {/* Global status indicators */}
-          <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 flex flex-col gap-2">
-            <OfflineIndicator />
-            <SyncStatus />
+          {/* Global status indicators - centered at top */}
+          <div className="fixed top-6 left-1/2 transform -translate-x-1/2 z-50 flex flex-col gap-3 items-center">
+            <OfflineIndicator className="shadow-modern border border-white/20" />
+            <SyncStatus className="shadow-modern border border-white/20" />
           </div>
           
           <Component {...pageProps} />

@@ -16,7 +16,7 @@ export function OfflineIndicator({ className = '', showText = true }: OfflineInd
 
   if (showOfflineMode) {
     return (
-      <div className={`flex items-center gap-2 bg-blue-50 text-blue-800 px-3 py-2 rounded-lg border border-blue-200 ${className}`}>
+      <div className={`flex items-center justify-center gap-2 bg-blue-50/90 text-blue-800 px-4 py-2 rounded-xl backdrop-blur-sm border-blue-200/50 ${className}`}>
         <CloudOff className="w-4 h-4" />
         {showText && (
           <span className="text-sm font-medium">
@@ -29,7 +29,7 @@ export function OfflineIndicator({ className = '', showText = true }: OfflineInd
 
   if (showConnectivityIssue) {
     return (
-      <div className={`flex items-center gap-2 bg-amber-50 text-amber-800 px-3 py-2 rounded-lg ${className}`}>
+      <div className={`flex items-center justify-center gap-2 bg-amber-50/90 text-amber-800 px-4 py-2 rounded-xl backdrop-blur-sm ${className}`}>
         <AlertTriangle className="w-4 h-4" />
         {showText && (
           <span className="text-sm font-medium">
@@ -41,7 +41,7 @@ export function OfflineIndicator({ className = '', showText = true }: OfflineInd
   }
 
   return (
-    <div className={`flex items-center gap-2 bg-gray-50 text-gray-800 px-3 py-2 rounded-lg ${className}`}>
+    <div className={`flex items-center justify-center gap-2 bg-gray-50/90 text-gray-800 px-4 py-2 rounded-xl backdrop-blur-sm ${className}`}>
       <WifiOff className="w-4 h-4" />
       {showText && (
         <span className="text-sm font-medium">

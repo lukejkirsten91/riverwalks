@@ -75,6 +75,27 @@ export default function RiverWalksPage() {
     checkUser();
   }, [router]);
 
+  // One-time sync queue cleanup (remove after deployment)
+  useEffect(() => {
+    const cleanupSyncQueue = async () => {
+      try {
+        const hasCleared = localStorage.getItem('riverwalks_sync_queue_cleared');
+        if (!hasCleared) {
+          console.log('Performing one-time sync queue cleanup...');
+          await offlineDataService.clearSyncQueue();
+          localStorage.setItem('riverwalks_sync_queue_cleared', 'true');
+          console.log('✅ Sync queue cleared');
+        }
+      } catch (error) {
+        console.error('Error during sync queue cleanup:', error);
+      }
+    };
+
+    if (user) {
+      cleanupSyncQueue();
+    }
+  }, [user]);
+
   // Close profile dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -283,50 +304,6 @@ export default function RiverWalksPage() {
 
         {/* Action buttons - right aligned below header */}
         <div className="flex justify-end gap-3 mb-6">
-          {/* Debug Sync Queue Button */}
-          <button
-            className="btn-secondary touch-manipulation"
-            onClick={async () => {
-              try {
-                const detailedQueue = await offlineDataService.getDetailedSyncQueue();
-                console.log('Detailed sync queue:', detailedQueue);
-                
-                if (detailedQueue.length === 0) {
-                  alert('Sync queue is empty');
-                } else {
-                  const summary = detailedQueue.map(item => 
-                    `${item.type} ${item.table} (${item.localId}) - ${item.attempts} attempts - ${item.timestamp}`
-                  ).join('\n');
-                  alert(`Sync Queue (${detailedQueue.length} items):\n\n${summary}`);
-                }
-              } catch (error) {
-                console.error('Error checking sync queue:', error);
-                alert('Error checking sync queue - see console');
-              }
-            }}
-          >
-            🔍 Debug Queue
-          </button>
-          
-          {/* Clear Sync Queue Button */}
-          <button
-            className="btn-secondary touch-manipulation"
-            onClick={async () => {
-              if (confirm('Clear all pending sync items? This will remove all queued operations.')) {
-                try {
-                  await offlineDataService.clearSyncQueue();
-                  showSuccess('Queue Cleared', 'All pending sync items have been removed');
-                  await refetch();
-                } catch (error) {
-                  console.error('Error clearing sync queue:', error);
-                  showError('Clear Failed', 'Failed to clear sync queue');
-                }
-              }
-            }}
-          >
-            🗑️ Clear Queue
-          </button>
-
           <button
             className={showForm ? "btn-secondary touch-manipulation" : "btn-primary touch-manipulation"}
             onClick={handleAddNewRiverWalk}

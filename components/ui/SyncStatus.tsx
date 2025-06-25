@@ -39,19 +39,19 @@ export function SyncStatus({ className = '', showText = true }: SyncStatusProps)
   }
 
   return (
-    <div className={`flex items-center gap-2 ${className}`}>
+    <div className={`flex items-center justify-center gap-2 ${className}`}>
       {/* Sync button/status */}
       <button
         onClick={handleForceSync}
         disabled={!isOnline || isSyncing}
-        className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${
+        className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all duration-200 backdrop-blur-sm ${
           isSyncing 
-            ? 'bg-blue-50 text-blue-700 cursor-not-allowed'
+            ? 'bg-blue-50/90 text-blue-700 cursor-not-allowed'
             : syncError 
-            ? 'bg-red-50 text-red-700 hover:bg-red-100'
+            ? 'bg-red-50/90 text-red-700 hover:bg-red-100/90'
             : pendingItems > 0 
-            ? 'bg-amber-50 text-amber-700 hover:bg-amber-100'
-            : 'bg-green-50 text-green-700 hover:bg-green-100'
+            ? 'bg-amber-50/90 text-amber-700 hover:bg-amber-100/90'
+            : 'bg-green-50/90 text-green-700 hover:bg-green-100/90'
         }`}
         title={
           isSyncing 
