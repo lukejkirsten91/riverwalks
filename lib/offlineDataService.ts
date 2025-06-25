@@ -692,7 +692,23 @@ export class OfflineDataService {
 
         if (error) throw error;
 
-        // Cache data locally (but don't set river_walk_local_id for server sites)
+        // Clear existing cached sites for this river walk first to prevent stale data
+        const existingCachedSites = await offlineDB.getSites();
+        for (const cachedSite of existingCachedSites) {
+          if (cachedSite.river_walk_id === riverWalkId && cachedSite.synced) {
+            // Only clear synced sites (not unsynced local ones in queue)
+            await offlineDB.deleteSite(cachedSite.localId);
+            // Also clear cached measurement points for this site
+            const cachedPoints = await offlineDB.getMeasurementPointsBySite(cachedSite.localId);
+            for (const point of cachedPoints) {
+              if (point.synced) {
+                await offlineDB.deleteMeasurementPoint(point.localId);
+              }
+            }
+          }
+        }
+
+        // Cache fresh data from server
         if (data) {
           for (const site of data) {
             const offlineSite = {
@@ -1408,6 +1424,28 @@ export class OfflineDataService {
     if (typeof window !== 'undefined') {
       localStorage.removeItem('riverwalks_user_id');
     }
+  }
+
+  // Clear all site cache for debugging/testing
+  async clearSiteCache(riverWalkId?: string): Promise<void> {
+    console.log('Clearing site cache for river walk:', riverWalkId || 'all');
+    
+    const allSites = await offlineDB.getSites();
+    const sitesToClear = riverWalkId 
+      ? allSites.filter(site => site.river_walk_id === riverWalkId)
+      : allSites;
+
+    for (const site of sitesToClear) {
+      await offlineDB.deleteSite(site.localId);
+      
+      // Also clear measurement points for this site
+      const points = await offlineDB.getMeasurementPointsBySite(site.localId);
+      for (const point of points) {
+        await offlineDB.deleteMeasurementPoint(point.localId);
+      }
+    }
+    
+    console.log(`✅ Cleared ${sitesToClear.length} sites from cache`);
   }
 }
 
