@@ -22,7 +22,8 @@ function toOfflineSite(site: Site): OfflineSite {
   return {
     ...site,
     localId: site.id || generateLocalId(),
-    river_walk_local_id: site.river_walk_id,
+    // Only set river_walk_local_id for locally created sites (no server river_walk_id)
+    river_walk_local_id: site.river_walk_id?.startsWith('local_') ? site.river_walk_id : undefined,
     synced: true,
     lastModified: Date.now()
   };
@@ -691,10 +692,17 @@ export class OfflineDataService {
 
         if (error) throw error;
 
-        // Cache data locally
+        // Cache data locally (but don't set river_walk_local_id for server sites)
         if (data) {
           for (const site of data) {
-            await offlineDB.addSite(toOfflineSite(site));
+            const offlineSite = {
+              ...site,
+              localId: site.id || generateLocalId(),
+              // Don't set river_walk_local_id for server sites to avoid confusion
+              synced: true,
+              lastModified: Date.now()
+            };
+            await offlineDB.addSite(offlineSite);
             
             // Cache measurement points
             if (site.measurement_points) {
@@ -711,17 +719,47 @@ export class OfflineDataService {
       }
     }
 
-    // Use offline data - need to handle both local and server IDs
-    let offlineSites: any[] = [];
-    
-    // First try to find by exact river_walk_id match
+    // Use offline data - need to handle both local and server IDs with deduplication
     const allSites = await offlineDB.getSites();
-    offlineSites = allSites.filter(site => 
+    let offlineSites = allSites.filter(site => 
       site.river_walk_id === riverWalkId || 
       site.river_walk_local_id === riverWalkId
     );
 
-    // Sort by site_number to match online ordering
+    // Deduplicate sites: prefer server IDs over local IDs
+    const siteMap = new Map<string, any>();
+    const seenSiteNumbers = new Set<number>();
+
+    for (const site of offlineSites) {
+      const siteNumber = site.site_number;
+      const hasServerId = site.id && !site.id.startsWith('local_');
+      
+      // Skip if we already have a site with this site number and a server ID
+      if (seenSiteNumbers.has(siteNumber)) {
+        const existingKey = Array.from(siteMap.keys()).find(key => 
+          siteMap.get(key).site_number === siteNumber
+        );
+        if (existingKey) {
+          const existingSite = siteMap.get(existingKey);
+          const existingHasServerId = existingSite.id && !existingSite.id.startsWith('local_');
+          
+          // Keep the one with server ID, or keep the existing one if both are local
+          if (hasServerId && !existingHasServerId) {
+            siteMap.delete(existingKey);
+            seenSiteNumbers.delete(siteNumber);
+          } else {
+            continue; // Skip this duplicate
+          }
+        }
+      }
+
+      const key = site.id || site.localId;
+      siteMap.set(key, site);
+      seenSiteNumbers.add(siteNumber);
+    }
+
+    // Convert map back to array and sort
+    offlineSites = Array.from(siteMap.values());
     offlineSites.sort((a, b) => (a.site_number || 0) - (b.site_number || 0));
 
     const sites: Site[] = [];
