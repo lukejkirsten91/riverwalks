@@ -562,7 +562,7 @@ export async function getUserPendingInvitesRPC(): Promise<CollaboratorAccess[]> 
 
 /**
  * Gets all river walks that the user has access to (owned or collaborated)
- * Uses RPC functions to bypass RLS recursion issues
+ * Uses RPC functions to bypass RLS recursion issues, with fallback to direct queries
  */
 export async function getAccessibleRiverWalks() {
   console.log('🔍 [DEBUG] getAccessibleRiverWalks: Starting function');
@@ -595,29 +595,62 @@ export async function getAccessibleRiverWalks() {
     riverWalkIds: ownedWalks?.map(rw => rw.id) || []
   });
 
-  // Use RPC function to get collaborated river walks - this bypasses RLS recursion
+  // Skip RPC function since it's failing and go directly to fallback approach
   let collaboratedWalkData = [];
-  try {
-    console.log('🔍 [DEBUG] getAccessibleRiverWalks: Calling RPC function to get collaborated river walks');
-    
-    const { data: rpcData, error: rpcError } = await supabase.rpc('get_collaborated_river_walks');
-    
-    console.log('🔍 [DEBUG] getAccessibleRiverWalks: RPC result', {
-      hasError: !!rpcError,
-      error: rpcError,
-      dataCount: rpcData?.length || 0,
-      riverWalks: rpcData?.map((rw: any) => ({
-        id: rw.id,
-        name: rw.name,
-        user_id: rw.user_id
-      })) || []
-    });
+  
+  console.log('🔍 [DEBUG] getAccessibleRiverWalks: Skipping RPC function, using direct query fallback approach');
+  
+    console.log('🔍 [DEBUG] getAccessibleRiverWalks: Attempting direct query');
+      
+      // Get collaboration IDs for current user
+      const { data: userCollabs, error: userCollabError } = await supabase
+        .from('collaborator_access')
+        .select('collaboration_id')
+        .eq('user_email', user.user.email)
+        .not('accepted_at', 'is', null);
 
-    if (!rpcError && rpcData) {
-      collaboratedWalkData = rpcData;
-    }
-  } catch (rpcError) {
-    console.error('Error fetching collaborated river walks via RPC:', rpcError);
+      if (userCollabError) {
+        console.error('🔍 [DEBUG] getAccessibleRiverWalks: Failed to get user collaborations', userCollabError);
+      } else if (userCollabs && userCollabs.length > 0) {
+        console.log('🔍 [DEBUG] getAccessibleRiverWalks: Found user collaborations', {
+          count: userCollabs.length,
+          collaborationIds: userCollabs.map(c => c.collaboration_id)
+        });
+
+        // Get collaboration metadata for these collaborations
+        const { data: collabMetadata, error: metadataError } = await supabase
+          .from('collaboration_metadata')
+          .select('river_walk_reference_id')
+          .in('id', userCollabs.map(c => c.collaboration_id));
+
+        if (metadataError) {
+          console.error('🔍 [DEBUG] getAccessibleRiverWalks: Failed to get collaboration metadata', metadataError);
+        } else if (collabMetadata && collabMetadata.length > 0) {
+          console.log('🔍 [DEBUG] getAccessibleRiverWalks: Found collaboration metadata', {
+            count: collabMetadata.length,
+            riverWalkIds: collabMetadata.map(m => m.river_walk_reference_id)
+          });
+
+          // Get the actual river walks
+          const { data: collaboratedWalks, error: walksError } = await supabase
+            .from('river_walks')
+            .select('*')
+            .in('id', collabMetadata.map(m => m.river_walk_reference_id))
+            .eq('archived', false);
+
+          if (walksError) {
+            console.error('🔍 [DEBUG] getAccessibleRiverWalks: Failed to get collaborated river walks', walksError);
+          } else if (collaboratedWalks) {
+            console.log('🔍 [DEBUG] getAccessibleRiverWalks: Successfully got collaborated river walks via fallback', {
+              count: collaboratedWalks.length,
+              riverWalkIds: collaboratedWalks.map(rw => rw.id)
+            });
+            collaboratedWalkData = collaboratedWalks;
+          }
+        }
+      }
+  } catch (fallbackError) {
+    console.error('🔍 [DEBUG] getAccessibleRiverWalks: Direct query approach failed', fallbackError);
     // Continue with owned walks only
   }
 
