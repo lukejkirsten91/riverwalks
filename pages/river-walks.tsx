@@ -42,6 +42,7 @@ export default function RiverWalksPage() {
     updateRiverWalk,
     archiveRiverWalk,
     restoreRiverWalk,
+    deleteRiverWalk,
     refetch,
     isRiverWalkSynced
   } = useOfflineRiverWalks();
@@ -152,8 +153,18 @@ export default function RiverWalksPage() {
   };
 
   const handleDelete = async (id: string) => {
-    // TODO: Implement delete functionality in offline hooks
-    console.log('Delete not yet implemented in offline mode', id);
+    try {
+      setArchiveLoading(id);
+      const riverWalk = archivedRiverWalks.find(rw => rw.id === id);
+      await deleteRiverWalk(id);
+      showSuccess('River Walk Deleted', `${riverWalk?.name || 'River walk'} has been permanently deleted.`);
+      console.log('River walk deleted successfully:', id);
+    } catch (error) {
+      console.error('Failed to delete river walk:', error);
+      showError('Delete Failed', error instanceof Error ? error.message : 'Failed to delete river walk');
+    } finally {
+      setArchiveLoading(null);
+    }
   };
 
   const handleManageSites = (riverWalk: RiverWalk) => {
@@ -271,7 +282,51 @@ export default function RiverWalksPage() {
         </div>
 
         {/* Action buttons - right aligned below header */}
-        <div className="flex justify-end mb-6">
+        <div className="flex justify-end gap-3 mb-6">
+          {/* Debug Sync Queue Button */}
+          <button
+            className="btn-secondary touch-manipulation"
+            onClick={async () => {
+              try {
+                const detailedQueue = await offlineDataService.getDetailedSyncQueue();
+                console.log('Detailed sync queue:', detailedQueue);
+                
+                if (detailedQueue.length === 0) {
+                  alert('Sync queue is empty');
+                } else {
+                  const summary = detailedQueue.map(item => 
+                    `${item.type} ${item.table} (${item.localId}) - ${item.attempts} attempts - ${item.timestamp}`
+                  ).join('\n');
+                  alert(`Sync Queue (${detailedQueue.length} items):\n\n${summary}`);
+                }
+              } catch (error) {
+                console.error('Error checking sync queue:', error);
+                alert('Error checking sync queue - see console');
+              }
+            }}
+          >
+            🔍 Debug Queue
+          </button>
+          
+          {/* Clear Sync Queue Button */}
+          <button
+            className="btn-secondary touch-manipulation"
+            onClick={async () => {
+              if (confirm('Clear all pending sync items? This will remove all queued operations.')) {
+                try {
+                  await offlineDataService.clearSyncQueue();
+                  showSuccess('Queue Cleared', 'All pending sync items have been removed');
+                  await refetch();
+                } catch (error) {
+                  console.error('Error clearing sync queue:', error);
+                  showError('Clear Failed', 'Failed to clear sync queue');
+                }
+              }
+            }}
+          >
+            🗑️ Clear Queue
+          </button>
+
           <button
             className={showForm ? "btn-secondary touch-manipulation" : "btn-primary touch-manipulation"}
             onClick={handleAddNewRiverWalk}

@@ -595,6 +595,59 @@ export class OfflineDataService {
     return await this.updateRiverWalk(riverWalkId, { archived: false });
   }
 
+  async deleteRiverWalk(riverWalkId: string): Promise<boolean> {
+    console.log('Deleting river walk:', { riverWalkId });
+
+    // Get existing river walk from offline storage
+    const allRiverWalks = await offlineDB.getRiverWalks();
+    const existingRiverWalk = allRiverWalks.find(rw => rw.id === riverWalkId || rw.localId === riverWalkId);
+    
+    if (!existingRiverWalk) {
+      throw new Error('River walk not found');
+    }
+
+    // Delete from local storage first
+    await offlineDB.deleteRiverWalk(existingRiverWalk.localId);
+
+    // If online and has server ID, delete from server immediately
+    if (this.checkOnline() && existingRiverWalk.id && !existingRiverWalk.id.startsWith('local_')) {
+      try {
+        const { error } = await supabase
+          .from('river_walks')
+          .delete()
+          .eq('id', existingRiverWalk.id);
+
+        if (error) throw error;
+        
+        console.log('River walk deleted from server successfully:', riverWalkId);
+        // Trigger sync status update
+        window.dispatchEvent(new CustomEvent('riverwalks-data-changed'));
+        return true;
+      } catch (error) {
+        console.error('Failed to delete from server, will sync later:', error);
+        // Add to sync queue for later deletion
+        await this.addToSyncQueue('DELETE', 'river_walks', { id: existingRiverWalk.id }, existingRiverWalk.localId);
+        // Trigger sync status update
+        window.dispatchEvent(new CustomEvent('riverwalks-data-changed'));
+      }
+    } else if (existingRiverWalk.id && existingRiverWalk.id.startsWith('local_')) {
+      // Local-only river walk - just delete locally
+      console.log('Deleted local-only river walk:', riverWalkId);
+      // Trigger sync status update
+      window.dispatchEvent(new CustomEvent('riverwalks-data-changed'));
+    } else if (!this.checkOnline()) {
+      // Offline - add to sync queue if it has a server ID
+      if (existingRiverWalk.id && !existingRiverWalk.id.startsWith('local_')) {
+        await this.addToSyncQueue('DELETE', 'river_walks', { id: existingRiverWalk.id }, existingRiverWalk.localId);
+        console.log('River walk delete queued for sync:', riverWalkId);
+        // Trigger sync status update
+        window.dispatchEvent(new CustomEvent('riverwalks-data-changed'));
+      }
+    }
+
+    return true;
+  }
+
   // Sites methods
   async getSitesByRiverWalk(riverWalkId: string): Promise<Site[]> {
     if (this.checkOnline()) {
@@ -1212,13 +1265,39 @@ export class OfflineDataService {
       queueItems: syncQueue.map(item => ({ 
         type: item.type, 
         table: item.table, 
-        localId: item.localId 
+        localId: item.localId,
+        attempts: item.attempts,
+        timestamp: new Date(item.timestamp).toLocaleString()
       }))
     });
     return {
       pendingItems: syncQueue.length,
       isOnline: this.checkOnline()
     };
+  }
+
+  // Debug method to get detailed sync queue info
+  async getDetailedSyncQueue(): Promise<any[]> {
+    const syncQueue = await offlineDB.getSyncQueue();
+    return syncQueue.map(item => ({
+      id: item.id,
+      type: item.type,
+      table: item.table,
+      localId: item.localId,
+      attempts: item.attempts,
+      timestamp: new Date(item.timestamp).toLocaleString(),
+      data: item.data
+    }));
+  }
+
+  // Clear all sync queue items (for debugging)
+  async clearSyncQueue(): Promise<void> {
+    const syncQueue = await offlineDB.getSyncQueue();
+    console.log(`Clearing ${syncQueue.length} items from sync queue`);
+    for (const item of syncQueue) {
+      await offlineDB.removeSyncQueueItem(item.id);
+    }
+    console.log('Sync queue cleared');
   }
 
   // Check if a specific river walk has pending sync items

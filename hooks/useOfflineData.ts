@@ -156,6 +156,20 @@ export function useOfflineRiverWalks() {
     }
   }, [updateSyncStatus]);
 
+  const deleteRiverWalk = useCallback(async (riverWalkId: string) => {
+    try {
+      await offlineDataService.deleteRiverWalk(riverWalkId);
+      // Remove from local state immediately
+      setRiverWalks(prev => prev.filter(rw => rw.id !== riverWalkId));
+      await updateSyncStatus();
+      return true;
+    } catch (err) {
+      const error = err instanceof Error ? err.message : 'Failed to delete river walk';
+      setError(error);
+      throw err;
+    }
+  }, [updateSyncStatus]);
+
   return {
     riverWalks,
     loading,
@@ -164,6 +178,7 @@ export function useOfflineRiverWalks() {
     updateRiverWalk,
     archiveRiverWalk,
     restoreRiverWalk,
+    deleteRiverWalk,
     refetch: fetchRiverWalks,
     isRiverWalkSynced
   };
