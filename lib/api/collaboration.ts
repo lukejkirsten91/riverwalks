@@ -230,6 +230,37 @@ export function isCollaborationEnabled(): boolean {
 }
 
 /**
+ * Gets pending invites for the current user
+ */
+export async function getUserPendingInvites(): Promise<CollaboratorAccess[]> {
+  const { data: user } = await supabase.auth.getUser();
+  if (!user.user?.email) {
+    return [];
+  }
+
+  const { data, error } = await supabase
+    .from('collaborator_access')
+    .select(`
+      *,
+      collaboration_metadata!inner (
+        river_walk_reference_id,
+        owner_id
+      )
+    `)
+    .eq('user_email', user.user.email)
+    .is('accepted_at', null)
+    .gt('invite_expires_at', new Date().toISOString())
+    .order('invited_at', { ascending: false });
+
+  if (error) {
+    console.error('Error fetching user pending invites:', error);
+    return [];
+  }
+
+  return data || [];
+}
+
+/**
  * Gets all river walks that the user has access to (owned or collaborated)
  */
 export async function getAccessibleRiverWalks() {

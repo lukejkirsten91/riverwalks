@@ -136,7 +136,11 @@ export default function AcceptInvitePage() {
     supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: redirectUrl
+        redirectTo: redirectUrl,
+        queryParams: {
+          prompt: 'select_account', // Force Google to show account selection
+          access_type: 'online'
+        }
       }
     });
   };
@@ -217,7 +221,21 @@ export default function AcceptInvitePage() {
               <button 
                 onClick={async () => {
                   await supabase.auth.signOut();
-                  setStatus('auth-required');
+                  // Force account selection on next sign in
+                  const redirectUrl = `${window.location.origin}/invite/${token}`;
+                  setTimeout(() => {
+                    supabase.auth.signInWithOAuth({
+                      provider: 'google',
+                      options: {
+                        redirectTo: redirectUrl,
+                        queryParams: {
+                          prompt: 'select_account',
+                          login_hint: inviteEmail, // Suggest the correct email
+                          access_type: 'online'
+                        }
+                      }
+                    });
+                  }, 500); // Small delay to ensure sign out completes
                 }} 
                 className="btn-primary w-full"
               >

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { supabase } from '../lib/supabase';
-import { LogOut, MapPin, User as UserIcon } from 'lucide-react';
+import { LogOut, MapPin, User as UserIcon, Users } from 'lucide-react';
 import {
   RiverWalkForm,
   RiverWalkList,
@@ -12,7 +12,7 @@ import { ReportGenerator } from '../components/river-walks/ReportGenerator';
 import { ShareModal } from '../components/river-walks/ShareModal';
 import { DiagnosticPanel } from '../components/DiagnosticPanel';
 import { useOfflineRiverWalks } from '../hooks/useOfflineData';
-import { useCollaborationFeatureFlag } from '../hooks/useCollaboration';
+import { useCollaboration, useCollaborationFeatureFlag } from '../hooks/useCollaboration';
 import { useToast } from '../components/ui/ToastProvider';
 import { offlineDataService } from '../lib/offlineDataService';
 import type { RiverWalk, RiverWalkFormData, Site } from '../types';
@@ -23,6 +23,7 @@ export default function RiverWalksPage() {
   const router = useRouter();
   const { showSuccess, showError } = useToast();
   const { collaborationEnabled } = useCollaborationFeatureFlag();
+  const { pendingInvites, acceptInvite } = useCollaboration();
   const [user, setUser] = useState<User | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [currentRiverWalk, setCurrentRiverWalk] = useState<RiverWalk | null>(
@@ -313,6 +314,57 @@ export default function RiverWalksPage() {
             )}
           </div>
         </div>
+
+        {/* Pending Invites Notification */}
+        {collaborationEnabled && pendingInvites && pendingInvites.length > 0 && (
+          <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
+            <div className="flex items-start gap-3">
+              <div className="bg-blue-100 rounded-full p-2 flex-shrink-0">
+                <Users className="w-5 h-5 text-blue-600" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-sm font-semibold text-blue-900 mb-1">
+                  {pendingInvites.length} Pending Invite{pendingInvites.length > 1 ? 's' : ''}
+                </h3>
+                <p className="text-sm text-blue-700 mb-3">
+                  You have been invited to collaborate on river walk{pendingInvites.length > 1 ? 's' : ''}
+                </p>
+                <div className="space-y-2">
+                  {pendingInvites.slice(0, 3).map((invite: any) => (
+                    <div key={invite.id} className="flex items-center justify-between bg-white rounded-lg p-3 border border-blue-100">
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-gray-900">
+                          River Walk Collaboration
+                        </p>
+                        <p className="text-xs text-gray-500 capitalize">
+                          {invite.role} access • Expires {new Date(invite.invite_expires_at).toLocaleDateString()}
+                        </p>
+                      </div>
+                      <button
+                        onClick={async () => {
+                          try {
+                            await acceptInvite(invite.invite_token);
+                            showSuccess('Invite Accepted', 'You now have access to this river walk!');
+                          } catch (error) {
+                            showError('Accept Failed', error instanceof Error ? error.message : 'Failed to accept invite');
+                          }
+                        }}
+                        className="ml-3 bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-xs font-medium transition-colors"
+                      >
+                        Accept
+                      </button>
+                    </div>
+                  ))}
+                  {pendingInvites.length > 3 && (
+                    <p className="text-xs text-blue-600 mt-2">
+                      +{pendingInvites.length - 3} more invite{pendingInvites.length - 3 > 1 ? 's' : ''}
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Action buttons - right aligned below header */}
         <div className="flex justify-end gap-3 mb-6">

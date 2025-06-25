@@ -9,6 +9,7 @@ import {
   revokeCollaboratorAccess,
   updateCollaborationSettings,
   getAccessibleRiverWalks,
+  getUserPendingInvites,
   isCollaborationEnabled,
   type CollaborationMetadata,
   type CollaboratorAccess,
@@ -81,6 +82,20 @@ export function useCollaboration(riverWalkId?: string) {
     }
   );
 
+  // Fetch pending invites for current user
+  const {
+    data: pendingInvites,
+    error: pendingError,
+    mutate: mutatePendingInvites
+  } = useSWR(
+    collaborationEnabled ? 'user-pending-invites' : null,
+    getUserPendingInvites,
+    {
+      revalidateOnFocus: false,
+      dedupingInterval: 30000 // 30 seconds
+    }
+  );
+
   // Create an invite for the river walk
   const createInvite = useCallback(async (
     userEmail: string = '*',
@@ -120,8 +135,11 @@ export function useCollaboration(riverWalkId?: string) {
     try {
       const result = await acceptCollaborationInvite(token);
       
-      // Refresh accessible river walks
-      await mutateAccessibleRiverWalks();
+      // Refresh accessible river walks and pending invites
+      await Promise.all([
+        mutateAccessibleRiverWalks(),
+        mutatePendingInvites()
+      ]);
 
       return result;
     } catch (err) {
@@ -131,7 +149,7 @@ export function useCollaboration(riverWalkId?: string) {
     } finally {
       setIsLoading(false);
     }
-  }, [mutateAccessibleRiverWalks]);
+  }, [mutateAccessibleRiverWalks, mutatePendingInvites]);
 
   // Revoke a collaborator's access
   const revokeAccess = useCallback(async (collaboratorId: string): Promise<void> => {
@@ -197,7 +215,7 @@ export function useCollaboration(riverWalkId?: string) {
 
   // Combine all errors
   const combinedError = error || metadataError?.message || collaboratorsError?.message || 
-                       accessError?.message || accessibleError?.message;
+                       accessError?.message || accessibleError?.message || pendingError?.message;
 
   return {
     // Data
@@ -205,6 +223,7 @@ export function useCollaboration(riverWalkId?: string) {
     collaborators: collaborators || [],
     userAccess,
     accessibleRiverWalks: accessibleRiverWalks || [],
+    pendingInvites: pendingInvites || [],
     
     // State
     isLoading,
@@ -227,7 +246,8 @@ export function useCollaboration(riverWalkId?: string) {
     refreshMetadata: mutateMetadata,
     refreshCollaborators: mutateCollaborators,
     refreshUserAccess: mutateUserAccess,
-    refreshAccessibleRiverWalks: mutateAccessibleRiverWalks
+    refreshAccessibleRiverWalks: mutateAccessibleRiverWalks,
+    refreshPendingInvites: mutatePendingInvites
   };
 }
 
