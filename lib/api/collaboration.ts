@@ -36,6 +36,15 @@ export interface UserAccess {
   role: string | null;
 }
 
+export interface InviteDetails {
+  valid: boolean;
+  user_email: string;
+  role: string;
+  expires_at: string;
+  river_walk_name?: string;
+  invited_by?: string;
+}
+
 /**
  * Creates a collaboration invite for a river walk
  */
@@ -60,6 +69,42 @@ export async function createCollaborationInvite(
   }
 
   return data[0];
+}
+
+/**
+ * Gets invite details without accepting it (for validation)
+ */
+export async function getInviteDetails(token: string): Promise<InviteDetails> {
+  const { data, error } = await supabase
+    .from('collaborator_access')
+    .select(`
+      user_email,
+      role,
+      invite_expires_at,
+      collaboration_metadata!inner (
+        river_walk_reference_id
+      )
+    `)
+    .eq('invite_token', token)
+    .gt('invite_expires_at', new Date().toISOString())
+    .is('accepted_at', null)
+    .maybeSingle();
+
+  if (error) {
+    console.error('Error fetching invite details:', error);
+    return { valid: false, user_email: '', role: '', expires_at: '' };
+  }
+
+  if (!data) {
+    return { valid: false, user_email: '', role: '', expires_at: '' };
+  }
+
+  return {
+    valid: true,
+    user_email: data.user_email,
+    role: data.role,
+    expires_at: data.invite_expires_at,
+  };
 }
 
 /**

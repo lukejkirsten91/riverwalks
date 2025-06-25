@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
-import { CheckCircle, XCircle, Loader2, Users, ArrowRight } from 'lucide-react';
+import { CheckCircle, XCircle, Loader2, Users, ArrowRight, AlertCircle } from 'lucide-react';
 import { useCollaboration } from '../../hooks/useCollaboration';
+import { getInviteDetails } from '../../lib/api/collaboration';
 import { supabase } from '../../lib/supabase';
 
 export default function AcceptInvitePage() {
@@ -10,13 +11,15 @@ export default function AcceptInvitePage() {
   const { token } = router.query;
   const { acceptInvite, collaborationEnabled } = useCollaboration();
   
-  const [status, setStatus] = useState<'loading' | 'success' | 'error' | 'auth-required'>('loading');
+  const [status, setStatus] = useState<'loading' | 'success' | 'error' | 'auth-required' | 'email-mismatch'>('loading');
   const [message, setMessage] = useState('');
   const [riverWalkId, setRiverWalkId] = useState<string | null>(null);
   const [user, setUser] = useState<any>(null);
+  const [inviteEmail, setInviteEmail] = useState<string>('');
+  const [userEmail, setUserEmail] = useState<string>('');
 
   useEffect(() => {
-    // Check authentication status
+    // Check authentication status and invite details
     const checkAuth = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       setUser(user);
@@ -26,9 +29,34 @@ export default function AcceptInvitePage() {
         return;
       }
       
-      // If user is authenticated and we have a token, accept the invite
+      setUserEmail(user.email || '');
+      
+      // Check invite details first
       if (token && typeof token === 'string') {
-        await handleAcceptInvite(token);
+        try {
+          const inviteDetails = await getInviteDetails(token);
+          
+          if (!inviteDetails.valid) {
+            setStatus('error');
+            setMessage('This invite link is invalid or has expired');
+            return;
+          }
+          
+          setInviteEmail(inviteDetails.user_email);
+          
+          // Check for email mismatch (only for specific email invites)
+          if (inviteDetails.user_email !== '*' && inviteDetails.user_email !== user.email) {
+            setStatus('email-mismatch');
+            setMessage(`This invite was sent to ${inviteDetails.user_email}, but you're signed in as ${user.email}`);
+            return;
+          }
+          
+          // Email matches or universal invite, proceed with acceptance
+          await handleAcceptInvite(token);
+        } catch (error) {
+          setStatus('error');
+          setMessage('Failed to check invite details');
+        }
       }
     };
 
@@ -40,7 +68,33 @@ export default function AcceptInvitePage() {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === 'SIGNED_IN' && session?.user && token && typeof token === 'string') {
         setUser(session.user);
-        await handleAcceptInvite(token);
+        setUserEmail(session.user.email || '');
+        
+        // Check invite details again on new sign in
+        try {
+          const inviteDetails = await getInviteDetails(token);
+          
+          if (!inviteDetails.valid) {
+            setStatus('error');
+            setMessage('This invite link is invalid or has expired');
+            return;
+          }
+          
+          setInviteEmail(inviteDetails.user_email);
+          
+          // Check for email mismatch again
+          if (inviteDetails.user_email !== '*' && inviteDetails.user_email !== session.user.email) {
+            setStatus('email-mismatch');
+            setMessage(`This invite was sent to ${inviteDetails.user_email}, but you're signed in as ${session.user.email}`);
+            return;
+          }
+          
+          // Email matches, proceed with acceptance
+          await handleAcceptInvite(token);
+        } catch (error) {
+          setStatus('error');
+          setMessage('Failed to check invite details');
+        }
       }
     });
 
@@ -147,6 +201,35 @@ export default function AcceptInvitePage() {
                 Redirecting automatically in 3 seconds...
               </p>
             </div>
+          </div>
+        )}
+
+        {status === 'email-mismatch' && (
+          <div className="text-center">
+            <AlertCircle className="w-16 h-16 text-orange-500 mx-auto mb-4" />
+            <h1 className="text-2xl font-bold text-foreground mb-2">Email Mismatch</h1>
+            <p className="text-muted-foreground mb-2">{message}</p>
+            <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-6 text-sm text-left">
+              <p className="mb-2"><strong>Invite sent to:</strong> {inviteEmail}</p>
+              <p><strong>You're signed in as:</strong> {userEmail}</p>
+            </div>
+            <div className="space-y-3">
+              <button 
+                onClick={async () => {
+                  await supabase.auth.signOut();
+                  setStatus('auth-required');
+                }} 
+                className="btn-primary w-full"
+              >
+                Sign Out & Sign In with {inviteEmail}
+              </button>
+              <Link href="/river-walks" className="btn-secondary w-full">
+                Continue with Current Account
+              </Link>
+            </div>
+            <p className="text-xs text-muted-foreground mt-4">
+              You need to sign in with the email address that received this invite to accept it.
+            </p>
           </div>
         )}
 
