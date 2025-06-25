@@ -831,9 +831,15 @@ export class OfflineDataService {
         if (error) throw error;
 
         if (data) {
+          // Remove the local version first to prevent duplicates
+          await offlineDB.deleteSite(localId);
+          
+          // Now add the server version with server ID
           offlineSite.id = data.id;
+          offlineSite.localId = data.id; // Use server ID as localId too
           offlineSite.synced = true;
           await offlineDB.addSite(offlineSite);
+          
           // Trigger sync status update
           window.dispatchEvent(new CustomEvent('riverwalks-data-changed'));
           return data;
