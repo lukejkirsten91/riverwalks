@@ -103,7 +103,8 @@ USING (
 CREATE OR REPLACE FUNCTION generate_invite_token()
 RETURNS TEXT AS $$
 BEGIN
-  RETURN encode(gen_random_bytes(32), 'base64url');
+  -- Use base64 and make it URL-safe by replacing characters
+  RETURN replace(replace(replace(encode(gen_random_bytes(32), 'base64'), '+', '-'), '/', '_'), '=', '');
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
