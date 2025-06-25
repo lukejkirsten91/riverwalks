@@ -74,9 +74,9 @@ export function ShareModal({ riverWalk, isOpen, onClose }: ShareModalProps) {
       } catch (clipboardError) {
         console.error('🔍 [DEBUG] ShareModal.handleCreateInvite: Clipboard copy failed', {
           error: clipboardError,
-          errorName: clipboardError.name,
-          errorMessage: clipboardError.message,
-          isNotAllowedError: clipboardError.name === 'NotAllowedError'
+          errorName: clipboardError instanceof Error ? clipboardError.name : 'unknown',
+          errorMessage: clipboardError instanceof Error ? clipboardError.message : String(clipboardError),
+          isNotAllowedError: clipboardError instanceof Error && clipboardError.name === 'NotAllowedError'
         });
         // Don't throw - invite was created successfully, just clipboard failed
         setCopiedToken(result.invite_token); // Still show as copied for UI
@@ -93,9 +93,9 @@ export function ShareModal({ riverWalk, isOpen, onClose }: ShareModalProps) {
     } catch (err) {
       console.error('🔍 [DEBUG] ShareModal.handleCreateInvite: API call failed', {
         error: err,
-        errorName: err.name,
-        errorMessage: err.message,
-        errorStack: err.stack
+        errorName: err instanceof Error ? err.name : 'unknown',
+        errorMessage: err instanceof Error ? err.message : String(err),
+        errorStack: err instanceof Error ? err.stack : undefined
       });
       console.error('Failed to create invite:', err);
     }
@@ -117,9 +117,9 @@ export function ShareModal({ riverWalk, isOpen, onClose }: ShareModalProps) {
     } catch (err) {
       console.error('🔍 [DEBUG] ShareModal.handleCopyLink: Clipboard copy failed', {
         error: err,
-        errorName: err.name,
-        errorMessage: err.message,
-        isNotAllowedError: err.name === 'NotAllowedError'
+        errorName: err instanceof Error ? err.name : 'unknown',
+        errorMessage: err instanceof Error ? err.message : String(err),
+        isNotAllowedError: err instanceof Error && err.name === 'NotAllowedError'
       });
       console.error('Failed to copy link:', err);
     }
