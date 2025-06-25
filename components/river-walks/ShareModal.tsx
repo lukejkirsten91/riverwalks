@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { X, Link, Copy, Trash2, Users, Plus, Check } from 'lucide-react';
 import { useCollaboration } from '../../hooks/useCollaboration';
+import type { CollaboratorAccess } from '../../lib/api/collaboration';
 import type { RiverWalk } from '../../types';
 
 interface ShareModalProps {
@@ -74,8 +75,8 @@ export function ShareModal({ riverWalk, isOpen, onClose }: ShareModalProps) {
     }
   };
 
-  const activeCollaborators = collaborators.filter(c => c.accepted_at !== null);
-  const pendingInvites = collaborators.filter(c => c.accepted_at === null);
+  const activeCollaborators = collaborators.filter((c: CollaboratorAccess) => c.accepted_at !== null);
+  const pendingInvites = collaborators.filter((c: CollaboratorAccess) => c.accepted_at === null);
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
