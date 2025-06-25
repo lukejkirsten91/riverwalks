@@ -127,7 +127,10 @@ export function useOfflineRiverWalks() {
   const archiveRiverWalk = useCallback(async (riverWalkId: string) => {
     try {
       const archivedRiverWalk = await offlineDataService.archiveRiverWalk(riverWalkId);
-      await fetchRiverWalks(); // Refresh the list
+      // Update local state optimistically instead of fetching from server
+      setRiverWalks(prev => prev.map(rw => 
+        rw.id === riverWalkId ? archivedRiverWalk : rw
+      ));
       await updateSyncStatus();
       return archivedRiverWalk;
     } catch (err) {
@@ -135,12 +138,15 @@ export function useOfflineRiverWalks() {
       setError(error);
       throw err;
     }
-  }, [fetchRiverWalks, updateSyncStatus]);
+  }, [updateSyncStatus]);
 
   const restoreRiverWalk = useCallback(async (riverWalkId: string) => {
     try {
       const restoredRiverWalk = await offlineDataService.restoreRiverWalk(riverWalkId);
-      await fetchRiverWalks(); // Refresh the list
+      // Update local state optimistically instead of fetching from server
+      setRiverWalks(prev => prev.map(rw => 
+        rw.id === riverWalkId ? restoredRiverWalk : rw
+      ));
       await updateSyncStatus();
       return restoredRiverWalk;
     } catch (err) {
@@ -148,7 +154,7 @@ export function useOfflineRiverWalks() {
       setError(error);
       throw err;
     }
-  }, [fetchRiverWalks, updateSyncStatus]);
+  }, [updateSyncStatus]);
 
   return {
     riverWalks,
