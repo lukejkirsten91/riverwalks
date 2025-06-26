@@ -236,12 +236,33 @@ export async function checkUserAccess(riverWalkId: string): Promise<UserAccess> 
  * Gets collaboration metadata for a river walk
  */
 export async function getCollaborationMetadata(riverWalkId: string): Promise<CollaborationMetadata | null> {
+  // First try the expected case (0 or 1 record)
   const { data, error } = await supabase
     .from('collaboration_metadata')
     .select('*')
     .eq('river_walk_reference_id', riverWalkId)
     .maybeSingle();
 
+  // If we get the "multiple rows" error, handle it gracefully
+  if (error && error.message.includes('multiple (or no) rows returned')) {
+    console.warn('Multiple collaboration metadata records found for river walk:', riverWalkId);
+    
+    // Query again to get all records and take the newest one
+    const { data: multipleData, error: multipleError } = await supabase
+      .from('collaboration_metadata')
+      .select('*')
+      .eq('river_walk_reference_id', riverWalkId)
+      .order('created_at', { ascending: false })
+      .limit(1);
+    
+    if (multipleError) {
+      console.error('Error fetching collaboration metadata (fallback):', multipleError);
+      throw new Error(`Failed to fetch collaboration metadata: ${multipleError.message}`);
+    }
+    
+    return multipleData && multipleData.length > 0 ? multipleData[0] : null;
+  }
+  
   if (error) {
     console.error('Error fetching collaboration metadata:', error);
     throw new Error(`Failed to fetch collaboration metadata: ${error.message}`);
