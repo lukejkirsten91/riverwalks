@@ -644,6 +644,17 @@ export async function getAccessibleRiverWalks(): Promise<any[]> {
     .eq('archived', false)
     .order('date', { ascending: false });
 
+  console.log('🔍 [DEBUG] getAccessibleRiverWalks: RLS query result', {
+    walkCount: allWalks?.length || 0,
+    walks: allWalks?.map(w => ({
+      id: w.id,
+      name: w.name,
+      user_id: w.user_id,
+      current_user_id: user.user?.id,
+      is_owner: w.user_id === user.user?.id
+    })) || []
+  });
+
   // If RLS approach fails or doesn't return collaborated river walks, use RPC fallback
   if (!error && allWalks) {
     const expectedCollaboratedId = '9cf2aa3b-e4d8-4bf4-a725-f449af371239';
@@ -726,7 +737,8 @@ export async function getAccessibleRiverWalks(): Promise<any[]> {
               });
               
               // Combine owned and collaborated walks
-              const combinedWalks = [...ownedWalksWithType, ...collaboratedWalksWithType];
+              // Note: collaborated walks should take precedence over owned for the same walk ID
+              const combinedWalks = [...collaboratedWalksWithType, ...ownedWalksWithType];
               const uniqueWalks = combinedWalks.filter((walk, index, self) => 
                 index === self.findIndex(w => w.id === walk.id)
               );
