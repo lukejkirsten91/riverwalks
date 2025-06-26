@@ -629,10 +629,18 @@ export async function getAccessibleRiverWalks(): Promise<any[]> {
       if (acceptedCollabs.length > 0) {
 
       // Get collaboration metadata for these collaborations
+      console.log('🔍 [DEBUG] getAccessibleRiverWalks: Querying collaboration_metadata with IDs', acceptedCollabs.map(c => c.collaboration_id));
       const { data: collabMetadata, error: metadataError } = await supabase
         .from('collaboration_metadata')
-        .select('river_walk_reference_id')
+        .select('id, river_walk_reference_id')
         .in('id', acceptedCollabs.map(c => c.collaboration_id));
+
+      console.log('🔍 [DEBUG] getAccessibleRiverWalks: Collaboration metadata query result', {
+        hasError: !!metadataError,
+        error: metadataError,
+        dataCount: collabMetadata?.length || 0,
+        data: collabMetadata
+      });
 
       if (metadataError) {
         console.error('🔍 [DEBUG] getAccessibleRiverWalks: Failed to get collaboration metadata', metadataError);
@@ -658,6 +666,8 @@ export async function getAccessibleRiverWalks(): Promise<any[]> {
           });
           collaboratedWalkData = collaboratedWalks;
         }
+      } else {
+        console.log('🔍 [DEBUG] getAccessibleRiverWalks: No collaboration metadata found or empty result');
       }
       }
     }
