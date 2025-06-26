@@ -604,25 +604,35 @@ export async function getAccessibleRiverWalks(): Promise<any[]> {
     console.log('🔍 [DEBUG] getAccessibleRiverWalks: Attempting direct query');
     
     // Get collaboration IDs for current user
+    console.log('🔍 [DEBUG] getAccessibleRiverWalks: Querying collaborator_access for', user.user.email);
     const { data: userCollabs, error: userCollabError } = await supabase
       .from('collaborator_access')
-      .select('collaboration_id')
-      .eq('user_email', user.user.email)
-      .not('accepted_at', 'is', null);
+      .select('collaboration_id, accepted_at, user_email')
+      .eq('user_email', user.user.email);
 
     if (userCollabError) {
       console.error('🔍 [DEBUG] getAccessibleRiverWalks: Failed to get user collaborations', userCollabError);
-    } else if (userCollabs && userCollabs.length > 0) {
-      console.log('🔍 [DEBUG] getAccessibleRiverWalks: Found user collaborations', {
-        count: userCollabs.length,
-        collaborationIds: userCollabs.map(c => c.collaboration_id)
+    } else {
+      console.log('🔍 [DEBUG] getAccessibleRiverWalks: Raw collaboration data', {
+        count: userCollabs?.length || 0,
+        data: userCollabs
       });
+      
+      // Filter for accepted invites only
+      const acceptedCollabs = userCollabs?.filter(c => c.accepted_at !== null) || [];
+      console.log('🔍 [DEBUG] getAccessibleRiverWalks: Accepted collaborations', {
+        totalCount: userCollabs?.length || 0,
+        acceptedCount: acceptedCollabs.length,
+        acceptedCollaborationIds: acceptedCollabs.map(c => c.collaboration_id)
+      });
+      
+      if (acceptedCollabs.length > 0) {
 
       // Get collaboration metadata for these collaborations
       const { data: collabMetadata, error: metadataError } = await supabase
         .from('collaboration_metadata')
         .select('river_walk_reference_id')
-        .in('id', userCollabs.map(c => c.collaboration_id));
+        .in('id', acceptedCollabs.map(c => c.collaboration_id));
 
       if (metadataError) {
         console.error('🔍 [DEBUG] getAccessibleRiverWalks: Failed to get collaboration metadata', metadataError);
@@ -648,6 +658,7 @@ export async function getAccessibleRiverWalks(): Promise<any[]> {
           });
           collaboratedWalkData = collaboratedWalks;
         }
+      }
       }
     }
   } catch (fallbackError) {
