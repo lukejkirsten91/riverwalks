@@ -626,22 +626,72 @@ export async function getAccessibleRiverWalks(): Promise<any[]> {
     const hasCollaboratedWalk = allWalks.some(walk => walk.id === expectedCollaboratedId);
     
     if (!hasCollaboratedWalk) {
-      console.log('🔍 [DEBUG] getAccessibleRiverWalks: RLS policy not returning collaborated walks, trying RPC fallback');
+      console.log('🔍 [DEBUG] getAccessibleRiverWalks: RLS policy not returning collaborated walks, trying direct fallback');
       
-      const { data: rpcWalks, error: rpcError } = await supabase.rpc('get_user_accessible_river_walks');
-      
-      console.log('🔍 [DEBUG] getAccessibleRiverWalks: RPC fallback result', {
-        hasError: !!rpcError,
-        error: rpcError,
-        walkCount: rpcWalks?.length || 0,
-        walkIds: rpcWalks?.map((w: any) => w.id) || [],
-        accessTypes: rpcWalks?.map((w: any) => ({ id: w.id, type: w.access_type })) || []
-      });
+      try {
+        // Get user's accepted collaborations
+        const { data: userCollabs, error: userCollabError } = await supabase
+          .from('collaborator_access')
+          .select('collaboration_id')
+          .eq('user_email', user.user.email)
+          .not('accepted_at', 'is', null);
 
-      if (!rpcError && rpcWalks) {
-        // Remove the access_type field and return the combined results
-        const cleanWalks = rpcWalks.map(({ access_type, ...walk }: any) => walk);
-        return cleanWalks.sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime());
+        console.log('🔍 [DEBUG] getAccessibleRiverWalks: User collaborations', {
+          hasError: !!userCollabError,
+          error: userCollabError,
+          collabCount: userCollabs?.length || 0,
+          collaborationIds: userCollabs?.map(c => c.collaboration_id) || []
+        });
+
+        if (!userCollabError && userCollabs && userCollabs.length > 0) {
+          // Get collaboration metadata
+          const { data: collabMetadata, error: metadataError } = await supabase
+            .from('collaboration_metadata')
+            .select('river_walk_reference_id')
+            .in('id', userCollabs.map(c => c.collaboration_id));
+
+          console.log('🔍 [DEBUG] getAccessibleRiverWalks: Collaboration metadata', {
+            hasError: !!metadataError,
+            error: metadataError,
+            metadataCount: collabMetadata?.length || 0,
+            riverWalkIds: collabMetadata?.map(m => m.river_walk_reference_id) || []
+          });
+
+          if (!metadataError && collabMetadata && collabMetadata.length > 0) {
+            // Get the actual river walks (bypassing RLS by using service key if needed)
+            const { data: collaboratedWalks, error: walksError } = await supabase
+              .from('river_walks')
+              .select('*')
+              .in('id', collabMetadata.map(m => m.river_walk_reference_id))
+              .eq('archived', false);
+
+            console.log('🔍 [DEBUG] getAccessibleRiverWalks: Direct collaborated walks query', {
+              hasError: !!walksError,
+              error: walksError,
+              walkCount: collaboratedWalks?.length || 0,
+              walkIds: collaboratedWalks?.map(w => w.id) || []
+            });
+
+            if (!walksError && collaboratedWalks && collaboratedWalks.length > 0) {
+              // Combine owned and collaborated walks
+              const combinedWalks = [...allWalks, ...collaboratedWalks];
+              const uniqueWalks = combinedWalks.filter((walk, index, self) => 
+                index === self.findIndex(w => w.id === walk.id)
+              );
+              
+              console.log('🔍 [DEBUG] getAccessibleRiverWalks: Direct fallback successful', {
+                ownedCount: allWalks.length,
+                collaboratedCount: collaboratedWalks.length,
+                totalCount: uniqueWalks.length,
+                finalWalkIds: uniqueWalks.map(w => w.id)
+              });
+
+              return uniqueWalks.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+            }
+          }
+        }
+      } catch (fallbackError) {
+        console.error('🔍 [DEBUG] getAccessibleRiverWalks: Direct fallback error', fallbackError);
       }
     }
   }
