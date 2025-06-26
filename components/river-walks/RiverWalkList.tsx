@@ -1,7 +1,9 @@
-import { MapPin, Calendar, Globe, Trash2, Archive, RotateCcw, BarChart3, ChevronUp, ChevronDown, CheckCircle, Clock, Link, Users, User, Edit, Eye, Crown } from 'lucide-react';
+import { MapPin, Calendar, Globe, Trash2, Archive, RotateCcw, BarChart3, ChevronUp, ChevronDown, CheckCircle, Clock, Link, Users, User, Edit, Eye, Crown, Share } from 'lucide-react';
 import { useState } from 'react';
 import { formatDate } from '../../lib/utils';
 import { InlineEdit } from '../ui/InlineEdit';
+import { CollaboratorAvatars } from '../ui/CollaboratorAvatars';
+import { useCollaboratorInfo } from '../../hooks/useCollaboratorInfo';
 import type { RiverWalk } from '../../types';
 
 interface RiverWalkListProps {
@@ -32,6 +34,12 @@ export function RiverWalkList({
   archiveLoading,
 }: RiverWalkListProps) {
   const [showArchived, setShowArchived] = useState(false);
+  const [showMyRiverWalks, setShowMyRiverWalks] = useState(true);
+  const [showSharedWithMe, setShowSharedWithMe] = useState(true);
+  const [showSharedByMe, setShowSharedByMe] = useState(true);
+  
+  // Get collaborator information for all river walks
+  const { collaboratorInfo, getCollaboratorInfo } = useCollaboratorInfo(riverWalks);
 
   const renderRiverWalk = (riverWalk: RiverWalk, isArchived: boolean = false) => {
     // Permission checks for button visibility
@@ -46,6 +54,9 @@ export function RiverWalkList({
       (!riverWalk.collaboration_role && riverWalk.access_type === 'owned') ||
       (!riverWalk.collaboration_role && !riverWalk.access_type) // Default to owned for river walks without collaboration metadata
     );
+    
+    // Get collaborator info for this river walk
+    const collaborators = getCollaboratorInfo(riverWalk.id);
     
     return (
     <div
@@ -112,6 +123,13 @@ export function RiverWalkList({
               </div>
             )}
           </div>
+          
+          {/* Collaborator avatars - show for owned river walks with collaborators */}
+          {collaborators && (
+            <div className="mt-2">
+              <CollaboratorAvatars collaboratorInfo={collaborators} size="sm" maxVisible={3} />
+            </div>
+          )}
         </div>
         
         {/* Metadata with inline editing */}
@@ -259,45 +277,106 @@ export function RiverWalkList({
     );
   }
 
-  // Group river walks by ownership (with fallback for missing role info)
-  const ownedRiverWalks = riverWalks.filter(rw => 
-    rw.collaboration_role === 'owner' || 
-    (!rw.collaboration_role && rw.access_type === 'owned') ||
-    (!rw.collaboration_role && !rw.access_type) // fallback for completely missing metadata
-  );
-  const sharedRiverWalks = riverWalks.filter(rw => 
+  // Group river walks into three categories
+  const myRiverWalks = riverWalks.filter(rw => {
+    const isOwned = rw.collaboration_role === 'owner' || 
+                   (!rw.collaboration_role && rw.access_type === 'owned') ||
+                   (!rw.collaboration_role && !rw.access_type);
+    const hasCollaborators = getCollaboratorInfo(rw.id)?.hasCollaborators || false;
+    return isOwned && !hasCollaborators; // Owned but not shared with others
+  });
+  
+  const sharedWithMe = riverWalks.filter(rw => 
     rw.collaboration_role === 'editor' || 
     rw.collaboration_role === 'viewer' ||
     (!rw.collaboration_role && rw.access_type === 'collaborated')
   );
+  
+  const sharedByMe = riverWalks.filter(rw => {
+    const isOwned = rw.collaboration_role === 'owner' || 
+                   (!rw.collaboration_role && rw.access_type === 'owned') ||
+                   (!rw.collaboration_role && !rw.access_type);
+    const hasCollaborators = getCollaboratorInfo(rw.id)?.hasCollaborators || false;
+    return isOwned && hasCollaborators; // Owned and shared with others
+  });
 
   return (
     <div className="space-y-6 sm:space-y-8">
-      {/* My River Walks Section */}
-      {ownedRiverWalks.length > 0 && (
+      {/* My River Walks Section - Private ones not shared with others */}
+      {myRiverWalks.length > 0 && (
         <div>
-          <div className="flex items-center gap-2 mb-3 sm:mb-4">
-            <Crown className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600" />
-            <h2 className="text-base sm:text-lg font-semibold text-foreground">My River Walks</h2>
-            <span className="text-xs sm:text-sm text-muted-foreground">({ownedRiverWalks.length})</span>
-          </div>
-          <div className="space-y-3 sm:space-y-4">
-            {ownedRiverWalks.map((riverWalk) => renderRiverWalk(riverWalk, false))}
-          </div>
+          <button
+            onClick={() => setShowMyRiverWalks(!showMyRiverWalks)}
+            className="w-full flex items-center justify-between p-3 sm:p-4 text-left bg-gradient-to-r from-purple-50 to-purple-100 hover:from-purple-100 hover:to-purple-150 rounded-lg border border-purple-200 transition-all duration-200 touch-manipulation mb-3 sm:mb-4"
+          >
+            <div className="flex items-center gap-2">
+              <Crown className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600" />
+              <h2 className="text-base sm:text-lg font-semibold text-foreground">My River Walks</h2>
+              <span className="text-xs sm:text-sm text-muted-foreground">({myRiverWalks.length})</span>
+            </div>
+            {showMyRiverWalks ? (
+              <ChevronUp className="w-4 h-4 text-purple-600" />
+            ) : (
+              <ChevronDown className="w-4 h-4 text-purple-600" />
+            )}
+          </button>
+          {showMyRiverWalks && (
+            <div className="space-y-3 sm:space-y-4 pl-3 sm:pl-4 border-l-2 border-purple-200">
+              {myRiverWalks.map((riverWalk) => renderRiverWalk(riverWalk, false))}
+            </div>
+          )}
         </div>
       )}
 
-      {/* Shared River Walks Section */}
-      {sharedRiverWalks.length > 0 && (
+      {/* Shared with Me Section */}
+      {sharedWithMe.length > 0 && (
         <div>
-          <div className="flex items-center gap-2 mb-3 sm:mb-4">
-            <Users className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
-            <h2 className="text-base sm:text-lg font-semibold text-foreground">Shared River Walks</h2>
-            <span className="text-xs sm:text-sm text-muted-foreground">({sharedRiverWalks.length})</span>
-          </div>
-          <div className="space-y-3 sm:space-y-4">
-            {sharedRiverWalks.map((riverWalk) => renderRiverWalk(riverWalk, false))}
-          </div>
+          <button
+            onClick={() => setShowSharedWithMe(!showSharedWithMe)}
+            className="w-full flex items-center justify-between p-3 sm:p-4 text-left bg-gradient-to-r from-blue-50 to-blue-100 hover:from-blue-100 hover:to-blue-150 rounded-lg border border-blue-200 transition-all duration-200 touch-manipulation mb-3 sm:mb-4"
+          >
+            <div className="flex items-center gap-2">
+              <Users className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
+              <h2 className="text-base sm:text-lg font-semibold text-foreground">Shared with Me</h2>
+              <span className="text-xs sm:text-sm text-muted-foreground">({sharedWithMe.length})</span>
+            </div>
+            {showSharedWithMe ? (
+              <ChevronUp className="w-4 h-4 text-blue-600" />
+            ) : (
+              <ChevronDown className="w-4 h-4 text-blue-600" />
+            )}
+          </button>
+          {showSharedWithMe && (
+            <div className="space-y-3 sm:space-y-4 pl-3 sm:pl-4 border-l-2 border-blue-200">
+              {sharedWithMe.map((riverWalk) => renderRiverWalk(riverWalk, false))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* River Walks I've Shared Section */}
+      {sharedByMe.length > 0 && (
+        <div>
+          <button
+            onClick={() => setShowSharedByMe(!showSharedByMe)}
+            className="w-full flex items-center justify-between p-3 sm:p-4 text-left bg-gradient-to-r from-green-50 to-green-100 hover:from-green-100 hover:to-green-150 rounded-lg border border-green-200 transition-all duration-200 touch-manipulation mb-3 sm:mb-4"
+          >
+            <div className="flex items-center gap-2">
+              <Share className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
+              <h2 className="text-base sm:text-lg font-semibold text-foreground">River Walks I've Shared</h2>
+              <span className="text-xs sm:text-sm text-muted-foreground">({sharedByMe.length})</span>
+            </div>
+            {showSharedByMe ? (
+              <ChevronUp className="w-4 h-4 text-green-600" />
+            ) : (
+              <ChevronDown className="w-4 h-4 text-green-600" />
+            )}
+          </button>
+          {showSharedByMe && (
+            <div className="space-y-3 sm:space-y-4 pl-3 sm:pl-4 border-l-2 border-green-200">
+              {sharedByMe.map((riverWalk) => renderRiverWalk(riverWalk, false))}
+            </div>
+          )}
         </div>
       )}
 
