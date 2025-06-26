@@ -565,10 +565,17 @@ export async function getUserPendingInvitesRPC(): Promise<CollaboratorAccess[]> 
  * Now works with the fixed RLS policy that allows both owned and collaborated access
  */
 export async function getAccessibleRiverWalks(): Promise<any[]> {
+  console.log('🔍 [DEBUG] getAccessibleRiverWalks: Starting with RLS policy fix');
+  
   const { data: user } = await supabase.auth.getUser();
   if (!user.user) {
     throw new Error('User not authenticated');
   }
+
+  console.log('🔍 [DEBUG] getAccessibleRiverWalks: User info', {
+    userId: user.user.id,
+    userEmail: user.user.email
+  });
 
   // With the fixed RLS policy, we can now query all accessible river walks directly
   const { data: allWalks, error } = await supabase
@@ -576,6 +583,19 @@ export async function getAccessibleRiverWalks(): Promise<any[]> {
     .select('*')
     .eq('archived', false)
     .order('date', { ascending: false });
+
+  console.log('🔍 [DEBUG] getAccessibleRiverWalks: Query result', {
+    hasError: !!error,
+    error: error ? {
+      message: error.message,
+      details: error.details,
+      hint: error.hint,
+      code: error.code
+    } : null,
+    walkCount: allWalks?.length || 0,
+    walkIds: allWalks?.map(w => w.id) || [],
+    expectedCollaboratedId: '9cf2aa3b-e4d8-4bf4-a725-f449af371239'
+  });
 
   if (error) {
     console.error('Error fetching accessible river walks:', error);
