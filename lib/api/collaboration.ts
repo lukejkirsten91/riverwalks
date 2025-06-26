@@ -634,14 +634,14 @@ export async function getAccessibleRiverWalks(): Promise<any[]> {
         hasError: !!rpcError,
         error: rpcError,
         walkCount: rpcWalks?.length || 0,
-        walkIds: rpcWalks?.map(w => w.id) || [],
-        accessTypes: rpcWalks?.map(w => ({ id: w.id, type: w.access_type })) || []
+        walkIds: rpcWalks?.map((w: any) => w.id) || [],
+        accessTypes: rpcWalks?.map((w: any) => ({ id: w.id, type: w.access_type })) || []
       });
 
       if (!rpcError && rpcWalks) {
         // Remove the access_type field and return the combined results
-        const cleanWalks = rpcWalks.map(({ access_type, ...walk }) => walk);
-        return cleanWalks.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+        const cleanWalks = rpcWalks.map(({ access_type, ...walk }: any) => walk);
+        return cleanWalks.sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime());
       }
     }
   }
