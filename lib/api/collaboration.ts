@@ -653,10 +653,10 @@ export async function getAccessibleRiverWalks(): Promise<any[]> {
       console.log('🔍 [DEBUG] getAccessibleRiverWalks: RLS policy not returning collaborated walks, trying direct fallback');
       
       try {
-        // Get user's accepted collaborations
+        // Get user's accepted collaborations with role information
         const { data: userCollabs, error: userCollabError } = await supabase
           .from('collaborator_access')
-          .select('collaboration_id')
+          .select('collaboration_id, role')
           .eq('user_email', user.user.email)
           .not('accepted_at', 'is', null);
 
@@ -664,21 +664,27 @@ export async function getAccessibleRiverWalks(): Promise<any[]> {
           hasError: !!userCollabError,
           error: userCollabError,
           collabCount: userCollabs?.length || 0,
-          collaborationIds: userCollabs?.map(c => c.collaboration_id) || []
+          collaborations: userCollabs?.map(c => ({ 
+            collaboration_id: c.collaboration_id, 
+            role: c.role 
+          })) || []
         });
 
         if (!userCollabError && userCollabs && userCollabs.length > 0) {
           // Get collaboration metadata
           const { data: collabMetadata, error: metadataError } = await supabase
             .from('collaboration_metadata')
-            .select('river_walk_reference_id')
+            .select('id, river_walk_reference_id')
             .in('id', userCollabs.map(c => c.collaboration_id));
 
           console.log('🔍 [DEBUG] getAccessibleRiverWalks: Collaboration metadata', {
             hasError: !!metadataError,
             error: metadataError,
             metadataCount: collabMetadata?.length || 0,
-            riverWalkIds: collabMetadata?.map(m => m.river_walk_reference_id) || []
+            metadata: collabMetadata?.map(m => ({ 
+              id: m.id, 
+              river_walk_reference_id: m.river_walk_reference_id 
+            })) || []
           });
 
           if (!metadataError && collabMetadata && collabMetadata.length > 0) {
