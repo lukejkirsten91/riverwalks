@@ -56,7 +56,7 @@ export function RiverWalkList({
           {/* Access type and sync status icons */}
           <div className="flex-shrink-0 flex items-center gap-3">
             {/* Role-based access indicator */}
-            {riverWalk.collaboration_role === 'owner' ? (
+            {riverWalk.collaboration_role === 'owner' || (!riverWalk.collaboration_role && riverWalk.access_type === 'owned') || (!riverWalk.collaboration_role && !riverWalk.access_type) ? (
               <div className="flex items-center gap-1 text-purple-600 bg-purple-50 px-2 py-1 rounded-full">
                 <Crown className="w-4 h-4" />
                 <span className="text-xs font-medium">Owner</span>
@@ -71,10 +71,15 @@ export function RiverWalkList({
                 <Eye className="w-4 h-4" />
                 <span className="text-xs font-medium">Viewer</span>
               </div>
+            ) : riverWalk.access_type === 'collaborated' ? (
+              <div className="flex items-center gap-1 text-green-600 bg-green-50 px-2 py-1 rounded-full">
+                <Edit className="w-4 h-4" />
+                <span className="text-xs font-medium">Editor</span>
+              </div>
             ) : (
               <div className="flex items-center gap-1 text-gray-600 bg-gray-50 px-2 py-1 rounded-full">
                 <User className="w-4 h-4" />
-                <span className="text-xs font-medium">Unknown</span>
+                <span className="text-xs font-medium">Owner</span>
               </div>
             )}
             
@@ -231,9 +236,17 @@ export function RiverWalkList({
     );
   }
 
-  // Group river walks by ownership
-  const ownedRiverWalks = riverWalks.filter(rw => rw.collaboration_role === 'owner');
-  const sharedRiverWalks = riverWalks.filter(rw => rw.collaboration_role === 'editor' || rw.collaboration_role === 'viewer');
+  // Group river walks by ownership (with fallback for missing role info)
+  const ownedRiverWalks = riverWalks.filter(rw => 
+    rw.collaboration_role === 'owner' || 
+    (!rw.collaboration_role && rw.access_type === 'owned') ||
+    (!rw.collaboration_role && !rw.access_type) // fallback for completely missing metadata
+  );
+  const sharedRiverWalks = riverWalks.filter(rw => 
+    rw.collaboration_role === 'editor' || 
+    rw.collaboration_role === 'viewer' ||
+    (!rw.collaboration_role && rw.access_type === 'collaborated')
+  );
 
   return (
     <div className="space-y-8">

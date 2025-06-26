@@ -697,9 +697,27 @@ export async function getAccessibleRiverWalks(): Promise<any[]> {
             });
 
             if (!walksError && collaboratedWalks && collaboratedWalks.length > 0) {
-              // Add access type to walks
-              const ownedWalksWithType = allWalks.map(walk => ({ ...walk, access_type: 'owned' }));
-              const collaboratedWalksWithType = collaboratedWalks.map(walk => ({ ...walk, access_type: 'collaborated' }));
+              // Add access type and role to walks
+              const ownedWalksWithType = allWalks.map(walk => ({ 
+                ...walk, 
+                access_type: 'owned',
+                collaboration_role: 'owner'
+              }));
+              
+              // Get role information for collaborated walks
+              const collaboratedWalksWithType = collaboratedWalks.map(walk => {
+                // Find the user's role for this specific walk
+                const userCollab = userCollabs?.find(uc => {
+                  const matchingMetadata = collabMetadata?.find(cm => cm.river_walk_reference_id === walk.id);
+                  return matchingMetadata && uc.collaboration_id === matchingMetadata.id;
+                });
+                
+                return {
+                  ...walk, 
+                  access_type: 'collaborated',
+                  collaboration_role: userCollab?.role || 'viewer' // Default to viewer if role not found
+                };
+              });
               
               // Combine owned and collaborated walks
               const combinedWalks = [...ownedWalksWithType, ...collaboratedWalksWithType];
@@ -712,16 +730,56 @@ export async function getAccessibleRiverWalks(): Promise<any[]> {
                 collaboratedCount: collaboratedWalks.length,
                 totalCount: uniqueWalks.length,
                 finalWalkIds: uniqueWalks.map(w => w.id),
-                accessTypes: uniqueWalks.map(w => ({ id: w.id, access_type: w.access_type }))
+                accessAndRoles: uniqueWalks.map(w => ({ 
+                  id: w.id, 
+                  access_type: w.access_type, 
+                  collaboration_role: w.collaboration_role 
+                }))
               });
 
               return uniqueWalks.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
             }
+          } else {
+            // No collaborated walks found, but we still need to add role info to owned walks
+            const ownedWalksWithType = allWalks.map(walk => ({ 
+              ...walk, 
+              access_type: 'owned',
+              collaboration_role: 'owner'
+            }));
+            
+            console.log('🔍 [DEBUG] getAccessibleRiverWalks: No collaborated walks, returning owned only', {
+              ownedCount: allWalks.length,
+              walksWithRoles: ownedWalksWithType.map(w => ({
+                id: w.id,
+                access_type: w.access_type,
+                collaboration_role: w.collaboration_role
+              }))
+            });
+            
+            return ownedWalksWithType.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
           }
         }
       } catch (fallbackError) {
         console.error('🔍 [DEBUG] getAccessibleRiverWalks: Direct fallback error', fallbackError);
       }
+    } else {
+      // RLS returned results but no collaborated walks found, add role info to owned walks
+      const ownedWalksWithType = allWalks.map(walk => ({ 
+        ...walk, 
+        access_type: 'owned',
+        collaboration_role: 'owner'
+      }));
+      
+      console.log('🔍 [DEBUG] getAccessibleRiverWalks: RLS success, no collaboration needed', {
+        ownedCount: allWalks.length,
+        walksWithRoles: ownedWalksWithType.map(w => ({
+          id: w.id,
+          access_type: w.access_type,
+          collaboration_role: w.collaboration_role
+        }))
+      });
+      
+      return ownedWalksWithType.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
     }
   }
 
@@ -743,8 +801,29 @@ export async function getAccessibleRiverWalks(): Promise<any[]> {
     throw new Error(`Failed to fetch river walks: ${error.message}`);
   }
 
-  // Add access type to RLS results (since we can't easily distinguish, mark as 'owned' for now)
-  // The RLS policy should be returning both owned and collaborated walks
-  const walksWithAccessType = (allWalks || []).map(walk => ({ ...walk, access_type: 'owned' }));
+  // Add access type and role to RLS results
+  // Since RLS combines everything, we need to determine ownership per walk
+  const walksWithAccessType = (allWalks || []).map(walk => {
+    // Check if the current user owns this walk
+    const isOwner = walk.user_id === user.user?.id;
+    
+    return {
+      ...walk, 
+      access_type: isOwner ? 'owned' : 'collaborated',
+      collaboration_role: isOwner ? 'owner' : 'editor' // Default to editor for collaborated walks
+    };
+  });
+  
+  console.log('🔍 [DEBUG] getAccessibleRiverWalks: RLS approach with roles', {
+    walkCount: walksWithAccessType.length,
+    accessAndRoles: walksWithAccessType.map(w => ({ 
+      id: w.id, 
+      access_type: w.access_type, 
+      collaboration_role: w.collaboration_role,
+      user_id: w.user_id,
+      current_user_id: user.user?.id
+    }))
+  });
+  
   return walksWithAccessType;
 }
