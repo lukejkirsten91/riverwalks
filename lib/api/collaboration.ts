@@ -613,6 +613,15 @@ export async function getAccessibleRiverWalks(): Promise<any[]> {
     testResult: rlsTest?.[0] || null
   });
 
+  // Test collaboration access with new comprehensive function
+  console.log('🔍 [DEBUG] getAccessibleRiverWalks: Testing comprehensive collaboration access');
+  const { data: collaborationTest } = await supabase.rpc('test_collaboration_access_with_auth');
+  console.log('🔍 [DEBUG] getAccessibleRiverWalks: Comprehensive collaboration test result', {
+    hasData: !!collaborationTest,
+    dataLength: collaborationTest?.length || 0,
+    testResults: collaborationTest || null
+  });
+
   // Try the RLS policy approach first
   const { data: allWalks, error } = await supabase
     .from('river_walks')
