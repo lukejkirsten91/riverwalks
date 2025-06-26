@@ -1,4 +1,4 @@
-import { MapPin, Calendar, Globe, Trash2, Archive, RotateCcw, BarChart3, ChevronUp, ChevronDown, CheckCircle, Clock, Link } from 'lucide-react';
+import { MapPin, Calendar, Globe, Trash2, Archive, RotateCcw, BarChart3, ChevronUp, ChevronDown, CheckCircle, Clock, Link, Users, User } from 'lucide-react';
 import { useState } from 'react';
 import { formatDate } from '../../lib/utils';
 import { InlineEdit } from '../ui/InlineEdit';
@@ -53,17 +53,31 @@ export function RiverWalkList({
             />
           )}
           
-          {/* Sync status icon */}
-          <div className="flex-shrink-0">
+          {/* Access type and sync status icons */}
+          <div className="flex-shrink-0 flex items-center gap-3">
+            {/* Access type indicator */}
+            {riverWalk.access_type === 'collaborated' ? (
+              <div className="flex items-center gap-1 text-blue-600 bg-blue-50 px-2 py-1 rounded-full">
+                <Users className="w-4 h-4" />
+                <span className="text-xs font-medium">Shared</span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-1 text-gray-600 bg-gray-50 px-2 py-1 rounded-full">
+                <User className="w-4 h-4" />
+                <span className="text-xs font-medium">Owned</span>
+              </div>
+            )}
+            
+            {/* Sync status icon */}
             {isRiverWalkSynced(riverWalk) ? (
               <div className="flex items-center gap-1 text-green-600">
-                <CheckCircle className="w-5 h-5" />
-                <span className="text-sm font-medium">Synced</span>
+                <CheckCircle className="w-4 h-4" />
+                <span className="text-xs font-medium">Synced</span>
               </div>
             ) : (
               <div className="flex items-center gap-1 text-amber-600">
-                <Clock className="w-5 h-5" />
-                <span className="text-sm font-medium">Pending</span>
+                <Clock className="w-4 h-4" />
+                <span className="text-xs font-medium">Pending</span>
               </div>
             )}
           </div>

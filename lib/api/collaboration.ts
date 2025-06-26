@@ -622,7 +622,22 @@ export async function getAccessibleRiverWalks(): Promise<any[]> {
     testResults: collaborationTest || null
   });
 
-  // Try the RLS policy approach first
+  // Try the RPC approach first (better for access type info)
+  console.log('🔍 [DEBUG] getAccessibleRiverWalks: Trying RPC approach for access types');
+  const { data: rpcWalks, error: rpcError } = await supabase.rpc('get_user_accessible_river_walks');
+  
+  if (!rpcError && rpcWalks && rpcWalks.length > 0) {
+    console.log('🔍 [DEBUG] getAccessibleRiverWalks: RPC approach successful', {
+      walkCount: rpcWalks.length,
+      walkIds: rpcWalks.map((w: any) => w.id),
+      accessTypes: rpcWalks.map((w: any) => ({ id: w.id, access_type: w.access_type }))
+    });
+    
+    return rpcWalks.sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  }
+
+  // Fallback to RLS policy approach
+  console.log('🔍 [DEBUG] getAccessibleRiverWalks: RPC failed, trying RLS approach', { rpcError });
   const { data: allWalks, error } = await supabase
     .from('river_walks')
     .select('*')
@@ -682,8 +697,12 @@ export async function getAccessibleRiverWalks(): Promise<any[]> {
             });
 
             if (!walksError && collaboratedWalks && collaboratedWalks.length > 0) {
+              // Add access type to walks
+              const ownedWalksWithType = allWalks.map(walk => ({ ...walk, access_type: 'owned' }));
+              const collaboratedWalksWithType = collaboratedWalks.map(walk => ({ ...walk, access_type: 'collaborated' }));
+              
               // Combine owned and collaborated walks
-              const combinedWalks = [...allWalks, ...collaboratedWalks];
+              const combinedWalks = [...ownedWalksWithType, ...collaboratedWalksWithType];
               const uniqueWalks = combinedWalks.filter((walk, index, self) => 
                 index === self.findIndex(w => w.id === walk.id)
               );
@@ -692,7 +711,8 @@ export async function getAccessibleRiverWalks(): Promise<any[]> {
                 ownedCount: allWalks.length,
                 collaboratedCount: collaboratedWalks.length,
                 totalCount: uniqueWalks.length,
-                finalWalkIds: uniqueWalks.map(w => w.id)
+                finalWalkIds: uniqueWalks.map(w => w.id),
+                accessTypes: uniqueWalks.map(w => ({ id: w.id, access_type: w.access_type }))
               });
 
               return uniqueWalks.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
@@ -723,5 +743,8 @@ export async function getAccessibleRiverWalks(): Promise<any[]> {
     throw new Error(`Failed to fetch river walks: ${error.message}`);
   }
 
-  return allWalks || [];
+  // Add access type to RLS results (since we can't easily distinguish, mark as 'owned' for now)
+  // The RLS policy should be returning both owned and collaborated walks
+  const walksWithAccessType = (allWalks || []).map(walk => ({ ...walk, access_type: 'owned' }));
+  return walksWithAccessType;
 }

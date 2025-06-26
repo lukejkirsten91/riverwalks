@@ -11,6 +11,7 @@ export interface RiverWalk {
   user_id: string;
   archived: boolean;
   notes: string | null;
+  access_type?: 'owned' | 'collaborated'; // Added for collaboration UI
 }
 
 export type TodoStatus = 'not_started' | 'in_progress' | 'complete';
