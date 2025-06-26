@@ -33,66 +33,74 @@ export function RiverWalkList({
 }: RiverWalkListProps) {
   const [showArchived, setShowArchived] = useState(false);
 
-  const renderRiverWalk = (riverWalk: RiverWalk, isArchived: boolean = false) => (
+  const renderRiverWalk = (riverWalk: RiverWalk, isArchived: boolean = false) => {
+    // Permission checks for button visibility
+    const canManageSites = !isArchived && riverWalk.collaboration_role !== 'viewer';
+    const canShare = !isArchived && onShare && riverWalk.collaboration_role === 'owner';
+    const canArchive = !isArchived && riverWalk.collaboration_role === 'owner';
+    
+    return (
     <div
       key={riverWalk.id}
-      className="card-modern-xl p-6 hover:scale-[1.02] transition-transform duration-200"
+      className="card-modern-xl p-4 sm:p-6 hover:scale-[1.02] transition-transform duration-200"
     >
       {/* Header with inline editing - disable editing for archived items */}
       <div className="flex-1 min-w-0 mb-4">
-        <div className="flex items-center gap-2 mb-3">
-          {isArchived ? (
-            <h2 className="text-xl sm:text-2xl font-semibold text-foreground flex-1">{riverWalk.name}</h2>
-          ) : (
-            <InlineEdit
-              value={riverWalk.name}
-              onSave={(value) => onUpdateField(riverWalk.id, 'name', value)}
-              className="text-xl sm:text-2xl font-semibold text-foreground flex-1"
-              inputClassName="text-xl sm:text-2xl font-semibold"
-              placeholder="River walk name"
-            />
-          )}
+        <div className="flex items-start sm:items-center gap-2 mb-3 flex-col sm:flex-row">
+          <div className="flex-1 min-w-0 w-full">
+            {isArchived || riverWalk.collaboration_role === 'viewer' ? (
+              <h2 className="text-lg sm:text-xl lg:text-2xl font-semibold text-foreground break-words">{riverWalk.name}</h2>
+            ) : (
+              <InlineEdit
+                value={riverWalk.name}
+                onSave={(value) => onUpdateField(riverWalk.id, 'name', value)}
+                className="text-lg sm:text-xl lg:text-2xl font-semibold text-foreground"
+                inputClassName="text-lg sm:text-xl lg:text-2xl font-semibold w-full"
+                placeholder="River walk name"
+              />
+            )}
+          </div>
           
           {/* Access type and sync status icons */}
-          <div className="flex-shrink-0 flex items-center gap-3">
+          <div className="flex-shrink-0 flex items-center gap-2 flex-wrap">
             {/* Role-based access indicator */}
             {riverWalk.collaboration_role === 'owner' || (!riverWalk.collaboration_role && riverWalk.access_type === 'owned') || (!riverWalk.collaboration_role && !riverWalk.access_type) ? (
               <div className="flex items-center gap-1 text-purple-600 bg-purple-50 px-2 py-1 rounded-full">
-                <Crown className="w-4 h-4" />
-                <span className="text-xs font-medium">Owner</span>
+                <Crown className="w-3 h-3 sm:w-4 sm:h-4" />
+                <span className="text-xs font-medium hidden sm:inline">Owner</span>
               </div>
             ) : riverWalk.collaboration_role === 'editor' ? (
               <div className="flex items-center gap-1 text-green-600 bg-green-50 px-2 py-1 rounded-full">
-                <Edit className="w-4 h-4" />
-                <span className="text-xs font-medium">Editor</span>
+                <Edit className="w-3 h-3 sm:w-4 sm:h-4" />
+                <span className="text-xs font-medium hidden sm:inline">Editor</span>
               </div>
             ) : riverWalk.collaboration_role === 'viewer' ? (
               <div className="flex items-center gap-1 text-blue-600 bg-blue-50 px-2 py-1 rounded-full">
-                <Eye className="w-4 h-4" />
-                <span className="text-xs font-medium">Viewer</span>
+                <Eye className="w-3 h-3 sm:w-4 sm:h-4" />
+                <span className="text-xs font-medium hidden sm:inline">Viewer</span>
               </div>
             ) : riverWalk.access_type === 'collaborated' ? (
               <div className="flex items-center gap-1 text-green-600 bg-green-50 px-2 py-1 rounded-full">
-                <Edit className="w-4 h-4" />
-                <span className="text-xs font-medium">Editor</span>
+                <Edit className="w-3 h-3 sm:w-4 sm:h-4" />
+                <span className="text-xs font-medium hidden sm:inline">Editor</span>
               </div>
             ) : (
               <div className="flex items-center gap-1 text-gray-600 bg-gray-50 px-2 py-1 rounded-full">
-                <User className="w-4 h-4" />
-                <span className="text-xs font-medium">Owner</span>
+                <User className="w-3 h-3 sm:w-4 sm:h-4" />
+                <span className="text-xs font-medium hidden sm:inline">Owner</span>
               </div>
             )}
             
             {/* Sync status icon */}
             {isRiverWalkSynced(riverWalk) ? (
               <div className="flex items-center gap-1 text-green-600">
-                <CheckCircle className="w-4 h-4" />
-                <span className="text-xs font-medium">Synced</span>
+                <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4" />
+                <span className="text-xs font-medium hidden sm:inline">Synced</span>
               </div>
             ) : (
               <div className="flex items-center gap-1 text-amber-600">
-                <Clock className="w-4 h-4" />
-                <span className="text-xs font-medium">Pending</span>
+                <Clock className="w-3 h-3 sm:w-4 sm:h-4" />
+                <span className="text-xs font-medium hidden sm:inline">Pending</span>
               </div>
             )}
           </div>
@@ -102,7 +110,7 @@ export function RiverWalkList({
         <div className="space-y-2">
           <div className="flex items-center gap-2 text-muted-foreground">
             <Calendar className="w-4 h-4 shrink-0" />
-            {isArchived ? (
+            {isArchived || riverWalk.collaboration_role === 'viewer' ? (
               <span className="text-sm">{riverWalk.date}</span>
             ) : (
               <InlineEdit
@@ -115,9 +123,9 @@ export function RiverWalkList({
           </div>
           <div className="flex items-center gap-2 text-muted-foreground">
             <Globe className="w-4 h-4 shrink-0" />
-            <div className="flex items-center gap-1 text-sm">
-              {isArchived ? (
-                <span>{riverWalk.county ? `${riverWalk.county}, ` : ''}{riverWalk.country || 'UK'}</span>
+            <div className="flex items-center gap-1 text-sm flex-wrap">
+              {isArchived || riverWalk.collaboration_role === 'viewer' ? (
+                <span className="break-words">{riverWalk.county ? `${riverWalk.county}, ` : ''}{riverWalk.country || 'UK'}</span>
               ) : (
                 <>
                   <InlineEdit
@@ -141,86 +149,93 @@ export function RiverWalkList({
       </div>
 
       {/* Action buttons */}
-      <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-border">
-        <button
-          onClick={() => onManageSites(riverWalk)}
-          className="btn-primary touch-manipulation flex-1 sm:flex-none"
-        >
-          <MapPin className="w-5 h-5 mr-2" />
-          Sites & Measurements
-        </button>
+      <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 pt-4 border-t border-border">
+        {canManageSites && (
+          <button
+            onClick={() => onManageSites(riverWalk)}
+            className="btn-primary touch-manipulation flex-1 sm:flex-none text-sm sm:text-base px-3 py-2 sm:px-4 sm:py-3"
+          >
+            <MapPin className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
+            <span className="truncate">Sites & Measurements</span>
+          </button>
+        )}
         
         {!isArchived && (
           <button
             onClick={() => onGenerateReport(riverWalk)}
-            className="bg-accent/10 hover:bg-accent/20 text-accent px-4 py-3 rounded-lg font-medium transition-all duration-200 border border-accent/20 shadow-modern hover:shadow-modern-lg touch-manipulation flex-1 sm:flex-none flex items-center justify-center"
+            className="bg-accent/10 hover:bg-accent/20 text-accent px-3 py-2 sm:px-4 sm:py-3 rounded-lg font-medium transition-all duration-200 border border-accent/20 shadow-modern hover:shadow-modern-lg touch-manipulation flex-1 sm:flex-none flex items-center justify-center text-sm sm:text-base"
           >
-            <BarChart3 className="w-5 h-5 mr-2" />
-            Visualize Report
+            <BarChart3 className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
+            <span className="truncate">Visualize Report</span>
           </button>
         )}
         
-        {!isArchived && onShare && (
+        {canShare && (
           <button
             onClick={() => onShare(riverWalk)}
-            className="bg-blue-50 hover:bg-blue-100 text-blue-600 px-4 py-3 rounded-lg font-medium transition-all duration-200 border border-blue-200 shadow-modern hover:shadow-modern-lg touch-manipulation flex-1 sm:flex-none flex items-center justify-center"
+            className="bg-blue-50 hover:bg-blue-100 text-blue-600 px-3 py-2 sm:px-4 sm:py-3 rounded-lg font-medium transition-all duration-200 border border-blue-200 shadow-modern hover:shadow-modern-lg touch-manipulation flex-1 sm:flex-none flex items-center justify-center text-sm sm:text-base"
           >
-            <Link className="w-5 h-5 mr-2" />
-            Share
+            <Link className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
+            <span className="truncate">Share</span>
           </button>
         )}
         
         {isArchived ? (
-          // Archived view: Restore and Delete buttons
-          <>
+          // Archived view: Restore and Delete buttons (only for owners)
+          riverWalk.collaboration_role === 'owner' || (!riverWalk.collaboration_role && riverWalk.access_type === 'owned') || (!riverWalk.collaboration_role && !riverWalk.access_type) ? (
+            <>
+              <button
+                onClick={() => onRestore(riverWalk.id)}
+                disabled={archiveLoading === riverWalk.id}
+                className="bg-success/10 hover:bg-success/20 text-success px-3 py-2 sm:px-4 sm:py-3 rounded-lg font-medium transition-all duration-200 border border-success/20 shadow-modern hover:shadow-modern-lg touch-manipulation flex-1 sm:flex-none flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
+              >
+                {archiveLoading === riverWalk.id ? (
+                  <>
+                    <div className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2 animate-spin rounded-full border-2 border-success/30 border-t-success"></div>
+                    <span className="truncate">Restoring...</span>
+                  </>
+                ) : (
+                  <>
+                    <RotateCcw className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
+                    <span className="truncate">Restore</span>
+                  </>
+                )}
+              </button>
+              <button
+                onClick={() => onDelete(riverWalk.id)}
+                className="bg-destructive/10 hover:bg-destructive/20 text-destructive px-3 py-2 sm:px-4 sm:py-3 rounded-lg font-medium transition-all duration-200 border border-destructive/20 shadow-modern hover:shadow-modern-lg touch-manipulation flex-1 sm:flex-none flex items-center justify-center text-sm sm:text-base"
+              >
+                <Trash2 className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
+                <span className="truncate">Delete Forever</span>
+              </button>
+            </>
+          ) : null
+        ) : (
+          // Active view: Archive button (only for owners)
+          canArchive && (
             <button
-              onClick={() => onRestore(riverWalk.id)}
+              onClick={() => onArchive(riverWalk.id)}
               disabled={archiveLoading === riverWalk.id}
-              className="bg-success/10 hover:bg-success/20 text-success px-4 py-3 rounded-lg font-medium transition-all duration-200 border border-success/20 shadow-modern hover:shadow-modern-lg touch-manipulation flex-1 sm:flex-none flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+              className="bg-warning/10 hover:bg-warning/20 text-warning px-3 py-2 sm:px-4 sm:py-3 rounded-lg font-medium transition-all duration-200 border border-warning/20 shadow-modern hover:shadow-modern-lg touch-manipulation flex-1 sm:flex-none flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
             >
               {archiveLoading === riverWalk.id ? (
                 <>
-                  <div className="w-5 h-5 mr-2 animate-spin rounded-full border-2 border-success/30 border-t-success"></div>
-                  Restoring...
+                  <div className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2 animate-spin rounded-full border-2 border-warning/30 border-t-warning"></div>
+                  <span className="truncate">Archiving...</span>
                 </>
               ) : (
                 <>
-                  <RotateCcw className="w-5 h-5 mr-2" />
-                  Restore
+                  <Archive className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
+                  <span className="truncate">Archive</span>
                 </>
               )}
             </button>
-            <button
-              onClick={() => onDelete(riverWalk.id)}
-              className="bg-destructive/10 hover:bg-destructive/20 text-destructive px-4 py-3 rounded-lg font-medium transition-all duration-200 border border-destructive/20 shadow-modern hover:shadow-modern-lg touch-manipulation flex-1 sm:flex-none flex items-center justify-center"
-            >
-              <Trash2 className="w-5 h-5 mr-2" />
-              Delete Forever
-            </button>
-          </>
-        ) : (
-          // Active view: Archive button
-          <button
-            onClick={() => onArchive(riverWalk.id)}
-            disabled={archiveLoading === riverWalk.id}
-            className="bg-warning/10 hover:bg-warning/20 text-warning px-4 py-3 rounded-lg font-medium transition-all duration-200 border border-warning/20 shadow-modern hover:shadow-modern-lg touch-manipulation flex-1 sm:flex-none flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {archiveLoading === riverWalk.id ? (
-              <>
-                <div className="w-5 h-5 mr-2 animate-spin rounded-full border-2 border-warning/30 border-t-warning"></div>
-                Archiving...
-              </>
-            ) : (
-              <>
-                <Archive className="w-5 h-5 mr-2" />
-                Archive
-              </>
-            )}
-          </button>
+          )
         )}
       </div>
     </div>
-  );
+    );
+  };
 
   if (riverWalks.length === 0 && archivedRiverWalks.length === 0) {
     return (
@@ -249,16 +264,16 @@ export function RiverWalkList({
   );
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 sm:space-y-8">
       {/* My River Walks Section */}
       {ownedRiverWalks.length > 0 && (
         <div>
-          <div className="flex items-center gap-2 mb-4">
-            <Crown className="w-5 h-5 text-purple-600" />
-            <h2 className="text-lg font-semibold text-foreground">My River Walks</h2>
-            <span className="text-sm text-muted-foreground">({ownedRiverWalks.length})</span>
+          <div className="flex items-center gap-2 mb-3 sm:mb-4">
+            <Crown className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600" />
+            <h2 className="text-base sm:text-lg font-semibold text-foreground">My River Walks</h2>
+            <span className="text-xs sm:text-sm text-muted-foreground">({ownedRiverWalks.length})</span>
           </div>
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             {ownedRiverWalks.map((riverWalk) => renderRiverWalk(riverWalk, false))}
           </div>
         </div>
@@ -267,12 +282,12 @@ export function RiverWalkList({
       {/* Shared River Walks Section */}
       {sharedRiverWalks.length > 0 && (
         <div>
-          <div className="flex items-center gap-2 mb-4">
-            <Users className="w-5 h-5 text-blue-600" />
-            <h2 className="text-lg font-semibold text-foreground">Shared River Walks</h2>
-            <span className="text-sm text-muted-foreground">({sharedRiverWalks.length})</span>
+          <div className="flex items-center gap-2 mb-3 sm:mb-4">
+            <Users className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
+            <h2 className="text-base sm:text-lg font-semibold text-foreground">Shared River Walks</h2>
+            <span className="text-xs sm:text-sm text-muted-foreground">({sharedRiverWalks.length})</span>
           </div>
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             {sharedRiverWalks.map((riverWalk) => renderRiverWalk(riverWalk, false))}
           </div>
         </div>
@@ -293,14 +308,14 @@ export function RiverWalkList({
 
       {/* Archived Section - Microsoft Style */}
       {archivedRiverWalks.length > 0 && (
-        <div className="mt-8">
+        <div className="mt-6 sm:mt-8">
           <button
             onClick={() => setShowArchived(!showArchived)}
-            className="w-full flex items-center justify-between p-4 text-left text-muted-foreground hover:text-foreground bg-gray-50/50 hover:bg-gray-100/50 rounded-lg border border-gray-200/50 transition-all duration-200 touch-manipulation"
+            className="w-full flex items-center justify-between p-3 sm:p-4 text-left text-muted-foreground hover:text-foreground bg-gray-50/50 hover:bg-gray-100/50 rounded-lg border border-gray-200/50 transition-all duration-200 touch-manipulation"
           >
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3">
               <Archive className="w-4 h-4" />
-              <span className="text-sm font-medium">
+              <span className="text-xs sm:text-sm font-medium">
                 View archived ({archivedRiverWalks.length})
               </span>
             </div>
@@ -313,7 +328,7 @@ export function RiverWalkList({
 
           {/* Archived Items - Expandable */}
           {showArchived && (
-            <div className="mt-4 space-y-4 pl-4 border-l-2 border-gray-200">
+            <div className="mt-3 sm:mt-4 space-y-3 sm:space-y-4 pl-3 sm:pl-4 border-l-2 border-gray-200">
               {archivedRiverWalks.map((riverWalk) => renderRiverWalk(riverWalk, true))}
             </div>
           )}

@@ -64,10 +64,7 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
   const handleUpdateSite = async (id: string, data: UpdateSiteData, riverWalkId?: string, showToast: boolean = true) => {
     // Check permissions before attempting to update
     if (riverWalk.collaboration_role === 'viewer') {
-      if (showToast) {
-        showError('Permission Denied', 'You have view-only access to this river walk. You cannot edit sites.');
-      }
-      return;
+      return; // Silently do nothing for viewers as UI should be read-only
     }
 
     try {
@@ -97,8 +94,7 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
   const handleDeleteSite = async (id: string, riverWalkId?: string) => {
     // Check permissions before attempting to delete
     if (riverWalk.collaboration_role === 'viewer') {
-      showError('Permission Denied', 'You have view-only access to this river walk. You cannot delete sites.');
-      return;
+      return; // Silently do nothing for viewers as buttons should be hidden
     }
 
     try {
@@ -479,8 +475,7 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
   const handleAddNewSite = async () => {
     // Check permissions before attempting to create
     if (riverWalk.collaboration_role === 'viewer') {
-      showError('Permission Denied', 'You have view-only access to this river walk. You cannot create new sites.');
-      return;
+      return; // Silently do nothing for viewers as button should be hidden
     }
 
     try {
