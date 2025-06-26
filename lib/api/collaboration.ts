@@ -577,6 +577,11 @@ export async function getAccessibleRiverWalks(): Promise<any[]> {
     userEmail: user.user.email
   });
 
+  // Test authentication context before querying
+  console.log('🔍 [DEBUG] getAccessibleRiverWalks: Testing auth context');
+  const { data: authTest } = await supabase.rpc('debug_auth_context_test');
+  console.log('🔍 [DEBUG] getAccessibleRiverWalks: Auth context test result', authTest);
+
   // With the fixed RLS policy, we can now query all accessible river walks directly
   const { data: allWalks, error } = await supabase
     .from('river_walks')
