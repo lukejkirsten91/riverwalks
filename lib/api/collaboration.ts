@@ -583,7 +583,9 @@ export async function getAccessibleRiverWalks(): Promise<any[]> {
   console.log('🔍 [DEBUG] getAccessibleRiverWalks: Auth context test result', {
     hasData: !!authTest,
     dataLength: authTest?.length || 0,
-    authData: authTest?.[0] || null
+    authData: authTest?.[0] || null,
+    expectedUserId: user.user.id,
+    expectedUserEmail: user.user.email
   });
 
   // Test direct access to the specific collaborated river walk
@@ -599,6 +601,13 @@ export async function getAccessibleRiverWalks(): Promise<any[]> {
     found: !!directTest?.length,
     riverWalk: directTest?.[0] || null
   });
+
+  // Test the exact RLS policy logic manually
+  console.log('🔍 [DEBUG] getAccessibleRiverWalks: Testing RLS policy logic manually');
+  const { data: rlsTest } = await supabase.rpc('test_rls_policy_manually', {
+    p_river_walk_id: '9cf2aa3b-e4d8-4bf4-a725-f449af371239'
+  });
+  console.log('🔍 [DEBUG] getAccessibleRiverWalks: Manual RLS test result', rlsTest);
 
   // With the fixed RLS policy, we can now query all accessible river walks directly
   const { data: allWalks, error } = await supabase
