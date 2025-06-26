@@ -62,6 +62,14 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
   };
   
   const handleUpdateSite = async (id: string, data: UpdateSiteData, riverWalkId?: string, showToast: boolean = true) => {
+    // Check permissions before attempting to update
+    if (riverWalk.collaboration_role === 'viewer') {
+      if (showToast) {
+        showError('Permission Denied', 'You have view-only access to this river walk. You cannot edit sites.');
+      }
+      return;
+    }
+
     try {
       await updateSite(id, data);
       await fetchSites();
@@ -70,14 +78,29 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
       }
     } catch (error) {
       console.error('Failed to update site:', error);
-      if (showToast) {
-        showError('Update Failed', error instanceof Error ? error.message : 'Failed to update site');
+      
+      // Check for RLS permission errors
+      const errorMessage = error instanceof Error ? error.message : 'Failed to update site';
+      if (errorMessage.includes('insufficient_privilege') || errorMessage.includes('permission denied')) {
+        if (showToast) {
+          showError('Permission Denied', 'You do not have permission to edit this site.');
+        }
+      } else {
+        if (showToast) {
+          showError('Update Failed', errorMessage);
+        }
       }
       throw error; // Re-throw so calling function can handle the error appropriately
     }
   };
   
   const handleDeleteSite = async (id: string, riverWalkId?: string) => {
+    // Check permissions before attempting to delete
+    if (riverWalk.collaboration_role === 'viewer') {
+      showError('Permission Denied', 'You have view-only access to this river walk. You cannot delete sites.');
+      return;
+    }
+
     try {
       await deleteSite(id);
       showSuccess('Site Deleted', 'Site has been successfully deleted.');
@@ -89,7 +112,14 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
       }
     } catch (error) {
       console.error('Failed to delete site:', error);
-      showError('Delete Failed', error instanceof Error ? error.message : 'Failed to delete site. Please try again.');
+      
+      // Check for RLS permission errors
+      const errorMessage = error instanceof Error ? error.message : 'Failed to delete site';
+      if (errorMessage.includes('insufficient_privilege') || errorMessage.includes('permission denied')) {
+        showError('Permission Denied', 'You do not have permission to delete this site.');
+      } else {
+        showError('Delete Failed', errorMessage);
+      }
     }
   };
   
@@ -447,6 +477,12 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
   };
 
   const handleAddNewSite = async () => {
+    // Check permissions before attempting to create
+    if (riverWalk.collaboration_role === 'viewer') {
+      showError('Permission Denied', 'You have view-only access to this river walk. You cannot create new sites.');
+      return;
+    }
+
     try {
       // Use sequential numbering: always use next number after highest existing
       // This is more intuitive - no gap filling that confuses users
@@ -483,6 +519,12 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
       let errorMessage = 'Unknown error';
       if (error instanceof Error) {
         errorMessage = error.message;
+        
+        // Check for RLS permission errors
+        if (errorMessage.includes('insufficient_privilege') || errorMessage.includes('permission denied')) {
+          showError('Permission Denied', 'You do not have permission to create sites in this river walk.');
+          return;
+        }
         
         // Check for specific database constraint violations
         if (errorMessage.includes('duplicate key') || errorMessage.includes('unique constraint')) {

@@ -12,6 +12,7 @@ export interface RiverWalk {
   archived: boolean;
   notes: string | null;
   access_type?: 'owned' | 'collaborated'; // Added for collaboration UI
+  collaboration_role?: 'owner' | 'editor' | 'viewer'; // Added for role-based permissions
 }
 
 export type TodoStatus = 'not_started' | 'in_progress' | 'complete';

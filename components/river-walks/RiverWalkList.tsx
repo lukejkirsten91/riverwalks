@@ -1,4 +1,4 @@
-import { MapPin, Calendar, Globe, Trash2, Archive, RotateCcw, BarChart3, ChevronUp, ChevronDown, CheckCircle, Clock, Link, Users, User } from 'lucide-react';
+import { MapPin, Calendar, Globe, Trash2, Archive, RotateCcw, BarChart3, ChevronUp, ChevronDown, CheckCircle, Clock, Link, Users, User, Edit, Eye, Crown } from 'lucide-react';
 import { useState } from 'react';
 import { formatDate } from '../../lib/utils';
 import { InlineEdit } from '../ui/InlineEdit';
@@ -55,16 +55,26 @@ export function RiverWalkList({
           
           {/* Access type and sync status icons */}
           <div className="flex-shrink-0 flex items-center gap-3">
-            {/* Access type indicator */}
-            {riverWalk.access_type === 'collaborated' ? (
+            {/* Role-based access indicator */}
+            {riverWalk.collaboration_role === 'owner' ? (
+              <div className="flex items-center gap-1 text-purple-600 bg-purple-50 px-2 py-1 rounded-full">
+                <Crown className="w-4 h-4" />
+                <span className="text-xs font-medium">Owner</span>
+              </div>
+            ) : riverWalk.collaboration_role === 'editor' ? (
+              <div className="flex items-center gap-1 text-green-600 bg-green-50 px-2 py-1 rounded-full">
+                <Edit className="w-4 h-4" />
+                <span className="text-xs font-medium">Editor</span>
+              </div>
+            ) : riverWalk.collaboration_role === 'viewer' ? (
               <div className="flex items-center gap-1 text-blue-600 bg-blue-50 px-2 py-1 rounded-full">
-                <Users className="w-4 h-4" />
-                <span className="text-xs font-medium">Shared</span>
+                <Eye className="w-4 h-4" />
+                <span className="text-xs font-medium">Viewer</span>
               </div>
             ) : (
               <div className="flex items-center gap-1 text-gray-600 bg-gray-50 px-2 py-1 rounded-full">
                 <User className="w-4 h-4" />
-                <span className="text-xs font-medium">Owned</span>
+                <span className="text-xs font-medium">Unknown</span>
               </div>
             )}
             
@@ -221,10 +231,42 @@ export function RiverWalkList({
     );
   }
 
+  // Group river walks by ownership
+  const ownedRiverWalks = riverWalks.filter(rw => rw.collaboration_role === 'owner');
+  const sharedRiverWalks = riverWalks.filter(rw => rw.collaboration_role === 'editor' || rw.collaboration_role === 'viewer');
+
   return (
-    <div className="space-y-6">
-      {/* Active River Walks */}
-      {riverWalks.length === 0 ? (
+    <div className="space-y-8">
+      {/* My River Walks Section */}
+      {ownedRiverWalks.length > 0 && (
+        <div>
+          <div className="flex items-center gap-2 mb-4">
+            <Crown className="w-5 h-5 text-purple-600" />
+            <h2 className="text-lg font-semibold text-foreground">My River Walks</h2>
+            <span className="text-sm text-muted-foreground">({ownedRiverWalks.length})</span>
+          </div>
+          <div className="space-y-4">
+            {ownedRiverWalks.map((riverWalk) => renderRiverWalk(riverWalk, false))}
+          </div>
+        </div>
+      )}
+
+      {/* Shared River Walks Section */}
+      {sharedRiverWalks.length > 0 && (
+        <div>
+          <div className="flex items-center gap-2 mb-4">
+            <Users className="w-5 h-5 text-blue-600" />
+            <h2 className="text-lg font-semibold text-foreground">Shared River Walks</h2>
+            <span className="text-sm text-muted-foreground">({sharedRiverWalks.length})</span>
+          </div>
+          <div className="space-y-4">
+            {sharedRiverWalks.map((riverWalk) => renderRiverWalk(riverWalk, false))}
+          </div>
+        </div>
+      )}
+
+      {/* Empty State */}
+      {riverWalks.length === 0 && (
         <div className="card-modern-xl p-12 text-center">
           <div className="w-16 h-16 rounded-xl gradient-muted flex items-center justify-center mx-auto mb-6">
             <MapPin className="w-8 h-8 text-muted-foreground" />
@@ -234,8 +276,6 @@ export function RiverWalkList({
             Create your first river study to get started with documentation and analysis.
           </p>
         </div>
-      ) : (
-        riverWalks.map((riverWalk) => renderRiverWalk(riverWalk, false))
       )}
 
       {/* Archived Section - Microsoft Style */}
