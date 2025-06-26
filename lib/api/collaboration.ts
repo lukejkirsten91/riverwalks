@@ -613,12 +613,38 @@ export async function getAccessibleRiverWalks(): Promise<any[]> {
     testResult: rlsTest?.[0] || null
   });
 
-  // With the fixed RLS policy, we can now query all accessible river walks directly
+  // Try the RLS policy approach first
   const { data: allWalks, error } = await supabase
     .from('river_walks')
     .select('*')
     .eq('archived', false)
     .order('date', { ascending: false });
+
+  // If RLS approach fails or doesn't return collaborated river walks, use RPC fallback
+  if (!error && allWalks) {
+    const expectedCollaboratedId = '9cf2aa3b-e4d8-4bf4-a725-f449af371239';
+    const hasCollaboratedWalk = allWalks.some(walk => walk.id === expectedCollaboratedId);
+    
+    if (!hasCollaboratedWalk) {
+      console.log('🔍 [DEBUG] getAccessibleRiverWalks: RLS policy not returning collaborated walks, trying RPC fallback');
+      
+      const { data: rpcWalks, error: rpcError } = await supabase.rpc('get_user_accessible_river_walks');
+      
+      console.log('🔍 [DEBUG] getAccessibleRiverWalks: RPC fallback result', {
+        hasError: !!rpcError,
+        error: rpcError,
+        walkCount: rpcWalks?.length || 0,
+        walkIds: rpcWalks?.map(w => w.id) || [],
+        accessTypes: rpcWalks?.map(w => ({ id: w.id, type: w.access_type })) || []
+      });
+
+      if (!rpcError && rpcWalks) {
+        // Remove the access_type field and return the combined results
+        const cleanWalks = rpcWalks.map(({ access_type, ...walk }) => walk);
+        return cleanWalks.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+      }
+    }
+  }
 
   console.log('🔍 [DEBUG] getAccessibleRiverWalks: Query result', {
     hasError: !!error,
