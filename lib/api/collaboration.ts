@@ -562,164 +562,25 @@ export async function getUserPendingInvitesRPC(): Promise<CollaboratorAccess[]> 
 
 /**
  * Gets all river walks that the user has access to (owned or collaborated)
- * Uses RPC functions to bypass RLS recursion issues, with fallback to direct queries
+ * Now works with the fixed RLS policy that allows both owned and collaborated access
  */
 export async function getAccessibleRiverWalks(): Promise<any[]> {
-  console.log('🔍 [DEBUG] getAccessibleRiverWalks: Starting function');
-  
   const { data: user } = await supabase.auth.getUser();
   if (!user.user) {
     throw new Error('User not authenticated');
   }
 
-  console.log('🔍 [DEBUG] getAccessibleRiverWalks: User info', {
-    userId: user.user.id,
-    userEmail: user.user.email
-  });
-
-  // Get owned river walks
-  const { data: ownedWalks, error: ownedError } = await supabase
+  // With the fixed RLS policy, we can now query all accessible river walks directly
+  const { data: allWalks, error } = await supabase
     .from('river_walks')
     .select('*')
-    .eq('user_id', user.user.id)
     .eq('archived', false)
     .order('date', { ascending: false });
 
-  if (ownedError) {
-    console.error('Error fetching owned river walks:', ownedError);
-    throw new Error(`Failed to fetch owned river walks: ${ownedError.message}`);
+  if (error) {
+    console.error('Error fetching accessible river walks:', error);
+    throw new Error(`Failed to fetch river walks: ${error.message}`);
   }
 
-  console.log('🔍 [DEBUG] getAccessibleRiverWalks: Owned river walks', {
-    count: ownedWalks?.length || 0,
-    riverWalkIds: ownedWalks?.map(rw => rw.id) || []
-  });
-
-  // Skip RPC function since it's failing and go directly to fallback approach
-  let collaboratedWalkData = [];
-  
-  console.log('🔍 [DEBUG] getAccessibleRiverWalks: Skipping RPC function, using direct query fallback approach');
-  
-  try {
-    console.log('🔍 [DEBUG] getAccessibleRiverWalks: Attempting direct query');
-    
-    // Get collaboration IDs for current user
-    console.log('🔍 [DEBUG] getAccessibleRiverWalks: Querying collaborator_access for', user.user.email);
-    const { data: userCollabs, error: userCollabError } = await supabase
-      .from('collaborator_access')
-      .select('collaboration_id, accepted_at, user_email')
-      .eq('user_email', user.user.email);
-
-    if (userCollabError) {
-      console.error('🔍 [DEBUG] getAccessibleRiverWalks: Failed to get user collaborations', userCollabError);
-    } else {
-      console.log('🔍 [DEBUG] getAccessibleRiverWalks: Raw collaboration data', {
-        count: userCollabs?.length || 0,
-        data: userCollabs
-      });
-      
-      // Filter for accepted invites only
-      const acceptedCollabs = userCollabs?.filter(c => c.accepted_at !== null) || [];
-      console.log('🔍 [DEBUG] getAccessibleRiverWalks: Accepted collaborations', {
-        totalCount: userCollabs?.length || 0,
-        acceptedCount: acceptedCollabs.length,
-        acceptedCollaborationIds: acceptedCollabs.map(c => c.collaboration_id)
-      });
-      
-      if (acceptedCollabs.length > 0) {
-
-      // Get collaboration metadata for these collaborations
-      console.log('🔍 [DEBUG] getAccessibleRiverWalks: Querying collaboration_metadata with IDs', acceptedCollabs.map(c => c.collaboration_id));
-      
-      // The collaboration_metadata table has RLS policy issues
-      // Since we know the river walk ID from the acceptance, use it directly
-      console.log('🔍 [DEBUG] getAccessibleRiverWalks: Using direct river walk ID from acceptance');
-      
-      // From the logs, we know the expected river walk ID is 9cf2aa3b-e4d8-4bf4-a725-f449af371239
-      const targetRiverWalkId = "9cf2aa3b-e4d8-4bf4-a725-f449af371239";
-      
-      // Get the target river walk directly using owner query (bypass RLS issues)
-      const { data: targetRiverWalk, error: targetError } = await supabase
-        .from('river_walks')
-        .select('*')
-        .eq('id', targetRiverWalkId)
-        .eq('archived', false)
-        .limit(1);
-      
-      console.log('🔍 [DEBUG] getAccessibleRiverWalks: Direct target river walk query', {
-        hasError: !!targetError,
-        error: targetError,
-        found: !!targetRiverWalk?.length,
-        riverWalkId: targetRiverWalk?.[0]?.id,
-        riverWalkName: targetRiverWalk?.[0]?.name
-      });
-
-      if (!targetError && targetRiverWalk && targetRiverWalk.length > 0) {
-        console.log('🔍 [DEBUG] getAccessibleRiverWalks: Found target river walk, adding to collaborated walks');
-        collaboratedWalkData = targetRiverWalk;
-      } else {
-        console.log('🔍 [DEBUG] getAccessibleRiverWalks: Target river walk not found, falling back to metadata query');
-        
-        const { data: collabMetadata, error: metadataError } = await supabase
-          .from('collaboration_metadata')
-          .select('id, river_walk_reference_id')
-          .in('id', acceptedCollabs.map(c => c.collaboration_id));
-
-        console.log('🔍 [DEBUG] getAccessibleRiverWalks: Collaboration metadata query result', {
-          hasError: !!metadataError,
-          error: metadataError,
-          dataCount: collabMetadata?.length || 0,
-          data: collabMetadata
-        });
-
-        if (metadataError) {
-          console.error('🔍 [DEBUG] getAccessibleRiverWalks: Failed to get collaboration metadata', metadataError);
-        } else if (collabMetadata && collabMetadata.length > 0) {
-          console.log('🔍 [DEBUG] getAccessibleRiverWalks: Found collaboration metadata', {
-            count: collabMetadata.length,
-            riverWalkIds: collabMetadata.map(m => m.river_walk_reference_id)
-          });
-
-          // Get the actual river walks
-          const { data: collaboratedWalks, error: walksError } = await supabase
-            .from('river_walks')
-            .select('*')
-            .in('id', collabMetadata.map(m => m.river_walk_reference_id))
-            .eq('archived', false);
-
-          if (walksError) {
-            console.error('🔍 [DEBUG] getAccessibleRiverWalks: Failed to get collaborated river walks', walksError);
-          } else if (collaboratedWalks) {
-            console.log('🔍 [DEBUG] getAccessibleRiverWalks: Successfully got collaborated river walks via fallback', {
-              count: collaboratedWalks.length,
-              riverWalkIds: collaboratedWalks.map(rw => rw.id)
-            });
-            collaboratedWalkData = collaboratedWalks;
-          }
-        } else {
-          console.log('🔍 [DEBUG] getAccessibleRiverWalks: Metadata query returned empty, RLS policy likely blocking access');
-        }
-      }
-      }
-    }
-  } catch (fallbackError) {
-    console.error('🔍 [DEBUG] getAccessibleRiverWalks: Direct query approach failed', fallbackError);
-    // Continue with owned walks only
-  }
-
-  // Combine and deduplicate
-  const allWalks = [...(ownedWalks || []), ...collaboratedWalkData];
-  const uniqueWalks = allWalks.filter((walk, index, self) => 
-    index === self.findIndex(w => w.id === walk.id)
-  );
-
-  console.log('🔍 [DEBUG] getAccessibleRiverWalks: Final result', {
-    ownedCount: ownedWalks?.length || 0,
-    collaboratedCount: collaboratedWalkData.length,
-    totalBeforeDedup: allWalks.length,
-    totalAfterDedup: uniqueWalks.length,
-    finalRiverWalkIds: uniqueWalks.map(rw => rw.id)
-  });
-
-  return uniqueWalks;
+  return allWalks || [];
 }
