@@ -255,6 +255,13 @@ Riverwalks is a web application designed primarily for GCSE Geography students t
 - **Hard Break Protection**: 50mm minimum tail space prevents sub-pixel layout issues from splitting charts
 - **Atomic Chart Treatment**: Plotly charts treated as single indivisible units, preventing duplicate protection zones
 
+#### **Mobile UI Improvements & Permission-Based Controls** (UPDATED - JUNE 2025)
+- **Responsive Layouts**: Mobile-first design with flexible layouts that adapt from mobile to desktop
+- **Permission-Based Button Visibility**: Hide buttons users can't use instead of showing error messages
+- **Touch-Friendly Controls**: Proper touch targets and responsive sizing throughout
+- **Role-Based UI**: Visual indicators for Owner/Editor/Viewer roles with clean permission handling
+- **Mobile Optimization**: Compact layouts, responsive text sizing, and efficient space usage
+
 #### **Mobile Interaction Optimization**
 - **Non-Interactive Charts on Mobile**: `staticPlot: true` with `pointerEvents: 'none'` prevents scroll interference
 - **Context-Sensitive Behavior**: PDF mode (static), Mobile mode (non-interactive), Desktop mode (limited interactions)

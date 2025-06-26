@@ -36,8 +36,16 @@ export function RiverWalkList({
   const renderRiverWalk = (riverWalk: RiverWalk, isArchived: boolean = false) => {
     // Permission checks for button visibility
     const canManageSites = !isArchived && riverWalk.collaboration_role !== 'viewer';
-    const canShare = !isArchived && onShare && riverWalk.collaboration_role === 'owner';
-    const canArchive = !isArchived && riverWalk.collaboration_role === 'owner';
+    const canShare = !isArchived && onShare && (
+      riverWalk.collaboration_role === 'owner' || 
+      (!riverWalk.collaboration_role && riverWalk.access_type === 'owned') ||
+      (!riverWalk.collaboration_role && !riverWalk.access_type) // Default to owned for river walks without collaboration metadata
+    );
+    const canArchive = !isArchived && (
+      riverWalk.collaboration_role === 'owner' || 
+      (!riverWalk.collaboration_role && riverWalk.access_type === 'owned') ||
+      (!riverWalk.collaboration_role && !riverWalk.access_type) // Default to owned for river walks without collaboration metadata
+    );
     
     return (
     <div
