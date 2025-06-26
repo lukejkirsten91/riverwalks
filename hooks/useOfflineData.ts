@@ -1,7 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
+import { supabase } from '../lib/supabase';
 import { offlineDataService } from '../lib/offlineDataService';
 import { useSyncStatus } from '../contexts/SyncStatusContext';
 import { getAccessibleRiverWalks, isCollaborationEnabled } from '../lib/api/collaboration';
+import { useRealtimeCollaboration } from './useRealtimeCollaboration';
 import type { RiverWalk, Site, MeasurementPoint } from '../types';
 
 // Hook for accessing shared sync status (now just a wrapper around context)
@@ -16,6 +18,21 @@ export function useOfflineRiverWalks() {
   const [error, setError] = useState<string | null>(null);
   const [modifiedRiverWalks, setModifiedRiverWalks] = useState<Set<string>>(new Set());
   const { updateSyncStatus, syncStatus } = useSyncStatus();
+
+  // Real-time collaboration callback to update river walks when collaboration data changes
+  const handleRealtimeUpdate = useCallback((freshRiverWalks: RiverWalk[]) => {
+    console.log('🔄 [REALTIME] Applying real-time river walks update', {
+      currentCount: riverWalks.length,
+      newCount: freshRiverWalks.length
+    });
+    setRiverWalks(freshRiverWalks);
+  }, [riverWalks.length]);
+
+  // Set up real-time collaboration subscriptions (additive feature)
+  const { isSubscribed, lastUpdateTime } = useRealtimeCollaboration(
+    riverWalks,
+    handleRealtimeUpdate
+  );
 
   const fetchRiverWalks = useCallback(async () => {
     try {
@@ -220,7 +237,12 @@ export function useOfflineRiverWalks() {
     restoreRiverWalk,
     deleteRiverWalk,
     refetch: fetchRiverWalks,
-    isRiverWalkSynced
+    isRiverWalkSynced,
+    // Real-time collaboration info (additive)
+    realtimeStatus: {
+      isSubscribed,
+      lastUpdateTime,
+    }
   };
 }
 
@@ -230,6 +252,7 @@ export function useOfflineSites(riverWalkId?: string) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { updateSyncStatus } = useSyncStatus();
+  const [realtimeSubscribed, setRealtimeSubscribed] = useState(false);
   
 
   const fetchSites = useCallback(async () => {
@@ -352,6 +375,61 @@ export function useOfflineSites(riverWalkId?: string) {
     fetchSites();
   }, [fetchSites]);
 
+  // Real-time subscriptions for site changes (additive feature)
+  useEffect(() => {
+    if (!riverWalkId || !isCollaborationEnabled()) {
+      return;
+    }
+
+    console.log('🚀 [REALTIME] Setting up real-time site subscriptions for:', riverWalkId);
+
+    // Subscribe to sites changes for this specific river walk
+    const sitesSubscription = supabase
+      .channel(`sites_changes_${riverWalkId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'sites',
+          filter: `river_walk_id=eq.${riverWalkId}`,
+        },
+        (payload) => {
+          console.log('🔄 [REALTIME] Site changed in river walk:', riverWalkId, payload);
+          // Refresh sites when changes occur
+          fetchSites();
+        }
+      )
+      .subscribe();
+
+    // Subscribe to measurement_points changes for sites in this river walk
+    const measurementPointsSubscription = supabase
+      .channel(`measurement_points_changes_${riverWalkId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'measurement_points',
+        },
+        (payload) => {
+          console.log('🔄 [REALTIME] Measurement point changed:', payload);
+          // Refresh sites to get updated measurement points
+          fetchSites();
+        }
+      )
+      .subscribe();
+
+    setRealtimeSubscribed(true);
+
+    return () => {
+      console.log('🧹 [REALTIME] Cleaning up site subscriptions for:', riverWalkId);
+      sitesSubscription.unsubscribe();
+      measurementPointsSubscription.unsubscribe();
+      setRealtimeSubscribed(false);
+    };
+  }, [riverWalkId, fetchSites]);
+
   // Refresh when sync completes
   useEffect(() => {
     const handleSyncCompleted = () => {
@@ -369,6 +447,8 @@ export function useOfflineSites(riverWalkId?: string) {
     createSite,
     updateSite,
     deleteSite,
-    refetch: fetchSites
+    refetch: fetchSites,
+    // Real-time status (additive)
+    realtimeSubscribed
   };
 }
