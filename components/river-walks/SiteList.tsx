@@ -30,7 +30,7 @@ export function SiteList({
         <p className="text-muted-foreground mb-6">Add your first measurement site to start collecting data.</p>
         <button
           onClick={onAddNewSite}
-          className="btn-primary touch-manipulation"
+          className="btn-primary touch-manipulation add-site-button-morph add-site-button-visible"
         >
           + Add First Site
         </button>
@@ -52,7 +52,7 @@ export function SiteList({
         </div>
         <button
           onClick={onAddNewSite}
-          className="btn-primary touch-manipulation"
+          className="btn-primary touch-manipulation add-site-button-morph add-site-button-visible"
         >
           + Add New Site
         </button>

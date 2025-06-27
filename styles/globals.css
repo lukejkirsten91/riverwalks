@@ -379,4 +379,123 @@
       transform: translate(-50%, -50%) scale(0.95) translateY(20px);
     }
   }
+  
+  /* Site Management Internal View Transitions */
+  .site-view-container {
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .site-view-transition {
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    transform-origin: center;
+  }
+  
+  .site-view-enter {
+    animation: siteViewSlideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    opacity: 0;
+    transform: translateX(30px) scale(0.98);
+  }
+  
+  .site-view-exit {
+    animation: siteViewSlideOut 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+  
+  .site-view-enter-back {
+    animation: siteViewSlideInBack 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    opacity: 0;
+    transform: translateX(-30px) scale(0.98);
+  }
+  
+  .site-view-exit-back {
+    animation: siteViewSlideOutBack 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+  
+  @keyframes siteViewSlideIn {
+    from {
+      opacity: 0;
+      transform: translateX(30px) scale(0.98);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0) scale(1);
+    }
+  }
+  
+  @keyframes siteViewSlideOut {
+    from {
+      opacity: 1;
+      transform: translateX(0) scale(1);
+    }
+    to {
+      opacity: 0;
+      transform: translateX(-30px) scale(0.98);
+    }
+  }
+  
+  @keyframes siteViewSlideInBack {
+    from {
+      opacity: 0;
+      transform: translateX(-30px) scale(0.98);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0) scale(1);
+    }
+  }
+  
+  @keyframes siteViewSlideOutBack {
+    from {
+      opacity: 1;
+      transform: translateX(0) scale(1);
+    }
+    to {
+      opacity: 0;
+      transform: translateX(30px) scale(0.98);
+    }
+  }
+  
+  /* Add New Site Button Morph */
+  .add-site-morph-container {
+    position: relative;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .add-site-button-morph {
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    transform-origin: center;
+  }
+  
+  .add-site-button-visible {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+  
+  .add-site-button-hidden {
+    opacity: 0;
+    transform: scale(0.95) translateY(-8px);
+    pointer-events: none;
+  }
+  
+  /* Task Button Morphs */
+  .task-button-morph {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transform-origin: center;
+  }
+  
+  .task-button-morph:hover {
+    transform: scale(1.02) translateY(-2px);
+    box-shadow: 0 8px 16px -4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .task-button-selected {
+    transform: scale(0.98);
+    opacity: 0.8;
+  }
+  
+  /* Smooth height transitions for expanding content */
+  .smooth-height {
+    transition: height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+  }
 }

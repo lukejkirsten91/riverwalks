@@ -113,7 +113,7 @@ export function SiteTodoList({ site, onTodoClick }: SiteTodoListProps) {
             <button
               key={todo.id}
               onClick={todo.onClick}
-              className="w-full text-left p-4 rounded-lg border-2 hover:border-primary/30 transition-all duration-200 bg-white hover:shadow-md group"
+              className="w-full text-left p-4 rounded-lg border-2 hover:border-primary/30 bg-white hover:shadow-md group task-button-morph"
             >
               <div className="flex items-center gap-4">
                 {/* Todo Icon */}

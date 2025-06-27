@@ -123,8 +123,46 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
   const [currentView, setCurrentView] = useState<CurrentView>('site_list');
   const [currentSite, setCurrentSite] = useState<Site | null>(null);
   
+  // Animation state
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [nextView, setNextView] = useState<CurrentView | null>(null);
+  const [animationDirection, setAnimationDirection] = useState<'forward' | 'back'>('forward');
+  const [animationClass, setAnimationClass] = useState('');
+  
   // Form refs for triggering save confirmations
   const siteInfoFormRef = useRef<SiteInfoFormRef>(null);
+
+  // Animated view transition function
+  const animateToView = (newView: CurrentView, direction: 'forward' | 'back' = 'forward', newSite?: Site | null) => {
+    if (isAnimating || newView === currentView) return;
+    
+    setIsAnimating(true);
+    setNextView(newView);
+    setAnimationDirection(direction);
+    
+    // Set exit animation
+    const exitClass = direction === 'forward' ? 'site-view-exit' : 'site-view-exit-back';
+    setAnimationClass(exitClass);
+    
+    // After exit animation, change view and start enter animation
+    setTimeout(() => {
+      setCurrentView(newView);
+      if (newSite !== undefined) {
+        setCurrentSite(newSite);
+      }
+      
+      // Set enter animation
+      const enterClass = direction === 'forward' ? 'site-view-enter' : 'site-view-enter-back';
+      setAnimationClass(enterClass);
+      
+      // Clear animation state after enter animation
+      setTimeout(() => {
+        setAnimationClass('');
+        setIsAnimating(false);
+        setNextView(null);
+      }, 400); // Match animation duration
+    }, 400); // Match animation duration
+  };
 
   // Handle browser back button
   React.useEffect(() => {
@@ -170,8 +208,7 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
 
   // Navigation handlers
   const handleSiteSelect = (site: Site) => {
-    setCurrentSite(site);
-    setCurrentView('site_todos');
+    animateToView('site_todos', 'forward', site);
     // Push state for back button navigation
     if (typeof window !== 'undefined') {
       window.history.pushState({ view: 'site_todos', site }, '', window.location.href);
@@ -186,7 +223,7 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
       sediment: 'sediment_form',
     };
     const newView = viewMap[todoType];
-    setCurrentView(newView);
+    animateToView(newView, 'forward');
     // Push state for back button navigation
     if (typeof window !== 'undefined') {
       window.history.pushState({ view: newView, site: currentSite }, '', window.location.href);
@@ -194,7 +231,7 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
   };
 
   const handleBackToTodos = () => {
-    setCurrentView('site_todos');
+    animateToView('site_todos', 'back');
     // Push state for back button navigation
     if (typeof window !== 'undefined') {
       window.history.pushState({ view: 'site_todos', site: currentSite }, '', window.location.href);
@@ -202,8 +239,7 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
   };
 
   const handleBackToSites = () => {
-    setCurrentView('site_list');
-    setCurrentSite(null);
+    animateToView('site_list', 'back', null);
     // Push state for back button navigation
     if (typeof window !== 'undefined') {
       window.history.pushState({ view: 'site_list' }, '', window.location.href);
@@ -262,7 +298,7 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
       setCurrentSite(prev => prev ? { ...prev, ...updateData } : null);
       
       showSuccess('Site Info Updated', 'Site information has been saved successfully.');
-      setCurrentView('site_todos');
+      animateToView('site_todos', 'back');
       // Push state for back button navigation
       if (typeof window !== 'undefined') {
         window.history.pushState({ view: 'site_todos', site: currentSite }, '', window.location.href);
@@ -323,7 +359,7 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
       } : null);
       
       showSuccess('Cross-Section Updated', 'Cross-sectional measurements have been saved successfully.');
-      setCurrentView('site_todos');
+      animateToView('site_todos', 'back');
       // Push state for back button navigation
       if (typeof window !== 'undefined') {
         window.history.pushState({ view: 'site_todos', site: currentSite }, '', window.location.href);
@@ -360,7 +396,7 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
       setCurrentSite(prev => prev ? { ...prev, ...updateData } : null);
       
       showSuccess('Velocity Updated', 'Velocity measurements have been saved successfully.');
-      setCurrentView('site_todos');
+      animateToView('site_todos', 'back');
       // Push state for back button navigation
       if (typeof window !== 'undefined') {
         window.history.pushState({ view: 'site_todos', site: currentSite }, '', window.location.href);
@@ -429,7 +465,7 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
       setCurrentSite(prev => prev ? { ...prev, ...updateData } : null);
       
       showSuccess('Sediment Analysis Updated', 'Sediment analysis has been saved successfully.');
-      setCurrentView('site_todos');
+      animateToView('site_todos', 'back');
       // Push state for back button navigation
       if (typeof window !== 'undefined') {
         window.history.pushState({ view: 'site_todos', site: currentSite }, '', window.location.href);
@@ -584,18 +620,19 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
   };
 
   const renderCurrentView = () => {
-    switch (currentView) {
-      case 'site_list':
-        return (
-          <SiteList
-            sites={sites}
-            onEditMeasurements={handleSiteSelect} // Now opens todo list instead
-            onEditSite={handleSiteSelect} // Now opens todo list instead
-            onUpdateSite={handleUpdateSiteField}
-            onDeleteSite={handleDeleteSiteWithConfirm}
-            onAddNewSite={handleAddNewSite}
-          />
-        );
+    const content = (() => {
+      switch (currentView) {
+        case 'site_list':
+          return (
+            <SiteList
+              sites={sites}
+              onEditMeasurements={handleSiteSelect} // Now opens todo list instead
+              onEditSite={handleSiteSelect} // Now opens todo list instead
+              onUpdateSite={handleUpdateSiteField}
+              onDeleteSite={handleDeleteSiteWithConfirm}
+              onAddNewSite={handleAddNewSite}
+            />
+          );
       
       case 'site_todos':
         return currentSite ? (
@@ -646,9 +683,16 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
           />
         ) : null;
       
-      default:
-        return null;
-    }
+        default:
+          return null;
+      }
+    })();
+
+    return (
+      <div className={`site-view-container ${animationClass}`}>
+        {content}
+      </div>
+    );
   };
 
   const loading = sitesLoading;
