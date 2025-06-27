@@ -104,7 +104,12 @@ export function useOfflineRiverWalks() {
     try {
       const updatedRiverWalk = await offlineDataService.updateRiverWalk(riverWalkId, riverWalkData);
       setRiverWalks(prev => prev.map(rw => 
-        rw.id === riverWalkId ? updatedRiverWalk : rw
+        rw.id === riverWalkId ? {
+          ...updatedRiverWalk,
+          // CRITICAL: Preserve collaboration metadata that might be lost in server response
+          collaboration_role: rw.collaboration_role, 
+          access_type: rw.access_type
+        } : rw
       ));
       
       // Only mark as modified if the returned river walk has a local ID (meaning it wasn't synced immediately)
