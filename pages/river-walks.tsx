@@ -491,20 +491,22 @@ export default function RiverWalksPage() {
           )}
         </div>
 
-        {/* River walks list */}
-        <RiverWalkList
-          riverWalks={activeRiverWalks}
-          archivedRiverWalks={archivedRiverWalks}
-          onUpdateField={handleUpdateField}
-          onArchive={handleArchive}
-          onRestore={handleRestore}
-          onDelete={handleDelete}
-          onManageSites={handleManageSites}
-          onGenerateReport={handleGenerateReport}
-          onShare={collaborationEnabled ? handleShare : undefined}
-          isRiverWalkSynced={isRiverWalkSynced}
-          archiveLoading={archiveLoading}
-        />
+        {/* River walks list - hidden when form is showing */}
+        {!showForm && (
+          <RiverWalkList
+            riverWalks={activeRiverWalks}
+            archivedRiverWalks={archivedRiverWalks}
+            onUpdateField={handleUpdateField}
+            onArchive={handleArchive}
+            onRestore={handleRestore}
+            onDelete={handleDelete}
+            onManageSites={handleManageSites}
+            onGenerateReport={handleGenerateReport}
+            onShare={collaborationEnabled ? handleShare : undefined}
+            isRiverWalkSynced={isRiverWalkSynced}
+            archiveLoading={archiveLoading}
+          />
+        )}
 
         {/* Site management modal */}
         {selectedRiverWalk && (
