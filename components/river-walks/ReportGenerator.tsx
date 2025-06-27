@@ -746,11 +746,9 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-start justify-center p-2 sm:p-4 z-50" onClick={onClose}>
-      <div 
-        className="bg-white rounded-lg w-full max-w-6xl max-h-[98vh] sm:max-h-[90vh] overflow-y-auto mt-2 sm:mt-0"
-        onClick={(e) => e.stopPropagation()}
-      >
+    <div 
+      className="bg-white rounded-lg w-full max-w-6xl max-h-[98vh] sm:max-h-[90vh] overflow-y-auto"
+    >
         {/* Header with controls */}
         <div className="sticky top-0 bg-white border-b p-4 sm:p-6 z-10 rounded-t-lg shadow-sm">
           <div className="flex items-start justify-between gap-4">
@@ -1963,6 +1961,5 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
           </div>
         </div>
       </div>
-    </div>
   );
 }

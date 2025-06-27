@@ -138,8 +138,7 @@ export function ShareModal({ riverWalk, isOpen, onClose }: ShareModalProps) {
   const pendingInvites = collaborators.filter((c: CollaboratorAccess) => c.accepted_at === null);
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-modern-lg max-w-2xl w-full max-h-[80vh] overflow-hidden">
+    <div className="bg-white rounded-lg shadow-modern-lg max-w-2xl w-full max-h-[80vh] overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-border">
           <div>
@@ -368,6 +367,5 @@ export function ShareModal({ riverWalk, isOpen, onClose }: ShareModalProps) {
           </div>
         </div>
       </div>
-    </div>
   );
 }

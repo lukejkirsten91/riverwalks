@@ -508,30 +508,45 @@ export default function RiverWalksPage() {
           />
         )}
 
-        {/* Site management modal */}
+        {/* Site management modal with morph animation */}
         {selectedRiverWalk && (
-          <EnhancedSiteManagement
-            riverWalk={selectedRiverWalk}
-            onClose={handleCloseSiteManagement}
-          />
+          <>
+            <div className="action-modal-backdrop action-modal-backdrop-enter" onClick={handleCloseSiteManagement} />
+            <div className="action-modal-morph action-modal-enter">
+              <EnhancedSiteManagement
+                riverWalk={selectedRiverWalk}
+                onClose={handleCloseSiteManagement}
+              />
+            </div>
+          </>
         )}
 
-        {/* Report generator modal */}
+        {/* Report generator modal with morph animation */}
         {reportRiverWalk && (
-          <ReportGenerator
-            riverWalk={reportRiverWalk}
-            sites={reportSites}
-            onClose={handleCloseReport}
-          />
+          <>
+            <div className="action-modal-backdrop action-modal-backdrop-enter" onClick={handleCloseReport} />
+            <div className="action-modal-morph action-modal-enter">
+              <ReportGenerator
+                riverWalk={reportRiverWalk}
+                sites={reportSites}
+                onClose={handleCloseReport}
+              />
+            </div>
+          </>
         )}
 
-        {/* Share modal */}
+        {/* Share modal with morph animation */}
         {shareRiverWalk && collaborationEnabled && (
-          <ShareModal
-            riverWalk={shareRiverWalk}
-            isOpen={true}
-            onClose={handleCloseShare}
-          />
+          <>
+            <div className="action-modal-backdrop action-modal-backdrop-enter" onClick={handleCloseShare} />
+            <div className="action-modal-morph action-modal-enter">
+              <ShareModal
+                riverWalk={shareRiverWalk}
+                isOpen={true}
+                onClose={handleCloseShare}
+              />
+            </div>
+          </>
         )}
 
         {/* Loading indicator for report generation */}

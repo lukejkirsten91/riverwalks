@@ -278,4 +278,105 @@
       transform: scale(1) translateY(0);
     }
   }
+  
+  /* Action Button Morph Animations for Sites, Report, Share */
+  .action-morph-container {
+    position: relative;
+    transition: height 0.5s cubic-bezier(0.4, 0, 0.2, 1), min-height 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .action-button-morph {
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    transform-origin: center;
+  }
+  
+  .action-button-visible {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+  
+  .action-button-hidden {
+    opacity: 0;
+    transform: scale(0.9) translateY(-10px);
+    pointer-events: none;
+  }
+  
+  .action-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(4px);
+    z-index: 40;
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .action-modal-backdrop-enter {
+    animation: backdropFadeIn 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    opacity: 0;
+  }
+  
+  .action-modal-backdrop-exit {
+    animation: backdropFadeOut 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+  
+  .action-modal-morph {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 50;
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    transform-origin: center;
+  }
+  
+  .action-modal-enter {
+    animation: modalSlideIn 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    animation-delay: 0.2s;
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.95) translateY(20px);
+  }
+  
+  .action-modal-exit {
+    animation: modalSlideOut 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+  
+  @keyframes backdropFadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  
+  @keyframes backdropFadeOut {
+    from {
+      opacity: 1;
+    }
+    to {
+      opacity: 0;
+    }
+  }
+  
+  @keyframes modalSlideIn {
+    from {
+      opacity: 0;
+      transform: translate(-50%, -50%) scale(0.95) translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1) translateY(0);
+    }
+  }
+  
+  @keyframes modalSlideOut {
+    from {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1) translateY(0);
+    }
+    to {
+      opacity: 0;
+      transform: translate(-50%, -50%) scale(0.95) translateY(20px);
+    }
+  }
 }
