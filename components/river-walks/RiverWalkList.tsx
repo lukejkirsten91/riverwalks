@@ -320,11 +320,11 @@ export function RiverWalkList({
               <ChevronDown className="w-4 h-4 text-purple-600" />
             )}
           </button>
-          {showMyRiverWalks && (
+          <div className={`accordion-content ${showMyRiverWalks ? 'accordion-content-visible' : 'accordion-content-hidden'}`}>
             <div className="space-y-3 sm:space-y-4 pl-3 sm:pl-4 border-l-2 border-purple-200">
               {myRiverWalks.map((riverWalk) => renderRiverWalk(riverWalk, false))}
             </div>
-          )}
+          </div>
         </div>
       )}
 
@@ -346,11 +346,11 @@ export function RiverWalkList({
               <ChevronDown className="w-4 h-4 text-blue-600" />
             )}
           </button>
-          {showSharedWithMe && (
+          <div className={`accordion-content ${showSharedWithMe ? 'accordion-content-visible' : 'accordion-content-hidden'}`}>
             <div className="space-y-3 sm:space-y-4 pl-3 sm:pl-4 border-l-2 border-blue-200">
               {sharedWithMe.map((riverWalk) => renderRiverWalk(riverWalk, false))}
             </div>
-          )}
+          </div>
         </div>
       )}
 
@@ -372,11 +372,11 @@ export function RiverWalkList({
               <ChevronDown className="w-4 h-4 text-green-600" />
             )}
           </button>
-          {showSharedByMe && (
+          <div className={`accordion-content ${showSharedByMe ? 'accordion-content-visible' : 'accordion-content-hidden'}`}>
             <div className="space-y-3 sm:space-y-4 pl-3 sm:pl-4 border-l-2 border-green-200">
               {sharedByMe.map((riverWalk) => renderRiverWalk(riverWalk, false))}
             </div>
-          )}
+          </div>
         </div>
       )}
 
@@ -414,11 +414,11 @@ export function RiverWalkList({
           </button>
 
           {/* Archived Items - Expandable */}
-          {showArchived && (
+          <div className={`accordion-content ${showArchived ? 'accordion-content-visible' : 'accordion-content-hidden'}`}>
             <div className="mt-3 sm:mt-4 space-y-3 sm:space-y-4 pl-3 sm:pl-4 border-l-2 border-gray-200">
               {archivedRiverWalks.map((riverWalk) => renderRiverWalk(riverWalk, true))}
             </div>
-          )}
+          </div>
         </div>
       )}
     </div>

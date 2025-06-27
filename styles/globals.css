@@ -4,6 +4,8 @@
 
 @layer base {
   :root {
+    /* Modern CSS accordion animation support */
+    interpolate-size: allow-keywords;
     /* Nature-inspired brand color scheme */
     /* Based on logo colors: 98CCDC, FCF0C1, 1A625D, 4F9F6B, 7CB455, 70B8CF */
     
@@ -158,5 +160,48 @@
   /* Modern input styles */
   .input-modern {
     @apply w-full px-4 py-3 border border-input rounded-lg bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent transition-all duration-200;
+  }
+
+  /* Modern CSS Accordion Animations */
+  /* Based on cutting-edge CSS techniques from builder.io blog post */
+  
+  .accordion-content {
+    overflow: hidden;
+    /* Enable smooth height transitions from 0 to auto */
+    transition: height 0.4s ease-out, opacity 0.3s ease-out;
+    transition-behavior: allow-discrete;
+  }
+  
+  .accordion-content-hidden {
+    height: 0;
+    opacity: 0;
+  }
+  
+  .accordion-content-visible {
+    height: auto;
+    opacity: 1;
+  }
+  
+  /* Staggered entrance animation for child elements */
+  .accordion-content-visible > * {
+    animation: slideInStagger 0.4s ease-out forwards;
+  }
+  
+  .accordion-content-visible > *:nth-child(1) { animation-delay: 0.05s; }
+  .accordion-content-visible > *:nth-child(2) { animation-delay: 0.1s; }
+  .accordion-content-visible > *:nth-child(3) { animation-delay: 0.15s; }
+  .accordion-content-visible > *:nth-child(4) { animation-delay: 0.2s; }
+  .accordion-content-visible > *:nth-child(5) { animation-delay: 0.25s; }
+  .accordion-content-visible > *:nth-child(6) { animation-delay: 0.3s; }
+  
+  @keyframes slideInStagger {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 }
