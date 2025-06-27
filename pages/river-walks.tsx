@@ -555,6 +555,7 @@ export default function RiverWalksPage() {
             top: dropdownPosition.top,
             right: dropdownPosition.right,
           }}
+          data-profile-dropdown
         >
           <div className="px-4 py-2 text-sm text-muted-foreground border-b border-border">
             Signed in as
@@ -563,7 +564,10 @@ export default function RiverWalksPage() {
             {user?.email}
           </div>
           <button
-            onClick={() => {
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              console.log('Switch Account button clicked');
               setShowProfileDropdown(false);
               handleSwitchAccount();
             }}
@@ -573,7 +577,10 @@ export default function RiverWalksPage() {
             Switch Account
           </button>
           <button
-            onClick={() => {
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              console.log('Sign Out button clicked');
               setShowProfileDropdown(false);
               handleSignOut();
             }}
