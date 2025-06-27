@@ -334,7 +334,7 @@ export default function RiverWalksPage() {
 
                 {/* Dropdown menu */}
                 {showProfileDropdown && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-modern border border-white/30 py-2 z-[80]">
+                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-modern border border-white/30 py-2 z-[100]">
                     <div className="px-4 py-2 text-sm text-muted-foreground border-b border-border">
                       Signed in as
                     </div>
@@ -466,7 +466,7 @@ export default function RiverWalksPage() {
         )}
 
         {/* Morphing Add River Walk Button/Form */}
-        <div className={`morph-container ${showForm ? 'morph-form-state' : 'morph-button-state'} mb-6`}>
+        <div className={`morph-container ${showForm ? 'morph-form-state' : 'morph-button-state'} mb-6 relative z-10`}>
           {/* Button State */}
           <div className={`add-button-morph ${showForm ? 'add-button-hidden' : 'add-button-visible'}`}>
             <button
