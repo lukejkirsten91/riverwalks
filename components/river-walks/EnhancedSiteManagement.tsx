@@ -706,17 +706,9 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
 
   const loading = sitesLoading;
 
-  // Responsive width based on current view
-  const getModalWidthClass = () => {
-    if (currentView === 'site_list' || currentView === 'site_todos') {
-      return 'max-w-4xl'; // Narrower for list views
-    }
-    return 'max-w-6xl'; // Wider for forms
-  };
-
   return (
     <div 
-      className={`bg-white rounded-lg w-full ${getModalWidthClass()} max-h-[98vh] sm:max-h-[90vh] overflow-y-auto mt-2 sm:mt-0`}
+      className="bg-white rounded-lg w-full max-w-6xl max-h-[98vh] sm:max-h-[90vh] overflow-y-auto mt-2 sm:mt-0"
       data-modal="site-management"
     >
         {/* Header */}
