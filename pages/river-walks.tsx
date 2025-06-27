@@ -305,9 +305,8 @@ export default function RiverWalksPage() {
                 className="h-12 w-12 sm:h-16 sm:w-16 rounded-xl object-contain shadow-lg flex-shrink-0"
               />
               <div className="min-w-0">
-                <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-foreground">Your River Walks</h1>
+                <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-foreground">River Walks</h1>
                 <div className="flex items-center gap-2">
-                  <p className="text-muted-foreground text-sm">Manage your river study documentation</p>
                   {collaborationEnabled && realtimeStatus?.isSubscribed && (
                     <div className="flex items-center gap-1 text-xs text-green-600 bg-green-50 px-2 py-1 rounded-full">
                       <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>

@@ -111,35 +111,25 @@ export default function AuthCard() {
     return (
       <TermsGate user={user}>
         <div className="card-modern-xl backdrop-blur-sm bg-white/95 w-full">
-          <CardHeader className="text-center pb-6">
-            <div className="flex justify-center mb-4">
+          <CardHeader className="text-center pb-4">
+            <div className="flex justify-center mb-3">
               {user.user_metadata?.avatar_url ? (
                 <img
                   src={user.user_metadata.avatar_url}
                   alt="User avatar"
-                  className="w-20 h-20 rounded-full shadow-modern border-4 border-white"
+                  className="w-16 h-16 rounded-full shadow-modern border-4 border-white"
                 />
               ) : (
-                <div className="w-20 h-20 rounded-full bg-gradient-primary flex items-center justify-center text-white text-2xl font-bold shadow-modern">
+                <div className="w-16 h-16 rounded-full bg-gradient-primary flex items-center justify-center text-white text-xl font-bold shadow-modern">
                   {user.email?.charAt(0).toUpperCase()}
                 </div>
               )}
             </div>
-            <CardTitle className="text-2xl text-foreground">
-              Welcome back!
-            </CardTitle>
-            <CardDescription className="text-muted-foreground">
-              Signed in as {user.email}
+            <CardDescription className="text-muted-foreground text-sm">
+              {user.email}
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="bg-muted/50 rounded-lg p-4 text-center">
-              <p className="text-sm text-muted-foreground">
-                Ready to continue your river studies?
-              </p>
-            </div>
-          </CardContent>
-          <CardFooter className="flex flex-col space-y-3 pt-6">
+          <CardFooter className="flex flex-col space-y-3 pt-2">
             <button
               onClick={() => router.push('/river-walks')}
               className="btn-primary w-full touch-manipulation"
