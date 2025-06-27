@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
+import { createPortal } from 'react-dom';
 import { supabase } from '../lib/supabase';
 import { LogOut, MapPin, User as UserIcon, Users, UserCheck } from 'lucide-react';
 import {
@@ -45,6 +46,7 @@ export default function RiverWalksPage() {
   const [reportSites, setReportSites] = useState<Site[]>([]);
   const [loadingReport, setLoadingReport] = useState(false);
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
+  const [dropdownPosition, setDropdownPosition] = useState<{top: number, right: number} | null>(null);
   const [archiveLoading, setArchiveLoading] = useState<string | null>(null);
   const [shareRiverWalk, setShareRiverWalk] = useState<RiverWalk | null>(null);
 
@@ -319,10 +321,17 @@ export default function RiverWalksPage() {
 
             {/* Right side: Profile */}
             {user && (
-              <div className="relative flex-shrink-0 z-[9999]" data-profile-dropdown>
+              <div className="relative flex-shrink-0" data-profile-dropdown>
                 {/* Profile button */}
                 <button
-                  onClick={() => setShowProfileDropdown(!showProfileDropdown)}
+                  onClick={(e) => {
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    setDropdownPosition({
+                      top: rect.bottom + 8,
+                      right: window.innerWidth - rect.right
+                    });
+                    setShowProfileDropdown(!showProfileDropdown);
+                  }}
                   className="flex items-center gap-2 text-muted-foreground hover:text-foreground px-3 py-2 rounded-lg bg-white/50 hover:bg-white/80 transition-all duration-200 touch-manipulation border border-white/30"
                   title="Profile menu"
                 >
@@ -332,37 +341,6 @@ export default function RiverWalksPage() {
                   <span className="hidden sm:block text-sm truncate max-w-32">{user.email}</span>
                 </button>
 
-                {/* Dropdown menu */}
-                {showProfileDropdown && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-modern border border-white/30 py-2 z-[9999]">
-                    <div className="px-4 py-2 text-sm text-muted-foreground border-b border-border">
-                      Signed in as
-                    </div>
-                    <div className="px-4 py-2 text-sm font-medium text-foreground border-b border-border">
-                      {user.email}
-                    </div>
-                    <button
-                      onClick={() => {
-                        setShowProfileDropdown(false);
-                        handleSwitchAccount();
-                      }}
-                      className="w-full text-left px-4 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors flex items-center gap-2"
-                    >
-                      <UserCheck className="w-4 h-4" />
-                      Switch Account
-                    </button>
-                    <button
-                      onClick={() => {
-                        setShowProfileDropdown(false);
-                        handleSignOut();
-                      }}
-                      className="w-full text-left px-4 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors flex items-center gap-2"
-                    >
-                      <LogOut className="w-4 h-4" />
-                      Sign Out
-                    </button>
-                  </div>
-                )}
               </div>
             )}
           </div>
@@ -575,6 +553,45 @@ export default function RiverWalksPage() {
       
       {/* Diagnostic Panel for debugging photo uploads */}
       <DiagnosticPanel />
+
+      {/* Profile dropdown portal - renders at top level */}
+      {showProfileDropdown && dropdownPosition && typeof window !== 'undefined' && createPortal(
+        <div 
+          className="fixed w-48 bg-white rounded-lg shadow-modern border border-white/30 py-2 z-[99999]"
+          style={{
+            top: dropdownPosition.top,
+            right: dropdownPosition.right,
+          }}
+        >
+          <div className="px-4 py-2 text-sm text-muted-foreground border-b border-border">
+            Signed in as
+          </div>
+          <div className="px-4 py-2 text-sm font-medium text-foreground border-b border-border">
+            {user?.email}
+          </div>
+          <button
+            onClick={() => {
+              setShowProfileDropdown(false);
+              handleSwitchAccount();
+            }}
+            className="w-full text-left px-4 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors flex items-center gap-2"
+          >
+            <UserCheck className="w-4 h-4" />
+            Switch Account
+          </button>
+          <button
+            onClick={() => {
+              setShowProfileDropdown(false);
+              handleSignOut();
+            }}
+            className="w-full text-left px-4 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors flex items-center gap-2"
+          >
+            <LogOut className="w-4 h-4" />
+            Sign Out
+          </button>
+        </div>,
+        document.body
+      )}
     </div>
   );
 }

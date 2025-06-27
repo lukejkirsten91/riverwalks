@@ -504,8 +504,34 @@ export class OfflineDataService {
     const allRiverWalks = await offlineDB.getRiverWalks();
     const existingRiverWalk = allRiverWalks.find(rw => rw.id === riverWalkId || rw.localId === riverWalkId);
     
+    // Handle shared river walks that aren't stored locally
     if (!existingRiverWalk) {
-      throw new Error('River walk not found');
+      console.log('River walk not found in offline storage, attempting direct server update for shared river walk');
+      
+      if (this.checkOnline()) {
+        try {
+          // Direct server update for shared river walks
+          const { data, error } = await supabase
+            .from('river_walks')
+            .update(riverWalkData) // Don't override user_id for shared river walks
+            .eq('id', riverWalkId)
+            .select()
+            .single();
+
+          if (error) {
+            console.error('Server update error for shared river walk:', error);
+            throw error;
+          }
+
+          console.log('Successfully updated shared river walk on server:', data);
+          return data;
+        } catch (error) {
+          console.error('Failed to update shared river walk:', error);
+          throw error;
+        }
+      } else {
+        throw new Error('Cannot update shared river walk while offline');
+      }
     }
 
     // Update the offline version
