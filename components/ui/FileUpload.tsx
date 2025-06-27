@@ -1,5 +1,6 @@
 import React, { useRef, useState } from 'react';
-import { Upload, X, Image as ImageIcon, Loader2 } from 'lucide-react';
+import { Upload, X, Image as ImageIcon, Loader2, CloudOff, Wifi } from 'lucide-react';
+import { useOffline } from '../../hooks/useOffline';
 
 interface FileUploadProps {
   onFileSelect: (file: File) => void;
@@ -29,6 +30,7 @@ export function FileUpload({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [dragOver, setDragOver] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { isOnline, isOfflineCapable } = useOffline();
 
   const handleFileSelect = (file: File) => {
     setError(null);
@@ -63,7 +65,7 @@ export function FileUpload({
     e.preventDefault();
     setDragOver(false);
 
-    if (disabled || loading) return;
+    if (disabled || loading || (!isOnline && !isOfflineCapable)) return;
 
     const file = e.dataTransfer.files[0];
     if (file) {
@@ -73,7 +75,7 @@ export function FileUpload({
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
-    if (!disabled && !loading) {
+    if (!disabled && !loading && (isOnline || isOfflineCapable)) {
       setDragOver(true);
     }
   };
@@ -83,7 +85,7 @@ export function FileUpload({
   };
 
   const openFileDialog = () => {
-    if (!disabled && !loading) {
+    if (!disabled && !loading && (isOnline || isOfflineCapable)) {
       fileInputRef.current?.click();
     }
   };
@@ -134,10 +136,14 @@ export function FileUpload({
           onDragLeave={handleDragLeave}
           onClick={openFileDialog}
           className={`
-            border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-all duration-200
+            border-2 border-dashed rounded-lg p-6 text-center transition-all duration-200
             ${dragOver 
-              ? 'border-primary bg-primary/5' 
-              : 'border-border hover:border-primary/50 hover:bg-muted/30'
+              ? 'border-primary bg-primary/5 cursor-pointer' 
+              : (!isOnline && !isOfflineCapable)
+              ? 'border-amber-300 bg-amber-50/50 cursor-not-allowed'
+              : !isOnline
+              ? 'border-blue-300 bg-blue-50/50 cursor-pointer hover:border-blue-400 hover:bg-blue-100/50'
+              : 'border-border hover:border-primary/50 hover:bg-muted/30 cursor-pointer'
             }
             ${disabled || loading ? 'opacity-50 cursor-not-allowed' : ''}
           `}
@@ -147,18 +153,34 @@ export function FileUpload({
               <Loader2 className="w-8 h-8 text-primary animate-spin" />
             ) : dragOver ? (
               <Upload className="w-8 h-8 text-primary" />
+            ) : !isOnline && !isOfflineCapable ? (
+              <CloudOff className="w-8 h-8 text-amber-600" />
+            ) : !isOnline ? (
+              <CloudOff className="w-8 h-8 text-blue-600" />
             ) : (
               <ImageIcon className="w-8 h-8 text-muted-foreground" />
             )}
             
             <div>
               <p className="text-foreground font-medium">
-                {loading ? loadingText : dragOver ? 'Drop image here' : uploadText}
+                {loading 
+                  ? loadingText 
+                  : dragOver 
+                  ? 'Drop image here' 
+                  : !isOnline && !isOfflineCapable
+                  ? 'Photo upload unavailable offline'
+                  : !isOnline
+                  ? 'Save photo (will upload when online)'
+                  : uploadText}
               </p>
               {!loading && (
                 <>
                   <p className="text-muted-foreground text-sm mt-1">
-                    Click to browse or drag and drop
+                    {!isOnline && !isOfflineCapable 
+                      ? 'Connect to internet to upload photos'
+                      : !isOnline
+                      ? 'Photo will be saved locally and synced later'
+                      : 'Click to browse or drag and drop'}
                   </p>
                   <p className="text-muted-foreground text-xs mt-1">
                     PNG, JPEG, JPG, WEBP up to {Math.round(maxSizeBytes / (1024 * 1024))}MB
@@ -177,7 +199,7 @@ export function FileUpload({
         accept={accept}
         onChange={handleInputChange}
         className="hidden"
-        disabled={disabled || loading}
+        disabled={disabled || loading || (!isOnline && !isOfflineCapable)}
       />
 
       {/* Error display */}

@@ -334,7 +334,7 @@ export default function RiverWalksPage() {
 
                 {/* Dropdown menu */}
                 {showProfileDropdown && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-modern border border-white/30 py-2 z-50">
+                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-modern border border-white/30 py-2 z-[80]">
                     <div className="px-4 py-2 text-sm text-muted-foreground border-b border-border">
                       Signed in as
                     </div>
