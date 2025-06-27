@@ -46,13 +46,13 @@ export function RiverWalkList({
     const canManageSites = !isArchived && riverWalk.collaboration_role !== 'viewer';
     const canShare = !isArchived && onShare && (
       riverWalk.collaboration_role === 'owner' || 
-      (!riverWalk.collaboration_role && riverWalk.access_type === 'owned')
-      // Removed dangerous default - only allow sharing if explicitly owned
+      (!riverWalk.collaboration_role && riverWalk.access_type === 'owned') ||
+      (!riverWalk.collaboration_role && !riverWalk.access_type) // Default to owned for river walks without collaboration metadata
     );
     const canArchive = !isArchived && (
       riverWalk.collaboration_role === 'owner' || 
-      (!riverWalk.collaboration_role && riverWalk.access_type === 'owned')
-      // Removed dangerous default - only allow archiving if explicitly owned  
+      (!riverWalk.collaboration_role && riverWalk.access_type === 'owned') ||
+      (!riverWalk.collaboration_role && !riverWalk.access_type) // Default to owned for river walks without collaboration metadata
     );
     
     // Get collaborator info for this river walk
@@ -83,7 +83,7 @@ export function RiverWalkList({
           {/* Access type and sync status icons */}
           <div className="flex-shrink-0 flex items-center gap-2 flex-wrap">
             {/* Role-based access indicator */}
-            {riverWalk.collaboration_role === 'owner' || (!riverWalk.collaboration_role && riverWalk.access_type === 'owned') ? (
+            {riverWalk.collaboration_role === 'owner' || (!riverWalk.collaboration_role && riverWalk.access_type === 'owned') || (!riverWalk.collaboration_role && !riverWalk.access_type) ? (
               <div className="flex items-center gap-1 text-purple-600 bg-purple-50 px-2 py-1 rounded-full">
                 <Crown className="w-3 h-3 sm:w-4 sm:h-4" />
                 <span className="text-xs font-medium hidden sm:inline">Owner</span>
@@ -208,7 +208,7 @@ export function RiverWalkList({
         
         {isArchived ? (
           // Archived view: Restore and Delete buttons (only for owners)
-          riverWalk.collaboration_role === 'owner' || (!riverWalk.collaboration_role && riverWalk.access_type === 'owned') ? (
+          riverWalk.collaboration_role === 'owner' || (!riverWalk.collaboration_role && riverWalk.access_type === 'owned') || (!riverWalk.collaboration_role && !riverWalk.access_type) ? (
             <>
               <button
                 onClick={() => onRestore(riverWalk.id)}
@@ -278,29 +278,26 @@ export function RiverWalkList({
   }
 
   // Group river walks into three categories
-  // First, identify shared with me (most specific)
+  const myRiverWalks = riverWalks.filter(rw => {
+    const isOwned = rw.collaboration_role === 'owner' || 
+                   (!rw.collaboration_role && rw.access_type === 'owned') ||
+                   (!rw.collaboration_role && !rw.access_type);
+    const hasCollaborators = getCollaboratorInfo(rw.id)?.hasCollaborators || false;
+    return isOwned && !hasCollaborators; // Owned but not shared with others
+  });
+  
   const sharedWithMe = riverWalks.filter(rw => 
     rw.collaboration_role === 'editor' || 
     rw.collaboration_role === 'viewer' ||
     (!rw.collaboration_role && rw.access_type === 'collaborated')
   );
   
-  // Then, identify owned river walks that are shared (also specific)
   const sharedByMe = riverWalks.filter(rw => {
-    // Only consider as owned if explicitly marked as owner or owned access type
     const isOwned = rw.collaboration_role === 'owner' || 
-                   (!rw.collaboration_role && rw.access_type === 'owned');
+                   (!rw.collaboration_role && rw.access_type === 'owned') ||
+                   (!rw.collaboration_role && !rw.access_type);
     const hasCollaborators = getCollaboratorInfo(rw.id)?.hasCollaborators || false;
     return isOwned && hasCollaborators; // Owned and shared with others
-  });
-  
-  // Finally, everything else goes to "My River Walks" (safest default)
-  // This includes owned river walks without collaborators AND any uncategorized ones
-  const myRiverWalks = riverWalks.filter(rw => {
-    // Exclude river walks that are already categorized as shared
-    const isSharedWithMe = sharedWithMe.includes(rw);
-    const isSharedByMe = sharedByMe.includes(rw);
-    return !isSharedWithMe && !isSharedByMe;
   });
 
   return (
