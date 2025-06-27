@@ -579,6 +579,39 @@
       transform: translateY(0) scale(1);
     }
   }
+
+  /* Dialog animations */
+  .dialog-enter {
+    animation: dialogSlideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    opacity: 0;
+    transform: translateY(-10px) scale(0.95);
+  }
+  
+  .dialog-exit {
+    animation: dialogSlideOut 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+  
+  @keyframes dialogSlideIn {
+    from {
+      opacity: 0;
+      transform: translateY(-10px) scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+  
+  @keyframes dialogSlideOut {
+    from {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+    to {
+      opacity: 0;
+      transform: translateY(-10px) scale(0.95);
+    }
+  }
   
   /* Loading button states */
   .btn-loading {

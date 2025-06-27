@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Save, Clock, X, ArrowLeft } from 'lucide-react';
 
 interface SaveConfirmationDialogProps {
@@ -20,11 +20,28 @@ export function SaveConfirmationDialog({
   hasUnsavedChanges,
   loading = false
 }: SaveConfirmationDialogProps) {
-  if (!isOpen) return null;
+  const [isVisible, setIsVisible] = useState(false);
+  const [animationClass, setAnimationClass] = useState('');
+
+  useEffect(() => {
+    if (isOpen) {
+      setIsVisible(true);
+      setAnimationClass('dialog-enter');
+    } else if (isVisible) {
+      setAnimationClass('dialog-exit');
+      const timer = setTimeout(() => {
+        setIsVisible(false);
+        setAnimationClass('');
+      }, 300); // Match animation duration
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen, isVisible]);
+
+  if (!isVisible) return null;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-[60]">
-      <div className="bg-white rounded-lg max-w-md w-full p-6 shadow-xl">
+      <div className={`bg-white rounded-lg max-w-md w-full p-6 shadow-xl ${animationClass}`}>
         <div className="flex items-center gap-3 mb-4">
           <div className="w-10 h-10 rounded-lg bg-yellow-100 flex items-center justify-center">
             <ArrowLeft className="w-5 h-5 text-yellow-600" />
