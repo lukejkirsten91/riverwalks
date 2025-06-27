@@ -1269,10 +1269,18 @@ export class OfflineDataService {
       const storageType = type === 'sediment_photo' ? 'sedimentation' : 'site';
       
       // Upload to server
-      const photoUrl = await uploadSitePhoto(relatedId, file, session.user.id, storageType);
-      console.log('Photo uploaded to server:', { type, relatedId, photoUrl });
-      
-      return photoUrl;
+      try {
+        const photoUrl = await uploadSitePhoto(relatedId, file, session.user.id, storageType);
+        console.log('Photo uploaded to server:', { type, relatedId, photoUrl });
+        return photoUrl;
+      } catch (storageError) {
+        // Handle storage-specific errors gracefully
+        console.error('Storage upload failed:', storageError);
+        if (storageError instanceof Error && storageError.message.includes('STORAGE_SETUP_REQUIRED')) {
+          console.log('Storage not configured - photo will remain offline until storage is set up');
+        }
+        return null;
+      }
     } catch (error) {
       console.error('Error uploading photo to server:', error);
       return null;

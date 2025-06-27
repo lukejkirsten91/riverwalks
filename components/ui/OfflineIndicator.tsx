@@ -1,6 +1,7 @@
 import React from 'react';
 import { Wifi, WifiOff, CloudOff, AlertTriangle } from 'lucide-react';
 import { useOfflineIndicator } from '../../hooks/useOffline';
+import { useSyncStatus } from '../../contexts/SyncStatusContext';
 
 interface OfflineIndicatorProps {
   className?: string;
@@ -9,8 +10,13 @@ interface OfflineIndicatorProps {
 
 export function OfflineIndicator({ className = '', showText = true }: OfflineIndicatorProps) {
   const { showOfflineWarning, showOfflineMode, showConnectivityIssue } = useOfflineIndicator();
+  const { syncStatus } = useSyncStatus();
+  const { pendingItems, isSyncing, syncError } = syncStatus;
 
-  if (!showOfflineWarning) {
+  // Hide OfflineIndicator when SyncStatus is actively showing
+  const isSyncStatusShowing = isSyncing || pendingItems > 0 || syncError;
+  
+  if (!showOfflineWarning || isSyncStatusShowing) {
     return null;
   }
 

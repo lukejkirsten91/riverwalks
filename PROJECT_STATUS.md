@@ -282,6 +282,18 @@ Riverwalks is a web application designed primarily for GCSE Geography students t
 
 ### ✅ **COMPREHENSIVE OFFLINE CAPABILITIES** (COMPLETED - JUNE 2025)
 
+#### **Recent UX Improvements (June 27, 2025)**
+- ✅ **Smooth Morph Animations**: Added dialog animations for Leave Form confirmation with scale and slide effects
+- ✅ **Site Management Width Consistency**: Fixed width discrepancies across all site management views and forms
+- ✅ **Modal Form Standardization**: All task forms now use consistent w-full max-w-6xl containers for uniform appearance
+- ✅ **Animation System Enhancement**: Comprehensive dialog enter/exit animations matching existing design patterns
+
+#### **Current UX Issues Identified (June 27, 2025)**
+- ⚠️ **Offline Indicator Visibility**: Offline/sync messages hidden behind modal popups due to z-index conflicts
+- ⚠️ **Offline Photo Storage Error**: STORAGE_SETUP_REQUIRED errors when completing tasks with offline photos
+- ⚠️ **Duplicate Status Messages**: Offline message appears alongside sync icon causing UI clutter
+- ⚠️ **Post-Login UX**: Excessive text on post-Google-login page requiring scroll to access main functions
+
 #### **Progressive Web App (PWA) Foundation**
 - **Service Worker Implementation**: Complete offline functionality with intelligent caching strategies
 - **IndexedDB Storage**: Comprehensive offline data persistence for river walks, sites, measurements, and photos

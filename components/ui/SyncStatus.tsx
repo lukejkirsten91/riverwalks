@@ -90,12 +90,6 @@ export function SyncStatus({ className = '', showText = true }: SyncStatusProps)
       {/* Additional info */}
       {showText && (
         <div className="text-xs text-gray-500">
-          {!isOnline && (
-            <div className="flex items-center gap-1">
-              <CloudOff className="w-3 h-3" />
-              <span>Offline</span>
-            </div>
-          )}
           {isOnline && lastSyncTime && (
             <span>Last sync: {formatLastSync(lastSyncTime)}</span>
           )}
