@@ -453,16 +453,6 @@ export default function RiverWalksPage() {
           </div>
         )}
 
-        {/* Action buttons - right aligned below header */}
-        <div className="flex justify-end gap-3 mb-6">
-          <button
-            className={showForm ? "btn-secondary touch-manipulation" : "btn-primary touch-manipulation"}
-            onClick={handleAddNewRiverWalk}
-          >
-            {showForm ? 'Cancel' : '+ Add River Walk'}
-          </button>
-        </div>
-
         {/* Error display */}
         {error && (
           <div className="bg-destructive/10 border border-destructive/20 text-destructive px-6 py-4 rounded-xl mb-6 flex items-center justify-between">
@@ -476,17 +466,30 @@ export default function RiverWalksPage() {
           </div>
         )}
 
-        {/* Form section */}
-        {showForm && (
-          <div className="mb-8">
-            <RiverWalkForm
-              currentRiverWalk={currentRiverWalk}
-              onSubmit={handleFormSubmit}
-              onCancel={handleFormCancel}
-              loading={loading}
-            />
+        {/* Morphing Add River Walk Button/Form */}
+        <div className={`morph-container ${showForm ? 'morph-form-state' : 'morph-button-state'} mb-6`}>
+          {/* Button State */}
+          <div className={`add-button-morph ${showForm ? 'add-button-hidden' : 'add-button-visible'}`}>
+            <button
+              className="btn-primary touch-manipulation"
+              onClick={handleAddNewRiverWalk}
+            >
+              + Add River Walk
+            </button>
           </div>
-        )}
+
+          {/* Form State */}
+          {showForm && (
+            <div className={`form-morph form-enter`}>
+              <RiverWalkForm
+                currentRiverWalk={currentRiverWalk}
+                onSubmit={handleFormSubmit}
+                onCancel={handleFormCancel}
+                loading={loading}
+              />
+            </div>
+          )}
+        </div>
 
         {/* River walks list */}
         <RiverWalkList
