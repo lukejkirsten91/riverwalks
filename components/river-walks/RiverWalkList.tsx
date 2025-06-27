@@ -80,7 +80,7 @@ export function RiverWalkList({
             )}
           </div>
           
-          {/* Access type and sync status icons */}
+          {/* Access type, sync status icons, and collaborator avatars */}
           <div className="flex-shrink-0 flex items-center gap-2 flex-wrap">
             {/* Role-based access indicator */}
             {riverWalk.collaboration_role === 'owner' || (!riverWalk.collaboration_role && riverWalk.access_type === 'owned') || (!riverWalk.collaboration_role && !riverWalk.access_type) ? (
@@ -122,14 +122,12 @@ export function RiverWalkList({
                 <span className="text-xs font-medium hidden sm:inline">Pending</span>
               </div>
             )}
-          </div>
-          
-          {/* Collaborator avatars - show for owned river walks with collaborators */}
-          {collaborators && (
-            <div className="mt-2">
+
+            {/* Collaborator avatars - now inline with other indicators */}
+            {collaborators && (
               <CollaboratorAvatars collaboratorInfo={collaborators} size="sm" maxVisible={3} />
-            </div>
-          )}
+            )}
+          </div>
         </div>
         
         {/* Metadata with inline editing */}
