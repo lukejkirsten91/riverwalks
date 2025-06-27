@@ -173,7 +173,7 @@ export function CrossSectionForm({
   };
 
   return (
-    <div className="card-modern-xl p-6 bg-card max-w-5xl mx-auto">
+    <div className="card-modern-xl p-6 bg-card w-full max-w-6xl mx-auto">
       <div className="flex items-center gap-3 mb-8">
         <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-blue-500/10 text-blue-600">
           <Ruler className="w-6 h-6" />
