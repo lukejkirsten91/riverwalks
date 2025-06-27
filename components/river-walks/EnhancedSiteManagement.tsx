@@ -708,7 +708,7 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
 
   return (
     <div 
-      className="bg-white rounded-lg w-full max-h-[98vh] sm:max-h-[90vh] overflow-y-auto mt-2 sm:mt-0"
+      className="bg-white rounded-lg w-full max-w-6xl max-h-[98vh] sm:max-h-[90vh] overflow-y-auto mt-2 sm:mt-0"
       data-modal="site-management"
     >
         {/* Header */}
