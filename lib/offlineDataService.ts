@@ -537,9 +537,11 @@ export class OfflineDataService {
             isOnline: this.checkOnline()
           });
           
+          // CRITICAL: Preserve original ownership for shared river walks
+          // Only set user_id for new river walks, never overwrite existing ones
           const updatePayload = {
             ...riverWalkData,
-            user_id: userId,
+            // DO NOT include user_id in updates - preserve original owner
           };
           console.log('Update payload:', updatePayload);
           

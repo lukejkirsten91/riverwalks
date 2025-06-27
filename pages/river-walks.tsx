@@ -319,7 +319,7 @@ export default function RiverWalksPage() {
 
             {/* Right side: Profile */}
             {user && (
-              <div className="relative flex-shrink-0" data-profile-dropdown>
+              <div className="relative flex-shrink-0 z-[9999]" data-profile-dropdown>
                 {/* Profile button */}
                 <button
                   onClick={() => setShowProfileDropdown(!showProfileDropdown)}
@@ -334,7 +334,7 @@ export default function RiverWalksPage() {
 
                 {/* Dropdown menu */}
                 {showProfileDropdown && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-modern border border-white/30 py-2 z-[100]">
+                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-modern border border-white/30 py-2 z-[9999]">
                     <div className="px-4 py-2 text-sm text-muted-foreground border-b border-border">
                       Signed in as
                     </div>
@@ -466,7 +466,7 @@ export default function RiverWalksPage() {
         )}
 
         {/* Morphing Add River Walk Button/Form */}
-        <div className={`morph-container ${showForm ? 'morph-form-state' : 'morph-button-state'} mb-6 relative z-10`}>
+        <div className={`morph-container ${showForm ? 'morph-form-state' : 'morph-button-state'} mb-6`}>
           {/* Button State */}
           <div className={`add-button-morph ${showForm ? 'add-button-hidden' : 'add-button-visible'}`}>
             <button
