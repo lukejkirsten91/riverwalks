@@ -567,7 +567,6 @@ export default function RiverWalksPage() {
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
-              console.log('Switch Account button clicked');
               setShowProfileDropdown(false);
               handleSwitchAccount();
             }}
@@ -580,7 +579,6 @@ export default function RiverWalksPage() {
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
-              console.log('Sign Out button clicked');
               setShowProfileDropdown(false);
               handleSignOut();
             }}
