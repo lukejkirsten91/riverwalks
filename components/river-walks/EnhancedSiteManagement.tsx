@@ -698,7 +698,7 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
     })();
 
     return (
-      <div className={`site-view-container ${animationClass}`}>
+      <div className={`w-full site-view-container ${animationClass}`}>
         {content}
       </div>
     );
