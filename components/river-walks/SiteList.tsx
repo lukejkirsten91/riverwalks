@@ -24,7 +24,7 @@ export function SiteList({
 }: SiteListProps) {
   if (sites.length === 0) {
     return (
-      <div className="max-w-5xl mx-auto card-modern-xl p-8 text-center">
+      <div className="card-modern-xl p-8 text-center">
         <div className="w-16 h-16 rounded-xl gradient-muted flex items-center justify-center mx-auto mb-6">
           <MapPin className="w-8 h-8 text-muted-foreground" />
         </div>
@@ -49,7 +49,7 @@ export function SiteList({
   }
 
   return (
-    <div className="max-w-5xl mx-auto space-y-6">
+    <div className="space-y-6">
       {/* Modern header */}
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <div>
