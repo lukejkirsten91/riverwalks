@@ -747,7 +747,7 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
 
   return (
     <div 
-      className="bg-white rounded-lg w-full max-w-6xl max-h-[98vh] sm:max-h-[90vh] overflow-y-auto"
+      className="bg-white rounded-lg w-full max-w-6xl max-h-[98vh] sm:max-h-[90vh] overflow-y-auto mt-2 sm:mt-0"
     >
         {/* Header with controls */}
         <div className="sticky top-0 bg-white border-b p-4 sm:p-6 z-10 rounded-t-lg shadow-sm">

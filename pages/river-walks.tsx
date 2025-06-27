@@ -508,45 +508,51 @@ export default function RiverWalksPage() {
           />
         )}
 
-        {/* Site management modal with morph animation */}
+        {/* Site management modal */}
         {selectedRiverWalk && (
-          <>
-            <div className="action-modal-backdrop action-modal-backdrop-enter" onClick={handleCloseSiteManagement} />
-            <div className="action-modal-morph action-modal-enter">
+          <div 
+            className="fixed inset-0 bg-black bg-opacity-50 flex items-start sm:items-center justify-center p-2 sm:p-4 z-50"
+            onClick={handleCloseSiteManagement}
+          >
+            <div onClick={(e) => e.stopPropagation()}>
               <EnhancedSiteManagement
                 riverWalk={selectedRiverWalk}
                 onClose={handleCloseSiteManagement}
               />
             </div>
-          </>
+          </div>
         )}
 
-        {/* Report generator modal with morph animation */}
+        {/* Report generator modal */}
         {reportRiverWalk && (
-          <>
-            <div className="action-modal-backdrop action-modal-backdrop-enter" onClick={handleCloseReport} />
-            <div className="action-modal-morph action-modal-enter">
+          <div 
+            className="fixed inset-0 bg-black bg-opacity-50 flex items-start sm:items-center justify-center p-2 sm:p-4 z-50"
+            onClick={handleCloseReport}
+          >
+            <div onClick={(e) => e.stopPropagation()}>
               <ReportGenerator
                 riverWalk={reportRiverWalk}
                 sites={reportSites}
                 onClose={handleCloseReport}
               />
             </div>
-          </>
+          </div>
         )}
 
-        {/* Share modal with morph animation */}
+        {/* Share modal */}
         {shareRiverWalk && collaborationEnabled && (
-          <>
-            <div className="action-modal-backdrop action-modal-backdrop-enter" onClick={handleCloseShare} />
-            <div className="action-modal-morph action-modal-enter">
+          <div 
+            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+            onClick={handleCloseShare}
+          >
+            <div onClick={(e) => e.stopPropagation()}>
               <ShareModal
                 riverWalk={shareRiverWalk}
                 isOpen={true}
                 onClose={handleCloseShare}
               />
             </div>
-          </>
+          </div>
         )}
 
         {/* Loading indicator for report generation */}
