@@ -10,6 +10,7 @@ interface SiteListProps {
   onUpdateSite: (id: string, field: 'river_width', value: number) => Promise<void>;
   onDeleteSite: (site: Site) => void;
   onAddNewSite: () => void;
+  addingSite?: boolean;
 }
 
 export function SiteList({
@@ -19,6 +20,7 @@ export function SiteList({
   onUpdateSite,
   onDeleteSite,
   onAddNewSite,
+  addingSite = false,
 }: SiteListProps) {
   if (sites.length === 0) {
     return (
@@ -30,9 +32,17 @@ export function SiteList({
         <p className="text-muted-foreground mb-6">Add your first measurement site to start collecting data.</p>
         <button
           onClick={onAddNewSite}
-          className="btn-primary touch-manipulation add-site-button-morph add-site-button-visible"
+          disabled={addingSite}
+          className={`btn-primary touch-manipulation add-site-button-morph add-site-button-visible ${addingSite ? 'opacity-75 cursor-not-allowed' : ''}`}
         >
-          + Add First Site
+          {addingSite ? (
+            <>
+              <div className="w-4 h-4 mr-2 animate-spin rounded-full border-2 border-white/30 border-t-white"></div>
+              Creating...
+            </>
+          ) : (
+            '+ Add First Site'
+          )}
         </button>
       </div>
     );
@@ -52,14 +62,22 @@ export function SiteList({
         </div>
         <button
           onClick={onAddNewSite}
-          className="btn-primary touch-manipulation add-site-button-morph add-site-button-visible"
+          disabled={addingSite}
+          className={`btn-primary touch-manipulation add-site-button-morph add-site-button-visible ${addingSite ? 'opacity-75 cursor-not-allowed' : ''}`}
         >
-          + Add New Site
+          {addingSite ? (
+            <>
+              <div className="w-4 h-4 mr-2 animate-spin rounded-full border-2 border-white/30 border-t-white"></div>
+              Creating...
+            </>
+          ) : (
+            '+ Add New Site'
+          )}
         </button>
       </div>
 
       {sites.map((site) => (
-        <div key={site.id} className="card-modern-xl p-6">
+        <div key={site.id} className="card-modern-xl p-6 site-card">
           {/* Site header */}
           <div className="flex flex-col sm:flex-row sm:justify-between gap-4 mb-4">
             <div className="flex-1 min-w-0">

@@ -129,6 +129,9 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
   const [animationDirection, setAnimationDirection] = useState<'forward' | 'back'>('forward');
   const [animationClass, setAnimationClass] = useState('');
   
+  // Add new site loading state
+  const [addingSite, setAddingSite] = useState(false);
+  
   // Form refs for triggering save confirmations
   const siteInfoFormRef = useRef<SiteInfoFormRef>(null);
 
@@ -514,6 +517,9 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
       return; // Silently do nothing for viewers as button should be hidden
     }
 
+    if (addingSite) return; // Prevent double clicks
+
+    setAddingSite(true);
     try {
       // Use sequential numbering: always use next number after highest existing
       // This is more intuitive - no gap filling that confuses users
@@ -568,6 +574,8 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
       }
       
       showError('Site Creation Failed', `Could not create site: ${errorMessage}`);
+    } finally {
+      setAddingSite(false);
     }
   };
 
@@ -631,6 +639,7 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
               onUpdateSite={handleUpdateSiteField}
               onDeleteSite={handleDeleteSiteWithConfirm}
               onAddNewSite={handleAddNewSite}
+              addingSite={addingSite}
             />
           );
       
@@ -697,9 +706,17 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
 
   const loading = sitesLoading;
 
+  // Responsive width based on current view
+  const getModalWidthClass = () => {
+    if (currentView === 'site_list' || currentView === 'site_todos') {
+      return 'max-w-4xl'; // Narrower for list views
+    }
+    return 'max-w-6xl'; // Wider for forms
+  };
+
   return (
     <div 
-      className="bg-white rounded-lg w-full max-w-6xl max-h-[98vh] sm:max-h-[90vh] overflow-y-auto mt-2 sm:mt-0"
+      className={`bg-white rounded-lg w-full ${getModalWidthClass()} max-h-[98vh] sm:max-h-[90vh] overflow-y-auto mt-2 sm:mt-0`}
       data-modal="site-management"
     >
         {/* Header */}

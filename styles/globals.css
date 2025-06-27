@@ -563,4 +563,46 @@
     transition: height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     overflow: hidden;
   }
+  
+  /* New site animation */
+  .site-card {
+    animation: siteSlideIn 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+  
+  @keyframes siteSlideIn {
+    from {
+      opacity: 0;
+      transform: translateY(20px) scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+  
+  /* Loading button states */
+  .btn-loading {
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .btn-loading::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    animation: shimmer 1.5s infinite;
+  }
+  
+  @keyframes shimmer {
+    0% {
+      left: -100%;
+    }
+    100% {
+      left: 100%;
+    }
+  }
 }
