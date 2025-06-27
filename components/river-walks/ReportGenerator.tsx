@@ -274,9 +274,10 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
     // Wait for style changes to take effect
     await new Promise(resolve => setTimeout(resolve, 200));
     
-    // Enhanced protected element detection - comprehensive selectors for better element protection
+    // Find all protected components (charts, tables, etc.) - AFTER style changes
+    // Treat Plotly charts as atomic units by selecting only outer containers
     const protectedElements = element.querySelectorAll(
-      '.plotly-graph-div, table, .pdf-component, .bg-blue-50, .bg-green-50, .bg-amber-50, .bg-purple-50, .bg-orange-50, .bg-gray-50, .overflow-x-auto, .kpi-container, .chart-container, .rounded-lg, .border, .grid, .site-section, .analysis-section, h1, h2, h3, .section-header, .mb-6, .mb-8, tr, tbody, thead, .table-container, .sediment-chart, .velocity-chart, .cross-section-chart, .map-container, img[src*="maps.googleapis.com"], .google-map, svg'
+      '.plotly-graph-div, .plotly-graph-div *, table, .pdf-component, .bg-blue-50, .bg-green-50, .bg-amber-50, .overflow-x-auto'
     );
     const protectedRegions: Array<{top: number, bottom: number, element: Element}> = [];
     
@@ -347,12 +348,12 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
       let targetY = currentY + pageHeightPx;
       const remainingHeight = canvas.height - currentY;
       
-      // Hard-limit: if less than 60 mm remains, push everything to next page
-      // Increased from 50mm to 60mm for even stronger protection against element splitting
-      const minTail = 60 /* mm */ * pixelsPerMM;
+      // Hard-limit: if less than 50 mm (≈ 142 px @ 2×) remains, push everything
+      // Increased from 40mm to 50mm for stronger protection
+      const minTail = 50 /* mm */ * pixelsPerMM;
       if (canvas.height - currentY > pageHeightPx && pageHeightPx - (targetY - currentY) < minTail) {
         targetY = currentY + pageHeightPx - minTail;
-        console.log(`Applied hard break: insufficient tail space (< 60mm)`);
+        console.log(`Applied hard break: insufficient tail space (< 50mm)`);
       }
       
       // If this is near the end, just take the rest
@@ -366,9 +367,9 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
           // 1. Are we about to cut through it? (original rule)
           if (region.top < targetY && region.bottom > targetY) {
             // If the component is small enough to fit on the next page
-            if (componentHeight < pageHeightPx * 0.75) { // Reduced from 0.8 to 0.75 for maximum protection
-              // Move the break to just before this component with generous padding
-              targetY = region.top - (20 * pixelsPerMM); // Increased from 15mm to 20mm padding
+            if (componentHeight < pageHeightPx * 0.8) { // Reduced from 0.9 to 0.8 for stronger protection
+              // Move the break to just before this component with more padding
+              targetY = region.top - (15 * pixelsPerMM); // Increased from 10mm to 15mm padding
               console.log(`Adjusted page break to protect component at ${region.top}px`);
             } else {
               // Component is too large, try to break at a better spot within it
@@ -387,9 +388,9 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
           if (
             marginAbove >= 0 &&                               // component is on this page
             region.top >= currentY &&                         // component starts after current position
-            marginAbove + componentHeight > pageHeightPx * 0.8  // but won't fit in 80% of remaining space (most conservative)
+            marginAbove + componentHeight > pageHeightPx * 0.85  // but won't fit in 85% of remaining space (more conservative)
           ) {
-            targetY = region.top - (20 * pixelsPerMM);        // move the break above it with generous padding
+            targetY = region.top - (15 * pixelsPerMM);        // move the break above it with more padding
             console.log(`Moving component starting at ${region.top}px to next page - won't fit in remaining space`);
             break;
           }
@@ -434,16 +435,16 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
     }
   };
   
-  // Enhanced helper function to find natural break points within large components
+  // Helper function to find natural break points within large components
   const findNaturalBreakPoint = (element: Element, targetOffset: number): number => {
-    // Look for section boundaries, headers, spacing elements, and logical content breaks
-    const breakCandidates = element.querySelectorAll('h1, h2, h3, h4, h5, h6, .mb-4, .mb-6, .mb-8, .border-b, .border-t, .section-header, .bg-blue-50, .bg-green-50, .bg-amber-50, .bg-purple-50, .bg-gray-50, .analysis-section, .site-section, .chart-container, .rounded-lg, .grid, .table-container, tr:first-child, .kpi-container, p:empty, div:empty');
+    // Look for section boundaries, headers, or spacing elements
+    const breakCandidates = element.querySelectorAll('h3, h4, h5, .mb-4, .mb-6, .mb-8, .border-b, .border-t');
     let bestBreak = 0;
     
     breakCandidates.forEach(candidate => {
       const offset = (candidate as HTMLElement).offsetTop - element.scrollTop;
-      // If this break point is before our target and better than current best, with minimum spacing
-      if (offset < targetOffset - (10 * (targetOffset / 300)) && offset > bestBreak + 20) { // Add minimum spacing between breaks
+      // If this break point is before our target and better than current best
+      if (offset < targetOffset && offset > bestBreak) {
         bestBreak = offset;
       }
     });
@@ -459,15 +460,8 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
     setIsPDFMode(true); // Enable PDF mode for chart sizing
 
     try {
-      // Enhanced wait strategy for complex content rendering
-      await new Promise(resolve => setTimeout(resolve, 4000)); // Increased wait time
-      
-      // Additional wait for Plotly charts specifically
-      const plotlyCharts = reportRef.current?.querySelectorAll('.plotly-graph-div');
-      if (plotlyCharts && plotlyCharts.length > 0) {
-        console.log(`Waiting for ${plotlyCharts.length} Plotly charts to fully render...`);
-        await new Promise(resolve => setTimeout(resolve, 2000)); // Extra time for charts
-      }
+      // Wait for charts to render fully
+      await new Promise(resolve => setTimeout(resolve, 3000));
 
       // Always use desktop-style layout for PDF generation
       const isMobile = /Mobi|Android/i.test(navigator.userAgent);
@@ -813,7 +807,7 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
         {/* Report content */}
         <div ref={reportRef} className={`p-4 sm:p-6 lg:p-8 bg-white ${isPDFMode ? 'pdf-mode' : ''}`}>
           <style>{`
-            /* Enhanced Page Break Controls - Based on latest print/PDF best practices */
+            /* Enhanced Page Break Controls - Based on print/PDF best practices */
             @media print {
               .page-break-before {
                 page-break-before: always !important;
@@ -830,8 +824,6 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
               .page-break-avoid {
                 page-break-inside: avoid !important;
                 break-inside: avoid !important;
-                -webkit-region-break-inside: avoid !important;
-                -webkit-column-break-inside: avoid !important;
               }
               
               .page-break-avoid-before {
@@ -861,83 +853,39 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
             .page-break-avoid {
               page-break-inside: avoid !important;
               break-inside: avoid !important;
-              -webkit-region-break-inside: avoid !important;
-              -webkit-column-break-inside: avoid !important;
-              orphans: 4 !important;
-              widows: 4 !important;
-              display: block !important;
+              orphans: 3 !important;
+              widows: 3 !important;
             }
             
-            /* Modern CSS page-break approach - maximum protection against component splitting */
+            /* Modern CSS page-break approach - prevents component splitting */
             .pdf-component {
               break-inside: avoid !important;
               page-break-inside: avoid !important;
               -webkit-column-break-inside: avoid !important;
-              -webkit-region-break-inside: avoid !important;
-              orphans: 4 !important;
-              widows: 4 !important;
-              display: block !important;
-              position: relative !important;
+              orphans: 3 !important;
+              widows: 3 !important;
             }
             
-            /* Comprehensive element protection with enhanced selectors */
+            /* Comprehensive element protection */
             table, .plotly-graph-div, svg, img,
-            .bg-blue-50, .bg-green-50, .bg-amber-50, .bg-gray-50, .bg-purple-50, .bg-orange-50,
+            .bg-blue-50, .bg-green-50, .bg-amber-50, .bg-gray-50, .bg-purple-50,
             .grid, .rounded-lg, .border, .overflow-x-auto,
             h1, h2, h3, h4, h5, h6, .mb-6, .mb-8,
-            .chart-container, .kpi-container, .section-header,
-            .analysis-section, .site-section, .sediment-chart, .velocity-chart, 
-            .cross-section-chart, .map-container, .google-map,
-            tr, tbody, thead, .table-container, .measurement-table,
-            .summary-stats, .correlation-analysis, .environmental-data {
-              break-inside: avoid !important;
-              page-break-inside: avoid !important;
-              -webkit-column-break-inside: avoid !important;
-              -webkit-region-break-inside: avoid !important;
-              display: block !important;
-              position: relative !important;
-            }
-            
-            /* Special protection for table elements */
-            table tr, table tbody, table thead {
+            .chart-container, .kpi-container, .section-header {
               break-inside: avoid !important;
               page-break-inside: avoid !important;
               -webkit-column-break-inside: avoid !important;
             }
             
-            /* Google Maps specific protection */
-            img[src*="maps.googleapis.com"] {
-              break-inside: avoid !important;
-              page-break-inside: avoid !important;
-              display: block !important;
-              margin: 10px 0 !important;
-            }
-            
-            /* Maximum Plotly chart protection */
+            /* Enhanced Plotly chart protection */
             .plotly-graph-div {
               min-height: 300px !important;
-              max-height: 240mm !important; /* Reduced to ensure charts fit on page with margins */
+              max-height: 260mm !important; /* Keep charts under page height for PDF */
               max-width: 100% !important;   /* Prevent horizontal overflow */
               width: 100% !important;       /* Ensure full width utilization */
               break-inside: avoid !important;
               page-break-inside: avoid !important;
-              -webkit-column-break-inside: avoid !important;
-              -webkit-region-break-inside: avoid !important;
               position: relative !important;
-              display: block !important;
-              margin: 15px 0 !important;    /* Add generous margins around charts */
-              padding: 0 !important;
-              box-sizing: border-box !important;
-            }
-            
-            /* Plotly chart parent containers */
-            .plotly-graph-div:before,
-            .plotly-graph-div:after {
-              content: "" !important;
-              display: block !important;
-              height: 10px !important;
-              break-inside: avoid !important;
-              page-break-inside: avoid !important;
             }
             
             /* Responsive chart behavior */
@@ -966,40 +914,16 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
               transform: none !important;
             }
             
-            /* Protect chart containers and parent elements */
-            .chart-container,
-            div:has(> .plotly-graph-div),
-            [data-chart-container] {
+            /* Protect chart containers */
+            :has(.plotly-graph-div) {
               break-inside: avoid !important;
               page-break-inside: avoid !important;
-              -webkit-column-break-inside: avoid !important;
-              display: block !important;
-              margin: 15px 0 !important;
             }
             
-            /* Enhanced table-specific protection */
-            .row-group, tbody, thead, .table-container, .measurement-table,
-            table tr, table th, table td {
+            /* Table-specific protection */
+            .row-group, tbody, .table-container {
               break-inside: avoid !important;
               page-break-inside: avoid !important;
-              -webkit-column-break-inside: avoid !important;
-            }
-            
-            /* Prevent orphaned headers */
-            h1, h2, h3, h4, h5, h6 {
-              break-after: avoid !important;
-              page-break-after: avoid !important;
-              keep-with-next: always !important;
-            }
-            
-            /* KPI and summary section protection */
-            .kpi-container > div,
-            .bg-blue-50, .bg-green-50, .bg-amber-50, .bg-purple-50, .bg-orange-50 {
-              break-inside: avoid !important;
-              page-break-inside: avoid !important;
-              display: inline-block !important;
-              width: auto !important;
-              vertical-align: top !important;
             }
             
             /* PDF-specific styles for better rendering */
@@ -1015,30 +939,10 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
               height: auto !important;
             }
             
-            /* Section spacing control with enhanced protection */
+            /* Section spacing control */
             [data-summary-section] > *, [data-site-section] > * {
               break-inside: avoid !important;
               page-break-inside: avoid !important;
-              -webkit-column-break-inside: avoid !important;
-            }
-            
-            /* Special protection for analysis sections */
-            .analysis-section, .environmental-data, .summary-stats,
-            .correlation-analysis, .velocity-analysis, .sediment-analysis {
-              break-inside: avoid !important;
-              page-break-inside: avoid !important;
-              -webkit-column-break-inside: avoid !important;
-              display: block !important;
-              margin: 20px 0 !important;
-            }
-            
-            /* Ensure proper block-level display for all protected elements */
-            .page-break-avoid, .pdf-component,
-            table, .plotly-graph-div, .chart-container,
-            .kpi-container, .bg-blue-50, .bg-green-50, .bg-amber-50 {
-              display: block !important;
-              position: relative !important;
-              z-index: 1 !important;
             }
           `}</style>
           {/* NEW SUMMARY PAGE */}
