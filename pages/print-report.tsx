@@ -1,6 +1,6 @@
 import React from 'react';
 import { GetServerSideProps } from 'next';
-import { supabase } from '../lib/supabase-server';
+import { supabase } from '../lib/supabase';
 import type { RiverWalk, Site } from '../types';
 import { formatDate } from '../lib/utils';
 import dynamic from 'next/dynamic';
