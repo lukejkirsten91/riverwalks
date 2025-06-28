@@ -1,6 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Download, FileText, X, FileSpreadsheet } from 'lucide-react';
 import dynamic from 'next/dynamic';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 import * as XLSX from 'xlsx';
 import { formatDate } from '../../lib/utils';
 import type { RiverWalk, Site, MeasurementPoint } from '../../types';
@@ -223,6 +225,56 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
     };
   };
 
+  // Client-side PDF generation fallback
+  const generateClientSidePDF = async () => {
+    if (!reportRef.current) return;
+
+    console.log('📄 Starting client-side PDF generation...');
+    
+    try {
+      // Wait for any pending renders
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4',
+      });
+
+      const canvas = await html2canvas(reportRef.current, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#ffffff',
+      });
+
+      const imgWidth = 210; // A4 width in mm
+      const pageHeight = 297; // A4 height in mm
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      let heightLeft = imgHeight;
+      let position = 0;
+
+      // Add first page
+      pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+
+      // Add additional pages if needed
+      while (heightLeft >= 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+
+      const fileName = `${riverWalk.name.replace(/[^a-z0-9\s]/gi, '_').replace(/\s+/g, '_')}_report.pdf`;
+      pdf.save(fileName);
+      
+      console.log('✅ Client-side PDF generated successfully');
+    } catch (error) {
+      console.error('❌ Client-side PDF generation failed:', error);
+      throw new Error('Both server-side and client-side PDF generation failed. Please try again.');
+    }
+  };
 
   // Export report as PDF using server-side generation
   const exportToPDF = async () => {
@@ -312,9 +364,11 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
           throw new Error(`Server error (${response.status}): Check console for details`);
         }
         
-        // If it's a 405 error, provide specific guidance
+        // If it's a 405 error, fall back to client-side PDF generation
         if (response.status === 405) {
-          throw new Error('PDF generation service is temporarily unavailable. The API endpoint may still be deploying. Please try again in a few minutes.');
+          console.log('🔄 API endpoint not available, falling back to client-side PDF generation...');
+          await generateClientSidePDF();
+          return;
         }
         
         throw new Error(errorData.error || `Server error (${response.status})`);
@@ -345,8 +399,15 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
       
       console.log('🎉 PDF generated and downloaded successfully!');
     } catch (error) {
-      console.error('Error generating PDF:', error);
-      alert(`Error generating PDF: ${error instanceof Error ? error.message : 'Please try again.'}`);
+      console.error('❌ Server-side PDF generation failed:', error);
+      console.log('🔄 Attempting client-side PDF generation as fallback...');
+      
+      try {
+        await generateClientSidePDF();
+      } catch (fallbackError) {
+        console.error('❌ Fallback PDF generation also failed:', fallbackError);
+        alert(`Error generating PDF: ${fallbackError instanceof Error ? fallbackError.message : 'Please try again.'}`);
+      }
     } finally {
       setIsExporting(false);
     }
