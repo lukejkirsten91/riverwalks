@@ -150,47 +150,195 @@ export default function PrintReport({ riverWalk, sites }: PrintReportProps) {
   return (
     <div className="print-report">
       <style jsx global>{`
+        /* ===== COMPREHENSIVE PAGE BREAK PROTECTION FOR PRINT REPORT ===== */
+        /* Enhanced CSS for server-side PDF generation via Playwright */
+        
+        /* Core page break controls with cross-browser support */
         @media print {
+          /* Critical component protection */
           .pdf-component {
-            break-inside: avoid;
-            page-break-inside: avoid;
+            break-inside: avoid !important;
+            page-break-inside: avoid !important;
+            -webkit-column-break-inside: avoid !important;
+            -webkit-region-break-inside: avoid !important;
+            orphans: 4 !important;
+            widows: 4 !important;
+            margin-bottom: 20pt !important;
           }
           
+          /* Enhanced Plotly chart protection */
           .plotly-graph-div {
+            break-inside: avoid !important;
+            page-break-inside: avoid !important;
+            -webkit-column-break-inside: avoid !important;
+            -webkit-region-break-inside: avoid !important;
+            min-height: 300px !important;
+            max-height: 280mm !important;
+            margin: 15pt 0 !important;
+            padding: 10pt !important;
+            background: white !important;
+          }
+          
+          /* Advanced table protection */
+          table {
+            border-collapse: collapse !important;
+            break-inside: auto !important; /* Allow tables to break if needed */
+            page-break-inside: auto !important;
+            margin-bottom: 15pt !important;
+          }
+          
+          thead {
+            display: table-header-group !important; /* Repeat headers */
+          }
+          
+          tr {
+            break-inside: avoid !important; /* Keep rows together */
+            page-break-inside: avoid !important;
+            -webkit-column-break-inside: avoid !important;
+          }
+          
+          th {
+            break-after: avoid !important;
+            page-break-after: avoid !important;
+          }
+          
+          /* Chart container protection */
+          .chart-container {
+            break-inside: avoid !important;
+            page-break-inside: avoid !important;
+            -webkit-column-break-inside: avoid !important;
+            margin: 20pt 0 !important;
+            padding: 15pt !important;
+          }
+          
+          /* Site section management */
+          .site-section {
+            break-before: page !important;
+            page-break-before: always !important;
+            -webkit-column-break-before: always !important;
             break-inside: avoid !important;
             page-break-inside: avoid !important;
           }
           
-          table {
-            break-inside: avoid;
-            page-break-inside: avoid;
-          }
-          
-          .chart-container {
-            break-inside: avoid;
-            page-break-inside: avoid;
-          }
-          
-          .site-section {
-            break-before: page;
-            page-break-before: always;
-          }
-          
           .site-section:first-of-type {
-            break-before: auto;
-            page-break-before: auto;
+            break-before: auto !important;
+            page-break-before: auto !important;
+            -webkit-column-break-before: auto !important;
+          }
+          
+          /* Comprehensive element protection */
+          div, section, article, aside,
+          h1, h2, h3, h4, h5, h6,
+          .bg-blue-50, .bg-green-50, .bg-amber-50, .bg-gray-50,
+          .grid, .rounded, .border, .overflow-x-auto,
+          .text-center, .font-semibold, .font-bold {
+            break-inside: avoid !important;
+            page-break-inside: avoid !important;
+            -webkit-column-break-inside: avoid !important;
+          }
+          
+          /* Typography controls */
+          h1, h2, h3, h4, h5, h6 {
+            break-after: avoid !important;
+            page-break-after: avoid !important;
+            break-inside: avoid !important;
+            page-break-inside: avoid !important;
+            orphans: 4 !important;
+            widows: 4 !important;
+            margin-top: 15pt !important;
+          }
+          
+          p, li, dd, dt {
+            orphans: 4 !important;
+            widows: 4 !important;
+          }
+          
+          /* Layout simplification for PDF */
+          .grid {
+            display: block !important;
+          }
+          
+          .grid > * {
+            display: block !important;
+            width: 100% !important;
+            break-inside: avoid !important;
+            page-break-inside: avoid !important;
+            margin-bottom: 10pt !important;
+          }
+          
+          /* Image and media protection */
+          img, svg, canvas {
+            max-width: 100% !important;
+            height: auto !important;
+            break-inside: avoid !important;
+            page-break-inside: avoid !important;
+            margin: 10pt 0 !important;
+          }
+          
+          /* List protection */
+          ul, ol, dl {
+            break-inside: avoid !important;
+            page-break-inside: avoid !important;
+          }
+          
+          /* Container protection */
+          .container, .wrapper, .content {
+            break-inside: avoid !important;
+            page-break-inside: avoid !important;
           }
         }
         
+        /* Universal styles for all contexts */
+        .pdf-component {
+          break-inside: avoid !important;
+          page-break-inside: avoid !important;
+          -webkit-column-break-inside: avoid !important;
+          -webkit-region-break-inside: avoid !important;
+          orphans: 4 !important;
+          widows: 4 !important;
+        }
+        
+        .chart-container {
+          break-inside: avoid !important;
+          page-break-inside: avoid !important;
+          -webkit-column-break-inside: avoid !important;
+        }
+        
+        .plotly-graph-div {
+          break-inside: avoid !important;
+          page-break-inside: avoid !important;
+          -webkit-column-break-inside: avoid !important;
+          -webkit-region-break-inside: avoid !important;
+        }
+        
+        /* Enhanced typography */
         body {
-          font-family: Arial, sans-serif;
+          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
           line-height: 1.4;
           color: #333;
+          background: white;
         }
         
         .print-report {
           max-width: none;
           padding: 20px;
+          background: white;
+          color: black;
+        }
+        
+        /* Ensure proper spacing */
+        .pdf-component + .pdf-component {
+          margin-top: 25pt !important;
+        }
+        
+        /* Failsafe protection class */
+        .absolute-no-break {
+          break-inside: avoid !important;
+          page-break-inside: avoid !important;
+          -webkit-column-break-inside: avoid !important;
+          -webkit-region-break-inside: avoid !important;
+          display: inline-block !important;
+          width: 100% !important;
         }
       `}</style>
 

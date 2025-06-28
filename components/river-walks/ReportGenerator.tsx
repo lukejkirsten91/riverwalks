@@ -689,85 +689,202 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
         {/* Report content */}
         <div ref={reportRef} className="p-4 sm:p-6 lg:p-8 bg-white">
           <style>{`
-            /* Enhanced Page Break Controls - Based on print/PDF best practices */
+            /* ===== COMPREHENSIVE PAGE BREAK PROTECTION ===== */
+            /* Based on latest CSS best practices and research findings */
+            
+            /* Core page break controls with cross-browser fallbacks */
             @media print {
+              /* Force page breaks */
               .page-break-before {
                 page-break-before: always !important;
                 break-before: page !important;
+                -webkit-column-break-before: always !important;
                 clear: both !important;
               }
               
               .page-break-after {
                 page-break-after: always !important;
                 break-after: page !important;
+                -webkit-column-break-after: always !important;
                 clear: both !important;
               }
               
+              /* Prevent page breaks */
               .page-break-avoid {
                 page-break-inside: avoid !important;
                 break-inside: avoid !important;
+                -webkit-column-break-inside: avoid !important;
+                -webkit-region-break-inside: avoid !important;
+                orphans: 4 !important;
+                widows: 4 !important;
               }
               
               .page-break-avoid-before {
                 page-break-before: avoid !important;
                 break-before: avoid !important;
+                -webkit-column-break-before: avoid !important;
               }
               
               .page-break-avoid-after {
                 page-break-after: avoid !important;
                 break-after: avoid !important;
+                -webkit-column-break-after: avoid !important;
+              }
+              
+              /* Advanced table protection strategy */
+              table {
+                border-collapse: collapse !important;
+                break-inside: auto !important; /* Allow tables to break across pages if needed */
+                page-break-inside: auto !important;
+                margin-bottom: 15pt !important;
+              }
+              
+              thead {
+                display: table-header-group !important; /* Repeat headers on each page */
+              }
+              
+              tbody {
+                break-inside: auto !important;
+                page-break-inside: auto !important;
+              }
+              
+              tr {
+                break-inside: avoid !important; /* Keep table rows together */
+                page-break-inside: avoid !important;
+                -webkit-column-break-inside: avoid !important;
+              }
+              
+              /* Table headers stay with content */
+              th {
+                break-after: avoid !important;
+                page-break-after: avoid !important;
+              }
+              
+              /* Layout simplification for reliable PDF rendering */
+              .flex-container, .grid {
+                display: block !important;
+              }
+              
+              .flex-item, .grid > * {
+                display: block !important;
+                width: 100% !important;
+                break-inside: avoid !important;
+                page-break-inside: avoid !important;
+                margin-bottom: 10pt !important;
+              }
+              
+              /* Typography orphan/widow control */
+              p, li, dd, dt {
+                orphans: 4 !important;
+                widows: 4 !important;
+              }
+              
+              /* Headings protection */
+              h1, h2, h3, h4, h5, h6 {
+                break-after: avoid !important;
+                page-break-after: avoid !important;
+                break-inside: avoid !important;
+                page-break-inside: avoid !important;
+                orphans: 4 !important;
+                widows: 4 !important;
+                margin-top: 15pt !important;
+              }
+              
+              /* List protection */
+              ul, ol, dl {
+                break-inside: avoid !important;
+                page-break-inside: avoid !important;
               }
             }
             
-            /* Universal page break protection for all rendering contexts */
+            /* ===== UNIVERSAL PAGE BREAK PROTECTION ===== */
+            /* Applied to all rendering contexts (print, PDF generation, etc.) */
+            
             .page-break-before {
               page-break-before: always !important;
               break-before: page !important;
+              -webkit-column-break-before: always !important;
               clear: both !important;
             }
             
             .page-break-after {
               page-break-after: always !important;
               break-after: page !important;
+              -webkit-column-break-after: always !important;
               clear: both !important;
             }
             
             .page-break-avoid {
               page-break-inside: avoid !important;
               break-inside: avoid !important;
-              orphans: 3 !important;
-              widows: 3 !important;
+              -webkit-column-break-inside: avoid !important;
+              -webkit-region-break-inside: avoid !important;
+              orphans: 4 !important;
+              widows: 4 !important;
             }
             
-            /* Modern CSS page-break approach - prevents component splitting */
+            /* ===== COMPONENT-SPECIFIC PROTECTION ===== */
+            
+            /* PDF component wrapper - strongest protection */
             .pdf-component {
               break-inside: avoid !important;
               page-break-inside: avoid !important;
               -webkit-column-break-inside: avoid !important;
-              orphans: 3 !important;
-              widows: 3 !important;
+              -webkit-region-break-inside: avoid !important;
+              orphans: 4 !important;
+              widows: 4 !important;
+              margin-bottom: 20pt !important;
+              padding: 10pt !important;
             }
             
-            /* Comprehensive element protection */
-            table, .plotly-graph-div, svg, img,
-            .bg-blue-50, .bg-green-50, .bg-amber-50, .bg-gray-50, .bg-purple-50,
+            /* ===== COMPREHENSIVE ELEMENT PROTECTION ===== */
+            /* Protect all critical UI components from breaking */
+            
+            table, .plotly-graph-div, svg, img, canvas,
+            .bg-blue-50, .bg-green-50, .bg-amber-50, .bg-gray-50, .bg-purple-50, .bg-orange-50,
             .grid, .rounded-lg, .border, .overflow-x-auto,
-            h1, h2, h3, h4, h5, h6, .mb-6, .mb-8,
-            .chart-container, .kpi-container, .section-header {
+            h1, h2, h3, h4, h5, h6, 
+            .mb-6, .mb-8, .p-4, .p-6,
+            .chart-container, .kpi-container, .section-header,
+            .text-center, .font-bold, .font-semibold,
+            [data-summary-section], [data-site-section] {
               break-inside: avoid !important;
               page-break-inside: avoid !important;
               -webkit-column-break-inside: avoid !important;
+              -webkit-region-break-inside: avoid !important;
             }
             
-            /* Enhanced Plotly chart protection */
+            /* ===== ENHANCED PLOTLY CHART PROTECTION ===== */
+            
             .plotly-graph-div {
               min-height: 300px !important;
-              max-height: 260mm !important; /* Keep charts under page height for PDF */
-              max-width: 100% !important;   /* Prevent horizontal overflow */
-              width: 100% !important;       /* Ensure full width utilization */
+              max-height: 280mm !important; /* Keep well under A4 page height */
+              max-width: 100% !important;
+              width: 100% !important;
               break-inside: avoid !important;
               page-break-inside: avoid !important;
+              -webkit-column-break-inside: avoid !important;
+              -webkit-region-break-inside: avoid !important;
               position: relative !important;
+              margin: 15pt 0 !important;
+              padding: 10pt !important;
+              background: white !important;
+            }
+            
+            /* Chart container protection */
+            .chart-container {
+              break-inside: avoid !important;
+              page-break-inside: avoid !important;
+              -webkit-column-break-inside: avoid !important;
+              margin: 20pt 0 !important;
+              padding: 15pt !important;
+            }
+            
+            /* Parent containers with charts */
+            :has(.plotly-graph-div) {
+              break-inside: avoid !important;
+              page-break-inside: avoid !important;
+              -webkit-column-break-inside: avoid !important;
             }
             
             /* Responsive chart behavior */
@@ -775,56 +892,107 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
               width: 100% !important;
               height: auto !important;
               min-height: 300px !important;
+              break-inside: avoid !important;
+              page-break-inside: avoid !important;
             }
             
-            /* Mobile-specific chart adjustments */
+            /* ===== MOBILE-SPECIFIC OPTIMIZATIONS ===== */
+            
             @media (max-width: 768px) {
               .plotly-graph-div {
                 min-height: 250px !important;
                 font-size: 12px !important;
+                margin: 10pt 0 !important;
+                padding: 5pt !important;
               }
               
               .responsive-chart {
                 min-height: 250px !important;
               }
+              
+              .pdf-component {
+                padding: 5pt !important;
+                margin-bottom: 15pt !important;
+              }
             }
             
-            /* PDF-specific overrides when in PDF mode */
+            /* ===== PDF MODE OVERRIDES ===== */
+            
             .pdf-mode .plotly-graph-div {
               width: 650px !important;
               height: 400px !important;
               transform: none !important;
+              position: static !important;
             }
             
-            /* Protect chart containers */
-            :has(.plotly-graph-div) {
+            /* ===== TABLE-SPECIFIC ADVANCED PROTECTION ===== */
+            
+            .table-container {
+              break-inside: avoid !important;
+              page-break-inside: avoid !important;
+              margin: 15pt 0 !important;
+            }
+            
+            .row-group {
               break-inside: avoid !important;
               page-break-inside: avoid !important;
             }
             
-            /* Table-specific protection */
-            .row-group, tbody, .table-container {
-              break-inside: avoid !important;
-              page-break-inside: avoid !important;
-            }
+            /* ===== PDF-SPECIFIC STYLES ===== */
             
-            /* PDF-specific styles for better rendering */
             [data-summary-section], [data-site-section] {
               background-color: white !important;
               color: black !important;
-              font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif !important;
+              font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif !important;
+              break-inside: avoid !important;
+              page-break-inside: avoid !important;
             }
             
-            /* Ensure charts and images render properly */
-            [data-summary-section] img, [data-site-section] img {
+            /* Image and media protection */
+            [data-summary-section] img, [data-site-section] img,
+            [data-summary-section] svg, [data-site-section] svg {
               max-width: 100% !important;
               height: auto !important;
+              break-inside: avoid !important;
+              page-break-inside: avoid !important;
+              margin: 10pt 0 !important;
             }
             
-            /* Section spacing control */
+            /* Section content protection */
             [data-summary-section] > *, [data-site-section] > * {
               break-inside: avoid !important;
               page-break-inside: avoid !important;
+              -webkit-column-break-inside: avoid !important;
+            }
+            
+            /* ===== CRITICAL SPACING CONTROLS ===== */
+            
+            /* Ensure adequate spacing around protected elements */
+            .pdf-component + .pdf-component {
+              margin-top: 25pt !important;
+            }
+            
+            /* Page break hints for large sections */
+            .site-section {
+              break-before: auto !important;
+              page-break-before: auto !important;
+            }
+            
+            .site-section:first-of-type {
+              break-before: avoid !important;
+              page-break-before: avoid !important;
+            }
+            
+            /* ===== FAILSAFE MEASURES ===== */
+            
+            /* Absolute protection for critical content */
+            .absolute-no-break {
+              break-inside: avoid !important;
+              page-break-inside: avoid !important;
+              -webkit-column-break-inside: avoid !important;
+              -webkit-region-break-inside: avoid !important;
+              display: inline-block !important;
+              width: 100% !important;
             }
           `}</style>
           {/* NEW SUMMARY PAGE */}
