@@ -503,6 +503,18 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
     }
 
     console.log('✅ Response OK, creating blob...');
+    
+    // Check if the response is actually a PDF by checking content type
+    const contentType = response.headers.get('content-type');
+    console.log('📋 Response Content-Type:', contentType);
+    
+    if (!contentType || !contentType.includes('application/pdf')) {
+      console.error('❌ Response is not a PDF, likely an error response');
+      const errorText = await response.text();
+      console.error('📄 Response content:', errorText.substring(0, 500));
+      throw new Error(`Server returned non-PDF response: ${contentType}`);
+    }
+    
     // Create blob from response
     const blob = await response.blob();
     console.log('📊 Blob created, size:', blob.size, 'bytes');

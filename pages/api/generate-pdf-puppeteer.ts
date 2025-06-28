@@ -140,6 +140,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     res.setHeader('Content-Length', pdfBuffer.length);
     console.log('📋 Response headers set');
 
+    // Verify the PDF buffer is valid
+    if (!pdfBuffer || pdfBuffer.length === 0) {
+      throw new Error('PDF buffer is empty or invalid');
+    }
+    
+    // Check if it starts with PDF magic bytes
+    const pdfMagic = pdfBuffer.subarray(0, 4).toString();
+    console.log('🔍 PDF magic bytes:', pdfMagic);
+    if (!pdfMagic.startsWith('%PDF')) {
+      console.error('❌ Generated buffer is not a valid PDF');
+      throw new Error('Generated content is not a valid PDF');
+    }
+
     // Send PDF
     console.log('📤 Sending PDF response...');
     res.status(200).send(pdfBuffer);
