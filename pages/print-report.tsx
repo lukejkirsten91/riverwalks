@@ -58,18 +58,18 @@ export default function PrintReport({ riverWalk, sites }: PrintReportProps) {
         x: distances,
         y: depths,
         type: 'scatter' as const,
-        mode: 'lines+markers',
+        mode: 'lines+markers' as const,
         name: 'River Bed',
         line: { color: 'brown', width: 3 },
         marker: { color: 'brown', size: 6 },
-        fill: 'tonexty',
+        fill: 'tonexty' as const,
         fillcolor: 'rgba(139, 69, 19, 0.3)',
       },
       {
         x: [0, site.river_width],
         y: [0, 0],
         type: 'scatter' as const,
-        mode: 'lines',
+        mode: 'lines' as const,
         name: 'Water Surface',
         line: { color: 'blue', width: 2 },
       },
@@ -90,7 +90,7 @@ export default function PrintReport({ riverWalk, sites }: PrintReportProps) {
 
     const shapes = [
       {
-        type: 'line',
+        type: 'line' as const,
         x0: 0,
         y0: 0.1,
         x1: site.river_width,
@@ -98,7 +98,7 @@ export default function PrintReport({ riverWalk, sites }: PrintReportProps) {
         line: { color: 'black', width: 2 },
       },
       {
-        type: 'line',
+        type: 'line' as const,
         x0: 0,
         y0: 0.2,
         x1: 0,
@@ -106,7 +106,7 @@ export default function PrintReport({ riverWalk, sites }: PrintReportProps) {
         line: { color: 'black', width: 2 },
       },
       {
-        type: 'line',
+        type: 'line' as const,
         x0: site.river_width,
         y0: 0.2,
         x1: site.river_width,
@@ -123,14 +123,14 @@ export default function PrintReport({ riverWalk, sites }: PrintReportProps) {
           font: { size: 16 },
         },
         xaxis: {
-          title: 'Distance from Bank (m)',
+          title: { text: 'Distance from Bank (m)' },
           range: [-0.5, site.river_width + 0.5],
           showgrid: true,
           gridcolor: 'lightgray',
           zeroline: false,
         },
         yaxis: {
-          title: 'Depth (m)',
+          title: { text: 'Depth (m)' },
           autorange: true,
           showgrid: true,
           gridcolor: 'lightgray',
