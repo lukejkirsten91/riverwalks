@@ -20,6 +20,26 @@ export default function PrintReport({ riverWalk, sites }: PrintReportProps) {
   console.log('🖨️ PrintReport component rendering...');
   console.log('📊 River walk:', riverWalk);
   console.log('📍 Sites count:', sites?.length || 0);
+
+  // Helper function to calculate average depth for a site
+  const calculateAverageDepth = (site: Site) => {
+    if (!site.measurement_points || site.measurement_points.length === 0) return 0;
+    const totalDepth = site.measurement_points.reduce((sum, point) => sum + point.depth, 0);
+    return totalDepth / site.measurement_points.length;
+  };
+
+  // Helper function to calculate max depth for a site
+  const calculateMaxDepth = (site: Site) => {
+    if (!site.measurement_points || site.measurement_points.length === 0) return 0;
+    return Math.max(...site.measurement_points.map(point => point.depth));
+  };
+
+  // Helper function to calculate average velocity for a site
+  const calculateAverageVelocity = (site: Site) => {
+    if (!site.velocity_data || !site.velocity_data.measurements || site.velocity_data.measurements.length === 0) return 0;
+    const totalVelocity = site.velocity_data.measurements.reduce((sum, measurement) => sum + measurement.velocity_ms, 0);
+    return totalVelocity / site.velocity_data.measurements.length;
+  };
   // Generate cross-section chart data for a site
   const generateCrossSectionData = (site: Site) => {
     if (!site.measurement_points || site.measurement_points.length === 0) {
@@ -189,8 +209,8 @@ export default function PrintReport({ riverWalk, sites }: PrintReportProps) {
           <div className="bg-green-50 p-4 rounded">
             <h3 className="font-semibold mb-2">Summary Statistics</h3>
             <p><strong>Total Sites:</strong> {sites.length}</p>
-            <p><strong>Average Width:</strong> {(sites.reduce((sum, site) => sum + site.river_width, 0) / sites.length).toFixed(2)}m</p>
-            <p><strong>Average Depth:</strong> {(sites.reduce((sum, site) => sum + site.average_depth, 0) / sites.length).toFixed(2)}m</p>
+            <p><strong>Average Width:</strong> {sites.length > 0 ? (sites.reduce((sum, site) => sum + site.river_width, 0) / sites.length).toFixed(2) : '0'}m</p>
+            <p><strong>Average Depth:</strong> {sites.length > 0 ? (sites.reduce((sum, site) => sum + calculateAverageDepth(site), 0) / sites.length).toFixed(2) : '0'}m</p>
           </div>
         </div>
 
@@ -213,9 +233,9 @@ export default function PrintReport({ riverWalk, sites }: PrintReportProps) {
                   <tr key={site.id}>
                     <td className="border border-gray-300 px-4 py-2 text-center">{site.site_number}</td>
                     <td className="border border-gray-300 px-4 py-2 text-center">{site.river_width}</td>
-                    <td className="border border-gray-300 px-4 py-2 text-center">{site.average_depth.toFixed(2)}</td>
-                    <td className="border border-gray-300 px-4 py-2 text-center">{site.max_depth.toFixed(2)}</td>
-                    <td className="border border-gray-300 px-4 py-2 text-center">{site.velocity.toFixed(2)}</td>
+                    <td className="border border-gray-300 px-4 py-2 text-center">{calculateAverageDepth(site).toFixed(2)}</td>
+                    <td className="border border-gray-300 px-4 py-2 text-center">{calculateMaxDepth(site).toFixed(2)}</td>
+                    <td className="border border-gray-300 px-4 py-2 text-center">{calculateAverageVelocity(site).toFixed(2)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -236,16 +256,16 @@ export default function PrintReport({ riverWalk, sites }: PrintReportProps) {
               <div className="bg-blue-50 p-4 rounded">
                 <h3 className="font-semibold mb-2">Measurements</h3>
                 <p><strong>Width:</strong> {site.river_width}m</p>
-                <p><strong>Average Depth:</strong> {site.average_depth.toFixed(2)}m</p>
-                <p><strong>Maximum Depth:</strong> {site.max_depth.toFixed(2)}m</p>
-                <p><strong>Velocity:</strong> {site.velocity.toFixed(2)}m/s</p>
+                <p><strong>Average Depth:</strong> {calculateAverageDepth(site).toFixed(2)}m</p>
+                <p><strong>Maximum Depth:</strong> {calculateMaxDepth(site).toFixed(2)}m</p>
+                <p><strong>Velocity:</strong> {calculateAverageVelocity(site).toFixed(2)}m/s</p>
               </div>
               
               <div className="bg-amber-50 p-4 rounded">
                 <h3 className="font-semibold mb-2">Calculated Values</h3>
-                <p><strong>Cross-sectional Area:</strong> {(site.river_width * site.average_depth).toFixed(2)}m²</p>
-                <p><strong>Discharge:</strong> {(site.river_width * site.average_depth * site.velocity).toFixed(2)}m³/s</p>
-                <p><strong>Wetted Perimeter:</strong> {(site.river_width + 2 * site.average_depth).toFixed(2)}m</p>
+                <p><strong>Cross-sectional Area:</strong> {(site.river_width * calculateAverageDepth(site)).toFixed(2)}m²</p>
+                <p><strong>Discharge:</strong> {(site.river_width * calculateAverageDepth(site) * calculateAverageVelocity(site)).toFixed(2)}m³/s</p>
+                <p><strong>Wetted Perimeter:</strong> {(site.river_width + 2 * calculateAverageDepth(site)).toFixed(2)}m</p>
               </div>
             </div>
 
