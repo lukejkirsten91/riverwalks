@@ -241,8 +241,23 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
       };
       console.log('📦 Request payload:', requestData);
       
-      // First test if the API is accessible
-      console.log('🧪 Testing API accessibility...');
+      // First test basic API accessibility
+      console.log('🧪 Testing basic API accessibility...');
+      try {
+        const helloResponse = await fetch('/api/hello');
+        console.log('📞 Hello API status:', helloResponse.status);
+        if (helloResponse.ok) {
+          const helloData = await helloResponse.json();
+          console.log('✅ Basic API accessible:', helloData);
+        } else {
+          console.log('❌ Basic API failed with status:', helloResponse.status);
+        }
+      } catch (helloError) {
+        console.log('❌ Basic API error:', helloError);
+      }
+
+      // Test PDF test endpoint
+      console.log('🧪 Testing PDF API accessibility...');
       try {
         const testResponse = await fetch('/api/test-pdf', {
           method: 'POST',
@@ -252,14 +267,17 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
           body: JSON.stringify({ riverWalkId: riverWalk.id }),
         });
         
+        console.log('📞 Test PDF API status:', testResponse.status);
         if (testResponse.ok) {
           const testData = await testResponse.json();
-          console.log('✅ API test successful:', testData);
+          console.log('✅ PDF API test successful:', testData);
         } else {
-          console.log('⚠️ API test failed, but continuing...');
+          console.log('⚠️ PDF API test failed with status:', testResponse.status);
+          const errorText = await testResponse.text();
+          console.log('📄 PDF API error response:', errorText.substring(0, 200));
         }
       } catch (testError) {
-        console.log('⚠️ API test error, but continuing:', testError);
+        console.log('⚠️ PDF API test error:', testError);
       }
       
       console.log('🌐 Making API request to /api/export-pdf...');
@@ -292,6 +310,11 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
           const errorText = await response.text();
           console.log('📄 Error response text:', errorText.substring(0, 500));
           throw new Error(`Server error (${response.status}): Check console for details`);
+        }
+        
+        // If it's a 405 error, provide specific guidance
+        if (response.status === 405) {
+          throw new Error('PDF generation service is temporarily unavailable. The API endpoint may still be deploying. Please try again in a few minutes.');
         }
         
         throw new Error(errorData.error || `Server error (${response.status})`);

@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { chromium } from 'playwright-core';
-import chromiumBinary from '@sparticuz/chromium';
+const chromiumBinary = require('@sparticuz/chromium');
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   console.log('🚀 PDF Export API called');
