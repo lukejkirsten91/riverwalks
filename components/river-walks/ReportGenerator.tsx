@@ -414,7 +414,7 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
     }
   };
 
-  // Export report as PDF using improved client-side generation
+  // Export report as PDF using server-side Puppeteer with client-side fallback
   const exportToPDF = async () => {
     console.log('🎯 Starting PDF export process...');
     console.log('📊 River walk data:', { id: riverWalk.id, name: riverWalk.name });
@@ -422,37 +422,110 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
     setIsExporting(true);
 
     try {
-      // Ensure we have the required libraries
-      if (typeof window === 'undefined') {
-        throw new Error('PDF generation requires a browser environment');
-      }
+      // Try server-side Puppeteer generation first
+      console.log('🌐 Attempting server-side PDF generation with Puppeteer...');
+      await generateServerSidePDF();
+      console.log('🎉 Server-side PDF export completed successfully!');
+    } catch (serverError) {
+      console.error('❌ Server-side PDF generation failed:', serverError);
+      console.log('🔄 Falling back to client-side PDF generation...');
       
-      // Check if jsPDF is available (using imported version)
-      console.log('Using imported jsPDF library');
-      
-      await generateClientSidePDF();
-      console.log('🎉 PDF export completed successfully!');
-    } catch (error) {
-      console.error('❌ PDF generation failed:', error);
-      
-      // More specific error handling
-      let userMessage = 'Failed to generate PDF. Please try again.';
-      if (error instanceof Error) {
-        if (error.message.includes('canvas')) {
-          userMessage = 'Failed to capture the report. Please ensure all content has loaded and try again.';
-        } else if (error.message.includes('jsPDF')) {
-          userMessage = 'PDF library error. Please refresh the page and try again.';
-        } else if (error.message.includes('timeout')) {
-          userMessage = 'PDF generation timed out. Please try again with a shorter report.';
-        } else {
-          userMessage = `PDF generation error: ${error.message}`;
+      try {
+        // Fallback to client-side generation
+        await generateClientSidePDF();
+        console.log('🎉 Client-side PDF fallback completed successfully!');
+      } catch (clientError) {
+        console.error('❌ Client-side PDF generation also failed:', clientError);
+        
+        // More specific error handling
+        let userMessage = 'Failed to generate PDF with both methods. Please try again.';
+        if (clientError instanceof Error) {
+          if (clientError.message.includes('canvas')) {
+            userMessage = 'Failed to capture the report. Please ensure all content has loaded and try again.';
+          } else if (clientError.message.includes('jsPDF')) {
+            userMessage = 'PDF library error. Please refresh the page and try again.';
+          } else if (clientError.message.includes('timeout')) {
+            userMessage = 'PDF generation timed out. Please try again with a shorter report.';
+          } else {
+            userMessage = `PDF generation error: ${clientError.message}`;
+          }
         }
+        
+        alert(userMessage);
       }
-      
-      alert(userMessage);
     } finally {
       setIsExporting(false);
     }
+  };
+
+  // Server-side PDF generation using Puppeteer
+  const generateServerSidePDF = async () => {
+    const fileName = `${riverWalk.name.replace(/[^a-z0-9\s]/gi, '_').replace(/\s+/g, '_')}_report.pdf`;
+    console.log('📎 Generated filename:', fileName);
+    
+    const requestData = {
+      riverWalkId: riverWalk.id,
+      fileName: fileName,
+    };
+    console.log('📦 Request payload:', requestData);
+    
+    console.log('🌐 Making API request to /api/generate-pdf-puppeteer...');
+    const startTime = Date.now();
+    
+    const response = await fetch('/api/generate-pdf-puppeteer', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(requestData),
+    });
+    
+    const requestTime = Date.now() - startTime;
+    console.log(`⏱️ API request completed in ${requestTime}ms`);
+    console.log('📋 Response status:', response.status);
+
+    if (!response.ok) {
+      console.log('❌ Response not OK, response status:', response.status);
+      
+      // Try to get error details
+      let errorData;
+      try {
+        errorData = await response.json();
+        console.log('🔍 Error data:', errorData);
+      } catch (parseError) {
+        console.log('❌ Failed to parse error response:', parseError);
+        const errorText = await response.text();
+        console.log('📄 Error response text:', errorText.substring(0, 500));
+        throw new Error(`Server error (${response.status}): Check console for details`);
+      }
+      
+      throw new Error(errorData.error || `Server error (${response.status})`);
+    }
+
+    console.log('✅ Response OK, creating blob...');
+    // Create blob from response
+    const blob = await response.blob();
+    console.log('📊 Blob created, size:', blob.size, 'bytes');
+    console.log('📊 Blob type:', blob.type);
+    
+    // Create download link
+    console.log('🔗 Creating download link...');
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = fileName;
+    link.style.display = 'none';
+    
+    console.log('📎 Triggering download...');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    // Clean up
+    console.log('🧹 Cleaning up blob URL...');
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    
+    console.log('🎉 Server-side PDF generated and downloaded successfully!');
   };
 
   // Excel export function
