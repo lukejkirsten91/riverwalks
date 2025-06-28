@@ -241,6 +241,27 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
       };
       console.log('📦 Request payload:', requestData);
       
+      // First test if the API is accessible
+      console.log('🧪 Testing API accessibility...');
+      try {
+        const testResponse = await fetch('/api/test-pdf', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ riverWalkId: riverWalk.id }),
+        });
+        
+        if (testResponse.ok) {
+          const testData = await testResponse.json();
+          console.log('✅ API test successful:', testData);
+        } else {
+          console.log('⚠️ API test failed, but continuing...');
+        }
+      } catch (testError) {
+        console.log('⚠️ API test error, but continuing:', testError);
+      }
+      
       console.log('🌐 Making API request to /api/export-pdf...');
       const startTime = Date.now();
       
@@ -258,10 +279,22 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
       console.log('📋 Response headers:', Object.fromEntries(response.headers.entries()));
 
       if (!response.ok) {
-        console.log('❌ Response not OK, attempting to parse error...');
-        const errorData = await response.json();
-        console.log('🔍 Error data:', errorData);
-        throw new Error(errorData.error || 'Failed to generate PDF');
+        console.log('❌ Response not OK, response status:', response.status);
+        
+        // Try to get error details
+        let errorData;
+        try {
+          errorData = await response.json();
+          console.log('🔍 Error data:', errorData);
+        } catch (parseError) {
+          console.log('❌ Failed to parse error response:', parseError);
+          // If we can't parse the response, it might be HTML error page
+          const errorText = await response.text();
+          console.log('📄 Error response text:', errorText.substring(0, 500));
+          throw new Error(`Server error (${response.status}): Check console for details`);
+        }
+        
+        throw new Error(errorData.error || `Server error (${response.status})`);
       }
 
       console.log('✅ Response OK, creating blob...');

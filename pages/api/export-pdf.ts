@@ -5,6 +5,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   console.log('🚀 PDF Export API called');
   console.log('📝 Request method:', req.method);
   console.log('📦 Request body:', req.body);
+  console.log('🌍 Environment:', process.env.NODE_ENV);
+  console.log('🏗️ Vercel region:', process.env.VERCEL_REGION);
+
+  // Handle OPTIONS for CORS
+  if (req.method === 'OPTIONS') {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    return res.status(200).end();
+  }
 
   if (req.method !== 'POST') {
     console.log('❌ Invalid method:', req.method);
@@ -24,6 +34,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   
   try {
     console.log('🌐 Starting browser launch...');
+    
+    // Check if chromium is available
+    try {
+      console.log('🔍 Checking Playwright chromium availability...');
+      const browserType = chromium;
+      console.log('✅ Playwright chromium imported successfully');
+    } catch (importError) {
+      console.error('❌ Failed to import Playwright chromium:', importError);
+      throw new Error('Playwright chromium not available in this environment');
+    }
+    
     // Launch browser
     browser = await chromium.launch({
       headless: true,
@@ -35,6 +56,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         '--no-first-run',
         '--no-zygote',
         '--single-process',
+        '--disable-web-security',
+        '--disable-features=VizDisplayCompositor',
       ],
     });
     console.log('✅ Browser launched successfully');
