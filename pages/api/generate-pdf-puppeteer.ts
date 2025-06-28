@@ -92,13 +92,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // Wait for content to fully render, especially charts
     console.log('⏳ Waiting for charts and content to render...');
-    await page.waitForTimeout(5000);
+    await new Promise(resolve => setTimeout(resolve, 5000));
 
     // Wait for any Plotly charts specifically
     try {
       await page.waitForSelector('.plotly-graph-div', { timeout: 10000 });
       console.log('📊 Plotly charts detected, waiting for full render...');
-      await page.waitForTimeout(3000);
+      await new Promise(resolve => setTimeout(resolve, 3000));
     } catch (e) {
       console.log('ℹ️ No Plotly charts found or timeout reached');
     }
