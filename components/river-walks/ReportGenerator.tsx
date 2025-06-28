@@ -384,10 +384,8 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
         throw new Error('PDF generation requires a browser environment');
       }
       
-      // Check if jsPDF is available
-      if (!window.jsPDF) {
-        console.log('jsPDF not found on window, using imported version');
-      }
+      // Check if jsPDF is available (using imported version)
+      console.log('Using imported jsPDF library');
       
       await generateClientSidePDF();
       console.log('🎉 PDF export completed successfully!');
