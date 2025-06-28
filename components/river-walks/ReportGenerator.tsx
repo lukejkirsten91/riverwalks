@@ -1,8 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Download, FileText, X, FileSpreadsheet } from 'lucide-react';
 import dynamic from 'next/dynamic';
-import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
 import * as XLSX from 'xlsx';
 import { formatDate } from '../../lib/utils';
 import type { RiverWalk, Site, MeasurementPoint } from '../../types';
@@ -23,8 +21,6 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
   const [isExporting, setIsExporting] = useState(false);
   const reportRef = useRef<HTMLDivElement>(null);
   
-  // Track if we're in PDF generation mode to adjust chart settings
-  const [isPDFMode, setIsPDFMode] = useState(false);
   
   // Detect if user is on mobile device
   const [isMobile, setIsMobile] = useState(false);
@@ -40,39 +36,19 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  // Get responsive chart layout based on context
+  // Get responsive chart layout for web display
   const getChartLayout = (baseLayout: any, containerWidth?: number) => {
-    if (isPDFMode) {
-      // PDF mode: fixed dimensions for consistent output
-      return {
-        ...baseLayout,
-        width: 650,
-        height: 400,
-        autosize: false,
-        responsive: false,
-        margin: { l: 50, r: 30, t: 50, b: 50 },
-      };
-    } else {
-      // Web mode: responsive design
-      return {
-        ...baseLayout,
-        autosize: true,
-        responsive: true,
-        margin: { l: 60, r: 40, t: 60, b: 60 },
-      };
-    }
+    return {
+      ...baseLayout,
+      autosize: true,
+      responsive: true,
+      margin: { l: 60, r: 40, t: 60, b: 60 },
+    };
   };
   
-  // Get responsive chart config based on context  
+  // Get responsive chart config for web display
   const getChartConfig = () => {
-    if (isPDFMode) {
-      return {
-        displayModeBar: false,
-        staticPlot: true,
-        responsive: false,
-        scrollZoom: false,
-      };
-    } else if (isMobile) {
+    if (isMobile) {
       // Mobile: disable all interactions to prevent scroll interference
       return {
         displayModeBar: false,
@@ -247,287 +223,76 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
     };
   };
 
-  // Enhanced PDF generation with intelligent component detection
-  const generateSmartPDF = async (
-    element: HTMLElement, 
-    pdf: jsPDF, 
-    contentWidth: number, 
-    contentHeight: number, 
-    margin: number,
-    isFirstPage: boolean = false
-  ) => {
-    console.log('Generating PDF with smart component detection...');
-    
-    // Ensure we're in PDF mode for chart sizing
-    setIsPDFMode(true);
-    
-    // Force desktop layout for PDF generation
-    const originalStyle = element.style.cssText;
-    element.style.cssText += `
-      width: 800px !important;
-      max-width: none !important;
-      transform: scale(1) !important;
-      font-size: 14px !important;
-      line-height: 1.5 !important;
-    `;
-    
-    // Wait for style changes to take effect
-    await new Promise(resolve => setTimeout(resolve, 200));
-    
-    // Find all protected components (charts, tables, etc.) - AFTER style changes
-    // Treat Plotly charts as atomic units by selecting only outer containers
-    const protectedElements = element.querySelectorAll(
-      '.plotly-graph-div, .plotly-graph-div *, table, .pdf-component, .bg-blue-50, .bg-green-50, .bg-amber-50, .overflow-x-auto'
-    );
-    const protectedRegions: Array<{top: number, bottom: number, element: Element}> = [];
-    
-    // Get the root element's bounding rect for coordinate reference
-    const elementRect = element.getBoundingClientRect();
-    
-    protectedElements.forEach(el => {
-      // Ignore nested matches - only take the outer Plotly container
-      if (el.closest('.plotly-graph-div') !== el && !el.classList.contains('plotly-graph-div')) {
-        return;
-      }
-      
-      const rect = el.getBoundingClientRect();
-      // Calculate position relative to the root element (canvas coordinate system)
-      const elementTop = rect.top - elementRect.top + element.scrollTop;
-      const elementBottom = elementTop + rect.height;
-      protectedRegions.push({ top: elementTop, bottom: elementBottom, element: el });
-    });
-    
-    // Sort regions by top position
-    protectedRegions.sort((a, b) => a.top - b.top);
-    
-    // Generate canvas
-    const canvas = await html2canvas(element, {
-      scale: 2,
-      useCORS: true,
-      allowTaint: true,
-      width: 800,
-      height: element.scrollHeight,
-      backgroundColor: '#ffffff',
-      logging: false,
-      scrollX: 0,
-      scrollY: 0,
-    });
-    
-    // Restore original styles
-    element.style.cssText = originalStyle;
-    
-    // Allow a moment for style restoration before continuing
-    await new Promise(resolve => setTimeout(resolve, 100));
-    
-    const imgWidth = contentWidth;
-    const imgHeight = (canvas.height * contentWidth) / canvas.width;
-    const pixelsPerMM = canvas.height / imgHeight;
-    
-    console.log(`Content dimensions: ${imgWidth}mm x ${imgHeight}mm`);
-    console.log(`Found ${protectedRegions.length} protected components`);
-    
-    // If content fits on one page, add it directly
-    if (imgHeight <= contentHeight) {
-      console.log('Content fits on single page');
-      if (!isFirstPage) {
-        pdf.addPage();
-      }
-      const imgData = canvas.toDataURL('image/png', 0.9);
-      pdf.addImage(imgData, 'PNG', margin, margin, imgWidth, imgHeight);
-      return;
-    }
-    
-    // Smart pagination with component protection
-    console.log('Content requires multiple pages - using smart pagination');
-    
-    const pageHeightPx = contentHeight * pixelsPerMM;
-    let currentY = 0;
-    let isFirstPageOfContent = isFirstPage;
-    
-    while (currentY < canvas.height) {
-      let targetY = currentY + pageHeightPx;
-      const remainingHeight = canvas.height - currentY;
-      
-      // Hard-limit: if less than 50 mm (≈ 142 px @ 2×) remains, push everything
-      // Increased from 40mm to 50mm for stronger protection
-      const minTail = 50 /* mm */ * pixelsPerMM;
-      if (canvas.height - currentY > pageHeightPx && pageHeightPx - (targetY - currentY) < minTail) {
-        targetY = currentY + pageHeightPx - minTail;
-        console.log(`Applied hard break: insufficient tail space (< 50mm)`);
-      }
-      
-      // If this is near the end, just take the rest
-      if (remainingHeight <= pageHeightPx * 1.1) {
-        targetY = canvas.height;
-      } else {
-        // Check if we're cutting through a protected component
-        for (const region of protectedRegions) {
-          const componentHeight = region.bottom - region.top;
-          
-          // 1. Are we about to cut through it? (original rule)
-          if (region.top < targetY && region.bottom > targetY) {
-            // If the component is small enough to fit on the next page
-            if (componentHeight < pageHeightPx * 0.8) { // Reduced from 0.9 to 0.8 for stronger protection
-              // Move the break to just before this component with more padding
-              targetY = region.top - (15 * pixelsPerMM); // Increased from 10mm to 15mm padding
-              console.log(`Adjusted page break to protect component at ${region.top}px`);
-            } else {
-              // Component is too large, try to break at a better spot within it
-              // Look for natural break points like section boundaries
-              const breakPoint = findNaturalBreakPoint(region.element, targetY - region.top);
-              if (breakPoint > 0) {
-                targetY = region.top + breakPoint;
-                console.log(`Found natural break point within large component`);
-              }
-            }
-            break;
-          }
-          
-          // 2. Will the whole component fit on this page?
-          const marginAbove = region.top - currentY;          // free space before it
-          if (
-            marginAbove >= 0 &&                               // component is on this page
-            region.top >= currentY &&                         // component starts after current position
-            marginAbove + componentHeight > pageHeightPx * 0.85  // but won't fit in 85% of remaining space (more conservative)
-          ) {
-            targetY = region.top - (15 * pixelsPerMM);        // move the break above it with more padding
-            console.log(`Moving component starting at ${region.top}px to next page - won't fit in remaining space`);
-            break;
-          }
-        }
-      }
-      
-      const chunkHeight = Math.min(targetY - currentY, remainingHeight);
-      const chunkHeightMM = chunkHeight / pixelsPerMM;
-      
-      console.log(`Creating page chunk: ${currentY}px to ${currentY + chunkHeight}px (${chunkHeightMM}mm)`);
-      
-      // Create canvas for this chunk
-      const chunkCanvas = document.createElement('canvas');
-      chunkCanvas.width = canvas.width;
-      chunkCanvas.height = chunkHeight;
-      const chunkCtx = chunkCanvas.getContext('2d');
-      
-      if (chunkCtx) {
-        // Fill with white background
-        chunkCtx.fillStyle = '#ffffff';
-        chunkCtx.fillRect(0, 0, canvas.width, chunkHeight);
-        
-        // Draw the chunk content
-        chunkCtx.drawImage(
-          canvas,
-          0, currentY, canvas.width, chunkHeight,
-          0, 0, canvas.width, chunkHeight
-        );
-        
-        const chunkImgData = chunkCanvas.toDataURL('image/png', 0.9);
-        
-        if (!isFirstPageOfContent) {
-          pdf.addPage();
-        }
-        
-        pdf.addImage(chunkImgData, 'PNG', margin, margin, imgWidth, chunkHeightMM);
-        console.log(`Added page chunk with ${chunkHeightMM}mm height`);
-      }
-      
-      currentY += chunkHeight;
-      isFirstPageOfContent = false;
-    }
-  };
-  
-  // Helper function to find natural break points within large components
-  const findNaturalBreakPoint = (element: Element, targetOffset: number): number => {
-    // Look for section boundaries, headers, or spacing elements
-    const breakCandidates = element.querySelectorAll('h3, h4, h5, .mb-4, .mb-6, .mb-8, .border-b, .border-t');
-    let bestBreak = 0;
-    
-    breakCandidates.forEach(candidate => {
-      const offset = (candidate as HTMLElement).offsetTop - element.scrollTop;
-      // If this break point is before our target and better than current best
-      if (offset < targetOffset && offset > bestBreak) {
-        bestBreak = offset;
-      }
-    });
-    
-    return bestBreak;
-  };
 
-  // Export report as PDF
+  // Export report as PDF using server-side generation
   const exportToPDF = async () => {
-    if (!reportRef.current) return;
-
+    console.log('🎯 Starting PDF export process...');
+    console.log('📊 River walk data:', { id: riverWalk.id, name: riverWalk.name });
+    
     setIsExporting(true);
-    setIsPDFMode(true); // Enable PDF mode for chart sizing
 
     try {
-      // Wait for charts to render fully
-      await new Promise(resolve => setTimeout(resolve, 3000));
-
-      // Always use desktop-style layout for PDF generation
-      const isMobile = /Mobi|Android/i.test(navigator.userAgent);
-      
-      // Create PDF with consistent settings
-      const pdf = new jsPDF({
-        orientation: 'portrait',
-        unit: 'mm',
-        format: 'a4',
-      });
-
-      const pageWidth = 210; // A4 width in mm
-      const pageHeight = 297; // A4 height in mm
-      const margin = 15;
-      const contentWidth = pageWidth - (2 * margin);
-      const contentHeight = pageHeight - (2 * margin);
-
-      console.log(`PDF settings: ${pageWidth}x${pageHeight}mm, content: ${contentWidth}x${contentHeight}mm`);
-
-      // Generate summary section using CSS page-break approach
-      const headerElement = reportRef.current.querySelector('[data-summary-section]') as HTMLElement;
-      if (headerElement) {
-        console.log('Processing summary section with CSS page-breaks...');
-        await generateSmartPDF(headerElement, pdf, contentWidth, contentHeight, margin, true);
-      }
-
-      // Process each site section with CSS page-break approach
-      const siteElements = reportRef.current.querySelectorAll('[data-site-section]');
-      console.log(`Found ${siteElements.length} site sections`);
-      
-      for (let i = 0; i < siteElements.length; i++) {
-        const siteElement = siteElements[i] as HTMLElement;
-        console.log(`Processing site ${i + 1}/${siteElements.length} with CSS page-breaks`);
-        
-        await generateSmartPDF(siteElement, pdf, contentWidth, contentHeight, margin, false);
-      }
-
-      // Save the PDF with appropriate method for device
       const fileName = `${riverWalk.name.replace(/[^a-z0-9\s]/gi, '_').replace(/\s+/g, '_')}_report.pdf`;
+      console.log('📎 Generated filename:', fileName);
       
-      if (isMobile) {
-        // Mobile-specific download handling
-        const pdfBlob = pdf.output('blob');
-        const url = URL.createObjectURL(pdfBlob);
-        
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = fileName;
-        link.style.display = 'none';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        
-        // Clean up
-        setTimeout(() => URL.revokeObjectURL(url), 1000);
-      } else {
-        pdf.save(fileName);
+      const requestData = {
+        riverWalkId: riverWalk.id,
+        fileName: fileName,
+      };
+      console.log('📦 Request payload:', requestData);
+      
+      console.log('🌐 Making API request to /api/export-pdf...');
+      const startTime = Date.now();
+      
+      const response = await fetch('/api/export-pdf', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestData),
+      });
+      
+      const requestTime = Date.now() - startTime;
+      console.log(`⏱️ API request completed in ${requestTime}ms`);
+      console.log('📋 Response status:', response.status);
+      console.log('📋 Response headers:', Object.fromEntries(response.headers.entries()));
+
+      if (!response.ok) {
+        console.log('❌ Response not OK, attempting to parse error...');
+        const errorData = await response.json();
+        console.log('🔍 Error data:', errorData);
+        throw new Error(errorData.error || 'Failed to generate PDF');
       }
+
+      console.log('✅ Response OK, creating blob...');
+      // Create blob from response
+      const blob = await response.blob();
+      console.log('📊 Blob created, size:', blob.size, 'bytes');
+      console.log('📊 Blob type:', blob.type);
       
-      console.log('PDF generation completed successfully');
+      // Create download link
+      console.log('🔗 Creating download link...');
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = fileName;
+      link.style.display = 'none';
+      
+      console.log('📎 Triggering download...');
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      // Clean up
+      console.log('🧹 Cleaning up blob URL...');
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      
+      console.log('🎉 PDF generated and downloaded successfully!');
     } catch (error) {
       console.error('Error generating PDF:', error);
-      alert('Error generating PDF. Please try again.');
+      alert(`Error generating PDF: ${error instanceof Error ? error.message : 'Please try again.'}`);
     } finally {
       setIsExporting(false);
-      setIsPDFMode(false); // Restore web mode
     }
   };
 
@@ -805,7 +570,7 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
         </div>
 
         {/* Report content */}
-        <div ref={reportRef} className={`p-4 sm:p-6 lg:p-8 bg-white ${isPDFMode ? 'pdf-mode' : ''}`}>
+        <div ref={reportRef} className="p-4 sm:p-6 lg:p-8 bg-white">
           <style>{`
             /* Enhanced Page Break Controls - Based on print/PDF best practices */
             @media print {
@@ -1600,7 +1365,7 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
                               margin: '0 auto',
                               display: 'block'
                             }}
-                            useResizeHandler={!isPDFMode && !isMobile}
+                            useResizeHandler={!isMobile}
                             className={`responsive-chart mx-auto ${isMobile ? 'touch-none' : ''}`}
                           />
                           </div>
@@ -1707,7 +1472,7 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
                               maxWidth: '100%',       /* Prevent overflow */
                               pointerEvents: isMobile ? 'none' : 'auto' /* Disable interactions on mobile */
                             }}
-                            useResizeHandler={!isPDFMode}  /* Enable resize for web, disable for PDF */
+                            useResizeHandler={true}
                             className="responsive-chart"
                           />
                         </div>
