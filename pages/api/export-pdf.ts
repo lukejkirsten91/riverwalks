@@ -1,5 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { chromium } from 'playwright-chromium';
+import { chromium } from 'playwright-core';
+import chromiumBinary from '@sparticuz/chromium';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   console.log('🚀 PDF Export API called');
@@ -35,30 +36,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     console.log('🌐 Starting browser launch...');
     
-    // Check if chromium is available
-    try {
-      console.log('🔍 Checking Playwright chromium availability...');
-      const browserType = chromium;
-      console.log('✅ Playwright chromium imported successfully');
-    } catch (importError) {
-      console.error('❌ Failed to import Playwright chromium:', importError);
-      throw new Error('Playwright chromium not available in this environment');
-    }
+    // Get optimized Chromium executable path for serverless
+    console.log('🔍 Getting serverless Chromium executable path...');
+    const executablePath = await chromiumBinary.executablePath();
+    console.log('📍 Chromium executable path:', executablePath);
     
-    // Launch browser
+    // Launch browser with optimized settings for Vercel
     browser = await chromium.launch({
+      args: chromiumBinary.args,
+      executablePath: executablePath,
       headless: true,
-      args: [
-        '--no-sandbox',
-        '--disable-setuid-sandbox',
-        '--disable-dev-shm-usage',
-        '--disable-gpu',
-        '--no-first-run',
-        '--no-zygote',
-        '--single-process',
-        '--disable-web-security',
-        '--disable-features=VizDisplayCompositor',
-      ],
     });
     console.log('✅ Browser launched successfully');
 
@@ -69,6 +56,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const page = await context.newPage();
     console.log('📄 New page created');
+
+    // Optimize memory usage by blocking heavy resources
+    console.log('🚫 Setting up resource blocking for optimization...');
+    await page.route('**/*', (route) => {
+      const resourceType = route.request().resourceType();
+      if (['image', 'stylesheet', 'font'].includes(resourceType)) {
+        console.log(`🚫 Blocking ${resourceType}: ${route.request().url()}`);
+        route.abort();
+      } else {
+        route.continue();
+      }
+    });
 
     // Navigate to the print-friendly page
     const baseUrl = process.env.NEXTAUTH_URL || `http://localhost:3000`;
