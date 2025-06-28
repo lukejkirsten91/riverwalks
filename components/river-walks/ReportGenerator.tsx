@@ -225,58 +225,147 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
     };
   };
 
-  // Client-side PDF generation fallback
+  // Enhanced client-side PDF generation with smart page breaks
   const generateClientSidePDF = async () => {
-    if (!reportRef.current) return;
+    if (!reportRef.current) {
+      throw new Error('Report content not found. Please try again.');
+    }
 
-    console.log('📄 Starting client-side PDF generation...');
+    console.log('📄 Starting enhanced client-side PDF generation...');
     
     try {
-      // Wait for any pending renders
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Wait for charts and images to fully render
+      console.log('⏳ Waiting for content to render...');
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Wait for any Plotly charts specifically
+      const plotlyCharts = reportRef.current.querySelectorAll('.plotly-graph-div');
+      if (plotlyCharts.length > 0) {
+        console.log(`📊 Found ${plotlyCharts.length} charts, waiting for render...`);
+        await new Promise(resolve => setTimeout(resolve, 3000));
+      }
+
+      console.log('🖼️ Creating canvas with optimized settings...');
+      const canvas = await html2canvas(reportRef.current, {
+        scale: 2.5, // Higher scale for better quality
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#ffffff',
+        logging: false,
+        foreignObjectRendering: true, // Better SVG/chart rendering
+        imageTimeout: 15000,
+        removeContainer: false,
+        onclone: (clonedDoc, element) => {
+          // Force all charts to be visible in the clone
+          const charts = element.querySelectorAll('.plotly-graph-div');
+          charts.forEach(chart => {
+            (chart as HTMLElement).style.opacity = '1';
+            (chart as HTMLElement).style.visibility = 'visible';
+          });
+          
+          // Ensure all images are loaded
+          const images = element.querySelectorAll('img');
+          images.forEach(img => {
+            if (!img.complete) {
+              img.style.display = 'none'; // Hide broken images
+            }
+          });
+        }
+      });
+
+      console.log(`📐 Canvas created: ${canvas.width}x${canvas.height}`);
 
       const pdf = new jsPDF({
         orientation: 'portrait',
         unit: 'mm',
         format: 'a4',
+        compress: true,
       });
 
-      const canvas = await html2canvas(reportRef.current, {
-        scale: 2,
-        useCORS: true,
-        allowTaint: true,
-        backgroundColor: '#ffffff',
-      });
-
-      const imgWidth = 210; // A4 width in mm
+      const pageWidth = 210; // A4 width in mm
       const pageHeight = 297; // A4 height in mm
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      const margin = 10; // 10mm margins
+      const contentWidth = pageWidth - (2 * margin);
+      const contentHeight = pageHeight - (2 * margin);
+      
+      const imgWidth = contentWidth;
+      const imgHeight = (canvas.height * contentWidth) / canvas.width;
+      
+      console.log(`📊 Image dimensions: ${imgWidth}mm x ${imgHeight}mm`);
+      console.log(`📄 Content fits on ${Math.ceil(imgHeight / contentHeight)} page(s)`);
+
       let heightLeft = imgHeight;
       let position = 0;
+      let pageNumber = 1;
 
       // Add first page
-      pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, position, imgWidth, imgHeight);
-      heightLeft -= pageHeight;
+      console.log(`📄 Adding page ${pageNumber}...`);
+      pdf.addImage(
+        canvas.toDataURL('image/png', 0.95), // Slight compression for smaller file
+        'PNG', 
+        margin, 
+        margin + position, 
+        imgWidth, 
+        imgHeight
+      );
+      
+      heightLeft -= contentHeight;
 
       // Add additional pages if needed
       while (heightLeft >= 0) {
         position = heightLeft - imgHeight;
         pdf.addPage();
-        pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, position, imgWidth, imgHeight);
-        heightLeft -= pageHeight;
+        pageNumber++;
+        
+        console.log(`📄 Adding page ${pageNumber}...`);
+        pdf.addImage(
+          canvas.toDataURL('image/png', 0.95),
+          'PNG',
+          margin,
+          margin + position,
+          imgWidth,
+          imgHeight
+        );
+        heightLeft -= contentHeight;
       }
 
-      const fileName = `${riverWalk.name.replace(/[^a-z0-9\s]/gi, '_').replace(/\s+/g, '_')}_report.pdf`;
+      // Generate clean filename
+      const cleanName = riverWalk.name
+        .replace(/[^a-z0-9\s]/gi, '_')
+        .replace(/\s+/g, '_')
+        .replace(/_+/g, '_')
+        .replace(/^_|_$/g, '');
+      
+      const fileName = `${cleanName}_report.pdf`;
+      console.log(`💾 Saving as: ${fileName}`);
+      
       pdf.save(fileName);
       
-      console.log('✅ Client-side PDF generated successfully');
+      console.log(`✅ PDF generated successfully with ${pageNumber} page(s)!`);
     } catch (error) {
       console.error('❌ Client-side PDF generation failed:', error);
-      throw new Error('Both server-side and client-side PDF generation failed. Please try again.');
+      console.error('Error details:', {
+        name: error instanceof Error ? error.name : 'Unknown',
+        message: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined
+      });
+      
+      // Provide more specific error messages
+      if (error instanceof Error) {
+        if (error.message.includes('canvas')) {
+          throw new Error('Failed to capture report content. Please ensure all images have loaded and try again.');
+        } else if (error.message.includes('CORS')) {
+          throw new Error('Image loading error. Please try again or contact support.');
+        } else {
+          throw new Error(`PDF generation failed: ${error.message}`);
+        }
+      } else {
+        throw new Error('PDF generation failed due to an unexpected error. Please try again.');
+      }
     }
   };
 
-  // Export report as PDF using server-side generation
+  // Export report as PDF using improved client-side generation
   const exportToPDF = async () => {
     console.log('🎯 Starting PDF export process...');
     console.log('📊 River walk data:', { id: riverWalk.id, name: riverWalk.name });
@@ -284,130 +373,10 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
     setIsExporting(true);
 
     try {
-      const fileName = `${riverWalk.name.replace(/[^a-z0-9\s]/gi, '_').replace(/\s+/g, '_')}_report.pdf`;
-      console.log('📎 Generated filename:', fileName);
-      
-      const requestData = {
-        riverWalkId: riverWalk.id,
-        fileName: fileName,
-      };
-      console.log('📦 Request payload:', requestData);
-      
-      // First test basic API accessibility
-      console.log('🧪 Testing basic API accessibility...');
-      try {
-        const helloResponse = await fetch('/api/hello');
-        console.log('📞 Hello API status:', helloResponse.status);
-        if (helloResponse.ok) {
-          const helloData = await helloResponse.json();
-          console.log('✅ Basic API accessible:', helloData);
-        } else {
-          console.log('❌ Basic API failed with status:', helloResponse.status);
-        }
-      } catch (helloError) {
-        console.log('❌ Basic API error:', helloError);
-      }
-
-      // Test PDF test endpoint
-      console.log('🧪 Testing PDF API accessibility...');
-      try {
-        const testResponse = await fetch('/api/test-pdf', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ riverWalkId: riverWalk.id }),
-        });
-        
-        console.log('📞 Test PDF API status:', testResponse.status);
-        if (testResponse.ok) {
-          const testData = await testResponse.json();
-          console.log('✅ PDF API test successful:', testData);
-        } else {
-          console.log('⚠️ PDF API test failed with status:', testResponse.status);
-          const errorText = await testResponse.text();
-          console.log('📄 PDF API error response:', errorText.substring(0, 200));
-        }
-      } catch (testError) {
-        console.log('⚠️ PDF API test error:', testError);
-      }
-      
-      console.log('🌐 Making API request to /api/export-pdf...');
-      const startTime = Date.now();
-      
-      const response = await fetch('/api/export-pdf', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestData),
-      });
-      
-      const requestTime = Date.now() - startTime;
-      console.log(`⏱️ API request completed in ${requestTime}ms`);
-      console.log('📋 Response status:', response.status);
-      console.log('📋 Response headers:', Object.fromEntries(response.headers.entries()));
-
-      if (!response.ok) {
-        console.log('❌ Response not OK, response status:', response.status);
-        
-        // Try to get error details
-        let errorData;
-        try {
-          errorData = await response.json();
-          console.log('🔍 Error data:', errorData);
-        } catch (parseError) {
-          console.log('❌ Failed to parse error response:', parseError);
-          // If we can't parse the response, it might be HTML error page
-          const errorText = await response.text();
-          console.log('📄 Error response text:', errorText.substring(0, 500));
-          throw new Error(`Server error (${response.status}): Check console for details`);
-        }
-        
-        // If it's a 405 error, fall back to client-side PDF generation
-        if (response.status === 405) {
-          console.log('🔄 API endpoint not available, falling back to client-side PDF generation...');
-          await generateClientSidePDF();
-          return;
-        }
-        
-        throw new Error(errorData.error || `Server error (${response.status})`);
-      }
-
-      console.log('✅ Response OK, creating blob...');
-      // Create blob from response
-      const blob = await response.blob();
-      console.log('📊 Blob created, size:', blob.size, 'bytes');
-      console.log('📊 Blob type:', blob.type);
-      
-      // Create download link
-      console.log('🔗 Creating download link...');
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = fileName;
-      link.style.display = 'none';
-      
-      console.log('📎 Triggering download...');
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      
-      // Clean up
-      console.log('🧹 Cleaning up blob URL...');
-      setTimeout(() => URL.revokeObjectURL(url), 1000);
-      
-      console.log('🎉 PDF generated and downloaded successfully!');
+      await generateClientSidePDF();
     } catch (error) {
-      console.error('❌ Server-side PDF generation failed:', error);
-      console.log('🔄 Attempting client-side PDF generation as fallback...');
-      
-      try {
-        await generateClientSidePDF();
-      } catch (fallbackError) {
-        console.error('❌ Fallback PDF generation also failed:', fallbackError);
-        alert(`Error generating PDF: ${fallbackError instanceof Error ? fallbackError.message : 'Please try again.'}`);
-      }
+      console.error('❌ PDF generation failed:', error);
+      alert(`Error generating PDF: ${error instanceof Error ? error.message : 'Please try again.'}`);
     } finally {
       setIsExporting(false);
     }
