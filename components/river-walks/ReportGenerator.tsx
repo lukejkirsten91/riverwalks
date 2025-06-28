@@ -234,46 +234,89 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
     console.log('📄 Starting enhanced client-side PDF generation...');
     
     try {
+      // Prepare the element for PDF capture
+      console.log('🎨 Preparing content for PDF...');
+      const originalStyle = reportRef.current.style.cssText;
+      
+      // Force visible styling for PDF capture
+      reportRef.current.style.backgroundColor = '#ffffff';
+      reportRef.current.style.color = '#000000';
+      reportRef.current.style.display = 'block';
+      reportRef.current.style.visibility = 'visible';
+      reportRef.current.style.opacity = '1';
+      
       // Wait for charts and images to fully render
       console.log('⏳ Waiting for content to render...');
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
       // Wait for any Plotly charts specifically
       const plotlyCharts = reportRef.current.querySelectorAll('.plotly-graph-div');
       if (plotlyCharts.length > 0) {
         console.log(`📊 Found ${plotlyCharts.length} charts, waiting for render...`);
-        await new Promise(resolve => setTimeout(resolve, 3000));
+        await new Promise(resolve => setTimeout(resolve, 2000));
       }
 
-      console.log('🖼️ Creating canvas with optimized settings...');
+      console.log('🖼️ Creating canvas with simplified settings...');
       const canvas = await html2canvas(reportRef.current, {
-        scale: 2.5, // Higher scale for better quality
+        scale: 1.5,
         useCORS: true,
         allowTaint: true,
         backgroundColor: '#ffffff',
         logging: false,
-        foreignObjectRendering: true, // Better SVG/chart rendering
-        imageTimeout: 15000,
+        foreignObjectRendering: false,
         removeContainer: false,
         onclone: (clonedDoc, element) => {
-          // Force all charts to be visible in the clone
-          const charts = element.querySelectorAll('.plotly-graph-div');
-          charts.forEach(chart => {
-            (chart as HTMLElement).style.opacity = '1';
-            (chart as HTMLElement).style.visibility = 'visible';
-          });
+          console.log('🔄 Processing cloned document for PDF...');
           
-          // Ensure all images are loaded
-          const images = element.querySelectorAll('img');
-          images.forEach(img => {
-            if (!img.complete) {
-              img.style.display = 'none'; // Hide broken images
+          // Set document background
+          clonedDoc.body.style.backgroundColor = '#ffffff';
+          clonedDoc.body.style.color = '#000000';
+          clonedDoc.body.style.margin = '0';
+          clonedDoc.body.style.padding = '20px';
+          
+          // Force all elements to be visible and readable
+          const allElements = element.querySelectorAll('*');
+          allElements.forEach(el => {
+            const htmlEl = el as HTMLElement;
+            
+            // Remove any transforms that might hide content
+            htmlEl.style.transform = 'none';
+            htmlEl.style.opacity = '1';
+            htmlEl.style.visibility = 'visible';
+            htmlEl.style.display = htmlEl.style.display === 'none' ? 'block' : htmlEl.style.display;
+            
+            // Ensure text is black on white
+            if (htmlEl.textContent && htmlEl.textContent.trim()) {
+              htmlEl.style.color = '#000000';
             }
           });
+          
+          // Handle tables
+          const tables = element.querySelectorAll('table');
+          tables.forEach(table => {
+            const tableEl = table as HTMLElement;
+            tableEl.style.backgroundColor = '#ffffff';
+            tableEl.style.border = '1px solid #000000';
+          });
+          
+          // Handle table cells
+          const cells = element.querySelectorAll('td, th');
+          cells.forEach(cell => {
+            const cellEl = cell as HTMLElement;
+            cellEl.style.color = '#000000';
+            cellEl.style.backgroundColor = '#ffffff';
+            cellEl.style.border = '1px solid #cccccc';
+            cellEl.style.padding = '8px';
+          });
+          
+          console.log('✅ PDF styling applied to cloned document');
         }
       });
 
       console.log(`📐 Canvas created: ${canvas.width}x${canvas.height}`);
+      
+      // Restore original styles
+      reportRef.current.style.cssText = originalStyle;
 
       const pdf = new jsPDF({
         orientation: 'portrait',
