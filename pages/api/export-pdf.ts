@@ -1,6 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { chromium } from 'playwright-core';
-const chromiumBinary = require('@sparticuz/chromium');
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   console.log('🚀 PDF Export API called');
@@ -36,14 +35,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     console.log('🌐 Starting browser launch...');
     
+    // Dynamically import @sparticuz/chromium to handle ESM package
+    console.log('🔍 Dynamically importing @sparticuz/chromium...');
+    const chromiumBinary = await import('@sparticuz/chromium');
+    console.log('✅ @sparticuz/chromium imported successfully');
+    
     // Get optimized Chromium executable path for serverless
     console.log('🔍 Getting serverless Chromium executable path...');
-    const executablePath = await chromiumBinary.executablePath();
+    const executablePath = await chromiumBinary.default.executablePath();
     console.log('📍 Chromium executable path:', executablePath);
     
     // Launch browser with optimized settings for Vercel
     browser = await chromium.launch({
-      args: chromiumBinary.args,
+      args: chromiumBinary.default.args,
       executablePath: executablePath,
       headless: true,
     });
