@@ -329,12 +329,18 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
         heightLeft -= contentHeight;
       }
 
-      // Generate clean filename
-      const cleanName = riverWalk.name
-        .replace(/[^a-z0-9\s]/gi, '_')
-        .replace(/\s+/g, '_')
-        .replace(/_+/g, '_')
-        .replace(/^_|_$/g, '');
+      // Generate clean filename safely
+      let cleanName = riverWalk.name || 'river_walk';
+      // Remove special characters
+      cleanName = cleanName.replace(/[^\w\s-]/g, '');
+      // Replace spaces with underscores
+      cleanName = cleanName.replace(/\s+/g, '_');
+      // Remove multiple underscores
+      cleanName = cleanName.replace(/_+/g, '_');
+      // Remove leading/trailing underscores
+      cleanName = cleanName.replace(/^_+|_+$/g, '');
+      // Ensure we have a valid name
+      if (!cleanName) cleanName = 'river_walk';
       
       const fileName = `${cleanName}_report.pdf`;
       console.log(`💾 Saving as: ${fileName}`);
@@ -373,10 +379,36 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
     setIsExporting(true);
 
     try {
+      // Ensure we have the required libraries
+      if (typeof window === 'undefined') {
+        throw new Error('PDF generation requires a browser environment');
+      }
+      
+      // Check if jsPDF is available
+      if (!window.jsPDF) {
+        console.log('jsPDF not found on window, using imported version');
+      }
+      
       await generateClientSidePDF();
+      console.log('🎉 PDF export completed successfully!');
     } catch (error) {
       console.error('❌ PDF generation failed:', error);
-      alert(`Error generating PDF: ${error instanceof Error ? error.message : 'Please try again.'}`);
+      
+      // More specific error handling
+      let userMessage = 'Failed to generate PDF. Please try again.';
+      if (error instanceof Error) {
+        if (error.message.includes('canvas')) {
+          userMessage = 'Failed to capture the report. Please ensure all content has loaded and try again.';
+        } else if (error.message.includes('jsPDF')) {
+          userMessage = 'PDF library error. Please refresh the page and try again.';
+        } else if (error.message.includes('timeout')) {
+          userMessage = 'PDF generation timed out. Please try again with a shorter report.';
+        } else {
+          userMessage = `PDF generation error: ${error.message}`;
+        }
+      }
+      
+      alert(userMessage);
     } finally {
       setIsExporting(false);
     }
