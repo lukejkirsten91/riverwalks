@@ -35,10 +35,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     console.log('🌐 Starting browser launch...');
     
-    // Dynamically import @sparticuz/chromium to handle ESM package
-    console.log('🔍 Dynamically importing @sparticuz/chromium...');
-    const chromiumBinary = await import('@sparticuz/chromium');
-    console.log('✅ @sparticuz/chromium imported successfully');
+    // Dynamically import @sparticuz/chromium-min to handle ESM package
+    console.log('🔍 Dynamically importing @sparticuz/chromium-min...');
+    const chromiumBinary = await import('@sparticuz/chromium-min');
+    console.log('✅ @sparticuz/chromium-min imported successfully');
     
     // Get optimized Chromium executable path for serverless
     console.log('🔍 Getting serverless Chromium executable path...');

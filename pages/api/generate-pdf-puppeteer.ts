@@ -1,11 +1,11 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import chromium from '@sparticuz/chromium';
+import chromium from '@sparticuz/chromium-min';
 import puppeteerCore from 'puppeteer-core';
 import { Mutex } from 'async-mutex';
 
 export const dynamic = 'force-dynamic';
 
-// Using @sparticuz/chromium (full package) for reliable binary decompression
+// Using @sparticuz/chromium-min for optimal bundle size (~26MB vs ~170MB)
 
 // Mutex to prevent concurrent browser access
 const lock = new Mutex();
@@ -14,8 +14,9 @@ const lock = new Mutex();
 async function getBrowser() {
   const global = globalThis as any; // TypeScript workaround for dynamic property
   
-  // Enhanced browser health check
-  if (global.browser && (!global.browser.isConnected?.() || global.browser.process()?.killed)) {
+  // Enhanced browser health check with safe process access
+  const killed = typeof global.browser?.process === 'function' && global.browser.process()?.killed;
+  if (global.browser && (!global.browser.isConnected?.() || killed)) {
     console.log('🔄 Resetting stale browser instance');
     global.browser = null; // Reset if browser is closed or process killed
   }
@@ -37,22 +38,28 @@ async function getBrowser() {
   if (isProduction) {
     console.log('🌐 Launching browser for production (Vercel)...');
     
-    // Try alternative approach: use Playwright-core Chromium
+    // Primary approach: use Puppeteer with Chromium-min binary
     try {
       global.browser = await puppeteerCore.launch({
         args: [...chromium.args, '--no-sandbox', '--disable-dev-shm-usage'],
         executablePath: await chromium.executablePath(), // Use bundled binary that matches Puppeteer version
-        headless: (process.env.CHROME_HEADLESS_MODE as 'shell') || 'shell', // Fallback for older Chrome versions
+        headless: (process.env.CHROME_HEADLESS_MODE as 'shell') || 'shell', // Use shell headless mode for PDF generation
       });
     } catch (chromiumError) {
       console.log('⚠️ Chromium launch failed:', chromiumError);
-      console.log('🔄 Trying alternative approach...');
+      console.log('🔄 Trying binary recovery...');
       
-      // Fallback: try without executablePath (use system Chrome if available)
-      global.browser = await puppeteerCore.launch({
-        args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
-        headless: (process.env.CHROME_HEADLESS_MODE as 'shell') || 'shell',
-      });
+      // Fallback: try without custom arguments
+      try {
+        global.browser = await puppeteerCore.launch({
+          args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
+          executablePath: await chromium.executablePath(),
+          headless: (process.env.CHROME_HEADLESS_MODE as 'shell') || 'shell',
+        });
+      } catch (recoveryError) {
+        console.log('⚠️ Binary recovery failed:', recoveryError);
+        throw new Error('Failed to launch Chromium browser for PDF generation');
+      }
     }
   } else {
     console.log('🖥️ Launching browser for local development...');
@@ -78,7 +85,7 @@ async function getBrowser() {
     global.browser = await puppeteerCore.launch({
       executablePath: getExecutablePath(),
       args: ['--no-sandbox', '--disable-setuid-sandbox'],
-      headless: (process.env.CHROME_HEADLESS_MODE as 'shell') || 'shell', // Fallback for older Chrome versions
+      headless: (process.env.CHROME_HEADLESS_MODE as 'shell') || 'shell', // Use shell headless mode for PDF generation
     });
   }
   
@@ -123,8 +130,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const page = await browserInstance.newPage();
       console.log('📄 New page created');
 
-    // Set viewport with A4 paper ratio for better PDF rendering
-    await page.setViewport({ width: 1240, height: 1754 });
+      // Set viewport with A4 paper ratio for better PDF rendering
+      await page.setViewport({ width: 1240, height: 1754 });
+      
+      // Force screen media emulation for accurate CSS print rules
+      await page.emulateMediaType('screen');
 
     // Navigate to the print-friendly page
     const baseUrl = process.env.VERCEL_URL 
