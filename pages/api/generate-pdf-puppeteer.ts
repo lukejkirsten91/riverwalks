@@ -83,12 +83,31 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     console.log('🎯 Navigating to:', printUrl);
     
     const startTime = Date.now();
-    await page.goto(printUrl, { 
+    const response = await page.goto(printUrl, { 
       waitUntil: 'networkidle2',
       timeout: 60000 
     });
     const navigationTime = Date.now() - startTime;
     console.log(`✅ Page loaded in ${navigationTime}ms`);
+    console.log('📄 Response status:', response?.status());
+    console.log('📄 Response headers:', response?.headers());
+    
+    // Check if the page loaded successfully
+    if (!response || response.status() !== 200) {
+      throw new Error(`Failed to load print-report page. Status: ${response?.status()}`);
+    }
+    
+    // Get page content to debug what's actually being rendered
+    const pageTitle = await page.title();
+    console.log('📋 Page title:', pageTitle);
+    
+    // Check for error content
+    const bodyText = await page.evaluate(() => document.body.innerText);
+    console.log('📝 Page content preview:', bodyText.substring(0, 200));
+    
+    if (bodyText.includes('404') || bodyText.includes('Not Found') || bodyText.includes('Error')) {
+      throw new Error(`Print-report page returned error content: ${bodyText.substring(0, 500)}`);
+    }
 
     // Wait for content to fully render, especially charts
     console.log('⏳ Waiting for charts and content to render...');
