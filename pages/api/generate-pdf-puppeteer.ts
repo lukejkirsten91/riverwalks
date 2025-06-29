@@ -1,10 +1,10 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import chromium from '@sparticuz/chromium-min';
+import chromium from '@sparticuz/chromium';
 import puppeteerCore from 'puppeteer-core';
 
 export const dynamic = 'force-dynamic';
 
-// Removed remoteExecutablePath - let @sparticuz/chromium-min handle the version matching
+// Using @sparticuz/chromium (full package) for reliable binary decompression
 
 // Use globalThis to avoid "target closed" errors when Vercel re-uses Lambda
 async function getBrowser() {

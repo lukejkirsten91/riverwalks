@@ -14,7 +14,6 @@
   "dependencies": {
     "@radix-ui/react-slot": "^1.2.3",
     "@sparticuz/chromium": "^137.0.1",
-    "@sparticuz/chromium-min": "^137.0.1",
     "@supabase/ssr": "^0.6.1",
     "@supabase/supabase-js": "^2.50.0",
     "@types/leaflet": "^1.9.18",
