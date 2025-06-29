@@ -40,10 +40,13 @@ async function getBrowser() {
     
     // Primary approach: use Puppeteer with Chromium-min binary
     try {
+      const execPath = await chromium.executablePath();
+      console.log('🧭 Chromium executable:', execPath);
+      
       global.browser = await puppeteerCore.launch({
         args: [...chromium.args, '--no-sandbox', '--disable-dev-shm-usage'],
-        executablePath: await chromium.executablePath(), // Use bundled binary that matches Puppeteer version
-        headless: (process.env.CHROME_HEADLESS_MODE as 'shell') || 'shell', // Use shell headless mode for PDF generation
+        executablePath: execPath, // Use bundled binary that matches Puppeteer version
+        headless: (process.env.CHROME_HEADLESS_MODE === 'new' ? 'new' : true) as any, // Use headless mode for PDF generation
       });
     } catch (chromiumError) {
       console.log('⚠️ Chromium launch failed:', chromiumError);
@@ -54,7 +57,7 @@ async function getBrowser() {
         global.browser = await puppeteerCore.launch({
           args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
           executablePath: await chromium.executablePath(),
-          headless: (process.env.CHROME_HEADLESS_MODE as 'shell') || 'shell',
+          headless: (process.env.CHROME_HEADLESS_MODE === 'new' ? 'new' : true) as any,
         });
       } catch (recoveryError) {
         console.log('⚠️ Binary recovery failed:', recoveryError);
@@ -85,7 +88,7 @@ async function getBrowser() {
     global.browser = await puppeteerCore.launch({
       executablePath: getExecutablePath(),
       args: ['--no-sandbox', '--disable-setuid-sandbox'],
-      headless: (process.env.CHROME_HEADLESS_MODE as 'shell') || 'shell', // Use shell headless mode for PDF generation
+      headless: (process.env.CHROME_HEADLESS_MODE === 'new' ? 'new' : true) as any, // Use headless mode for PDF generation
     });
   }
   
