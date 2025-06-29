@@ -469,10 +469,10 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
     };
     console.log('📦 Request payload:', requestData);
     
-    console.log('🌐 Making API request to /api/generate-pdf-puppeteer...');
+    console.log('🌐 Making API request to /api/generate-pdf-playwright...');
     const startTime = Date.now();
     
-    const response = await fetch('/api/generate-pdf-puppeteer', {
+    const response = await fetch('/api/generate-pdf-playwright', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

@@ -7,6 +7,10 @@
     "pages/api/generate-pdf-puppeteer.ts": {
       "memory": 1536,
       "maxDuration": 60
+    },
+    "pages/api/generate-pdf-playwright.ts": {
+      "memory": 1536,
+      "maxDuration": 60
     }
   }
 }
