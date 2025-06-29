@@ -1,17 +1,23 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import chromium from '@sparticuz/chromium';
 import puppeteerCore from 'puppeteer-core';
+import { Mutex } from 'async-mutex';
 
 export const dynamic = 'force-dynamic';
 
 // Using @sparticuz/chromium (full package) for reliable binary decompression
 
+// Mutex to prevent concurrent browser access
+const lock = new Mutex();
+
 // Use globalThis to avoid "target closed" errors when Vercel re-uses Lambda
 async function getBrowser() {
   const global = globalThis as any; // TypeScript workaround for dynamic property
   
-  if (global.browser && global.browser.isConnected?.() === false) {
-    global.browser = null; // Reset if browser is closed
+  // Enhanced browser health check
+  if (global.browser && (!global.browser.isConnected?.() || global.browser.process()?.killed)) {
+    console.log('🔄 Resetting stale browser instance');
+    global.browser = null; // Reset if browser is closed or process killed
   }
   
   if (global.browser) return global.browser;
@@ -30,15 +36,47 @@ async function getBrowser() {
   
   if (isProduction) {
     console.log('🌐 Launching browser for production (Vercel)...');
-    global.browser = await puppeteerCore.launch({
-      args: [...chromium.args, '--no-sandbox'],
-      executablePath: await chromium.executablePath(), // Use bundled binary that matches Puppeteer version
-      headless: (process.env.CHROME_HEADLESS_MODE as 'shell') || 'shell', // Fallback for older Chrome versions
-    });
+    
+    // Try alternative approach: use Playwright-core Chromium
+    try {
+      global.browser = await puppeteerCore.launch({
+        args: [...chromium.args, '--no-sandbox', '--disable-dev-shm-usage'],
+        executablePath: await chromium.executablePath(), // Use bundled binary that matches Puppeteer version
+        headless: (process.env.CHROME_HEADLESS_MODE as 'shell') || 'shell', // Fallback for older Chrome versions
+      });
+    } catch (chromiumError) {
+      console.log('⚠️ Chromium launch failed:', chromiumError);
+      console.log('🔄 Trying alternative approach...');
+      
+      // Fallback: try without executablePath (use system Chrome if available)
+      global.browser = await puppeteerCore.launch({
+        args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
+        headless: (process.env.CHROME_HEADLESS_MODE as 'shell') || 'shell',
+      });
+    }
   } else {
     console.log('🖥️ Launching browser for local development...');
+    
+    // Better executable path handling for different platforms
+    const getExecutablePath = () => {
+      if (process.env.PUPPETEER_EXEC_PATH) {
+        return process.env.PUPPETEER_EXEC_PATH;
+      }
+      
+      switch (process.platform) {
+        case 'darwin':
+          return '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
+        case 'linux':
+          return '/usr/bin/google-chrome';
+        case 'win32':
+          return 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
+        default:
+          return undefined; // Fall back to system PATH
+      }
+    };
+    
     global.browser = await puppeteerCore.launch({
-      executablePath: undefined, // Use system Chrome in development
+      executablePath: getExecutablePath(),
       args: ['--no-sandbox', '--disable-setuid-sandbox'],
       headless: (process.env.CHROME_HEADLESS_MODE as 'shell') || 'shell', // Fallback for older Chrome versions
     });
@@ -75,15 +113,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(400).json({ error: 'River walk ID is required' });
   }
 
-  let browserInstance;
-  
   try {
-    console.log('🌐 Getting browser instance...');
-    browserInstance = await getBrowser();
-    console.log('✅ Browser instance obtained');
+    // Use mutex to prevent concurrent requests from racing on browser instance
+    const pdfBuffer = await lock.runExclusive(async () => {
+      console.log('🌐 Getting browser instance...');
+      const browserInstance = await getBrowser();
+      console.log('✅ Browser instance obtained');
 
-    const page = await browserInstance.newPage();
-    console.log('📄 New page created');
+      const page = await browserInstance.newPage();
+      console.log('📄 New page created');
 
     // Set viewport with A4 paper ratio for better PDF rendering
     await page.setViewport({ width: 1240, height: 1754 });
@@ -179,9 +217,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     console.log(`✅ PDF generated in ${pdfGenerationTime}ms`);
     console.log('📊 PDF buffer size:', pdfBuffer.length, 'bytes');
 
-    // Close the page but keep browser instance for reuse
-    await page.close();
-    console.log('✅ Page closed');
+      // Close the page but keep browser instance for reuse
+      await page.close();
+      console.log('✅ Page closed');
+      
+      return pdfBuffer;
+    }); // End mutex block
 
     // Set response headers
     const finalFileName = fileName || `river_walk_report_${riverWalkId}.pdf`;
@@ -209,14 +250,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       console.error('❌ Generated buffer is not a valid PDF');
       console.error('❌ Buffer starts with:', bufferPreview);
       
-      // Save the invalid content for debugging (use /tmp directory on Vercel)
-      try {
-        const fs = require('fs');
-        const debugPath = '/tmp/debug-invalid-pdf.html';
-        fs.writeFileSync(debugPath, pdfBuffer);
-        console.log('🔍 Invalid content saved to:', debugPath);
-      } catch (writeError: any) {
-        console.log('⚠️ Could not save debug file:', writeError?.message || 'Unknown error');
+      // Save debug content for development only
+      if (process.env.NODE_ENV !== 'production') {
+        try {
+          const fs = require('fs');
+          const debugPath = '/tmp/debug-invalid-pdf.html';
+          fs.writeFileSync(debugPath, pdfBuffer);
+          console.log('🔍 Invalid content saved to:', debugPath);
+        } catch (writeError: any) {
+          console.log('⚠️ Could not save debug file:', writeError?.message || 'Unknown error');
+        }
+      } else {
+        // In production, log as Base64 for inspection
+        const base64Content = pdfBuffer.toString('base64').substring(0, 500);
+        console.log('🔍 Invalid content (Base64 preview):', base64Content);
       }
       
       throw new Error('Generated content is not a valid PDF');
@@ -230,14 +277,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   } catch (error) {
     console.error('PDF generation error:', error);
     
-    if (browserInstance) {
-      try {
-        // Only close browser in case of error, keep it for reuse otherwise
-        await browserInstance.close();
-        (globalThis as any).browser = null; // Reset for next request
-      } catch (closeError) {
-        console.error('Error closing browser:', closeError);
+    // Reset browser instance on error
+    try {
+      const global = globalThis as any;
+      if (global.browser) {
+        await global.browser.close();
+        global.browser = null;
       }
+    } catch (closeError) {
+      console.error('Error closing browser:', closeError);
     }
 
     res.status(500).json({ 
