@@ -1,7 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import chromium from '@sparticuz/chromium-min';
 import puppeteerCore from 'puppeteer-core';
-import puppeteer from 'puppeteer';
 
 export const dynamic = 'force-dynamic';
 
@@ -9,11 +8,13 @@ export const dynamic = 'force-dynamic';
 
 // Use globalThis to avoid "target closed" errors when Vercel re-uses Lambda
 async function getBrowser() {
-  if (globalThis.browser && !globalThis.browser.isConnected?.()) {
-    globalThis.browser = null; // Reset if browser is closed
+  const global = globalThis as any; // TypeScript workaround for dynamic property
+  
+  if (global.browser && global.browser.isConnected?.() === false) {
+    global.browser = null; // Reset if browser is closed
   }
   
-  if (globalThis.browser) return globalThis.browser;
+  if (global.browser) return global.browser;
 
   // Check if we're in production (Vercel) - using multiple environment checks
   const isProduction = process.env.NEXT_PUBLIC_VERCEL_ENVIRONMENT === 'production' || 
@@ -29,21 +30,21 @@ async function getBrowser() {
   
   if (isProduction) {
     console.log('🌐 Launching browser for production (Vercel)...');
-    globalThis.browser = await puppeteerCore.launch({
+    global.browser = await puppeteerCore.launch({
       args: [...chromium.args, '--no-sandbox'],
       executablePath: await chromium.executablePath(), // Use bundled binary that matches Puppeteer version
-      headless: 'shell', // Force old headless mode for PDF generation
-      defaultViewport: chromium.defaultViewport,
+      headless: (process.env.CHROME_HEADLESS_MODE as 'shell') || 'shell', // Fallback for older Chrome versions
     });
   } else {
     console.log('🖥️ Launching browser for local development...');
-    globalThis.browser = await puppeteer.launch({
+    global.browser = await puppeteerCore.launch({
+      executablePath: undefined, // Use system Chrome in development
       args: ['--no-sandbox', '--disable-setuid-sandbox'],
-      headless: 'shell', // Force old headless mode for PDF generation
+      headless: (process.env.CHROME_HEADLESS_MODE as 'shell') || 'shell', // Fallback for older Chrome versions
     });
   }
   
-  return globalThis.browser;
+  return global.browser;
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -84,8 +85,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const page = await browserInstance.newPage();
     console.log('📄 New page created');
 
-    // Set viewport for consistent rendering
-    await page.setViewport({ width: 1200, height: 800 });
+    // Set viewport with A4 paper ratio for better PDF rendering
+    await page.setViewport({ width: 1240, height: 1754 });
 
     // Navigate to the print-friendly page
     const baseUrl = process.env.VERCEL_URL 
@@ -136,7 +137,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // Wait for content to fully render, especially charts
     console.log('⏳ Waiting for charts and content to render...');
-    await new Promise(resolve => setTimeout(resolve, 5000));
+    
+    try {
+      // Wait for report to be ready (will add this flag to print-report component)
+      await page.waitForFunction(() => (window as any).__REPORT_READY === true, { timeout: 30000 });
+      console.log('✅ Report ready flag detected');
+    } catch (e) {
+      console.log('⚠️ Report ready timeout, falling back to time-based wait');
+      await new Promise(resolve => setTimeout(resolve, 5000));
+    }
 
     // Wait for any Plotly charts specifically
     try {
@@ -162,8 +171,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       printBackground: true,
       preferCSSPageSize: true,
       displayHeaderFooter: false,
-      // Enhanced options for better page breaks
-      tagged: true,
+      // Remove tagged option for reliability on some Chromium builds
       outline: false,
     });
     
@@ -207,8 +215,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const debugPath = '/tmp/debug-invalid-pdf.html';
         fs.writeFileSync(debugPath, pdfBuffer);
         console.log('🔍 Invalid content saved to:', debugPath);
-      } catch (writeError) {
-        console.log('⚠️ Could not save debug file:', writeError.message);
+      } catch (writeError: any) {
+        console.log('⚠️ Could not save debug file:', writeError?.message || 'Unknown error');
       }
       
       throw new Error('Generated content is not a valid PDF');
@@ -226,7 +234,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       try {
         // Only close browser in case of error, keep it for reuse otherwise
         await browserInstance.close();
-        globalThis.browser = null; // Reset for next request
+        (globalThis as any).browser = null; // Reset for next request
       } catch (closeError) {
         console.error('Error closing browser:', closeError);
       }

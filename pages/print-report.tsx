@@ -21,6 +21,16 @@ export default function PrintReport({ riverWalk, sites }: PrintReportProps) {
   console.log('📊 River walk:', riverWalk);
   console.log('📍 Sites count:', sites?.length || 0);
 
+  // Signal when report is ready for PDF generation
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      (window as any).__REPORT_READY = true;
+      console.log('🚩 Report ready flag set');
+    }, 2000); // Allow time for charts to render
+
+    return () => clearTimeout(timer);
+  }, []);
+
   // Helper function to calculate average depth for a site
   const calculateAverageDepth = (site: Site) => {
     if (!site.measurement_points || site.measurement_points.length === 0) return 0;
