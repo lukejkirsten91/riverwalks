@@ -13,8 +13,19 @@ let browser: any;
 async function getBrowser() {
   if (browser) return browser;
 
-  // Check if we're in production (Vercel)
-  if (process.env.VERCEL_ENV === 'production' || process.env.NODE_ENV === 'production') {
+  // Check if we're in production (Vercel) - using multiple environment checks
+  const isProduction = process.env.NEXT_PUBLIC_VERCEL_ENVIRONMENT === 'production' || 
+                      process.env.VERCEL_ENV === 'production' || 
+                      process.env.NODE_ENV === 'production';
+  
+  console.log('🔍 Environment check:', {
+    NEXT_PUBLIC_VERCEL_ENVIRONMENT: process.env.NEXT_PUBLIC_VERCEL_ENVIRONMENT,
+    VERCEL_ENV: process.env.VERCEL_ENV,
+    NODE_ENV: process.env.NODE_ENV,
+    isProduction
+  });
+  
+  if (isProduction) {
     console.log('🌐 Launching browser for production (Vercel)...');
     browser = await puppeteerCore.launch({
       args: chromium.args,
@@ -104,9 +115,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Check for error content
     const bodyText = await page.evaluate(() => document.body.innerText);
     console.log('📝 Page content preview:', bodyText.substring(0, 200));
+    console.log('📝 Full page content length:', bodyText.length);
+    
+    // Get HTML content for debugging
+    const htmlContent = await page.evaluate(() => document.documentElement.outerHTML);
+    console.log('🔍 HTML content length:', htmlContent.length);
+    console.log('🔍 HTML preview:', htmlContent.substring(0, 500));
     
     if (bodyText.includes('404') || bodyText.includes('Not Found') || bodyText.includes('Error')) {
       throw new Error(`Print-report page returned error content: ${bodyText.substring(0, 500)}`);
+    }
+    
+    // Check if page actually has content
+    if (bodyText.length < 100) {
+      throw new Error(`Print-report page has insufficient content. Body text: ${bodyText}`);
     }
 
     // Wait for content to fully render, especially charts
@@ -167,8 +189,22 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Check if it starts with PDF magic bytes
     const pdfMagic = pdfBuffer.subarray(0, 4).toString();
     console.log('🔍 PDF magic bytes:', pdfMagic);
+    
+    // Debug: Check what the buffer actually contains
+    const bufferPreview = pdfBuffer.subarray(0, 100).toString();
+    console.log('🔍 Buffer preview (first 100 chars):', bufferPreview);
+    
     if (!pdfMagic.startsWith('%PDF')) {
       console.error('❌ Generated buffer is not a valid PDF');
+      console.error('❌ Buffer starts with:', bufferPreview);
+      
+      // Save the invalid content for debugging
+      const fs = require('fs');
+      const path = require('path');
+      const debugPath = path.join(process.cwd(), 'debug-invalid-pdf.html');
+      fs.writeFileSync(debugPath, pdfBuffer);
+      console.log('🔍 Invalid content saved to:', debugPath);
+      
       throw new Error('Generated content is not a valid PDF');
     }
 
