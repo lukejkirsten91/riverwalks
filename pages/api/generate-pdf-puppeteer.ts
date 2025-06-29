@@ -5,13 +5,15 @@ import puppeteer from 'puppeteer';
 
 export const dynamic = 'force-dynamic';
 
-const remoteExecutablePath = 
-  'https://github.com/Sparticuz/chromium/releases/download/v121.0.0/chromium-v121.0.0-pack.tar';
+// Removed remoteExecutablePath - let @sparticuz/chromium-min handle the version matching
 
-let browser: any;
-
+// Use globalThis to avoid "target closed" errors when Vercel re-uses Lambda
 async function getBrowser() {
-  if (browser) return browser;
+  if (globalThis.browser && !globalThis.browser.isConnected?.()) {
+    globalThis.browser = null; // Reset if browser is closed
+  }
+  
+  if (globalThis.browser) return globalThis.browser;
 
   // Check if we're in production (Vercel) - using multiple environment checks
   const isProduction = process.env.NEXT_PUBLIC_VERCEL_ENVIRONMENT === 'production' || 
@@ -27,20 +29,21 @@ async function getBrowser() {
   
   if (isProduction) {
     console.log('🌐 Launching browser for production (Vercel)...');
-    browser = await puppeteerCore.launch({
-      args: chromium.args,
-      executablePath: await chromium.executablePath(remoteExecutablePath),
-      headless: true,
+    globalThis.browser = await puppeteerCore.launch({
+      args: [...chromium.args, '--no-sandbox'],
+      executablePath: await chromium.executablePath(), // Use bundled binary that matches Puppeteer version
+      headless: 'shell', // Force old headless mode for PDF generation
+      defaultViewport: chromium.defaultViewport,
     });
   } else {
     console.log('🖥️ Launching browser for local development...');
-    browser = await puppeteer.launch({
+    globalThis.browser = await puppeteer.launch({
       args: ['--no-sandbox', '--disable-setuid-sandbox'],
-      headless: true,
+      headless: 'shell', // Force old headless mode for PDF generation
     });
   }
   
-  return browser;
+  return globalThis.browser;
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -198,12 +201,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       console.error('❌ Generated buffer is not a valid PDF');
       console.error('❌ Buffer starts with:', bufferPreview);
       
-      // Save the invalid content for debugging
-      const fs = require('fs');
-      const path = require('path');
-      const debugPath = path.join(process.cwd(), 'debug-invalid-pdf.html');
-      fs.writeFileSync(debugPath, pdfBuffer);
-      console.log('🔍 Invalid content saved to:', debugPath);
+      // Save the invalid content for debugging (use /tmp directory on Vercel)
+      try {
+        const fs = require('fs');
+        const debugPath = '/tmp/debug-invalid-pdf.html';
+        fs.writeFileSync(debugPath, pdfBuffer);
+        console.log('🔍 Invalid content saved to:', debugPath);
+      } catch (writeError) {
+        console.log('⚠️ Could not save debug file:', writeError.message);
+      }
       
       throw new Error('Generated content is not a valid PDF');
     }
@@ -220,7 +226,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       try {
         // Only close browser in case of error, keep it for reuse otherwise
         await browserInstance.close();
-        browser = null; // Reset for next request
+        globalThis.browser = null; // Reset for next request
       } catch (closeError) {
         console.error('Error closing browser:', closeError);
       }
