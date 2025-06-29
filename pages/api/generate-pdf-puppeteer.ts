@@ -29,10 +29,8 @@ async function getBrowser(): Promise<Browser> {
 
   g._puppeteer = await puppeteerCore.launch({
     args: chromium.args,
-    defaultViewport: chromium.defaultViewport,
     executablePath: await chromium.executablePath(),
-    headless: chromium.headless, // 'chrome' on Vercel, 'new' when supported
-    ignoreHTTPSErrors: true,
+    headless: true, // Use true for stable headless mode
   });
 
   return g._puppeteer;
