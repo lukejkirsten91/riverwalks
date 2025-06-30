@@ -97,7 +97,7 @@ export default function PrintReport({ riverWalk, sites }: PrintReportProps) {
       {
         x: distances,
         y: depths,
-        mode: 'markers+lines' as const,
+        mode: 'lines+markers' as const,
         type: 'scatter' as const,
         marker: { color: 'red', size: 8 },
         line: { color: 'blue', width: 2 },
@@ -107,7 +107,7 @@ export default function PrintReport({ riverWalk, sites }: PrintReportProps) {
     ];
 
     return {
-      data,
+      data: data as any,
       layout: {
         title: {
           text: `Cross-Section: Site ${site.site_number}`,
