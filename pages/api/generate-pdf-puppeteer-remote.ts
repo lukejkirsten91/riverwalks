@@ -53,8 +53,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   let browser;
   try {
     console.log('🔍 Fetching river walk with ID:', riverWalkId);
+    console.log('🔗 Supabase URL:', process.env.NEXT_PUBLIC_SUPABASE_URL);
     
-    // Fetch river walk data
+    // First, let's see what river walks exist
+    const { data: allRiverWalks, error: allError } = await supabase
+      .from('river_walks')
+      .select('id, name')
+      .limit(10);
+    
+    console.log('📋 All river walks in database:', { allRiverWalks, allError });
+    
+    // Now fetch the specific river walk
     const { data: riverWalk, error: riverWalkError } = await supabase
       .from('river_walks')
       .select('*')
