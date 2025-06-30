@@ -33,6 +33,531 @@ async function getBrowser() {
   });
 }
 
+// CSS Variables and Styles
+const CSS_STYLES = `
+:root {
+  /* Color Palette */
+  --clr-primary: #1e40af;
+  --clr-cross-section: #3b82f6;
+  --clr-cross-section-light: #dbeafe;
+  --clr-cross-section-bg: #bfdbfe;
+  --clr-velocity: #16a34a;
+  --clr-velocity-light: #dcfce7;
+  --clr-velocity-bg: #bbf7d0;
+  --clr-sediment: #f59e0b;
+  --clr-sediment-light: #fef3c7;
+  --clr-sediment-bg: #fde68a;
+  --clr-map: #dc2626;
+  --clr-text: #1f2937;
+  --clr-text-light: #6b7280;
+  --clr-border: #e5e7eb;
+  --clr-white: #ffffff;
+  
+  /* Spacing */
+  --sp-xs: 4px;
+  --sp-sm: 8px;
+  --sp-md: 16px;
+  --sp-lg: 24px;
+  --sp-xl: 32px;
+  --sp-2xl: 48px;
+  
+  /* Typography */
+  --font-size-xs: 10px;
+  --font-size-sm: 12px;
+  --font-size-base: 14px;
+  --font-size-lg: 16px;
+  --font-size-xl: 20px;
+  --font-size-2xl: 24px;
+  --font-size-3xl: 28px;
+  --font-size-4xl: 32px;
+}
+
+@page {
+  margin: 15mm 12mm;
+  size: A4;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  line-height: 1.5;
+  color: var(--clr-text);
+  background: var(--clr-white);
+  margin: 0;
+  padding: var(--sp-lg);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Header Template Styles */
+.pdf-header {
+  font-size: var(--font-size-xs);
+  color: var(--clr-text-light);
+  width: 100%;
+  text-align: center;
+  border-bottom: 1px solid var(--clr-border);
+  padding-bottom: var(--sp-xs);
+}
+
+.pdf-footer {
+  font-size: var(--font-size-xs);
+  color: var(--clr-text-light);
+  width: 100%;
+  text-align: center;
+  border-top: 1px solid var(--clr-border);
+  padding-top: var(--sp-xs);
+}
+
+/* Print-friendly grayscale override */
+@media print {
+  .print-bw {
+    --clr-cross-section: #4a5568;
+    --clr-cross-section-light: #f7fafc;
+    --clr-cross-section-bg: #e2e8f0;
+    --clr-velocity: #2d3748;
+    --clr-velocity-light: #f7fafc;
+    --clr-velocity-bg: #e2e8f0;
+    --clr-sediment: #1a202c;
+    --clr-sediment-light: #f7fafc;
+    --clr-sediment-bg: #e2e8f0;
+    --clr-map: #2d3748;
+  }
+}
+
+/* Semantic Structure */
+.report-container {
+  max-width: 210mm;
+  margin: 0 auto;
+}
+
+.cover-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  page-break-after: always;
+}
+
+.toc {
+  page-break-after: always;
+}
+
+.toc-title {
+  font-size: var(--font-size-2xl);
+  font-weight: bold;
+  color: var(--clr-primary);
+  margin-bottom: var(--sp-xl);
+  border-bottom: 2px solid var(--clr-primary);
+  padding-bottom: var(--sp-md);
+}
+
+.toc-entry {
+  display: flex;
+  justify-content: space-between;
+  padding: var(--sp-sm) 0;
+  border-bottom: 1px dotted var(--clr-border);
+}
+
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--sp-lg);
+  margin: var(--sp-xl) 0;
+}
+
+.kpi-card {
+  padding: var(--sp-lg);
+  border-radius: var(--sp-sm);
+  text-align: center;
+  border: 1px solid var(--clr-border);
+}
+
+.kpi-blue { background: var(--clr-cross-section-light); border-color: var(--clr-cross-section); }
+.kpi-green { background: var(--clr-velocity-light); border-color: var(--clr-velocity); }
+.kpi-purple { background: #f3e8ff; border-color: #a855f7; }
+.kpi-orange { background: #fed7aa; border-color: #f97316; }
+
+.kpi-value {
+  font-size: var(--font-size-2xl);
+  font-weight: bold;
+  margin: 0 0 var(--sp-xs) 0;
+}
+
+.kpi-blue .kpi-value { color: var(--clr-cross-section); }
+.kpi-green .kpi-value { color: var(--clr-velocity); }
+.kpi-purple .kpi-value { color: #9333ea; }
+.kpi-orange .kpi-value { color: #ea580c; }
+
+.kpi-label {
+  font-size: var(--font-size-sm);
+  color: var(--clr-text-light);
+  margin: 0;
+}
+
+.study-info {
+  background: #f8fafc;
+  padding: var(--sp-xl);
+  border-radius: var(--sp-sm);
+  margin: var(--sp-xl) 0;
+  border: 1px solid var(--clr-border);
+}
+
+.study-info h3 {
+  margin: 0 0 var(--sp-md) 0;
+  color: var(--clr-primary);
+  font-size: var(--font-size-lg);
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--sp-md);
+}
+
+.info-item {
+  display: flex;
+  justify-content: space-between;
+}
+
+.summary-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: var(--sp-xl) 0;
+  font-size: var(--font-size-sm);
+  background: var(--clr-white);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.summary-table th {
+  padding: var(--sp-sm);
+  text-align: center;
+  font-weight: 600;
+  font-size: var(--font-size-xs);
+  border: 1px solid var(--clr-border);
+}
+
+.summary-table td {
+  padding: var(--sp-sm);
+  text-align: center;
+  border: 1px solid var(--clr-border);
+}
+
+.cross-section-theme th { background: var(--clr-cross-section-light); color: var(--clr-primary); }
+.velocity-theme th { background: var(--clr-velocity-light); color: var(--clr-velocity); }
+.sediment-theme th { background: var(--clr-sediment-light); color: var(--clr-sediment); }
+
+.cross-section-theme .summary-col { background: var(--clr-cross-section-bg); }
+.velocity-theme .summary-col { background: var(--clr-velocity-bg); }
+.sediment-theme .summary-col { background: var(--clr-sediment-bg); }
+
+.cross-section-section { 
+  border-left: 4px solid var(--clr-cross-section); 
+  background: linear-gradient(to right, var(--clr-cross-section-light), #f8fafc);
+}
+.velocity-section { 
+  border-left: 4px solid var(--clr-velocity); 
+  background: linear-gradient(to right, var(--clr-velocity-light), #f8fafc);
+}
+.sediment-section { 
+  border-left: 4px solid var(--clr-sediment); 
+  background: linear-gradient(to right, var(--clr-sediment-light), #f8fafc);
+}
+
+.cross-section-header { 
+  color: var(--clr-primary); 
+  border-bottom: 2px solid var(--clr-cross-section); 
+  background: var(--clr-cross-section-light);
+  padding: var(--sp-md);
+  margin: calc(-1 * var(--sp-xl)) calc(-1 * var(--sp-xl)) var(--sp-lg) calc(-1 * var(--sp-xl));
+}
+.velocity-header { 
+  color: var(--clr-velocity); 
+  border-bottom: 2px solid var(--clr-velocity); 
+  background: var(--clr-velocity-light);
+  padding: var(--sp-md);
+  margin: calc(-1 * var(--sp-xl)) calc(-1 * var(--sp-xl)) var(--sp-lg) calc(-1 * var(--sp-xl));
+}
+.sediment-header { 
+  color: var(--clr-sediment); 
+  border-bottom: 2px solid var(--clr-sediment); 
+  background: var(--clr-sediment-light);
+  padding: var(--sp-md);
+  margin: calc(-1 * var(--sp-xl)) calc(-1 * var(--sp-xl)) var(--sp-lg) calc(-1 * var(--sp-xl));
+}
+
+.section-header {
+  font-size: var(--font-size-2xl);
+  font-weight: bold;
+  color: var(--clr-primary);
+  margin: var(--sp-2xl) 0 var(--sp-lg) 0;
+  padding-bottom: var(--sp-md);
+  border-bottom: 2px solid var(--clr-primary);
+}
+
+.site-page {
+  min-height: 100vh;
+  page-break-before: always;
+}
+
+.site-header {
+  background: linear-gradient(135deg, var(--clr-cross-section), var(--clr-primary));
+  color: var(--clr-white);
+  padding: var(--sp-xl);
+  border-radius: var(--sp-md);
+  margin-bottom: var(--sp-xl);
+}
+
+.site-title {
+  font-size: var(--font-size-3xl);
+  font-weight: bold;
+  margin: 0 0 var(--sp-lg) 0;
+}
+
+.site-info-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--sp-lg);
+}
+
+.site-info-item h4 {
+  margin: 0 0 var(--sp-xs) 0;
+  font-size: var(--font-size-sm);
+  opacity: 0.9;
+}
+
+.site-info-item p {
+  margin: 0;
+  font-size: var(--font-size-base);
+  font-weight: 600;
+}
+
+.site-section {
+  margin: var(--sp-xl) 0;
+  padding: var(--sp-xl);
+  background: var(--clr-white);
+  border-radius: var(--sp-sm);
+  border: 1px solid var(--clr-border);
+  page-break-inside: avoid;
+}
+
+.site-section h3 {
+  margin: 0 0 var(--sp-lg) 0;
+  font-size: var(--font-size-xl);
+}
+
+.metric-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--sp-md);
+  margin: var(--sp-lg) 0;
+}
+
+.metric-card {
+  text-align: center;
+  padding: var(--sp-md);
+  background: #f8fafc;
+  border-radius: var(--sp-xs);
+  border: 1px solid var(--clr-border);
+}
+
+.metric-value {
+  font-size: var(--font-size-xl);
+  font-weight: bold;
+  color: var(--clr-primary);
+  margin: 0 0 var(--sp-xs) 0;
+}
+
+.metric-label {
+  font-size: var(--font-size-xs);
+  color: var(--clr-text-light);
+  margin: 0;
+}
+
+.chart-container svg {
+  max-width: 100%;
+  height: auto;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: var(--sp-lg) 0;
+  font-size: var(--font-size-sm);
+}
+
+.data-table th {
+  background: #f3f4f6;
+  padding: var(--sp-md);
+  border: 1px solid var(--clr-border);
+  font-weight: 600;
+  text-align: left;
+}
+
+.data-table td {
+  padding: var(--sp-sm) var(--sp-md);
+  border: 1px solid var(--clr-border);
+}
+
+.data-table tbody tr:nth-child(even) {
+  background: #f9fafb;
+}
+
+.photo-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sp-lg);
+  margin: var(--sp-lg) 0;
+}
+
+.photo-placeholder {
+  height: 200px;
+  background: #f3f4f6;
+  border: 2px dashed var(--clr-border);
+  border-radius: var(--sp-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--clr-text-light);
+  font-style: italic;
+}
+
+/* Figure captions */
+.figure {
+  margin: var(--sp-lg) 0;
+  text-align: center;
+}
+
+.figure-caption {
+  font-size: var(--font-size-sm);
+  color: var(--clr-text-light);
+  margin-top: var(--sp-sm);
+  font-style: italic;
+}
+
+/* Units styling */
+.unit {
+  font-variant: normal;
+}
+
+.unit-sup {
+  vertical-align: super;
+  font-size: 0.75em;
+}
+
+.unit-sub {
+  vertical-align: sub;
+  font-size: 0.75em;
+}
+`;
+
+// Modular render functions for cleaner code organization
+function renderCoverPage(reportData: any, totalSites: number, formatDate: Function) {
+  return `
+    <header class="cover-page">
+        <h1 style="font-size: var(--font-size-4xl); color: var(--clr-primary); margin-bottom: var(--sp-lg);">${reportData.name}</h1>
+        <h2 style="font-size: var(--font-size-xl); color: var(--clr-text-light); margin-bottom: var(--sp-2xl);">GCSE Geography River Study Analysis</h2>
+        
+        <div style="margin: var(--sp-2xl) 0;">
+            <p style="font-size: var(--font-size-lg); margin: var(--sp-md) 0;"><strong>Study Date:</strong> ${formatDate(reportData.date)}</p>
+            <p style="font-size: var(--font-size-lg); margin: var(--sp-md) 0;"><strong>Location:</strong> ${reportData.county ? reportData.county + ', ' : ''}${reportData.country || 'UK'}</p>
+            <p style="font-size: var(--font-size-lg); margin: var(--sp-md) 0;"><strong>Total Sites:</strong> ${totalSites}</p>
+        </div>
+        
+        <div style="position: absolute; bottom: var(--sp-2xl); left: 50%; transform: translateX(-50%); text-align: center;">
+            <p style="font-size: var(--font-size-sm); color: var(--clr-text-light); margin: 0;">Generated on ${formatDate(new Date().toISOString())}</p>
+        </div>
+    </header>
+  `;
+}
+
+function renderTableOfContents(tocEntries: any[]) {
+  return `
+    <section class="toc">
+        <h1 class="toc-title">Table of Contents</h1>
+        ${tocEntries.map(entry => `
+            <div class="toc-entry">
+                <span>${entry.title}</span>
+                <span>Page ${entry.page}</span>
+            </div>
+        `).join('')}
+    </section>
+  `;
+}
+
+function renderExecutiveSummary(reportData: any, totalSites: number, totalArea: number, avgVelocity: number, totalDischarge: number, sitesData: any[], formatDate: Function, formatUnitWithSuperscript: Function, formatUnit: Function, generateMapSVG: Function, getNextFigureNumber: Function) {
+  return `
+    <section class="page-break-before">
+        <header>
+            <h1 style="font-size: var(--font-size-3xl); color: var(--clr-primary); text-align: center; margin-bottom: var(--sp-2xl); border-bottom: 3px solid var(--clr-primary); padding-bottom: var(--sp-md);">Executive Summary</h1>
+        </header>
+        
+        <!-- KPI Cards -->
+        <section class="kpi-grid page-break-avoid">
+            <article class="kpi-card kpi-blue">
+                <div class="kpi-value">${totalSites}</div>
+                <div class="kpi-label">Total Sites</div>
+            </article>
+            <article class="kpi-card kpi-green">
+                <div class="kpi-value">${formatUnitWithSuperscript(totalArea, 'm', '2')}</div>
+                <div class="kpi-label">Total Area</div>
+            </article>
+            <article class="kpi-card kpi-purple">
+                <div class="kpi-value">${formatUnit(avgVelocity, 'm/s')}</div>
+                <div class="kpi-label">Avg Velocity</div>
+            </article>
+            <article class="kpi-card kpi-orange">
+                <div class="kpi-value">${formatUnitWithSuperscript(totalDischarge, 'm', '3')}/s</div>
+                <div class="kpi-label">Total Discharge</div>
+            </article>
+        </section>
+        
+        <!-- Study Information -->
+        <section class="study-info page-break-avoid">
+            <h3>Study Information</h3>
+            <div class="info-grid">
+                <div class="info-item">
+                    <span><strong>Date:</strong></span>
+                    <span>${formatDate(reportData.date)}</span>
+                </div>
+                <div class="info-item">
+                    <span><strong>Location:</strong></span>
+                    <span>${reportData.county ? reportData.county + ', ' : ''}${reportData.country || 'UK'}</span>
+                </div>
+                <div class="info-item">
+                    <span><strong>Total Sites:</strong></span>
+                    <span>${totalSites}</span>
+                </div>
+                <div class="info-item">
+                    <span><strong>Study Type:</strong></span>
+                    <span>River Cross-section Analysis</span>
+                </div>
+            </div>
+            ${reportData.notes ? `<p style="margin: var(--sp-md) 0 0 0; padding: var(--sp-md); background: #f1f5f9; border-radius: var(--sp-xs); border-left: 4px solid var(--clr-cross-section);"><strong>Notes:</strong> ${reportData.notes}</p>` : ''}
+        </section>
+
+        <!-- Methodology -->
+        <section class="study-info page-break-avoid" style="background: #f0f9ff;">
+            <h3 style="color: var(--clr-cross-section);">Methodology</h3>
+            <div style="font-size: var(--font-size-sm); line-height: 1.6;">
+                <p><strong>Equipment:</strong> Measuring tape, depth probe, flow meter, digital calipers, GPS device</p>
+                <p><strong>Sampling Method:</strong> Systematic point measurements across river width at ${totalSites} representative sites</p>
+                <p><strong>Measurements:</strong> Cross-sectional profile, velocity at 0.6 depth, sediment size and roundness</p>
+                <p><strong>Data Processing:</strong> Statistical analysis including Spearman's rank correlation for sediment relationships</p>
+            </div>
+        </section>
+
+        <!-- Site Location Map -->
+        <section class="page-break-avoid" style="margin-top: var(--sp-xl);">
+            <h2 class="section-header" style="color: var(--clr-map); border-bottom-color: var(--clr-map); text-align: center; margin-bottom: var(--sp-lg);">Site Location Map</h2>
+            <figure class="figure">
+                ${generateMapSVG(sitesData)}
+                <figcaption class="figure-caption">Figure ${getNextFigureNumber()}: Location map showing measurement sites and inter-site distances</figcaption>
+            </figure>
+        </section>
+    </section>
+  `;
+}
+
 function createReportHTML(riverWalk: RiverWalk | null, sites: Site[] | null) {
   // Use real river walk data if available, otherwise sample data
   const reportData = riverWalk || {
@@ -127,9 +652,69 @@ function createReportHTML(riverWalk: RiverWalk | null, sites: Site[] | null) {
     return 'Very Rounded';
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString();
+  // Utility functions for number formatting and units with consistent significant figures
+  const formatNumber = (value: number, decimals: number = 2): string => {
+    return value.toLocaleString('en-GB', { 
+      minimumFractionDigits: decimals,
+      maximumFractionDigits: decimals 
+    });
   };
+
+  const formatSignificantFigures = (value: number, sigFigs: number = 3): string => {
+    if (value === 0) return '0.00';
+    const magnitude = Math.floor(Math.log10(Math.abs(value)));
+    const decimals = Math.max(0, sigFigs - magnitude - 1);
+    return value.toLocaleString('en-GB', {
+      minimumFractionDigits: decimals,
+      maximumFractionDigits: decimals
+    });
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-GB');
+  };
+
+  const formatUnit = (value: number, unit: string, decimals: number = 2): string => {
+    const formattedValue = formatNumber(value, decimals);
+    return `${formattedValue}<span class="unit">${unit}</span>`;
+  };
+
+  const formatUnitWithSuperscript = (value: number, baseUnit: string, superscript: string, decimals: number = 2): string => {
+    const formattedValue = formatNumber(value, decimals);
+    return `${formattedValue}<span class="unit">${baseUnit}<span class="unit-sup">${superscript}</span></span>`;
+  };
+
+  // Figure counter for numbered captions
+  let figureCounter = 0;
+  const getNextFigureNumber = () => ++figureCounter;
+
+  // Page calculation for TOC
+  let pageCounter = 1;
+  const getPageNumber = () => pageCounter++;
+  
+  // Reset page counter
+  pageCounter = 1;
+  
+  // Cover page = 1, TOC = 2, Summary = 3, Data tables = 4+, Sites start after that
+  const coverPage = getPageNumber();
+  const tocPage = getPageNumber(); 
+  const summaryPage = getPageNumber();
+  const dataTablesStartPage = getPageNumber();
+  const sitesStartPage = dataTablesStartPage + (sitesData.length > 0 ? 3 : 0); // 3 pages for data tables
+  
+  // TOC entries
+  const tocEntries = [
+    { title: 'Executive Summary', page: summaryPage },
+    ...(sitesData.length > 0 ? [
+      { title: 'Cross-Sectional Area Analysis', page: dataTablesStartPage },
+      { title: 'Velocity Analysis', page: dataTablesStartPage + 1 },
+      { title: 'Sediment Analysis', page: dataTablesStartPage + 2 }
+    ] : []),
+    ...sitesData.map((site, index) => ({
+      title: `Site ${site.site_number} Analysis`,
+      page: sitesStartPage + index
+    }))
+  ];
 
   // Calculate distance between two GPS coordinates (Haversine formula)
   const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
@@ -175,8 +760,19 @@ function createReportHTML(riverWalk: RiverWalk | null, sites: Site[] | null) {
     const maxDiff = Math.max(latDiff, lonDiff);
     const zoom = Math.min(15, Math.max(8, Math.round(14 - Math.log2(maxDiff * 100))));
 
-    // Google Maps Static API URL (exact frontend implementation)
-    const googleMapsApiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || 'YOUR_GOOGLE_MAPS_API_KEY_HERE';
+    // Google Maps Static API URL - use environment variable only
+    const googleMapsApiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+    if (!googleMapsApiKey) {
+      // Return a simple text-based map placeholder when API key is not available
+      return `
+        <div style="width: 600px; height: 400px; border: 2px dashed #e5e7eb; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #f9fafb; color: #6b7280; text-align: center; padding: 40px;">
+          <div style="font-size: 24px; margin-bottom: 16px;">🗺️</div>
+          <h3 style="margin: 0 0 8px 0; color: #374151;">Site Location Map</h3>
+          <p style="margin: 0; font-size: 14px;">GPS coordinates: ${sitesWithGPS.length} sites recorded</p>
+          <p style="margin: 8px 0 0 0; font-size: 12px;">Map display requires API configuration</p>
+        </div>
+      `;
+    }
     const mapUrl = `https://maps.googleapis.com/maps/api/staticmap?center=${centerLat},${centerLng}&zoom=${zoom}&size=600x400&maptype=roadmap&style=feature:poi|visibility:off&style=feature:transit|visibility:off&style=feature:administrative.locality|element:labels|visibility:simplified&key=${googleMapsApiKey}`;
 
     // Calculate scaling for SVG overlay (frontend logic)
@@ -601,395 +1197,15 @@ function createReportHTML(riverWalk: RiverWalk | null, sites: Site[] | null) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>${reportData.name}</title>
     <style>
-        @media print {
-            * {
-                -webkit-print-color-adjust: exact !important;
-                color-adjust: exact !important;
-                print-color-adjust: exact !important;
-            }
-            
-            body {
-                margin: 0 !important;
-                padding: 20px !important;
-                background: white !important;
-                color: black !important;
-            }
-            
-            .page-break-before {
-                break-before: page !important;
-                page-break-before: always !important;
-            }
-            
-            .page-break-avoid {
-                break-inside: avoid !important;
-                page-break-inside: avoid !important;
-            }
-            
-            .chart-container {
-                break-inside: avoid !important;
-                page-break-inside: avoid !important;
-            }
-            
-            table {
-                break-inside: auto !important;
-            }
-            
-            thead {
-                display: table-header-group !important;
-            }
-            
-            tr {
-                break-inside: avoid !important;
-                page-break-inside: avoid !important;
-            }
-            
-            th, td {
-                break-after: avoid !important;
-            }
-            
-            .summary-table {
-                break-inside: avoid !important;
-            }
-        }
-        
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            line-height: 1.5;
-            color: #1f2937;
-            background: white;
-            margin: 0;
-            padding: 20px;
-        }
-        
-        .container {
-            max-width: 210mm;
-            margin: 0 auto;
-        }
-        
-        /* Header styles */
-        .report-header {
-            text-align: center;
-            margin-bottom: 40px;
-            padding: 30px 0;
-            border-bottom: 3px solid #2563eb;
-        }
-        
-        .report-title {
-            font-size: 32px;
-            font-weight: bold;
-            color: #1e40af;
-            margin: 0 0 10px 0;
-        }
-        
-        .report-subtitle {
-            font-size: 18px;
-            color: #6b7280;
-            margin: 0;
-        }
-        
-        /* KPI Grid */
-        .kpi-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 20px;
-            margin: 30px 0;
-        }
-        
-        .kpi-card {
-            padding: 20px;
-            border-radius: 8px;
-            text-align: center;
-            border: 1px solid #e5e7eb;
-        }
-        
-        .kpi-blue { background: #dbeafe; border-color: #3b82f6; }
-        .kpi-green { background: #dcfce7; border-color: #22c55e; }
-        .kpi-purple { background: #f3e8ff; border-color: #a855f7; }
-        .kpi-orange { background: #fed7aa; border-color: #f97316; }
-        
-        .kpi-value {
-            font-size: 24px;
-            font-weight: bold;
-            margin: 0 0 5px 0;
-        }
-        
-        .kpi-blue .kpi-value { color: #1d4ed8; }
-        .kpi-green .kpi-value { color: #16a34a; }
-        .kpi-purple .kpi-value { color: #9333ea; }
-        .kpi-orange .kpi-value { color: #ea580c; }
-        
-        .kpi-label {
-            font-size: 14px;
-            color: #6b7280;
-            margin: 0;
-        }
-        
-        /* Study info */
-        .study-info {
-            background: #f8fafc;
-            padding: 25px;
-            border-radius: 8px;
-            margin: 30px 0;
-            border: 1px solid #e2e8f0;
-        }
-        
-        .study-info h3 {
-            margin: 0 0 15px 0;
-            color: #1e40af;
-            font-size: 18px;
-        }
-        
-        .info-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-        }
-        
-        .info-item {
-            display: flex;
-            justify-content: space-between;
-        }
-        
-        /* Table styles */
-        .summary-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 25px 0;
-            font-size: 13px;
-            background: white;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-        }
-        
-        .summary-table th {
-            padding: 12px 8px;
-            text-align: center;
-            font-weight: 600;
-            font-size: 12px;
-            border: 1px solid #d1d5db;
-        }
-        
-        .summary-table td {
-            padding: 10px 8px;
-            text-align: center;
-            border: 1px solid #d1d5db;
-        }
-        
-        /* Section Color Themes */
-        .cross-section-theme th { background: #dbeafe; color: #1e40af; }
-        .velocity-theme th { background: #dcfce7; color: #166534; }
-        .sediment-theme th { background: #fef3c7; color: #92400e; }
-        
-        .cross-section-theme .summary-col { background: #bfdbfe; }
-        .velocity-theme .summary-col { background: #bbf7d0; }
-        .sediment-theme .summary-col { background: #fde68a; }
-        
-        .cross-section-section { 
-            border-left: 4px solid #3b82f6; 
-            background: linear-gradient(to right, #dbeafe, #f8fafc);
-        }
-        .velocity-section { 
-            border-left: 4px solid #16a34a; 
-            background: linear-gradient(to right, #dcfce7, #f8fafc);
-        }
-        .sediment-section { 
-            border-left: 4px solid #f59e0b; 
-            background: linear-gradient(to right, #fef3c7, #f8fafc);
-        }
-        
-        .cross-section-header { 
-            color: #1e40af; 
-            border-bottom: 2px solid #3b82f6; 
-            background: #dbeafe;
-            padding: 10px 15px;
-            margin: -25px -25px 20px -25px;
-        }
-        .velocity-header { 
-            color: #166534; 
-            border-bottom: 2px solid #16a34a; 
-            background: #dcfce7;
-            padding: 10px 15px;
-            margin: -25px -25px 20px -25px;
-        }
-        .sediment-header { 
-            color: #92400e; 
-            border-bottom: 2px solid #f59e0b; 
-            background: #fef3c7;
-            padding: 10px 15px;
-            margin: -25px -25px 20px -25px;
-        }
-        
-        .section-header {
-            font-size: 24px;
-            font-weight: bold;
-            color: #1e40af;
-            margin: 40px 0 20px 0;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #3b82f6;
-        }
-        
-        /* Site page styles */
-        .site-page {
-            min-height: 100vh;
-        }
-        
-        .site-header {
-            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
-            color: white;
-            padding: 30px;
-            border-radius: 12px;
-            margin-bottom: 30px;
-        }
-        
-        .site-title {
-            font-size: 28px;
-            font-weight: bold;
-            margin: 0 0 20px 0;
-        }
-        
-        .site-info-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 20px;
-        }
-        
-        .site-info-item h4 {
-            margin: 0 0 5px 0;
-            font-size: 14px;
-            opacity: 0.9;
-        }
-        
-        .site-info-item p {
-            margin: 0;
-            font-size: 16px;
-            font-weight: 600;
-        }
-        
-        /* Site content sections */
-        .site-section {
-            margin: 30px 0;
-            padding: 25px;
-            background: white;
-            border-radius: 8px;
-            border: 1px solid #e5e7eb;
-        }
-        
-        .site-section h3 {
-            margin: 0 0 20px 0;
-            font-size: 20px;
-            color: #1e40af;
-        }
-        
-        .metric-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 15px;
-            margin: 20px 0;
-        }
-        
-        .metric-card {
-            text-align: center;
-            padding: 15px;
-            background: #f8fafc;
-            border-radius: 6px;
-            border: 1px solid #e2e8f0;
-        }
-        
-        .metric-value {
-            font-size: 20px;
-            font-weight: bold;
-            color: #1e40af;
-            margin: 0 0 5px 0;
-        }
-        
-        .metric-label {
-            font-size: 12px;
-            color: #6b7280;
-            margin: 0;
-        }
-        
-        /* Chart container styles */
-        .chart-container svg {
-            max-width: 100%;
-            height: auto;
-        }
-        
-        .data-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 20px 0;
-            font-size: 13px;
-        }
-        
-        .data-table th {
-            background: #f3f4f6;
-            padding: 10px;
-            border: 1px solid #d1d5db;
-            font-weight: 600;
-            text-align: left;
-        }
-        
-        .data-table td {
-            padding: 8px 10px;
-            border: 1px solid #d1d5db;
-        }
-        
-        .data-table tbody tr:nth-child(even) {
-            background: #f9fafb;
-        }
-        
-        .photo-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            margin: 20px 0;
-        }
-        
-        .photo-placeholder {
-            height: 200px;
-            background: #f3f4f6;
-            border: 2px dashed #d1d5db;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #6b7280;
-            font-style: italic;
-        }
+        ${CSS_STYLES}
     </style>
 </head>
 <body>
-    <div class="container">
-        <!-- SUMMARY PAGE -->
-        <div class="page-break-avoid">
-            <div class="report-header">
-                <h1 class="report-title">${reportData.name}</h1>
-                <p class="report-subtitle">GCSE Geography River Study Analysis</p>
-            </div>
-            
-            <!-- KPI Cards -->
-            <div class="kpi-grid page-break-avoid">
-                <div class="kpi-card kpi-blue">
-                    <div class="kpi-value">${totalSites}</div>
-                    <div class="kpi-label">Total Sites</div>
-                </div>
-                <div class="kpi-card kpi-green">
-                    <div class="kpi-value">${totalArea.toFixed(2)}</div>
-                    <div class="kpi-label">Total Area (m²)</div>
-                </div>
-                <div class="kpi-card kpi-purple">
-                    <div class="kpi-value">${avgVelocity.toFixed(2)}</div>
-                    <div class="kpi-label">Avg Velocity (m/s)</div>
-                </div>
-                <div class="kpi-card kpi-orange">
-                    <div class="kpi-value">${totalDischarge.toFixed(2)}</div>
-                    <div class="kpi-label">Total Discharge (m³/s)</div>
-                </div>
-            </div>
-            
-            <!-- Study Information -->
-            <div class="study-info page-break-avoid">
-                <h3>Study Information</h3>
-                <div class="info-grid">
+    <div class="report-container">
+        ${renderCoverPage(reportData, totalSites, formatDate)}
+        ${renderTableOfContents(tocEntries)}
+        ${renderExecutiveSummary(reportData, totalSites, totalArea, avgVelocity, totalDischarge, sitesData, formatDate, formatUnitWithSuperscript, formatUnit, generateMapSVG, getNextFigureNumber)}
+        ${sitesData.length > 0 ? `
                     <div class="info-item">
                         <span><strong>Date:</strong></span>
                         <span>${formatDate(reportData.date)}</span>
@@ -1019,7 +1235,6 @@ function createReportHTML(riverWalk: RiverWalk | null, sites: Site[] | null) {
             </div>
         </div>
 
-        ${sitesData.length > 0 ? `
         <!-- CROSS-SECTIONAL AREA SUMMARY -->
         <div class="page-break-before">
             <h2 class="section-header cross-section-header">Cross-Sectional Area Summary</h2>
@@ -1108,11 +1323,12 @@ function createReportHTML(riverWalk: RiverWalk | null, sites: Site[] | null) {
             </table>
             
             <!-- Wind Rose Chart -->
-            <div class="page-break-avoid" style="margin-top: 30px;">
-                <h3 style="text-align: center; color: #92400e; margin-bottom: 20px;">Sediment Roundness Distribution (Wind Rose)</h3>
-                <div style="display: flex; justify-content: center;">
+            <div class="page-break-avoid" style="margin-top: var(--sp-xl);">
+                <h3 style="text-align: center; color: var(--clr-sediment); margin-bottom: var(--sp-lg);">Sediment Roundness Distribution</h3>
+                <figure class="figure">
                     ${generateWindRoseSVG(sitesData)}
-                </div>
+                    <figcaption class="figure-caption">Figure ${getNextFigureNumber()}: Wind rose chart showing sediment roundness distribution across all measurement sites</figcaption>
+                </figure>
             </div>
         </div>
         ` : ''}
@@ -1176,25 +1392,28 @@ function createReportHTML(riverWalk: RiverWalk | null, sites: Site[] | null) {
                 <!-- Cross-Sectional Analysis -->
                 <div class="site-section cross-section-section page-break-avoid">
                     <h3 class="cross-section-header">Cross-Sectional Analysis</h3>
-                    <div class="chart-container" style="display: flex; justify-content: center; margin: 20px 0;">
-                        ${generateCrossSectionSVG(site)}
-                    </div>
+                    <figure class="figure">
+                        <div class="chart-container" style="display: flex; justify-content: center; margin: var(--sp-lg) 0;">
+                            ${generateCrossSectionSVG(site)}
+                        </div>
+                        <figcaption class="figure-caption">Figure ${getNextFigureNumber()}: Cross-sectional profile for Site ${site.site_number} showing depth measurements across river width</figcaption>
+                    </figure>
                     
                     <div class="metric-grid">
                         <div class="metric-card">
-                            <div class="metric-value">${site.river_width}</div>
+                            <div class="metric-value">${formatSignificantFigures(site.river_width)}</div>
                             <div class="metric-label">Width (m)</div>
                         </div>
                         <div class="metric-card">
-                            <div class="metric-value">${calculateMaxDepth(site).toFixed(2)}</div>
+                            <div class="metric-value">${formatSignificantFigures(calculateMaxDepth(site))}</div>
                             <div class="metric-label">Max Depth (m)</div>
                         </div>
                         <div class="metric-card">
-                            <div class="metric-value">${calculateAverageDepth(site).toFixed(2)}</div>
+                            <div class="metric-value">${formatSignificantFigures(calculateAverageDepth(site))}</div>
                             <div class="metric-label">Avg Depth (m)</div>
                         </div>
                         <div class="metric-card">
-                            <div class="metric-value">${calculateCrossSectionalArea(site).toFixed(2)}</div>
+                            <div class="metric-value">${formatSignificantFigures(calculateCrossSectionalArea(site))}</div>
                             <div class="metric-label">Area (m²)</div>
                         </div>
                     </div>
@@ -1229,11 +1448,11 @@ function createReportHTML(riverWalk: RiverWalk | null, sites: Site[] | null) {
                     <h3 class="velocity-header">Velocity Analysis</h3>
                     <div class="metric-grid" style="grid-template-columns: repeat(3, 1fr);">
                         <div class="metric-card">
-                            <div class="metric-value">${calculateAverageVelocity(site).toFixed(2)}</div>
+                            <div class="metric-value">${formatSignificantFigures(calculateAverageVelocity(site))}</div>
                             <div class="metric-label">Average Velocity (m/s)</div>
                         </div>
                         <div class="metric-card">
-                            <div class="metric-value">${calculateDischarge(site).toFixed(2)}</div>
+                            <div class="metric-value">${formatSignificantFigures(calculateDischarge(site))}</div>
                             <div class="metric-label">Discharge (m³/s)</div>
                         </div>
                         <div class="metric-card">
@@ -1272,15 +1491,15 @@ function createReportHTML(riverWalk: RiverWalk | null, sites: Site[] | null) {
                     <h3 class="sediment-header">Sediment Analysis</h3>
                     <div class="metric-grid">
                         <div class="metric-card">
-                            <div class="metric-value">${calculateAverageSedimentSize(site).toFixed(2)}</div>
+                            <div class="metric-value">${formatSignificantFigures(calculateAverageSedimentSize(site))}</div>
                             <div class="metric-label">Average Size (mm)</div>
                         </div>
                         <div class="metric-card">
-                            <div class="metric-value">${calculateAverageSedimentRoundness(site).toFixed(2)}</div>
+                            <div class="metric-value">${formatSignificantFigures(calculateAverageSedimentRoundness(site))}</div>
                             <div class="metric-label">Average Roundness</div>
                         </div>
                         <div class="metric-card">
-                            <div class="metric-value">${calculateSpearmansRank(site).toFixed(3)}</div>
+                            <div class="metric-value">${formatSignificantFigures(calculateSpearmansRank(site), 4)}</div>
                             <div class="metric-label">Spearman's Rank</div>
                         </div>
                         <div class="metric-card">
@@ -1461,21 +1680,37 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     console.log('⏳ Waiting for content to render...');
     await new Promise(resolve => setTimeout(resolve, 3000));
 
-    // Generate PDF with proper page break controls
+    // Generate PDF with headers/footers and page numbers
     console.log('📄 Generating PDF...');
     const pdf = await page.pdf({
       format: 'A4',
       printBackground: true,
       margin: { 
-        top: '20mm', 
+        top: '25mm', 
         right: '15mm', 
-        bottom: '20mm', 
+        bottom: '25mm', 
         left: '15mm' 
       },
       preferCSSPageSize: true,
-      displayHeaderFooter: false,
+      displayHeaderFooter: true,
+      headerTemplate: `
+        <div class="pdf-header">
+          <span style="font-size: 10px; color: #6b7280;">${riverWalk?.name || 'River Study Report'} - Generated ${new Date().toLocaleDateString('en-GB')}</span>
+        </div>
+      `,
+      footerTemplate: `
+        <div class="pdf-footer">
+          <span style="font-size: 10px; color: #6b7280;">Page <span class="pageNumber"></span> of <span class="totalPages"></span></span>
+        </div>
+      `,
       scale: 1.0,
+      // PDF metadata
+      tagged: true,
+      outline: false
     });
+
+    // Note: PDF metadata like Title, Author, Subject are not directly supported in Puppeteer
+    // but could be added via a post-processing library like pdf-lib if needed
 
     await page.close();
     await browser.close();
