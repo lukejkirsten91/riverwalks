@@ -131,7 +131,153 @@ function createReportHTML(riverWalk: RiverWalk | null, sites: Site[] | null) {
     return new Date(dateString).toLocaleDateString();
   };
 
-  // Generate SVG cross-section chart for a site (exact frontend replication)
+  // Calculate distance between two GPS coordinates (Haversine formula)
+  const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
+    const R = 6371; // Earth's radius in kilometers
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+              Math.sin(dLon/2) * Math.sin(dLon/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c * 1000; // Return distance in meters
+  };
+
+  // Generate SVG map with GPS markers and distance labels
+  const generateMapSVG = (sites: any[]) => {
+    const sitesWithGPS = sites.filter(site => site.latitude && site.longitude);
+    
+    if (sitesWithGPS.length === 0) {
+      return '<div style="text-align: center; color: #6b7280; padding: 40px;">No GPS coordinates available for map</div>';
+    }
+
+    const width = 600;
+    const height = 400;
+    const margin = { top: 40, right: 40, bottom: 40, left: 40 };
+    const mapWidth = width - margin.left - margin.right;
+    const mapHeight = height - margin.top - margin.bottom;
+
+    // Calculate map bounds
+    const lats = sitesWithGPS.map(site => site.latitude);
+    const lons = sitesWithGPS.map(site => site.longitude);
+    const minLat = Math.min(...lats);
+    const maxLat = Math.max(...lats);
+    const minLon = Math.min(...lons);
+    const maxLon = Math.max(...lons);
+
+    // Add padding to bounds
+    const latPadding = (maxLat - minLat) * 0.1 || 0.001;
+    const lonPadding = (maxLon - minLon) * 0.1 || 0.001;
+    
+    const mapBounds = {
+      minLat: minLat - latPadding,
+      maxLat: maxLat + latPadding,
+      minLon: minLon - lonPadding,
+      maxLon: maxLon + lonPadding
+    };
+
+    // Scaling functions
+    const xScale = (lon: number) => ((lon - mapBounds.minLon) / (mapBounds.maxLon - mapBounds.minLon)) * mapWidth;
+    const yScale = (lat: number) => mapHeight - ((lat - mapBounds.minLat) / (mapBounds.maxLat - mapBounds.minLat)) * mapHeight;
+
+    // Generate connection lines with distance labels
+    const connections = sitesWithGPS.slice(0, -1).map((site, index) => {
+      const nextSite = sitesWithGPS[index + 1];
+      const distance = calculateDistance(site.latitude, site.longitude, nextSite.latitude, nextSite.longitude);
+      
+      const x1 = xScale(site.longitude);
+      const y1 = yScale(site.latitude);
+      const x2 = xScale(nextSite.longitude);
+      const y2 = yScale(nextSite.latitude);
+      
+      // Calculate midpoint for label
+      const midX = (x1 + x2) / 2;
+      const midY = (y1 + y2) / 2;
+      
+      return {
+        line: `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#3b82f6" stroke-width="2" stroke-dasharray="5,5"/>`,
+        label: `<text x="${midX}" y="${midY - 8}" text-anchor="middle" font-size="10" fill="#1e40af" font-weight="bold" 
+                      style="background: white; padding: 2px;">${distance.toFixed(0)}m</text>
+                <rect x="${midX - 15}" y="${midY - 18}" width="30" height="12" fill="white" stroke="#3b82f6" stroke-width="1" rx="2"/>`
+      };
+    });
+
+    // Generate site markers
+    const markers = sitesWithGPS.map((site, index) => {
+      const x = xScale(site.longitude);
+      const y = yScale(site.latitude);
+      const color = ['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899'][index % 6];
+      
+      return `
+        <!-- Site marker -->
+        <circle cx="${x}" cy="${y}" r="8" fill="${color}" stroke="white" stroke-width="2"/>
+        <text x="${x}" y="${y + 4}" text-anchor="middle" font-size="10" fill="white" font-weight="bold">${site.site_number}</text>
+        
+        <!-- Site label -->
+        <text x="${x}" y="${y - 15}" text-anchor="middle" font-size="10" fill="${color}" font-weight="bold">Site ${site.site_number}</text>
+        <text x="${x}" y="${y - 28}" text-anchor="middle" font-size="8" fill="#6b7280">${site.latitude.toFixed(6)}, ${site.longitude.toFixed(6)}</text>
+      `;
+    });
+
+    return `
+      <svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" style="background: white; border: 1px solid #e5e7eb;">
+        <!-- Map background -->
+        <rect width="${width}" height="${height}" fill="#f0f9ff"/>
+        <rect x="${margin.left}" y="${margin.top}" width="${mapWidth}" height="${mapHeight}" fill="#e0f2fe" stroke="#0284c7" stroke-width="1"/>
+        
+        <!-- Grid lines -->
+        ${[0.2, 0.4, 0.6, 0.8].map(ratio => `
+          <line x1="${margin.left + ratio * mapWidth}" y1="${margin.top}" 
+                x2="${margin.left + ratio * mapWidth}" y2="${margin.top + mapHeight}" 
+                stroke="#cbd5e1" stroke-width="0.5" opacity="0.5"/>
+          <line x1="${margin.left}" y1="${margin.top + ratio * mapHeight}" 
+                x2="${margin.left + mapWidth}" y2="${margin.top + ratio * mapHeight}" 
+                stroke="#cbd5e1" stroke-width="0.5" opacity="0.5"/>
+        `).join('')}
+        
+        <!-- Map content area -->
+        <g transform="translate(${margin.left}, ${margin.top})">
+          <!-- Flight path lines -->
+          ${connections.map(conn => conn.line).join('')}
+          
+          <!-- Distance labels background -->
+          ${connections.map(conn => conn.label).join('')}
+          
+          <!-- Site markers -->
+          ${markers.join('')}
+        </g>
+        
+        <!-- Compass rose -->
+        <g transform="translate(${width - 60}, 60)">
+          <circle cx="0" cy="0" r="20" fill="white" stroke="#374151" stroke-width="1"/>
+          <path d="M 0,-15 L 5,0 L 0,5 L -5,0 Z" fill="#ef4444"/>
+          <text x="0" y="-25" text-anchor="middle" font-size="8" fill="#374151" font-weight="bold">N</text>
+        </g>
+        
+        <!-- Scale indicator -->
+        <g transform="translate(40, ${height - 60})">
+          <line x1="0" y1="0" x2="50" y2="0" stroke="#374151" stroke-width="2"/>
+          <line x1="0" y1="-3" x2="0" y2="3" stroke="#374151" stroke-width="2"/>
+          <line x1="50" y1="-3" x2="50" y2="3" stroke="#374151" stroke-width="2"/>
+          <text x="25" y="-8" text-anchor="middle" font-size="8" fill="#374151">≈50m</text>
+        </g>
+        
+        <!-- Title -->
+        <text x="${width/2}" y="25" text-anchor="middle" font-size="16" fill="#1e40af" font-weight="bold">Site Location Map</text>
+        
+        <!-- Legend -->
+        <g transform="translate(20, ${height - 100})">
+          <text x="0" y="0" font-size="10" fill="#374151" font-weight="bold">Legend:</text>
+          <line x1="0" y1="15" x2="20" y2="15" stroke="#3b82f6" stroke-width="2" stroke-dasharray="5,5"/>
+          <text x="25" y="18" font-size="8" fill="#374151">Flight path with distance</text>
+          <circle cx="10" cy="30" r="6" fill="#3b82f6" stroke="white" stroke-width="1"/>
+          <text x="20" y="33" font-size="8" fill="#374151">Measurement site</text>
+        </g>
+      </svg>
+    `;
+  };
+
+  // Generate SVG cross-section chart for a site (improved scaling)
   const generateCrossSectionSVG = (site: any) => {
     if (!site.measurement_points || site.measurement_points.length === 0) {
       return '<div style="text-align: center; color: #6b7280; padding: 40px;">No measurement points available for cross-section chart</div>';
@@ -140,56 +286,68 @@ function createReportHTML(riverWalk: RiverWalk | null, sites: Site[] | null) {
     const points = site.measurement_points.sort((a: any, b: any) => a.point_number - b.point_number);
     const width = 600;
     const height = 400;
-    const margin = { top: 60, right: 40, bottom: 60, left: 60 };
+    const margin = { top: 80, right: 40, bottom: 80, left: 60 };
     const chartWidth = width - margin.left - margin.right;
     const chartHeight = height - margin.top - margin.bottom;
 
-    // Calculate exact frontend scaling
+    // Calculate proper scaling to fit all elements
     const riverWidth = site.river_width;
-    const xRange = [-0.5, riverWidth + 0.5];
-    const distances = points.map((p: any) => p.distance_from_bank);
     const depths = points.map((p: any) => p.depth);
+    const maxDepth = Math.max(...depths);
     const minDepth = Math.min(...depths);
-    const brownFillDepth = minDepth + 0.5; // extends below deepest point
-
-    // Frontend uses autorange for Y, we'll calculate the range
-    const yRange = [Math.min(-brownFillDepth, 0) - 0.5, 0.5];
+    
+    // X range: extend slightly beyond river width
+    const xRange = [-0.5, riverWidth + 0.5];
+    
+    // Y range: ensure all elements fit with proper padding
+    const bankHeight = 0.5; // Height of banks above water
+    const undergroundDepth = 0.5; // Underground extension below deepest point
+    const widthIndicatorHeight = 0.3; // Space for width indicator
+    const labelSpace = 0.2; // Space for depth labels
+    
+    const yMax = bankHeight + widthIndicatorHeight + labelSpace;
+    const yMin = -(maxDepth + undergroundDepth);
+    const yRange = [yMin, yMax];
     
     const xScale = (x: number) => ((x - xRange[0]) / (xRange[1] - xRange[0])) * chartWidth;
     const yScale = (y: number) => chartHeight - ((y - yRange[0]) / (yRange[1] - yRange[0])) * chartHeight;
 
-    // Generate paths exactly like frontend
-    // 1. Brown underground area
-    const undergroundPath = `M ${xScale(-0.5)} ${yScale(-brownFillDepth)} 
-                            L ${xScale(riverWidth + 0.5)} ${yScale(-brownFillDepth)} 
+    // Generate paths with proper scaling
+    // 1. Brown underground area (extends below deepest point)
+    const undergroundY = yMin;
+    const undergroundPath = `M ${xScale(-0.5)} ${yScale(undergroundY)} 
+                            L ${xScale(riverWidth + 0.5)} ${yScale(undergroundY)} 
                             L ${xScale(riverWidth + 0.5)} ${yScale(0)} 
                             L ${xScale(-0.5)} ${yScale(0)} Z`;
 
     // 2. Left bank
-    const leftBankPath = `M ${xScale(-0.5)} ${yScale(0.5)} 
+    const leftBankPath = `M ${xScale(-0.5)} ${yScale(bankHeight)} 
                          L ${xScale(0)} ${yScale(0)} 
                          L ${xScale(-0.5)} ${yScale(0)} Z`;
 
     // 3. Right bank  
     const rightBankPath = `M ${xScale(riverWidth)} ${yScale(0)} 
-                          L ${xScale(riverWidth + 0.5)} ${yScale(0.5)} 
+                          L ${xScale(riverWidth + 0.5)} ${yScale(bankHeight)} 
                           L ${xScale(riverWidth + 0.5)} ${yScale(0)} Z`;
 
-    // 4. River bed (main profile) - filled to zero
-    const riverBedPoints = points.map((p: any) => `${xScale(p.distance_from_bank)},${yScale(-p.depth)}`).join(' L ');
-    const riverBedPath = `M ${xScale(0)},${yScale(0)} L ${riverBedPoints} L ${xScale(riverWidth)},${yScale(0)} Z`;
+    // 4. River bed (main profile) - create smooth path through measurement points
+    const riverBedPoints = points.map((p: any) => `${xScale(p.distance_from_bank)},${yScale(-p.depth)}`);
+    const riverBedPath = `M ${xScale(0)},${yScale(0)} 
+                         L ${riverBedPoints.join(' L ')} 
+                         L ${xScale(riverWidth)},${yScale(0)} Z`;
 
     // 5. Water surface line
     const waterSurfacePath = `M ${xScale(0)} ${yScale(0)} L ${xScale(riverWidth)} ${yScale(0)}`;
 
-    // Width indicator shapes (frontend annotations)
-    const widthLineY = yScale(0.2);
-    const widthTickY1 = yScale(0.1);
+    // Width indicator (positioned above banks)
+    const widthLineY = yScale(bankHeight + 0.1);
+    const widthTickY1 = yScale(bankHeight + 0.05);
+    const widthTickY2 = yScale(bankHeight + 0.15);
 
     return `
-      <svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" style="background: lightcyan;">
+      <svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" style="background: white;">
         <defs>
-          <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+          <pattern id="grid-${site.site_number}" width="20" height="20" patternUnits="userSpaceOnUse">
             <path d="M 20 0 L 0 0 0 20" fill="none" stroke="lightgray" stroke-width="0.5"/>
           </pattern>
         </defs>
@@ -199,56 +357,79 @@ function createReportHTML(riverWalk: RiverWalk | null, sites: Site[] | null) {
         <rect x="${margin.left}" y="${margin.top}" width="${chartWidth}" height="${chartHeight}" fill="lightcyan"/>
         
         <!-- Grid -->
-        <rect x="${margin.left}" y="${margin.top}" width="${chartWidth}" height="${chartHeight}" fill="url(#grid)"/>
+        <rect x="${margin.left}" y="${margin.top}" width="${chartWidth}" height="${chartHeight}" fill="url(#grid-${site.site_number})"/>
         
         <!-- Chart area -->
         <g transform="translate(${margin.left}, ${margin.top})">
-          <!-- 1. Brown underground area -->
-          <path d="${undergroundPath}" fill="peru" stroke="brown" stroke-width="0"/>
+          <!-- Clip path to contain all elements -->
+          <defs>
+            <clipPath id="chart-clip-${site.site_number}">
+              <rect x="0" y="0" width="${chartWidth}" height="${chartHeight}"/>
+            </clipPath>
+          </defs>
           
-          <!-- 2. Left bank -->
-          <path d="${leftBankPath}" fill="peru" stroke="brown" stroke-width="0"/>
+          <g clip-path="url(#chart-clip-${site.site_number})">
+            <!-- 1. Brown underground area -->
+            <path d="${undergroundPath}" fill="peru" stroke="brown" stroke-width="0"/>
+            
+            <!-- 2. Left bank -->
+            <path d="${leftBankPath}" fill="peru" stroke="brown" stroke-width="0"/>
+            
+            <!-- 3. Right bank -->
+            <path d="${rightBankPath}" fill="peru" stroke="brown" stroke-width="0"/>
+            
+            <!-- 4. River bed (main profile) -->
+            <path d="${riverBedPath}" fill="lightblue" stroke="royalblue" stroke-width="2"/>
+            
+            <!-- 5. Water surface line -->
+            <path d="${waterSurfacePath}" stroke="lightblue" stroke-width="2"/>
+            
+            <!-- Measurement points (darkblue circles) -->
+            ${points.map((p: any) => {
+              const x = xScale(p.distance_from_bank);
+              const y = yScale(-p.depth);
+              return `<circle cx="${x}" cy="${y}" r="4" fill="darkblue" stroke="white" stroke-width="1"/>`;
+            }).join('')}
+          </g>
           
-          <!-- 3. Right bank -->
-          <path d="${rightBankPath}" fill="peru" stroke="brown" stroke-width="0"/>
-          
-          <!-- 4. River bed (main profile) -->
-          <path d="${riverBedPath}" fill="lightblue" stroke="royalblue" stroke-width="2"/>
-          
-          <!-- 5. Water surface line -->
-          <path d="${waterSurfacePath}" stroke="lightblue" stroke-width="2"/>
-          
-          <!-- Measurement points (darkblue circles) -->
-          ${points.map((p: any) => {
-            const x = xScale(p.distance_from_bank);
-            const y = yScale(-p.depth);
-            return `<circle cx="${x}" cy="${y}" r="4" fill="darkblue" stroke="darkblue" stroke-width="1"/>`;
-          }).join('')}
-          
-          <!-- Width indicator line -->
+          <!-- Width indicator line (above clip area) -->
           <line x1="${xScale(0)}" y1="${widthLineY}" x2="${xScale(riverWidth)}" y2="${widthLineY}" stroke="black" stroke-width="2"/>
           <!-- Width indicator ticks -->
-          <line x1="${xScale(0)}" y1="${widthLineY}" x2="${xScale(0)}" y2="${widthTickY1}" stroke="black" stroke-width="2"/>
-          <line x1="${xScale(riverWidth)}" y1="${widthLineY}" x2="${xScale(riverWidth)}" y2="${widthTickY1}" stroke="black" stroke-width="2"/>
+          <line x1="${xScale(0)}" y1="${widthTickY1}" x2="${xScale(0)}" y2="${widthTickY2}" stroke="black" stroke-width="2"/>
+          <line x1="${xScale(riverWidth)}" y1="${widthTickY1}" x2="${xScale(riverWidth)}" y2="${widthTickY2}" stroke="black" stroke-width="2"/>
         </g>
         
         <!-- Annotations -->
         <!-- Depth labels at each measurement point -->
         ${points.map((p: any) => {
           const x = margin.left + xScale(p.distance_from_bank);
-          const y = margin.top + yScale(-p.depth - 0.1);
-          return `<text x="${x}" y="${y}" text-anchor="middle" font-size="10" fill="black">${p.depth}m</text>`;
+          const y = margin.top + yScale(-p.depth - 0.15); // Position above points
+          return `<text x="${x}" y="${y}" text-anchor="middle" font-size="10" fill="black" font-weight="bold">${p.depth}m</text>`;
         }).join('')}
         
         <!-- Width label -->
-        <text x="${margin.left + xScale(riverWidth/2)}" y="${margin.top + yScale(0.4)}" text-anchor="middle" font-size="12" fill="black" font-weight="bold">${riverWidth}m</text>
+        <text x="${margin.left + xScale(riverWidth/2)}" y="${margin.top + yScale(bankHeight + 0.25)}" text-anchor="middle" font-size="12" fill="black" font-weight="bold">${riverWidth}m</text>
         
         <!-- Axis labels -->
-        <text x="${width/2}" y="${height - 10}" text-anchor="middle" font-size="12" fill="black">Distance from Bank (m)</text>
+        <text x="${width/2}" y="${height - 15}" text-anchor="middle" font-size="12" fill="black">Distance from Bank (m)</text>
         <text x="15" y="${height/2}" text-anchor="middle" font-size="12" fill="black" transform="rotate(-90, 15, ${height/2})">Depth (m)</text>
         
         <!-- Title -->
         <text x="${width/2}" y="25" text-anchor="middle" font-size="16" fill="black" font-weight="bold">Cross-Section: Site ${site.site_number}</text>
+        
+        <!-- Y-axis scale -->
+        ${[0, 0.25, 0.5, 0.75, 1].map(ratio => {
+          const yVal = yRange[0] + ratio * (yRange[1] - yRange[0]);
+          const yPos = margin.top + yScale(yVal);
+          return `<text x="${margin.left - 10}" y="${yPos + 4}" text-anchor="end" font-size="10" fill="black">${yVal.toFixed(1)}m</text>`;
+        }).join('')}
+        
+        <!-- X-axis scale -->
+        ${[0, 0.25, 0.5, 0.75, 1].map(ratio => {
+          const xVal = xRange[0] + ratio * (xRange[1] - xRange[0]);
+          const xPos = margin.left + xScale(xVal);
+          return `<text x="${xPos}" y="${height - 45}" text-anchor="middle" font-size="10" fill="black">${xVal.toFixed(1)}m</text>`;
+        }).join('')}
       </svg>
     `;
   };
@@ -788,6 +969,13 @@ function createReportHTML(riverWalk: RiverWalk | null, sites: Site[] | null) {
                     </div>
                 </div>
                 ${reportData.notes ? `<p style="margin: 15px 0 0 0; padding: 15px; background: #f1f5f9; border-radius: 6px; border-left: 4px solid #3b82f6;"><strong>Notes:</strong> ${reportData.notes}</p>` : ''}
+            </div>
+
+            <!-- Site Location Map -->
+            <div class="page-break-avoid" style="margin-top: 30px;">
+                <div style="display: flex; justify-content: center;">
+                    ${generateMapSVG(sitesData)}
+                </div>
             </div>
         </div>
 
