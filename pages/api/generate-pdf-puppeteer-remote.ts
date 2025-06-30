@@ -3,6 +3,7 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import chromium from '@sparticuz/chromium-min';
 import puppeteerCore from 'puppeteer-core';
 import { supabase } from '../../lib/supabase';
+import { getSitesForRiverWalk } from '../../lib/api/sites';
 import type { RiverWalk, Site } from '../../types';
 
 export const dynamic = 'force-dynamic';
@@ -383,9 +384,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   let browser;
   try {
-    console.log('🔍 Fetching real data for river walk ID:', riverWalkId);
+    console.log('🔍 Fetching real data using frontend approach for river walk ID:', riverWalkId);
     
-    // Try to fetch the actual data first
+    // Fetch river walk data (same as before)
     const { data: riverWalk, error: riverWalkError } = await supabase
       .from('river_walks')
       .select('*')
@@ -394,25 +395,31 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     console.log('📊 River walk query result:', { riverWalk, riverWalkError });
 
-    const { data: sites, error: sitesError } = await supabase
-      .from('sites')
-      .select(`
-        *,
-        measurement_points (*)
-      `)
-      .eq('river_walk_id', riverWalkId)
-      .order('site_number');
+    // Use the exact same function as the frontend
+    let sites: Site[] = [];
+    let sitesError: any = null;
+    
+    try {
+      sites = await getSitesForRiverWalk(riverWalkId);
+      console.log('✅ Successfully fetched sites using frontend function');
+    } catch (error) {
+      sitesError = error;
+      console.error('❌ Error fetching sites using frontend function:', error);
+    }
 
     console.log('📍 Sites query result:', { sitesCount: sites?.length || 0, sitesError });
     
     // Debug: log the actual site data structure
     if (sites && sites.length > 0) {
       console.log('🔍 First site data structure:', {
-        site: sites[0],
+        site_number: sites[0].site_number,
+        site_name: sites[0].site_name,
+        river_width: sites[0].river_width,
         hasMeasurementPoints: !!sites[0].measurement_points,
         measurementPointsCount: sites[0].measurement_points?.length || 0,
         hasVelocityData: !!sites[0].velocity_data,
-        velocityMeasurementsCount: sites[0].velocity_data?.measurements?.length || 0
+        velocityMeasurementsCount: sites[0].velocity_data?.measurements?.length || 0,
+        velocityDataStructure: sites[0].velocity_data
       });
     }
 
@@ -427,7 +434,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (riverWalk && !riverWalkError) {
       console.log('✅ Using real river walk data:', riverWalk.name);
       if (sites && sites.length > 0) {
-        console.log('✅ Found', sites.length, 'real sites');
+        console.log('✅ Found', sites.length, 'real sites with data');
       } else {
         console.log('ℹ️ No sites found for this river walk - will show empty state');
       }
