@@ -75,13 +75,13 @@ function createReportHTML(riverWalk: RiverWalk | null, sites: Site[] | null) {
 
   const calculateAverageSedimentSize = (site: any) => {
     if (!site.sedimentation_data || !site.sedimentation_data.measurements || site.sedimentation_data.measurements.length === 0) return 0;
-    const totalSize = site.sedimentation_data.measurements.reduce((sum: number, measurement: any) => sum + measurement.size_mm, 0);
+    const totalSize = site.sedimentation_data.measurements.reduce((sum: number, measurement: any) => sum + measurement.sediment_size, 0);
     return totalSize / site.sedimentation_data.measurements.length;
   };
 
   const calculateAverageSedimentRoundness = (site: any) => {
     if (!site.sedimentation_data || !site.sedimentation_data.measurements || site.sedimentation_data.measurements.length === 0) return 0;
-    const totalRoundness = site.sedimentation_data.measurements.reduce((sum: number, measurement: any) => sum + measurement.roundness, 0);
+    const totalRoundness = site.sedimentation_data.measurements.reduce((sum: number, measurement: any) => sum + measurement.sediment_roundness, 0);
     return totalRoundness / site.sedimentation_data.measurements.length;
   };
 
@@ -93,7 +93,7 @@ function createReportHTML(riverWalk: RiverWalk | null, sites: Site[] | null) {
     
     // Rank the size measurements
     const sizeRanks = measurements
-      .map((m: any, i: number) => ({ value: m.size_mm, index: i }))
+      .map((m: any, i: number) => ({ value: m.sediment_size, index: i }))
       .sort((a: any, b: any) => b.value - a.value)
       .map((item: any, rank: number) => ({ index: item.index, rank: rank + 1 }))
       .sort((a: any, b: any) => a.index - b.index)
@@ -101,7 +101,7 @@ function createReportHTML(riverWalk: RiverWalk | null, sites: Site[] | null) {
     
     // Rank the roundness measurements
     const roundnessRanks = measurements
-      .map((m: any, i: number) => ({ value: m.roundness, index: i }))
+      .map((m: any, i: number) => ({ value: m.sediment_roundness, index: i }))
       .sort((a: any, b: any) => b.value - a.value)
       .map((item: any, rank: number) => ({ index: item.index, rank: rank + 1 }))
       .sort((a: any, b: any) => a.index - b.index)
@@ -829,10 +829,10 @@ function createReportHTML(riverWalk: RiverWalk | null, sites: Site[] | null) {
                                 ${site.sedimentation_data.measurements.map((measurement, idx) => `
                                     <tr>
                                         <td>${idx + 1}</td>
-                                        <td>${measurement.size_mm.toFixed(2)}</td>
-                                        <td>${measurement.size_mm < 0.063 ? 'Silt/Clay' : measurement.size_mm < 2 ? 'Sand' : measurement.size_mm < 64 ? 'Gravel' : 'Cobble'}</td>
-                                        <td>${measurement.roundness.toFixed(1)}</td>
-                                        <td>${getSedimentRoundnessDescription(measurement.roundness)}</td>
+                                        <td>${measurement.sediment_size.toFixed(2)}</td>
+                                        <td>${measurement.sediment_size < 0.063 ? 'Silt/Clay' : measurement.sediment_size < 2 ? 'Sand' : measurement.sediment_size < 64 ? 'Gravel' : 'Cobble'}</td>
+                                        <td>${measurement.sediment_roundness.toFixed(1)}</td>
+                                        <td>${getSedimentRoundnessDescription(measurement.sediment_roundness)}</td>
                                     </tr>
                                 `).join('')}
                             </tbody>
