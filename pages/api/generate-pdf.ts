@@ -1,7 +1,6 @@
 // pages/api/generate-pdf.ts
 import { NextApiRequest, NextApiResponse } from 'next';
-import { chromium as playwrightChromium, Browser } from 'playwright-core';
-import chromium from '@sparticuz/chromium-min';
+import { chromium as playwrightChromium, Browser } from 'playwright';
 import { Mutex } from 'async-mutex';
 
 export const dynamic = 'force-dynamic';
@@ -20,10 +19,17 @@ async function getBrowser(): Promise<Browser> {
   }
   if (g._browser) return g._browser;
 
+  // Use Playwright's built-in Chromium - no external binaries
   g._browser = await playwrightChromium.launch({
-    args: chromium.args,
-    executablePath: await chromium.executablePath(),
-    headless: true,              // Use true for stable headless mode
+    headless: true,
+    args: [
+      '--no-sandbox',
+      '--disable-setuid-sandbox', 
+      '--disable-dev-shm-usage',
+      '--disable-background-timer-throttling',
+      '--disable-backgrounding-occluded-windows',
+      '--disable-renderer-backgrounding'
+    ]
   });
 
   return g._browser;
