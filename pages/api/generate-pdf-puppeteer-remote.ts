@@ -33,6 +33,364 @@ async function getBrowser() {
   });
 }
 
+function createReportHTML(riverWalk: RiverWalk | null, sites: Site[] | null) {
+  // Use sample data if real data is not available
+  const reportData = riverWalk || {
+    id: 'sample',
+    name: 'Aldenham River Report',
+    date: new Date().toISOString(),
+    county: 'Hertfordshire',
+    country: 'UK',
+    notes: 'GCSE Geography Coursework - River Study Analysis'
+  };
+
+  const sitesData = sites || [
+    {
+      id: 'sample-1',
+      site_number: 1,
+      river_width: 5.2,
+      measurement_points: [
+        { id: 'mp1', point_number: 1, distance_from_bank: 0, depth: 0.1 },
+        { id: 'mp2', point_number: 2, distance_from_bank: 1, depth: 0.3 },
+        { id: 'mp3', point_number: 3, distance_from_bank: 2, depth: 0.5 },
+        { id: 'mp4', point_number: 4, distance_from_bank: 3, depth: 0.4 },
+        { id: 'mp5', point_number: 5, distance_from_bank: 4, depth: 0.2 },
+        { id: 'mp6', point_number: 6, distance_from_bank: 5.2, depth: 0.1 }
+      ],
+      velocity_data: {
+        measurements: [
+          { velocity_ms: 0.5 },
+          { velocity_ms: 0.6 },
+          { velocity_ms: 0.4 }
+        ]
+      }
+    },
+    {
+      id: 'sample-2',
+      site_number: 2,
+      river_width: 6.8,
+      measurement_points: [
+        { id: 'mp7', point_number: 1, distance_from_bank: 0, depth: 0.15 },
+        { id: 'mp8', point_number: 2, distance_from_bank: 1.5, depth: 0.4 },
+        { id: 'mp9', point_number: 3, distance_from_bank: 3, depth: 0.7 },
+        { id: 'mp10', point_number: 4, distance_from_bank: 4.5, depth: 0.5 },
+        { id: 'mp11', point_number: 5, distance_from_bank: 6, depth: 0.3 },
+        { id: 'mp12', point_number: 6, distance_from_bank: 6.8, depth: 0.1 }
+      ],
+      velocity_data: {
+        measurements: [
+          { velocity_ms: 0.3 },
+          { velocity_ms: 0.7 },
+          { velocity_ms: 0.5 },
+          { velocity_ms: 0.6 }
+        ]
+      }
+    }
+  ];
+
+  // Helper functions
+  const calculateAverageDepth = (site: any) => {
+    if (!site.measurement_points || site.measurement_points.length === 0) return 0;
+    const totalDepth = site.measurement_points.reduce((sum: number, point: any) => sum + point.depth, 0);
+    return totalDepth / site.measurement_points.length;
+  };
+
+  const calculateMaxDepth = (site: any) => {
+    if (!site.measurement_points || site.measurement_points.length === 0) return 0;
+    return Math.max(...site.measurement_points.map((point: any) => point.depth));
+  };
+
+  const calculateAverageVelocity = (site: any) => {
+    if (!site.velocity_data || !site.velocity_data.measurements || site.velocity_data.measurements.length === 0) return 0;
+    const totalVelocity = site.velocity_data.measurements.reduce((sum: number, measurement: any) => sum + measurement.velocity_ms, 0);
+    return totalVelocity / site.velocity_data.measurements.length;
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString();
+  };
+
+  return `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${reportData.name}</title>
+    <style>
+        @media print {
+            * {
+                -webkit-print-color-adjust: exact !important;
+                color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            
+            body {
+                margin: 0 !important;
+                padding: 20px !important;
+                background: white !important;
+                color: black !important;
+            }
+            
+            .pdf-component {
+                break-inside: avoid !important;
+            }
+            
+            .pdf-site-section {
+                break-inside: avoid !important;
+            }
+            
+            table {
+                break-inside: auto !important;
+            }
+            
+            thead {
+                display: table-header-group !important;
+            }
+            
+            tr {
+                break-inside: avoid !important;
+            }
+            
+            th, td {
+                break-after: avoid !important;
+            }
+            
+            .site-header {
+                break-before: page !important;
+            }
+            
+            .site-header:first-of-type {
+                break-inside: avoid !important;
+            }
+            
+            .site-header:first-child {
+                break-before: auto !important;
+            }
+            
+            .measurement-table {
+                break-inside: avoid !important;
+            }
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: white;
+            margin: 0;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #2563eb;
+            margin-bottom: 30px;
+            font-size: 28px;
+        }
+        
+        h2 {
+            color: #1d4ed8;
+            border-bottom: 2px solid #3b82f6;
+            padding-bottom: 10px;
+            margin-top: 30px;
+        }
+        
+        h3 {
+            color: #2563eb;
+            margin-top: 25px;
+        }
+        
+        .summary-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .summary-box {
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .summary-box h3 {
+            margin-top: 0;
+            color: #1e40af;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 14px;
+        }
+        
+        th, td {
+            border: 1px solid #d1d5db;
+            padding: 12px;
+            text-align: left;
+        }
+        
+        th {
+            background-color: #f3f4f6;
+            font-weight: bold;
+            color: #374151;
+        }
+        
+        .site-section {
+            margin-bottom: 40px;
+        }
+        
+        .site-measurements {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .measurement-box {
+            background: #f0f9ff;
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid #bae6fd;
+        }
+        
+        .measurement-box h4 {
+            margin-top: 0;
+            color: #0369a1;
+        }
+        
+        .measurement-list {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .measurement-list li {
+            margin: 8px 0;
+        }
+        
+        .measurement-list strong {
+            color: #1e40af;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="pdf-component">
+            <h1>${reportData.name}</h1>
+            
+            <div class="summary-grid">
+                <div class="summary-box">
+                    <h3>Study Details</h3>
+                    <p><strong>Date:</strong> ${formatDate(reportData.date)}</p>
+                    <p><strong>Location:</strong> ${reportData.county ? reportData.county + ', ' : ''}${reportData.country || 'UK'}</p>
+                    ${reportData.notes ? `<p><strong>Notes:</strong> ${reportData.notes}</p>` : ''}
+                </div>
+                
+                <div class="summary-box">
+                    <h3>Summary Statistics</h3>
+                    <p><strong>Total Sites:</strong> ${sitesData.length}</p>
+                    <p><strong>Average Width:</strong> ${sitesData.length > 0 ? (sitesData.reduce((sum, site) => sum + site.river_width, 0) / sitesData.length).toFixed(2) : '0'}m</p>
+                    <p><strong>Average Depth:</strong> ${sitesData.length > 0 ? (sitesData.reduce((sum, site) => sum + calculateAverageDepth(site), 0) / sitesData.length).toFixed(2) : '0'}m</p>
+                </div>
+            </div>
+
+            <div class="pdf-component">
+                <h2>Sites Overview</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Site</th>
+                            <th>Width (m)</th>
+                            <th>Avg Depth (m)</th>
+                            <th>Max Depth (m)</th>
+                            <th>Avg Velocity (m/s)</th>
+                            <th>Cross-sectional Area (m²)</th>
+                            <th>Discharge (m³/s)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${sitesData.map(site => `
+                            <tr>
+                                <td>${site.site_number}</td>
+                                <td>${site.river_width}</td>
+                                <td>${calculateAverageDepth(site).toFixed(2)}</td>
+                                <td>${calculateMaxDepth(site).toFixed(2)}</td>
+                                <td>${calculateAverageVelocity(site).toFixed(2)}</td>
+                                <td>${(site.river_width * calculateAverageDepth(site)).toFixed(2)}</td>
+                                <td>${(site.river_width * calculateAverageDepth(site) * calculateAverageVelocity(site)).toFixed(2)}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        ${sitesData.map((site, index) => `
+            <div class="pdf-site-section site-section ${index > 0 ? 'site-header' : ''}">
+                <h2>Site ${site.site_number}</h2>
+                
+                <div class="site-measurements">
+                    <div class="measurement-box">
+                        <h4>Measurements</h4>
+                        <ul class="measurement-list">
+                            <li><strong>Width:</strong> ${site.river_width}m</li>
+                            <li><strong>Average Depth:</strong> ${calculateAverageDepth(site).toFixed(2)}m</li>
+                            <li><strong>Maximum Depth:</strong> ${calculateMaxDepth(site).toFixed(2)}m</li>
+                            <li><strong>Average Velocity:</strong> ${calculateAverageVelocity(site).toFixed(2)}m/s</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="measurement-box">
+                        <h4>Calculated Values</h4>
+                        <ul class="measurement-list">
+                            <li><strong>Cross-sectional Area:</strong> ${(site.river_width * calculateAverageDepth(site)).toFixed(2)}m²</li>
+                            <li><strong>Discharge:</strong> ${(site.river_width * calculateAverageDepth(site) * calculateAverageVelocity(site)).toFixed(2)}m³/s</li>
+                            <li><strong>Wetted Perimeter:</strong> ${(site.river_width + 2 * calculateAverageDepth(site)).toFixed(2)}m</li>
+                        </ul>
+                    </div>
+                </div>
+
+                ${site.measurement_points && site.measurement_points.length > 0 ? `
+                    <div class="measurement-table">
+                        <h3>Measurement Points</h3>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Point</th>
+                                    <th>Distance from Bank (m)</th>
+                                    <th>Depth (m)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${site.measurement_points
+                                  .sort((a, b) => a.point_number - b.point_number)
+                                  .map(point => `
+                                    <tr>
+                                        <td>${point.point_number}</td>
+                                        <td>${point.distance_from_bank}</td>
+                                        <td>${point.depth}</td>
+                                    </tr>
+                                  `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                ` : ''}
+            </div>
+        `).join('')}
+    </div>
+</body>
+</html>
+  `;
+}
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'OPTIONS') {
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -52,8 +410,34 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   let browser;
   try {
-    console.log('🔍 Skipping database lookup - using print-report page with sample data fallback');
-    console.log('🎯 River walk ID:', riverWalkId);
+    console.log('🔍 Fetching real data for river walk ID:', riverWalkId);
+    
+    // Try to fetch the actual data first
+    const { data: riverWalk, error: riverWalkError } = await supabase
+      .from('river_walks')
+      .select('*')
+      .eq('id', riverWalkId)
+      .maybeSingle();
+
+    console.log('📊 River walk query result:', { riverWalk, riverWalkError });
+
+    const { data: sites, error: sitesError } = await supabase
+      .from('sites')
+      .select(`
+        *,
+        measurement_points (*),
+        velocity_data (*)
+      `)
+      .eq('river_walk_id', riverWalkId)
+      .order('site_number');
+
+    console.log('📍 Sites query result:', { sitesCount: sites?.length || 0, sitesError });
+
+    if (riverWalk && sites && !riverWalkError && !sitesError) {
+      console.log('✅ Successfully fetched real data, proceeding with actual data');
+    } else {
+      console.log('⚠️ Could not fetch real data, will use sample data as fallback');
+    }
 
     console.log('🚀 Starting browser...');
     browser = await getBrowser();
@@ -70,29 +454,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       console.error('📄 Page runtime error:', err);
     });
 
-    // Build the report URL
-    const baseUrl = process.env.VERCEL_URL 
-      ? `https://${process.env.VERCEL_URL}` 
-      : 'http://localhost:3000';
-    const reportUrl = `${baseUrl}/print-report/${riverWalkId}`;
+    // Create HTML content directly with the data
+    console.log('🔧 Creating HTML content with fetched data...');
     
-    console.log('🌐 Navigating to:', reportUrl);
-    console.log('🔧 Environment - VERCEL_URL:', process.env.VERCEL_URL);
+    const htmlContent = createReportHTML(riverWalk, sites);
     
-    try {
-      const response = await page.goto(reportUrl, { 
-        waitUntil: 'networkidle0',
-        timeout: 30000
-      });
-      
-      console.log('📄 Page response status:', response?.status());
-      if (response && response.status() >= 400) {
-        throw new Error(`Page returned ${response.status()} status`);
-      }
-    } catch (navError) {
-      console.error('❌ Navigation failed:', navError);
-      throw new Error(`Failed to navigate to report page: ${navError instanceof Error ? navError.message : String(navError)}`);
-    }
+    console.log('📄 Setting page content...');
+    await page.setContent(htmlContent, { 
+      waitUntil: 'networkidle0',
+      timeout: 30000
+    });
 
     console.log('📐 Setting viewport...');
     await page.setViewport({ width: 1080, height: 1024 });
