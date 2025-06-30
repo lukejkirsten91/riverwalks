@@ -504,6 +504,12 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
 
     console.log('✅ Response OK, creating blob...');
     
+    // Check for debug info in headers
+    const debugSiteInfo = response.headers.get('X-Debug-Site-Info');
+    if (debugSiteInfo) {
+      console.log('🔍 Server-side site debug info:', JSON.parse(debugSiteInfo));
+    }
+    
     // Check if the response is actually a PDF by checking content type
     const contentType = response.headers.get('content-type');
     console.log('📋 Response Content-Type:', contentType);

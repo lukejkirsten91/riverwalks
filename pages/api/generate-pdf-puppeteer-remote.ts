@@ -411,7 +411,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     
     // Debug: log the actual site data structure
     if (sites && sites.length > 0) {
-      console.log('🔍 First site data structure:', {
+      const debugInfo = {
         site_number: sites[0].site_number,
         site_name: sites[0].site_name,
         river_width: sites[0].river_width,
@@ -420,7 +420,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         hasVelocityData: !!sites[0].velocity_data,
         velocityMeasurementsCount: sites[0].velocity_data?.measurements?.length || 0,
         velocityDataStructure: sites[0].velocity_data
-      });
+      };
+      console.log('🔍 First site data structure:', debugInfo);
+      
+      // Add debug info to response headers so we can see it in browser
+      res.setHeader('X-Debug-Site-Info', JSON.stringify(debugInfo));
     }
 
     console.log('📊 Data summary:', {
