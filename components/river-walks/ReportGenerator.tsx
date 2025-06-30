@@ -5,6 +5,7 @@ import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import * as XLSX from 'xlsx';
 import { formatDate } from '../../lib/utils';
+import { supabase } from '../../lib/supabase';
 import type { RiverWalk, Site, MeasurementPoint } from '../../types';
 
 // Dynamically import Plotly to avoid SSR issues
