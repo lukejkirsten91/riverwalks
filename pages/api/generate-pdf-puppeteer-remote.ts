@@ -398,13 +398,23 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       .from('sites')
       .select(`
         *,
-        measurement_points (*),
-        velocity_data (*)
+        measurement_points (*)
       `)
       .eq('river_walk_id', riverWalkId)
       .order('site_number');
 
     console.log('📍 Sites query result:', { sitesCount: sites?.length || 0, sitesError });
+    
+    // Debug: log the actual site data structure
+    if (sites && sites.length > 0) {
+      console.log('🔍 First site data structure:', {
+        site: sites[0],
+        hasMeasurementPoints: !!sites[0].measurement_points,
+        measurementPointsCount: sites[0].measurement_points?.length || 0,
+        hasVelocityData: !!sites[0].velocity_data,
+        velocityMeasurementsCount: sites[0].velocity_data?.measurements?.length || 0
+      });
+    }
 
     console.log('📊 Data summary:', {
       hasRiverWalk: !!riverWalk,
