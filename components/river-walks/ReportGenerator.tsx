@@ -472,10 +472,15 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
     console.log('🌐 Making API request to /api/generate-pdf-puppeteer-remote...');
     const startTime = Date.now();
     
+    // Get the user's session token to pass to server
+    const { data: { session } } = await supabase.auth.getSession();
+    const authToken = session?.access_token;
+    
     const response = await fetch('/api/generate-pdf-puppeteer-remote', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        ...(authToken && { 'Authorization': `Bearer ${authToken}` }),
       },
       body: JSON.stringify(requestData),
     });

@@ -2,8 +2,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import chromium from '@sparticuz/chromium-min';
 import puppeteerCore from 'puppeteer-core';
-import { supabase } from '../../lib/supabase';
-import { getSitesForRiverWalk } from '../../lib/api/sites';
+import { createClient } from '@supabase/supabase-js';
 import type { RiverWalk, Site } from '../../types';
 
 export const dynamic = 'force-dynamic';
@@ -369,7 +368,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (req.method === 'OPTIONS') {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
     return res.status(200).end();
   }
   
@@ -384,9 +383,26 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   let browser;
   try {
-    console.log('🔍 Fetching real data using frontend approach for river walk ID:', riverWalkId);
+    console.log('🔍 Fetching real data with authentication for river walk ID:', riverWalkId);
     
-    // Fetch river walk data (same as before)
+    // Create authenticated Supabase client
+    const authToken = req.headers.authorization?.replace('Bearer ', '');
+    console.log('🔑 Auth token present:', !!authToken);
+    
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    
+    if (!supabaseUrl || !supabaseAnonKey) {
+      throw new Error('Missing Supabase environment variables');
+    }
+    
+    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+      global: {
+        headers: authToken ? { Authorization: `Bearer ${authToken}` } : {}
+      }
+    });
+    
+    // Fetch river walk data
     const { data: riverWalk, error: riverWalkError } = await supabase
       .from('river_walks')
       .select('*')
@@ -395,17 +411,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     console.log('📊 River walk query result:', { riverWalk, riverWalkError });
 
-    // Use the exact same function as the frontend
-    let sites: Site[] = [];
-    let sitesError: any = null;
-    
-    try {
-      sites = await getSitesForRiverWalk(riverWalkId);
-      console.log('✅ Successfully fetched sites using frontend function');
-    } catch (error) {
-      sitesError = error;
-      console.error('❌ Error fetching sites using frontend function:', error);
-    }
+    // Fetch sites with authentication
+    const { data: sites, error: sitesError } = await supabase
+      .from('sites')
+      .select(`
+        *,
+        measurement_points (*)
+      `)
+      .eq('river_walk_id', riverWalkId)
+      .order('site_number', { ascending: true });
 
     console.log('📍 Sites query result:', { sitesCount: sites?.length || 0, sitesError });
     
