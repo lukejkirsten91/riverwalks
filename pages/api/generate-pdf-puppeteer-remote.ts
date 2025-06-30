@@ -44,51 +44,8 @@ function createReportHTML(riverWalk: RiverWalk | null, sites: Site[] | null) {
     notes: 'GCSE Geography Coursework - River Study Analysis'
   };
 
-  // If we have real river walk data but no sites, show empty state
-  // If we have no river walk data at all, show sample sites
-  const sitesData = (riverWalk && (!sites || sites.length === 0)) ? [] : (sites || [
-    {
-      id: 'sample-1',
-      site_number: 1,
-      river_width: 5.2,
-      measurement_points: [
-        { id: 'mp1', point_number: 1, distance_from_bank: 0, depth: 0.1 },
-        { id: 'mp2', point_number: 2, distance_from_bank: 1, depth: 0.3 },
-        { id: 'mp3', point_number: 3, distance_from_bank: 2, depth: 0.5 },
-        { id: 'mp4', point_number: 4, distance_from_bank: 3, depth: 0.4 },
-        { id: 'mp5', point_number: 5, distance_from_bank: 4, depth: 0.2 },
-        { id: 'mp6', point_number: 6, distance_from_bank: 5.2, depth: 0.1 }
-      ],
-      velocity_data: {
-        measurements: [
-          { velocity_ms: 0.5 },
-          { velocity_ms: 0.6 },
-          { velocity_ms: 0.4 }
-        ]
-      }
-    },
-    {
-      id: 'sample-2',
-      site_number: 2,
-      river_width: 6.8,
-      measurement_points: [
-        { id: 'mp7', point_number: 1, distance_from_bank: 0, depth: 0.15 },
-        { id: 'mp8', point_number: 2, distance_from_bank: 1.5, depth: 0.4 },
-        { id: 'mp9', point_number: 3, distance_from_bank: 3, depth: 0.7 },
-        { id: 'mp10', point_number: 4, distance_from_bank: 4.5, depth: 0.5 },
-        { id: 'mp11', point_number: 5, distance_from_bank: 6, depth: 0.3 },
-        { id: 'mp12', point_number: 6, distance_from_bank: 6.8, depth: 0.1 }
-      ],
-      velocity_data: {
-        measurements: [
-          { velocity_ms: 0.3 },
-          { velocity_ms: 0.7 },
-          { velocity_ms: 0.5 },
-          { velocity_ms: 0.6 }
-        ]
-      }
-    }
-  ];
+  // Always use real data if available, show empty state if no sites
+  const sitesData = sites || [];
 
   // Helper functions
   const calculateAverageDepth = (site: any) => {
@@ -449,10 +406,23 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     console.log('📍 Sites query result:', { sitesCount: sites?.length || 0, sitesError });
 
-    if (riverWalk && sites && !riverWalkError && !sitesError) {
-      console.log('✅ Successfully fetched real data, proceeding with actual data');
+    console.log('📊 Data summary:', {
+      hasRiverWalk: !!riverWalk,
+      riverWalkName: riverWalk?.name,
+      sitesCount: sites?.length || 0,
+      riverWalkError: riverWalkError?.message,
+      sitesError: sitesError?.message
+    });
+
+    if (riverWalk && !riverWalkError) {
+      console.log('✅ Using real river walk data:', riverWalk.name);
+      if (sites && sites.length > 0) {
+        console.log('✅ Found', sites.length, 'real sites');
+      } else {
+        console.log('ℹ️ No sites found for this river walk - will show empty state');
+      }
     } else {
-      console.log('⚠️ Could not fetch real data, will use sample data as fallback');
+      console.log('⚠️ Could not fetch river walk data, will use sample data');
     }
 
     console.log('🚀 Starting browser...');
