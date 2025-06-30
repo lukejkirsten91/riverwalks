@@ -251,7 +251,7 @@ function createReportHTML(riverWalk: RiverWalk | null, sites: Site[] | null) {
           ${markers.join('')}
           
           <!-- Compass rose (frontend position) -->
-          <g transform="translate(550, 50)">
+          <g transform="translate(550, 30)">
             <circle cx="0" cy="0" r="20" fill="white" stroke="#374151" stroke-width="1" fill-opacity="0.9"/>
             <path d="M 0,-15 L 5,0 L 0,5 L -5,0 Z" fill="#dc2626"/>
             <text x="0" y="-25" text-anchor="middle" font-size="8" fill="#374151" font-weight="bold">N</text>
@@ -267,7 +267,7 @@ function createReportHTML(riverWalk: RiverWalk | null, sites: Site[] | null) {
           </g>
           
           <!-- Legend (frontend style) -->
-          <g transform="translate(20, 60)">
+          <g transform="translate(20, 40)">
             <rect x="-5" y="-15" width="140" height="50" fill="white" fill-opacity="0.9" stroke="#374151" stroke-width="1" rx="4"/>
             <text x="5" y="-5" font-size="9" fill="#374151" font-weight="bold">Legend:</text>
             <line x1="5" y1="5" x2="25" y2="5" stroke="#dc2626" stroke-width="3" stroke-dasharray="8,4"/>
@@ -783,13 +783,40 @@ function createReportHTML(riverWalk: RiverWalk | null, sites: Site[] | null) {
         .velocity-theme .summary-col { background: #bbf7d0; }
         .sediment-theme .summary-col { background: #fde68a; }
         
-        .cross-section-section { border-left: 4px solid #3b82f6; }
-        .velocity-section { border-left: 4px solid #16a34a; }
-        .sediment-section { border-left: 4px solid #f59e0b; }
+        .cross-section-section { 
+            border-left: 4px solid #3b82f6; 
+            background: linear-gradient(to right, #dbeafe, #f8fafc);
+        }
+        .velocity-section { 
+            border-left: 4px solid #16a34a; 
+            background: linear-gradient(to right, #dcfce7, #f8fafc);
+        }
+        .sediment-section { 
+            border-left: 4px solid #f59e0b; 
+            background: linear-gradient(to right, #fef3c7, #f8fafc);
+        }
         
-        .cross-section-header { color: #1e40af; border-bottom-color: #3b82f6; }
-        .velocity-header { color: #166534; border-bottom-color: #16a34a; }
-        .sediment-header { color: #92400e; border-bottom-color: #f59e0b; }
+        .cross-section-header { 
+            color: #1e40af; 
+            border-bottom: 2px solid #3b82f6; 
+            background: #dbeafe;
+            padding: 10px 15px;
+            margin: -25px -25px 20px -25px;
+        }
+        .velocity-header { 
+            color: #166534; 
+            border-bottom: 2px solid #16a34a; 
+            background: #dcfce7;
+            padding: 10px 15px;
+            margin: -25px -25px 20px -25px;
+        }
+        .sediment-header { 
+            color: #92400e; 
+            border-bottom: 2px solid #f59e0b; 
+            background: #fef3c7;
+            padding: 10px 15px;
+            margin: -25px -25px 20px -25px;
+        }
         
         .section-header {
             font-size: 24px;
@@ -985,6 +1012,7 @@ function createReportHTML(riverWalk: RiverWalk | null, sites: Site[] | null) {
 
             <!-- Site Location Map -->
             <div class="page-break-avoid" style="margin-top: 30px;">
+                <h2 class="section-header" style="color: #dc2626; border-bottom-color: #dc2626; text-align: center; margin-bottom: 20px;">Site Location Map</h2>
                 <div style="display: flex; justify-content: center;">
                     ${generateMapSVG(sitesData)}
                 </div>
