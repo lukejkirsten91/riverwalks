@@ -73,30 +73,32 @@ export default function PrintReport({ riverWalk, sites }: PrintReportProps) {
       {
         x: [-0.5, site.river_width + 0.5, site.river_width + 0.5, -0.5, -0.5],
         y: [brownFillDepth, brownFillDepth, 0, 0, brownFillDepth],
-        mode: 'lines',
-        fill: 'toself',
+        mode: 'lines' as const,
+        fill: 'toself' as const,
         line: { color: 'brown', width: 0 },
         fillcolor: 'peru',
         name: 'Underground',
         showlegend: false,
+        type: 'scatter' as const,
       },
       // Blue water area
       {
         x: [0, ...distances, site.river_width, 0],
         y: [0, ...depths, 0, 0],
-        mode: 'lines',
-        fill: 'toself',
+        mode: 'lines' as const,
+        fill: 'toself' as const,
         line: { color: 'blue', width: 2 },
         fillcolor: 'lightblue',
         name: 'Water',
         showlegend: false,
+        type: 'scatter' as const,
       },
       // Measurement points
       {
         x: distances,
         y: depths,
-        mode: 'markers+lines',
-        type: 'scatter',
+        mode: 'markers+lines' as const,
+        type: 'scatter' as const,
         marker: { color: 'red', size: 8 },
         line: { color: 'blue', width: 2 },
         name: 'Depth Profile',
@@ -107,16 +109,22 @@ export default function PrintReport({ riverWalk, sites }: PrintReportProps) {
     return {
       data,
       layout: {
-        title: `Cross-Section: Site ${site.site_number}`,
+        title: {
+          text: `Cross-Section: Site ${site.site_number}`,
+        },
         xaxis: {
-          title: 'Distance from Bank (m)',
+          title: {
+            text: 'Distance from Bank (m)',
+          },
           range: [-0.5, site.river_width + 0.5],
           showgrid: true,
           gridcolor: 'lightgray',
           zeroline: false,
         },
         yaxis: {
-          title: 'Depth (m)',
+          title: {
+            text: 'Depth (m)',
+          },
           autorange: true,
           showgrid: true,
           gridcolor: 'lightgray',
