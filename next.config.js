@@ -1,9 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // External packages for serverless functions
-  serverExternalPackages: ['puppeteer-core', '@sparticuz/chromium-min'],
-  
   experimental: {
+    // External packages for serverless functions (correct property name)
+    serverComponentsExternalPackages: ['puppeteer-core', '@sparticuz/chromium-min'],
     // Ensure proper file tracing for Chromium binaries
     outputFileTracingIncludes: {
       '/api/generate-pdf-puppeteer-remote': ['./node_modules/@sparticuz/chromium-min/**/*'],

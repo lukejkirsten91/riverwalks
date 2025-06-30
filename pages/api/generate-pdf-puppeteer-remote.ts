@@ -123,7 +123,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // Wait for content to render
     console.log('⏳ Waiting for content to render...');
-    await page.waitForTimeout(3000);
+    await new Promise(resolve => setTimeout(resolve, 3000));
 
     // Generate PDF with proper page break controls
     console.log('📄 Generating PDF...');
