@@ -674,7 +674,7 @@ function createReportHTML(riverWalk: RiverWalk | null, sites: Site[] | null) {
                         </div>
                         <div class="site-info-item">
                             <h4>Data Completeness</h4>
-                            <p>${[site.measurement_points?.length > 0, site.velocity_data?.measurements?.length > 0, site.sedimentation_data?.measurements?.length > 0].filter(Boolean).length}/3 sections complete</p>
+                            <p>${[(site.measurement_points?.length || 0) > 0, (site.velocity_data?.measurements?.length || 0) > 0, (site.sedimentation_data?.measurements?.length || 0) > 0].filter(Boolean).length}/3 sections complete</p>
                         </div>
                         <div class="site-info-item">
                             <h4>Site Name</h4>
