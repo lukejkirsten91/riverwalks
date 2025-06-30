@@ -772,16 +772,18 @@ function createReportHTML(riverWalk: RiverWalk | null, sites: Site[] | null) {
                             <thead>
                                 <tr>
                                     <th>Measurement #</th>
+                                    <th>Time (s)</th>
+                                    <th>Distance (m)</th>
                                     <th>Velocity (m/s)</th>
-                                    <th>Position</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 ${site.velocity_data.measurements.map((measurement, idx) => `
                                     <tr>
-                                        <td>${idx + 1}</td>
+                                        <td>${measurement.measurement_number}</td>
+                                        <td>${measurement.time_seconds.toFixed(2)}</td>
+                                        <td>${measurement.float_travel_distance.toFixed(2)}</td>
                                         <td>${measurement.velocity_ms.toFixed(2)}</td>
-                                        <td>${measurement.position || 'Not specified'}</td>
                                     </tr>
                                 `).join('')}
                             </tbody>
