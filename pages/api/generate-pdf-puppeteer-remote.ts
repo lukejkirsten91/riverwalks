@@ -131,6 +131,190 @@ function createReportHTML(riverWalk: RiverWalk | null, sites: Site[] | null) {
     return new Date(dateString).toLocaleDateString();
   };
 
+  // Generate SVG cross-section chart for a site
+  const generateCrossSectionSVG = (site: any) => {
+    if (!site.measurement_points || site.measurement_points.length === 0) {
+      return '<div style="text-align: center; color: #6b7280; padding: 40px;">No measurement points available for cross-section chart</div>';
+    }
+
+    const points = site.measurement_points.sort((a: any, b: any) => a.point_number - b.point_number);
+    const width = 600;
+    const height = 300;
+    const margin = { top: 40, right: 40, bottom: 60, left: 60 };
+    const chartWidth = width - margin.left - margin.right;
+    const chartHeight = height - margin.top - margin.bottom;
+
+    // Calculate scales
+    const maxDistance = Math.max(...points.map((p: any) => p.distance_from_bank));
+    const maxDepth = Math.max(...points.map((p: any) => p.depth));
+    
+    const xScale = (d: number) => (d / maxDistance) * chartWidth;
+    const yScale = (d: number) => chartHeight - (d / maxDepth) * chartHeight;
+
+    // Create path for water surface and riverbed
+    const surfacePath = `M 0,0 L ${chartWidth},0`;
+    const points_path = points.map((p: any, i: number) => {
+      const x = xScale(p.distance_from_bank);
+      const y = yScale(p.depth);
+      return `${i === 0 ? 'M' : 'L'} ${x},${y}`;
+    }).join(' ');
+    
+    // Close the path to create filled area
+    const riverbedPath = `${points_path} L ${chartWidth},${chartHeight} L 0,${chartHeight} Z`;
+
+    return `
+      <svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" style="border: 1px solid #e5e7eb; background: white;">
+        <!-- Background -->
+        <rect width="${width}" height="${height}" fill="white"/>
+        
+        <!-- Chart area -->
+        <g transform="translate(${margin.left}, ${margin.top})">
+          <!-- Water area (blue) -->
+          <path d="${riverbedPath}" fill="#93c5fd" stroke="#3b82f6" stroke-width="2" opacity="0.7"/>
+          
+          <!-- Underground area (brown) -->
+          <rect x="0" y="${chartHeight}" width="${chartWidth}" height="40" fill="#8b5cf6" opacity="0.6"/>
+          
+          <!-- Water surface line -->
+          <path d="${surfacePath}" stroke="#1d4ed8" stroke-width="3"/>
+          
+          <!-- Measurement points -->
+          ${points.map((p: any) => {
+            const x = xScale(p.distance_from_bank);
+            const y = yScale(p.depth);
+            return `<circle cx="${x}" cy="${y}" r="4" fill="#ef4444" stroke="white" stroke-width="2"/>`;
+          }).join('')}
+          
+          <!-- Grid lines -->
+          ${[0, 0.25, 0.5, 0.75, 1].map(ratio => 
+            `<line x1="${ratio * chartWidth}" y1="0" x2="${ratio * chartWidth}" y2="${chartHeight}" stroke="#e5e7eb" stroke-dasharray="3,3"/>`
+          ).join('')}
+          ${[0, 0.25, 0.5, 0.75, 1].map(ratio => 
+            `<line x1="0" y1="${ratio * chartHeight}" x2="${chartWidth}" y2="${ratio * chartHeight}" stroke="#e5e7eb" stroke-dasharray="3,3"/>`
+          ).join('')}
+          
+          <!-- Axes -->
+          <line x1="0" y1="${chartHeight}" x2="${chartWidth}" y2="${chartHeight}" stroke="#374151" stroke-width="2"/>
+          <line x1="0" y1="0" x2="0" y2="${chartHeight}" stroke="#374151" stroke-width="2"/>
+          
+          <!-- X-axis labels -->
+          ${[0, 0.25, 0.5, 0.75, 1].map((ratio, i) => 
+            `<text x="${ratio * chartWidth}" y="${chartHeight + 20}" text-anchor="middle" font-size="12" fill="#6b7280">${(ratio * maxDistance).toFixed(1)}m</text>`
+          ).join('')}
+          
+          <!-- Y-axis labels -->
+          ${[0, 0.25, 0.5, 0.75, 1].map((ratio, i) => 
+            `<text x="-10" y="${chartHeight - ratio * chartHeight + 4}" text-anchor="end" font-size="12" fill="#6b7280">${(ratio * maxDepth).toFixed(1)}m</text>`
+          ).join('')}
+        </g>
+        
+        <!-- Axis titles -->
+        <text x="${width/2}" y="${height - 10}" text-anchor="middle" font-size="14" fill="#374151" font-weight="600">Distance from Bank (m)</text>
+        <text x="20" y="${height/2}" text-anchor="middle" font-size="14" fill="#374151" font-weight="600" transform="rotate(-90, 20, ${height/2})">Depth (m)</text>
+        
+        <!-- Title -->
+        <text x="${width/2}" y="20" text-anchor="middle" font-size="16" fill="#1e40af" font-weight="bold">River Cross-Section Profile</text>
+      </svg>
+    `;
+  };
+
+  // Generate SVG wind rose chart for sediment roundness
+  const generateWindRoseSVG = (sites: any[]) => {
+    const width = 400;
+    const height = 400;
+    const centerX = width / 2;
+    const centerY = height / 2;
+    const radius = 140;
+
+    // Collect all sediment roundness data
+    const allRoundnessData: number[] = [];
+    sites.forEach(site => {
+      if (site.sedimentation_data?.measurements) {
+        site.sedimentation_data.measurements.forEach((m: any) => {
+          allRoundnessData.push(m.sediment_roundness);
+        });
+      }
+    });
+
+    if (allRoundnessData.length === 0) {
+      return '<div style="text-align: center; color: #6b7280; padding: 40px;">No sediment data available for wind rose chart</div>';
+    }
+
+    // Create 6 bins for roundness (1-6 scale)
+    const bins = [0, 0, 0, 0, 0, 0]; // indices 0-5 for roundness 1-6
+    allRoundnessData.forEach(roundness => {
+      const binIndex = Math.min(5, Math.max(0, Math.floor(roundness) - 1));
+      bins[binIndex]++;
+    });
+
+    const maxCount = Math.max(...bins);
+    const colors = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#3b82f6', '#8b5cf6'];
+    const labels = ['Very Rounded', 'Rounded', 'Sub-Rounded', 'Sub-Angular', 'Angular', 'Very Angular'];
+
+    // Generate sectors
+    const sectors = bins.map((count, i) => {
+      const angle = (i * 60) - 90; // Start from top, 60 degrees each
+      const startAngle = (angle - 30) * Math.PI / 180;
+      const endAngle = (angle + 30) * Math.PI / 180;
+      const barRadius = (count / maxCount) * radius;
+
+      const x1 = centerX + Math.cos(startAngle) * 20;
+      const y1 = centerY + Math.sin(startAngle) * 20;
+      const x2 = centerX + Math.cos(endAngle) * 20;
+      const y2 = centerY + Math.sin(endAngle) * 20;
+      const x3 = centerX + Math.cos(endAngle) * barRadius;
+      const y3 = centerY + Math.sin(endAngle) * barRadius;
+      const x4 = centerX + Math.cos(startAngle) * barRadius;
+      const y4 = centerY + Math.sin(startAngle) * barRadius;
+
+      const largeArc = 60 > 180 ? 1 : 0;
+
+      return `
+        <path d="M ${x1} ${y1} A 20 20 0 0 1 ${x2} ${y2} L ${x3} ${y3} A ${barRadius} ${barRadius} 0 0 0 ${x4} ${y4} Z" 
+              fill="${colors[i]}" stroke="white" stroke-width="2" opacity="0.8"/>
+        <text x="${centerX + Math.cos(angle * Math.PI / 180) * (radius + 30)}" 
+              y="${centerY + Math.sin(angle * Math.PI / 180) * (radius + 30)}" 
+              text-anchor="middle" font-size="10" fill="#374151">${count}</text>
+      `;
+    }).join('');
+
+    return `
+      <svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" style="border: 1px solid #e5e7eb; background: white;">
+        <!-- Background circles -->
+        <circle cx="${centerX}" cy="${centerY}" r="${radius * 0.25}" fill="none" stroke="#e5e7eb" stroke-dasharray="3,3"/>
+        <circle cx="${centerX}" cy="${centerY}" r="${radius * 0.5}" fill="none" stroke="#e5e7eb" stroke-dasharray="3,3"/>
+        <circle cx="${centerX}" cy="${centerY}" r="${radius * 0.75}" fill="none" stroke="#e5e7eb" stroke-dasharray="3,3"/>
+        <circle cx="${centerX}" cy="${centerY}" r="${radius}" fill="none" stroke="#d1d5db"/>
+        
+        <!-- Radial lines -->
+        ${[0, 60, 120, 180, 240, 300].map(angle => {
+          const x = centerX + Math.cos((angle - 90) * Math.PI / 180) * radius;
+          const y = centerY + Math.sin((angle - 90) * Math.PI / 180) * radius;
+          return `<line x1="${centerX}" y1="${centerY}" x2="${x}" y2="${y}" stroke="#d1d5db"/>`;
+        }).join('')}
+        
+        <!-- Data sectors -->
+        ${sectors}
+        
+        <!-- Center circle -->
+        <circle cx="${centerX}" cy="${centerY}" r="20" fill="white" stroke="#374151" stroke-width="2"/>
+        
+        <!-- Title -->
+        <text x="${centerX}" y="20" text-anchor="middle" font-size="16" fill="#92400e" font-weight="bold">Sediment Roundness Distribution</text>
+        
+        <!-- Legend -->
+        <g transform="translate(10, ${height - 100})">
+          ${labels.map((label, i) => `
+            <g transform="translate(0, ${i * 15})">
+              <rect x="0" y="-8" width="12" height="12" fill="${colors[i]}" opacity="0.8"/>
+              <text x="18" y="2" font-size="10" fill="#374151">${label}</text>
+            </g>
+          `).join('')}
+        </g>
+      </svg>
+    `;
+  };
+
   // Summary calculations
   const totalSites = sitesData.length;
   const totalArea = sitesData.reduce((sum, site) => sum + calculateCrossSectionalArea(site), 0);
@@ -415,34 +599,10 @@ function createReportHTML(riverWalk: RiverWalk | null, sites: Site[] | null) {
             margin: 0;
         }
         
-        /* Cross-section chart placeholder */
-        .chart-placeholder {
-            width: 100%;
-            height: 300px;
-            background: linear-gradient(to bottom, #93c5fd 0%, #93c5fd 40%, #8b5cf6 40%, #8b5cf6 60%, #d4a574 60%);
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: bold;
-            font-size: 16px;
-            margin: 20px 0;
-        }
-        
-        /* Wind rose chart placeholder */
-        .wind-rose-placeholder {
-            width: 100%;
-            height: 400px;
-            background: radial-gradient(circle, #fef3c7 30%, #fed7aa 60%, #fdba74 100%);
-            border-radius: 50%;
-            margin: 20px auto;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #92400e;
-            font-weight: bold;
-            font-size: 16px;
+        /* Chart container styles */
+        .chart-container svg {
+            max-width: 100%;
+            height: auto;
         }
         
         .data-table {
@@ -631,11 +791,11 @@ function createReportHTML(riverWalk: RiverWalk | null, sites: Site[] | null) {
                 </tbody>
             </table>
             
-            <!-- Wind Rose Chart Placeholder -->
+            <!-- Wind Rose Chart -->
             <div class="page-break-avoid" style="margin-top: 30px;">
                 <h3 style="text-align: center; color: #92400e; margin-bottom: 20px;">Sediment Roundness Distribution (Wind Rose)</h3>
-                <div class="wind-rose-placeholder">
-                    Wind Rose Chart: Sediment Roundness Analysis
+                <div style="display: flex; justify-content: center;">
+                    ${generateWindRoseSVG(sitesData)}
                 </div>
             </div>
         </div>
@@ -700,8 +860,8 @@ function createReportHTML(riverWalk: RiverWalk | null, sites: Site[] | null) {
                 <!-- Cross-Sectional Analysis -->
                 <div class="site-section page-break-avoid">
                     <h3>Cross-Sectional Analysis</h3>
-                    <div class="chart-placeholder">
-                        River Cross-Section Profile Chart
+                    <div class="chart-container" style="display: flex; justify-content: center; margin: 20px 0;">
+                        ${generateCrossSectionSVG(site)}
                     </div>
                     
                     <div class="metric-grid">
