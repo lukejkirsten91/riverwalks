@@ -140,6 +140,41 @@ body {
 
 .toc {
   page-break-after: always;
+  page-break-before: always;
+}
+
+/* Page break utilities for proper layout */
+.page-break-before {
+  page-break-before: always;
+}
+
+.page-break-after {
+  page-break-after: always;
+}
+
+.page-break-avoid {
+  page-break-inside: avoid;
+}
+
+/* Keep headers with their content */
+.section-with-content {
+  page-break-inside: avoid;
+}
+
+.section-header {
+  page-break-after: avoid;
+  page-break-inside: avoid;
+}
+
+/* Ensure figures don't break */
+.figure {
+  page-break-inside: avoid;
+  page-break-after: avoid;
+}
+
+/* Site sections should stay together */
+.site-section {
+  page-break-inside: avoid;
 }
 
 .toc-title {
@@ -1205,38 +1240,10 @@ function createReportHTML(riverWalk: RiverWalk | null, sites: Site[] | null) {
         ${renderCoverPage(reportData, totalSites, formatDate)}
         ${renderTableOfContents(tocEntries)}
         ${renderExecutiveSummary(reportData, totalSites, totalArea, avgVelocity, totalDischarge, sitesData, formatDate, formatUnitWithSuperscript, formatUnit, generateMapSVG, getNextFigureNumber)}
+
         ${sitesData.length > 0 ? `
-                    <div class="info-item">
-                        <span><strong>Date:</strong></span>
-                        <span>${formatDate(reportData.date)}</span>
-                    </div>
-                    <div class="info-item">
-                        <span><strong>Location:</strong></span>
-                        <span>${reportData.county ? reportData.county + ', ' : ''}${reportData.country || 'UK'}</span>
-                    </div>
-                    <div class="info-item">
-                        <span><strong>Total Sites:</strong></span>
-                        <span>${totalSites}</span>
-                    </div>
-                    <div class="info-item">
-                        <span><strong>Study Type:</strong></span>
-                        <span>River Cross-section Analysis</span>
-                    </div>
-                </div>
-                ${reportData.notes ? `<p style="margin: 15px 0 0 0; padding: 15px; background: #f1f5f9; border-radius: 6px; border-left: 4px solid #3b82f6;"><strong>Notes:</strong> ${reportData.notes}</p>` : ''}
-            </div>
-
-            <!-- Site Location Map -->
-            <div class="page-break-avoid" style="margin-top: 30px;">
-                <h2 class="section-header" style="color: #dc2626; border-bottom-color: #dc2626; text-align: center; margin-bottom: 20px;">Site Location Map</h2>
-                <div style="display: flex; justify-content: center;">
-                    ${generateMapSVG(sitesData)}
-                </div>
-            </div>
-        </div>
-
         <!-- CROSS-SECTIONAL AREA SUMMARY -->
-        <div class="page-break-before">
+        <section class="page-break-before section-with-content">
             <h2 class="section-header cross-section-header">Cross-Sectional Area Summary</h2>
             <table class="summary-table cross-section-theme page-break-avoid">
                 <thead>
@@ -1264,10 +1271,10 @@ function createReportHTML(riverWalk: RiverWalk | null, sites: Site[] | null) {
                     </tr>
                 </tbody>
             </table>
-        </div>
+        </section>
 
         <!-- VELOCITY SUMMARY -->
-        <div class="page-break-avoid" style="margin-top: 40px;">
+        <section class="page-break-avoid section-with-content" style="margin-top: var(--sp-xl);">
             <h2 class="section-header velocity-header">Velocity Summary</h2>
             <table class="summary-table velocity-theme page-break-avoid">
                 <thead>
@@ -1290,10 +1297,10 @@ function createReportHTML(riverWalk: RiverWalk | null, sites: Site[] | null) {
                     </tr>
                 </tbody>
             </table>
-        </div>
+        </section>
 
         <!-- SEDIMENT ANALYSIS SUMMARY -->
-        <div class="page-break-avoid" style="margin-top: 40px;">
+        <section class="page-break-avoid section-with-content" style="margin-top: var(--sp-xl);">
             <h2 class="section-header sediment-header">Sediment Analysis Summary</h2>
             <table class="summary-table sediment-theme page-break-avoid">
                 <thead>
@@ -1323,27 +1330,27 @@ function createReportHTML(riverWalk: RiverWalk | null, sites: Site[] | null) {
             </table>
             
             <!-- Wind Rose Chart -->
-            <div class="page-break-avoid" style="margin-top: var(--sp-xl);">
+            <div class="section-with-content" style="margin-top: var(--sp-xl);">
                 <h3 style="text-align: center; color: var(--clr-sediment); margin-bottom: var(--sp-lg);">Sediment Roundness Distribution</h3>
                 <figure class="figure">
                     ${generateWindRoseSVG(sitesData)}
                     <figcaption class="figure-caption">Figure ${getNextFigureNumber()}: Wind rose chart showing sediment roundness distribution across all measurement sites</figcaption>
                 </figure>
             </div>
-        </div>
+        </section>
         ` : ''}
 
         <!-- INDIVIDUAL SITE PAGES -->
         ${sitesData.length === 0 ? `
-            <div class="page-break-before">
+            <section class="page-break-before">
                 <div style="text-align: center; padding: 60px 20px; color: #6b7280;">
                     <h2 style="color: #9ca3af; margin-bottom: 20px;">No Site Data Available</h2>
                     <p style="font-size: 18px; margin-bottom: 10px;">No measurement sites recorded yet</p>
                     <p>Individual site analysis will appear here once measurement sites are added to this river walk.</p>
                 </div>
-            </div>
+            </section>
         ` : sitesData.map((site, index) => `
-            <div class="site-page page-break-before">
+            <article class="site-page page-break-before">
                 <!-- Site Header -->
                 <div class="site-header">
                     <h1 class="site-title">Site ${site.site_number}</h1>
@@ -1377,8 +1384,8 @@ function createReportHTML(riverWalk: RiverWalk | null, sites: Site[] | null) {
                 </div>
 
                 <!-- Site Photography -->
-                <div class="site-section page-break-avoid">
-                    <h3>Site Photography</h3>
+                <section class="site-section section-with-content">
+                    <h3 class="section-header">Site Photography</h3>
                     <div class="photo-grid">
                         <div class="photo-placeholder">
                             ${site.photo_url ? 'Primary Site Photo' : 'No primary site photo available'}
@@ -1387,11 +1394,11 @@ function createReportHTML(riverWalk: RiverWalk | null, sites: Site[] | null) {
                             ${site.sedimentation_photo_url ? 'Sediment Sample Photo' : 'No sediment sample photo available'}
                         </div>
                     </div>
-                </div>
+                </section>
 
                 <!-- Cross-Sectional Analysis -->
-                <div class="site-section cross-section-section page-break-avoid">
-                    <h3 class="cross-section-header">Cross-Sectional Analysis</h3>
+                <section class="site-section cross-section-section section-with-content">
+                    <h3 class="section-header cross-section-header">Cross-Sectional Analysis</h3>
                     <figure class="figure">
                         <div class="chart-container" style="display: flex; justify-content: center; margin: var(--sp-lg) 0;">
                             ${generateCrossSectionSVG(site)}
@@ -1441,11 +1448,11 @@ function createReportHTML(riverWalk: RiverWalk | null, sites: Site[] | null) {
                             </tbody>
                         </table>
                     ` : '<p style="text-align: center; color: #6b7280; font-style: italic; padding: 20px;">No measurement points recorded for this site</p>'}
-                </div>
+                </section>
 
                 <!-- Velocity Analysis -->
-                <div class="site-section velocity-section page-break-avoid">
-                    <h3 class="velocity-header">Velocity Analysis</h3>
+                <section class="site-section velocity-section section-with-content">
+                    <h3 class="section-header velocity-header">Velocity Analysis</h3>
                     <div class="metric-grid" style="grid-template-columns: repeat(3, 1fr);">
                         <div class="metric-card">
                             <div class="metric-value">${formatSignificantFigures(calculateAverageVelocity(site))}</div>
@@ -1484,11 +1491,11 @@ function createReportHTML(riverWalk: RiverWalk | null, sites: Site[] | null) {
                             </tbody>
                         </table>
                     ` : '<p style="text-align: center; color: #6b7280; font-style: italic; padding: 20px;">No velocity measurements recorded for this site</p>'}
-                </div>
+                </section>
 
                 <!-- Sediment Analysis -->
-                <div class="site-section sediment-section page-break-avoid">
-                    <h3 class="sediment-header">Sediment Analysis</h3>
+                <section class="site-section sediment-section section-with-content">
+                    <h3 class="section-header sediment-header">Sediment Analysis</h3>
                     <div class="metric-grid">
                         <div class="metric-card">
                             <div class="metric-value">${formatSignificantFigures(calculateAverageSedimentSize(site))}</div>
@@ -1542,8 +1549,8 @@ function createReportHTML(riverWalk: RiverWalk | null, sites: Site[] | null) {
                               'Strong negative correlation between size and roundness'}
                         </div>
                     ` : '<p style="text-align: center; color: #6b7280; font-style: italic; padding: 20px;">No sediment measurements recorded for this site</p>'}
-                </div>
-            </div>
+                </section>
+            </article>
         `).join('')}
     </div>
 </body>
