@@ -53,8 +53,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       debug: {
         riverWalkFound: !!riverWalk,
         sitesCount: sites.length,
-        firstSiteHasMeasurements: sites[0]?.measurement_points?.length > 0,
-        firstSiteHasVelocity: !!sites[0]?.velocity_data?.measurements?.length
+        firstSiteHasMeasurements: sites.length > 0 ? (sites[0]?.measurement_points?.length || 0) > 0 : false,
+        firstSiteHasVelocity: sites.length > 0 ? !!(sites[0]?.velocity_data?.measurements?.length) : false
       }
     };
 
