@@ -26,6 +26,8 @@
     "next": "^14.0.4",
     "papaparse": "^5.5.3",
     "pdfmake": "^0.2.20",
+    "@sparticuz/chromium-min": "^133.0.0",
+    "puppeteer-core": "^24.5.0",
     "plotly.js": "^3.0.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",

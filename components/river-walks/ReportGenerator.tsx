@@ -423,7 +423,7 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
 
     try {
       // Try server-side Puppeteer generation first
-      console.log('🌐 Attempting server-side PDF generation with Puppeteer...');
+      console.log('🌐 Attempting server-side PDF generation with Puppeteer (remote executable)...');
       await generateServerSidePDF();
       console.log('🎉 Server-side PDF export completed successfully!');
     } catch (serverError) {
@@ -469,10 +469,10 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
     };
     console.log('📦 Request payload:', requestData);
     
-    console.log('🌐 Making API request to /api/generate-pdf-make...');
+    console.log('🌐 Making API request to /api/generate-pdf-puppeteer-remote...');
     const startTime = Date.now();
     
-    const response = await fetch('/api/generate-pdf-make', {
+    const response = await fetch('/api/generate-pdf-puppeteer-remote', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

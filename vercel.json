@@ -3,6 +3,13 @@
     "pages/api/generate-pdf-make.ts": {
       "memory": 1536,
       "maxDuration": 60
+    },
+    "pages/api/generate-pdf-puppeteer-remote.ts": {
+      "memory": 1536,
+      "maxDuration": 60
     }
+  },
+  "env": {
+    "CHROMIUM_REMOTE_EXEC_PATH": "https://github.com/Sparticuz/chromium/releases/download/v131.0.0/chromium-v131.0.0-pack.tar"
   }
 }
