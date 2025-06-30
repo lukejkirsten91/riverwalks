@@ -52,53 +52,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   let browser;
   try {
-    console.log('🔍 Fetching river walk with ID:', riverWalkId);
-    console.log('🔗 Supabase URL:', process.env.NEXT_PUBLIC_SUPABASE_URL);
-    
-    // First, let's see what river walks exist
-    const { data: allRiverWalks, error: allError } = await supabase
-      .from('river_walks')
-      .select('id, name')
-      .limit(10);
-    
-    console.log('📋 All river walks in database:', { allRiverWalks, allError });
-    
-    // Now fetch the specific river walk
-    const { data: riverWalk, error: riverWalkError } = await supabase
-      .from('river_walks')
-      .select('*')
-      .eq('id', riverWalkId)
-      .maybeSingle();
-
-    console.log('📊 Database response:', { riverWalk, riverWalkError });
-
-    if (riverWalkError || !riverWalk) {
-      console.error('❌ River walk not found:', riverWalkError);
-      return res.status(404).json({ 
-        error: 'River walk not found',
-        details: riverWalkError?.message || 'No data returned',
-        searchedId: riverWalkId
-      });
-    }
-
-    console.log('🏞️ Fetching sites for river walk:', riverWalkId);
-    
-    // Fetch sites with measurement points
-    const { data: sites, error: sitesError } = await supabase
-      .from('sites')
-      .select(`
-        *,
-        measurement_points (*)
-      `)
-      .eq('river_walk_id', riverWalkId)
-      .order('site_number');
-
-    console.log('📍 Sites response:', { sitesCount: sites?.length || 0, sitesError });
-
-    if (sitesError) {
-      console.error('❌ Sites query error:', sitesError);
-      throw sitesError;
-    }
+    console.log('🔍 Skipping database lookup - using print-report page with sample data fallback');
+    console.log('🎯 River walk ID:', riverWalkId);
 
     console.log('🚀 Starting browser...');
     browser = await getBrowser();
@@ -122,10 +77,22 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const reportUrl = `${baseUrl}/print-report/${riverWalkId}`;
     
     console.log('🌐 Navigating to:', reportUrl);
-    await page.goto(reportUrl, { 
-      waitUntil: 'networkidle0',
-      timeout: 30000
-    });
+    console.log('🔧 Environment - VERCEL_URL:', process.env.VERCEL_URL);
+    
+    try {
+      const response = await page.goto(reportUrl, { 
+        waitUntil: 'networkidle0',
+        timeout: 30000
+      });
+      
+      console.log('📄 Page response status:', response?.status());
+      if (response && response.status() >= 400) {
+        throw new Error(`Page returned ${response.status()} status`);
+      }
+    } catch (navError) {
+      console.error('❌ Navigation failed:', navError);
+      throw new Error(`Failed to navigate to report page: ${navError instanceof Error ? navError.message : String(navError)}`);
+    }
 
     console.log('📐 Setting viewport...');
     await page.setViewport({ width: 1080, height: 1024 });
