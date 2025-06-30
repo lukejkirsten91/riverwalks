@@ -254,7 +254,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       .from('river_walks')
       .select('*')
       .eq('id', riverWalkId)
-      .single();
+      .maybeSingle();
 
     console.log('📊 Database response:', { riverWalk, riverWalkError });
 

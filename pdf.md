@@ -115,71 +115,193 @@ If you encounter a 504 Gateway Timeout error, it may be due to Vercel’s functi
 Go to Settings > Functions in your Vercel project.
 Adjust the Function Timeout value to increase the time allowed for long-running Puppeteer operations.
 
-How can I generate a PDF with HTML content on separate pages using Puppeteer?
-Other Questions
-Puppeteer
-
-311
+Sparticuz chromium-min working with vercel for pdf
+Help
+nextjs
+ 
+221
 views
+
+2
+links
  
  
  
  
  
-Dec 2024
-Jan 1
+Levelz3111
+Apr 1
+Hi all,
+
+I’m encountering a persistent runtime error when trying to generate PDFs using Puppeteer within a Next.js App Router project deployed on Vercel. The PDF generation works correctly in my local development environment but fails consistently on Vercel deployments.
+
+Project Details:
+
+**Project Name: Vectorcv
+Framework: Next.js (App Router)
+Node.js Runtime: Node 22.x (as per deployment logs)
+**error from vercel
+Error in PDF generation: Error: The input directory "/var/task/.next/server/bin" does not exist.
+    at d.executablePath (/var/task/.next/server/chunks/191.js:1:64134)
+    at l (/var/task/.next/server/app/api/pdf/route.js:1:1697)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async u (/var/task/.next/server/app/api/pdf/route.js:1:4235)
+    at async /var/task/node_modules/next/dist/compiled/next-server/app-route.runtime.prod.js:6:38411
+    at async e_.execute (/var/task/node_modules/next/dist/compiled/next-server/app-route.runtime.prod.js:6:27880)
+    at async e_.handle (/var/task/node_modules/next/dist/compiled/next-server/app-route.runtime.prod.js:6:39943)
+    at async en (/var/task/node_modules/next/dist/compiled/next-server/server.runtime.prod.js:16:25516)
+    at async ea.responseCache.get.routeKind (/var/task/node_modules/next/dist/compiled/next-server/server.runtime.prod.js:17:1028)
+    at async r9.renderToResponseWithComponentsImpl (/var/task/node_modules/next/dist/compiled/next-server/server.runtime.prod.js:17:508)
+
+
+Error in PDF API route: Error: Failed to generate PDF: The input directory "/var/task/.next/server/bin" does not exist.
+    at l (/var/task/.next/server/app/api/pdf/route.js:1:3486)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async u (/var/task/.next/server/app/api/pdf/route.js:1:4235)
+    at async /var/task/node_modules/next/dist/compiled/next-server/app-route.runtime.prod.js:6:38411
+    at async e_.execute (/var/task/node_modules/next/dist/compiled/next-server/app-route.runtime.prod.js:6:27880)
+    at async e_.handle (/var/task/node_modules/next/dist/compiled/next-server/app-route.runtime.prod.js:6:39943)
+    at async en (/var/task/node_modules/next/dist/compiled/next-server/server.runtime.prod.js:16:25516)
+    at async ea.responseCache.get.routeKind (/var/task/node_modules/next/dist/compiled/next-server/server.runtime.prod.js:17:1028)
+    at async r9.renderToResponseWithComponentsImpl (/var/task/node_modules/next/dist/compiled/next-server/server.runtime.prod.js:17:508)
+    at async r9.renderPageComponent (/var/task/node_modules/next/dist/compiled/next-server/server.runtime.prod.js:17:5102)
+
+Problem Description: The /api/pdf serverless function is designed to generate a PDF from HTML content using puppeteer-core and @sparticuz/chromium-min. While this works locally, on Vercel it fails with the following runtime error logged in the function logs:
+
+Error: Failed to generate PDF: The input directory "/var/task/.next/server/bin" does not exist.
+    at d.executablePath (/var/task/.next/server/chunks/191.js:1:64134)
+    at l (/var/task/.next/server/app/api/pdf/route.js:1:1697)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async u (/var/task/.next/server/app/api/pdf/route.js:1:4235)
+    ... (rest of stack trace) ...
+This indicates that the necessary Chromium binary files provided by @sparticuz/chromium-min are not being found at the expected path within the Vercel runtime environment.
+
+Troubleshooting Steps Taken:
+
+Dependencies: Confirmed use of puppeteer-core and @sparticuz/chromium-min (switched from the full @sparticuz/chromium in an attempt to resolve).
+Dynamic Imports: Implemented dynamic imports (await import(...)) for both puppeteer-core and @sparticuz/chromium-min within the service function (lib/services/pdf.service.ts) that handles PDF generation. This successfully reduced the reported Vercel function size from ~68MB to ~7MB, suggesting the initial bundle size limit is not the issue.
+next.config.mjs Configurations: Tried various configurations, including:
+The recommended setup: experimental: { serverComponentsExternalPackages: ['@sparticuz/chromium-min'], outputFileTracingIncludes: { '/api/pdf': ['./node_modules/@sparticuz/chromium-min/**'] } }
+Using more specific paths in outputFileTracingIncludes (e.g., targeting the bin directory).
+Removing @sparticuz/chromium-min from serverComponentsExternalPackages.
+Removing outputFileTracingIncludes entirely.
+Using @vercel/nft’s withFileTracing helper.
+Removing the entire experimental block related to tracing/externals. None of these configuration changes resolved the runtime path error.
+Environment Variables: Added SPARTICUZ_FUNCTION_NAME=pdf-generator to Vercel environment variables based on troubleshooting guides. Confirmed other potentially conflicting variables like PUPPETEER_EXECUTABLE_PATH are not set.
+Code Structure: The API route (app/api/pdf/route.tsx) simply imports and calls a service function (lib/services/pdf.service.ts). The service function contains the dynamic imports and Puppeteer logic, correctly calling await chromium.executablePath().
+Despite these steps, the runtime error persists across deployments. It seems like an issue with Vercel’s build process not correctly tracing or packaging the necessary binary files from @sparticuz/chromium-min into the expected runtime location (/var/task/.next/server/bin or similar path resolved by chromium.executablePath()).
+
+Could you please provide guidance on how to resolve this file tracing/packaging issue for @sparticuz/chromium-min within the Vercel environment?
+
+also having @sparticuz/chromium-min has helped me keep this under 50MB limit
+
+any assistance will be greatly appreciated. thank you.
+
+
+
+221
+views
+
+2
+links
  
-Ethan99
-Dec 2024
-I’m utilizing Puppeteer in a Node.js environment to create PDF reports from HTML content. I have sections of HTML that I want to appear on distinct pages in the final PDF document. For instance, if my HTML includes
+ 
+ 
+ 
 
-Title 1 - Page A
-Title 2 - Page B
-Title 3 - Page C
-, I would like to ensure that Title 1 - Page A occupies page one, Title 2 - Page B is on page two, and Title 3 - Page C is on page three. Below is the sample code I am using for PDF generation:
-const uniqueID = uuidv4();
+Miguel Cabs
+Vercel Staff
+Apr 2
+Hey Levelz3111 :smiley:
 
-const filename = 
-output.pdf
-;
+I was able to take inspiration from this post on medium and get a working deployment on Vercel.
 
-const browserInstance = await puppeteer.launch({
+The big difference is it utlizes the remote executable vs trying to find the one if the file system from the dependency.
 
-headless: true,
+I’m not sure if that will give you what you need, my example just took a PDF of a site and returns it as a buffer. I’ll add the relevant bits below, curious to know your thoughts:
 
-args: [‘–no-sandbox’],
+// package.json
+"dependencies": {
+    "@sparticuz/chromium-min": "^133.0.0",
+    "next": "15.2.4",
+    "puppeteer-core": "^24.5.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+The Next Config
 
-});
+import type { NextConfig } from "next";
 
-const newPage = await browserInstance.newPage();
+const nextConfig: NextConfig = {
+// v15 made this property stable
+  serverExternalPackages: ["puppeteer-core", "@sparticuz/chromium"],
+};
 
-const sampleHTML = ‘
+export default nextConfig;
+Here is the main pdf service I have
 
-Title 1 - Page A
-Title 2 - Page B
-Title 3 - Page C
-’;
+// @/lib/pdf.ts
+import chromium from "@sparticuz/chromium-min";
+import puppeteerCore from "puppeteer-core";
 
-await newPage.setContent(sampleHTML, { waitUntil: ‘domcontentloaded’ });
+async function getBrowser() {
+  const REMOTE_PATH = process.env.CHROMIUM_REMOTE_EXEC_PATH;
+  const LOCAL_PATH = process.env.CHROMIUM_LOCAL_EXEC_PATH;
+  if (!REMOTE_PATH && !LOCAL_PATH) {
+    throw new Error("Missing a path for chromium executable");
+  }
 
-await newPage.pdf({
+  if (!!REMOTE_PATH) {
+    return await puppeteerCore.launch({
+      args: chromium.args,
+      executablePath: await chromium.executablePath(
+        process.env.CHROMIUM_REMOTE_EXEC_PATH,
+      ),
+      defaultViewport: null,
+      headless: true,
+    });
+  }
 
-path: filename,
+  return await puppeteerCore.launch({
+    executablePath: LOCAL_PATH,
+    defaultViewport: null,
+    headless: true,
+  });
+}
 
-format: ‘A4’,
+export const makePDFFromDomain = async (url: string): Promise<Buffer> => {
+  try {
+    const browser = await getBrowser();
+    const page = await browser.newPage();
 
-margin: {
+    page.on("pageerror", (err: Error) => {
+      throw err;
+    });
+    page.on("error", (err: Error) => {
+      throw err;
+    });
 
-top: ‘20px’,
+    await page.goto(url);
+    await page.setViewport({ width: 1080, height: 1024 });
 
-bottom: ‘20px’,
+    const pdf = await page.pdf({
+      format: "A4",
+      printBackground: true,
+      margin: { top: "0", right: "0", bottom: "0", left: "0" },
+      preferCSSPageSize: true,
+      displayHeaderFooter: false,
+      scale: 1.0,
+    });
 
-left: ‘20px’,
+    return Buffer.from(pdf);
+  } catch (error) {
+    throw error;
+  }
+};
+Please let me know if any of this helped, happy to keep trying to find a solution for you!
 
-right: ‘20px’,
 
-},
 
-});
-
-await browserInstance.close();
+Kai Firschau
+May 30
+@miguelcabs this solution works perfectly for me, as well! For me, the problem was the missing update in the Next config. Thank you very much for your help!
