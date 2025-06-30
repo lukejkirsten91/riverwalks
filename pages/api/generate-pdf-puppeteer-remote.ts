@@ -301,7 +301,7 @@ function createReportHTML(riverWalk: RiverWalk | null, sites: Site[] | null) {
 
     // Generate polar bars for each site
     const polarBars = allSedimentData.map((siteData, layerIndex) => {
-      return siteData.counts.map((count, angleIndex) => {
+      return siteData.counts.map((count: number, angleIndex: number) => {
         if (count === 0) return '';
 
         const theta = thetas[angleIndex];
