@@ -34,7 +34,7 @@ async function getBrowser() {
 }
 
 function createReportHTML(riverWalk: RiverWalk | null, sites: Site[] | null) {
-  // Use sample data if real data is not available
+  // Use real river walk data if available, otherwise sample data
   const reportData = riverWalk || {
     id: 'sample',
     name: 'Aldenham River Report',
@@ -44,7 +44,9 @@ function createReportHTML(riverWalk: RiverWalk | null, sites: Site[] | null) {
     notes: 'GCSE Geography Coursework - River Study Analysis'
   };
 
-  const sitesData = sites || [
+  // If we have real river walk data but no sites, show empty state
+  // If we have no river walk data at all, show sample sites
+  const sitesData = (riverWalk && (!sites || sites.length === 0)) ? [] : (sites || [
     {
       id: 'sample-1',
       site_number: 1,
@@ -317,7 +319,13 @@ function createReportHTML(riverWalk: RiverWalk | null, sites: Site[] | null) {
                         </tr>
                     </thead>
                     <tbody>
-                        ${sitesData.map(site => `
+                        ${sitesData.length === 0 ? `
+                            <tr>
+                                <td colspan="7" style="text-align: center; padding: 20px; color: #6b7280; font-style: italic;">
+                                    No sites recorded yet. Add measurement sites to see data here.
+                                </td>
+                            </tr>
+                        ` : sitesData.map(site => `
                             <tr>
                                 <td>${site.site_number}</td>
                                 <td>${site.river_width}</td>
@@ -333,7 +341,15 @@ function createReportHTML(riverWalk: RiverWalk | null, sites: Site[] | null) {
             </div>
         </div>
 
-        ${sitesData.map((site, index) => `
+        ${sitesData.length === 0 ? `
+            <div class="pdf-site-section site-section">
+                <h2>Individual Site Data</h2>
+                <div style="text-align: center; padding: 40px; color: #6b7280; font-style: italic; background: #f9fafb; border-radius: 8px; border: 1px solid #e5e7eb;">
+                    <p style="font-size: 18px; margin-bottom: 10px;">No measurement sites recorded yet</p>
+                    <p>Site-specific data will appear here once measurement sites are added to this river walk.</p>
+                </div>
+            </div>
+        ` : sitesData.map((site, index) => `
             <div class="pdf-site-section site-section ${index > 0 ? 'site-header' : ''}">
                 <h2>Site ${site.site_number}</h2>
                 
