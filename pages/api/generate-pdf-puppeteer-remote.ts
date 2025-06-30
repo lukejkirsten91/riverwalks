@@ -143,21 +143,18 @@ function createReportHTML(riverWalk: RiverWalk | null, sites: Site[] | null) {
     return R * c * 1000; // Return distance in meters
   };
 
-  // Generate SVG map with GPS markers and distance labels
+  // Generate SVG map with GPS markers and distance labels (matching frontend)
   const generateMapSVG = (sites: any[]) => {
     const sitesWithGPS = sites.filter(site => site.latitude && site.longitude);
     
     if (sitesWithGPS.length === 0) {
-      return '<div style="text-align: center; color: #6b7280; padding: 40px;">No GPS coordinates available for map</div>';
+      return '<div style="text-align: center; color: #6b7280; padding: 40px; display: flex; flex-direction: column; align-items: center;"><div style="width: 48px; height: 48px; background: #e5e7eb; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 16px;">📍</div><p>No GPS coordinates available</p><p style="font-size: 14px; color: #9ca3af;">Add site coordinates to display location map</p></div>';
     }
 
     const width = 600;
     const height = 400;
-    const margin = { top: 40, right: 40, bottom: 40, left: 40 };
-    const mapWidth = width - margin.left - margin.right;
-    const mapHeight = height - margin.top - margin.bottom;
 
-    // Calculate map bounds
+    // Calculate center and bounds (exact frontend logic)
     const lats = sitesWithGPS.map(site => site.latitude);
     const lons = sitesWithGPS.map(site => site.longitude);
     const minLat = Math.min(...lats);
@@ -165,22 +162,31 @@ function createReportHTML(riverWalk: RiverWalk | null, sites: Site[] | null) {
     const minLon = Math.min(...lons);
     const maxLon = Math.max(...lons);
 
-    // Add padding to bounds
+    // Add 10% padding (frontend logic)
     const latPadding = (maxLat - minLat) * 0.1 || 0.001;
     const lonPadding = (maxLon - minLon) * 0.1 || 0.001;
     
-    const mapBounds = {
-      minLat: minLat - latPadding,
-      maxLat: maxLat + latPadding,
-      minLon: minLon - lonPadding,
-      maxLon: maxLon + lonPadding
-    };
+    const centerLat = (minLat + maxLat) / 2;
+    const centerLng = (minLon + maxLon) / 2;
 
-    // Scaling functions
-    const xScale = (lon: number) => ((lon - mapBounds.minLon) / (mapBounds.maxLon - mapBounds.minLon)) * mapWidth;
-    const yScale = (lat: number) => mapHeight - ((lat - mapBounds.minLat) / (mapBounds.maxLat - mapBounds.minLat)) * mapHeight;
+    // Calculate zoom level (frontend logic)
+    const latDiff = maxLat - minLat + 2 * latPadding;
+    const lonDiff = maxLon - minLon + 2 * lonPadding;
+    const maxDiff = Math.max(latDiff, lonDiff);
+    const zoom = Math.min(15, Math.max(8, Math.round(14 - Math.log2(maxDiff * 100))));
 
-    // Generate connection lines with distance labels
+    // Google Maps Static API URL (exact frontend implementation)
+    const googleMapsApiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || 'YOUR_GOOGLE_MAPS_API_KEY_HERE';
+    const mapUrl = `https://maps.googleapis.com/maps/api/staticmap?center=${centerLat},${centerLng}&zoom=${zoom}&size=600x400&maptype=roadmap&style=feature:poi|visibility:off&style=feature:transit|visibility:off&style=feature:administrative.locality|element:labels|visibility:simplified&key=${googleMapsApiKey}`;
+
+    // Calculate scaling for SVG overlay (frontend logic)
+    const scaleX = width / (lonDiff);
+    const scaleY = height / (latDiff);
+    
+    const xScale = (lon: number) => (lon - (centerLng - lonDiff/2)) * scaleX;
+    const yScale = (lat: number) => height - (lat - (centerLat - latDiff/2)) * scaleY;
+
+    // Generate connection lines with distance labels (frontend colors)
     const connections = sitesWithGPS.slice(0, -1).map((site, index) => {
       const nextSite = sitesWithGPS[index + 1];
       const distance = calculateDistance(site.latitude, site.longitude, nextSite.latitude, nextSite.longitude);
@@ -190,90 +196,87 @@ function createReportHTML(riverWalk: RiverWalk | null, sites: Site[] | null) {
       const x2 = xScale(nextSite.longitude);
       const y2 = yScale(nextSite.latitude);
       
-      // Calculate midpoint for label
       const midX = (x1 + x2) / 2;
       const midY = (y1 + y2) / 2;
       
       return {
-        line: `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#3b82f6" stroke-width="2" stroke-dasharray="5,5"/>`,
-        label: `<text x="${midX}" y="${midY - 8}" text-anchor="middle" font-size="10" fill="#1e40af" font-weight="bold" 
-                      style="background: white; padding: 2px;">${distance.toFixed(0)}m</text>
-                <rect x="${midX - 15}" y="${midY - 18}" width="30" height="12" fill="white" stroke="#3b82f6" stroke-width="1" rx="2"/>`
+        line: `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#dc2626" stroke-width="3" stroke-dasharray="8,4" stroke-linecap="round"/>`,
+        label: `<rect x="${midX - 20}" y="${midY - 12}" width="40" height="16" fill="white" fill-opacity="0.9" stroke="#dc2626" stroke-width="1" rx="4"/>
+                <text x="${midX}" y="${midY - 2}" text-anchor="middle" font-size="9" fill="#dc2626" font-weight="bold">${distance.toFixed(0)}m</text>`
       };
     });
 
-    // Generate site markers
+    // Generate site markers (exact frontend styling)
     const markers = sitesWithGPS.map((site, index) => {
       const x = xScale(site.longitude);
       const y = yScale(site.latitude);
-      const color = ['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899'][index % 6];
       
       return `
+        <!-- Shadow -->
+        <circle cx="${x + 1}" cy="${y + 1}" r="15" fill="rgba(0,0,0,0.2)"/>
+        
         <!-- Site marker -->
-        <circle cx="${x}" cy="${y}" r="8" fill="${color}" stroke="white" stroke-width="2"/>
-        <text x="${x}" y="${y + 4}" text-anchor="middle" font-size="10" fill="white" font-weight="bold">${site.site_number}</text>
+        <circle cx="${x}" cy="${y}" r="15" fill="#dc2626" stroke="#ffffff" stroke-width="3"/>
+        <text x="${x}" y="${y + 5}" text-anchor="middle" font-size="14" fill="white" font-weight="bold">${site.site_number}</text>
         
         <!-- Site label -->
-        <text x="${x}" y="${y - 15}" text-anchor="middle" font-size="10" fill="${color}" font-weight="bold">Site ${site.site_number}</text>
-        <text x="${x}" y="${y - 28}" text-anchor="middle" font-size="8" fill="#6b7280">${site.latitude.toFixed(6)}, ${site.longitude.toFixed(6)}</text>
+        <rect x="${x - 30}" y="${y - 45}" width="60" height="20" fill="white" fill-opacity="0.9" stroke="#dc2626" stroke-width="1" rx="4"/>
+        <text x="${x}" y="${y - 32}" text-anchor="middle" font-size="10" fill="#dc2626" font-weight="bold">Site ${site.site_number}</text>
       `;
     });
 
+    // Scale calculation (frontend logic)
+    const scaleDistance = (50 / scaleX * 111320).toFixed(0);
+
     return `
-      <svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" style="background: white; border: 1px solid #e5e7eb;">
-        <!-- Map background -->
-        <rect width="${width}" height="${height}" fill="#f0f9ff"/>
-        <rect x="${margin.left}" y="${margin.top}" width="${mapWidth}" height="${mapHeight}" fill="#e0f2fe" stroke="#0284c7" stroke-width="1"/>
+      <div style="position: relative; width: ${width}px; height: ${height}px; border: 1px solid #e5e7eb;">
+        <!-- Google Maps Background -->
+        <img src="${mapUrl}" width="${width}" height="${height}" style="position: absolute; top: 0; left: 0;" alt="Site Location Map" 
+             onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" />
         
-        <!-- Grid lines -->
-        ${[0.2, 0.4, 0.6, 0.8].map(ratio => `
-          <line x1="${margin.left + ratio * mapWidth}" y1="${margin.top}" 
-                x2="${margin.left + ratio * mapWidth}" y2="${margin.top + mapHeight}" 
-                stroke="#cbd5e1" stroke-width="0.5" opacity="0.5"/>
-          <line x1="${margin.left}" y1="${margin.top + ratio * mapHeight}" 
-                x2="${margin.left + mapWidth}" y2="${margin.top + ratio * mapHeight}" 
-                stroke="#cbd5e1" stroke-width="0.5" opacity="0.5"/>
-        `).join('')}
+        <!-- Fallback background -->
+        <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #f0f9ff; display: none; text-align: center; padding-top: 180px; color: #6b7280;">
+          Map temporarily unavailable
+        </div>
         
-        <!-- Map content area -->
-        <g transform="translate(${margin.left}, ${margin.top})">
+        <!-- SVG Overlay -->
+        <svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" style="position: absolute; top: 0; left: 0;">
           <!-- Flight path lines -->
           ${connections.map(conn => conn.line).join('')}
           
-          <!-- Distance labels background -->
+          <!-- Distance labels -->
           ${connections.map(conn => conn.label).join('')}
           
           <!-- Site markers -->
           ${markers.join('')}
-        </g>
-        
-        <!-- Compass rose -->
-        <g transform="translate(${width - 60}, 60)">
-          <circle cx="0" cy="0" r="20" fill="white" stroke="#374151" stroke-width="1"/>
-          <path d="M 0,-15 L 5,0 L 0,5 L -5,0 Z" fill="#ef4444"/>
-          <text x="0" y="-25" text-anchor="middle" font-size="8" fill="#374151" font-weight="bold">N</text>
-        </g>
-        
-        <!-- Scale indicator -->
-        <g transform="translate(40, ${height - 60})">
-          <line x1="0" y1="0" x2="50" y2="0" stroke="#374151" stroke-width="2"/>
-          <line x1="0" y1="-3" x2="0" y2="3" stroke="#374151" stroke-width="2"/>
-          <line x1="50" y1="-3" x2="50" y2="3" stroke="#374151" stroke-width="2"/>
-          <text x="25" y="-8" text-anchor="middle" font-size="8" fill="#374151">≈50m</text>
-        </g>
-        
-        <!-- Title -->
-        <text x="${width/2}" y="25" text-anchor="middle" font-size="16" fill="#1e40af" font-weight="bold">Site Location Map</text>
-        
-        <!-- Legend -->
-        <g transform="translate(20, ${height - 100})">
-          <text x="0" y="0" font-size="10" fill="#374151" font-weight="bold">Legend:</text>
-          <line x1="0" y1="15" x2="20" y2="15" stroke="#3b82f6" stroke-width="2" stroke-dasharray="5,5"/>
-          <text x="25" y="18" font-size="8" fill="#374151">Flight path with distance</text>
-          <circle cx="10" cy="30" r="6" fill="#3b82f6" stroke="white" stroke-width="1"/>
-          <text x="20" y="33" font-size="8" fill="#374151">Measurement site</text>
-        </g>
-      </svg>
+          
+          <!-- Compass rose (frontend position) -->
+          <g transform="translate(550, 50)">
+            <circle cx="0" cy="0" r="20" fill="white" stroke="#374151" stroke-width="1" fill-opacity="0.9"/>
+            <path d="M 0,-15 L 5,0 L 0,5 L -5,0 Z" fill="#dc2626"/>
+            <text x="0" y="-25" text-anchor="middle" font-size="8" fill="#374151" font-weight="bold">N</text>
+          </g>
+          
+          <!-- Scale indicator (frontend style) -->
+          <g transform="translate(20, ${height - 40})">
+            <rect x="-5" y="-15" width="70" height="25" fill="white" fill-opacity="0.9" stroke="#374151" stroke-width="1" rx="4"/>
+            <line x1="5" y1="0" x2="55" y2="0" stroke="#374151" stroke-width="2"/>
+            <line x1="5" y1="-3" x2="5" y2="3" stroke="#374151" stroke-width="2"/>
+            <line x1="55" y1="-3" x2="55" y2="3" stroke="#374151" stroke-width="2"/>
+            <text x="30" y="-6" text-anchor="middle" font-size="8" fill="#374151" font-weight="bold">${scaleDistance}m</text>
+          </g>
+          
+          <!-- Legend (frontend style) -->
+          <g transform="translate(20, 60)">
+            <rect x="-5" y="-15" width="140" height="50" fill="white" fill-opacity="0.9" stroke="#374151" stroke-width="1" rx="4"/>
+            <text x="5" y="-5" font-size="9" fill="#374151" font-weight="bold">Legend:</text>
+            <line x1="5" y1="5" x2="25" y2="5" stroke="#dc2626" stroke-width="3" stroke-dasharray="8,4"/>
+            <text x="30" y="8" font-size="8" fill="#374151">Flight line</text>
+            <circle cx="15" cy="20" r="8" fill="#dc2626" stroke="white" stroke-width="2"/>
+            <text x="30" y="23" font-size="8" fill="#374151">Measurement site</text>
+          </g>
+        </svg>
+      </div>
     `;
   };
 
@@ -771,13 +774,22 @@ function createReportHTML(riverWalk: RiverWalk | null, sites: Site[] | null) {
             border: 1px solid #d1d5db;
         }
         
-        .table-blue th { background: #dbeafe; color: #1e40af; }
-        .table-green th { background: #dcfce7; color: #166534; }
-        .table-amber th { background: #fef3c7; color: #92400e; }
+        /* Section Color Themes */
+        .cross-section-theme th { background: #dbeafe; color: #1e40af; }
+        .velocity-theme th { background: #dcfce7; color: #166534; }
+        .sediment-theme th { background: #fef3c7; color: #92400e; }
         
-        .table-blue .summary-col { background: #bfdbfe; }
-        .table-green .summary-col { background: #bbf7d0; }
-        .table-amber .summary-col { background: #fde68a; }
+        .cross-section-theme .summary-col { background: #bfdbfe; }
+        .velocity-theme .summary-col { background: #bbf7d0; }
+        .sediment-theme .summary-col { background: #fde68a; }
+        
+        .cross-section-section { border-left: 4px solid #3b82f6; }
+        .velocity-section { border-left: 4px solid #16a34a; }
+        .sediment-section { border-left: 4px solid #f59e0b; }
+        
+        .cross-section-header { color: #1e40af; border-bottom-color: #3b82f6; }
+        .velocity-header { color: #166534; border-bottom-color: #16a34a; }
+        .sediment-header { color: #92400e; border-bottom-color: #f59e0b; }
         
         .section-header {
             font-size: 24px;
@@ -982,8 +994,8 @@ function createReportHTML(riverWalk: RiverWalk | null, sites: Site[] | null) {
         ${sitesData.length > 0 ? `
         <!-- CROSS-SECTIONAL AREA SUMMARY -->
         <div class="page-break-before">
-            <h2 class="section-header">Cross-Sectional Area Summary</h2>
-            <table class="summary-table table-blue page-break-avoid">
+            <h2 class="section-header cross-section-header">Cross-Sectional Area Summary</h2>
+            <table class="summary-table cross-section-theme page-break-avoid">
                 <thead>
                     <tr>
                         <th>Measurement</th>
@@ -1013,8 +1025,8 @@ function createReportHTML(riverWalk: RiverWalk | null, sites: Site[] | null) {
 
         <!-- VELOCITY SUMMARY -->
         <div class="page-break-avoid" style="margin-top: 40px;">
-            <h2 class="section-header">Velocity Summary</h2>
-            <table class="summary-table table-green page-break-avoid">
+            <h2 class="section-header velocity-header">Velocity Summary</h2>
+            <table class="summary-table velocity-theme page-break-avoid">
                 <thead>
                     <tr>
                         <th>Measurement</th>
@@ -1039,8 +1051,8 @@ function createReportHTML(riverWalk: RiverWalk | null, sites: Site[] | null) {
 
         <!-- SEDIMENT ANALYSIS SUMMARY -->
         <div class="page-break-avoid" style="margin-top: 40px;">
-            <h2 class="section-header">Sediment Analysis Summary</h2>
-            <table class="summary-table table-amber page-break-avoid">
+            <h2 class="section-header sediment-header">Sediment Analysis Summary</h2>
+            <table class="summary-table sediment-theme page-break-avoid">
                 <thead>
                     <tr>
                         <th>Measurement</th>
@@ -1134,8 +1146,8 @@ function createReportHTML(riverWalk: RiverWalk | null, sites: Site[] | null) {
                 </div>
 
                 <!-- Cross-Sectional Analysis -->
-                <div class="site-section page-break-avoid">
-                    <h3>Cross-Sectional Analysis</h3>
+                <div class="site-section cross-section-section page-break-avoid">
+                    <h3 class="cross-section-header">Cross-Sectional Analysis</h3>
                     <div class="chart-container" style="display: flex; justify-content: center; margin: 20px 0;">
                         ${generateCrossSectionSVG(site)}
                     </div>
@@ -1185,8 +1197,8 @@ function createReportHTML(riverWalk: RiverWalk | null, sites: Site[] | null) {
                 </div>
 
                 <!-- Velocity Analysis -->
-                <div class="site-section page-break-avoid">
-                    <h3>Velocity Analysis</h3>
+                <div class="site-section velocity-section page-break-avoid">
+                    <h3 class="velocity-header">Velocity Analysis</h3>
                     <div class="metric-grid" style="grid-template-columns: repeat(3, 1fr);">
                         <div class="metric-card">
                             <div class="metric-value">${calculateAverageVelocity(site).toFixed(2)}</div>
@@ -1228,8 +1240,8 @@ function createReportHTML(riverWalk: RiverWalk | null, sites: Site[] | null) {
                 </div>
 
                 <!-- Sediment Analysis -->
-                <div class="site-section page-break-avoid">
-                    <h3>Sediment Analysis</h3>
+                <div class="site-section sediment-section page-break-avoid">
+                    <h3 class="sediment-header">Sediment Analysis</h3>
                     <div class="metric-grid">
                         <div class="metric-card">
                             <div class="metric-value">${calculateAverageSedimentSize(site).toFixed(2)}</div>
