@@ -131,7 +131,7 @@ function createReportHTML(riverWalk: RiverWalk | null, sites: Site[] | null) {
     return new Date(dateString).toLocaleDateString();
   };
 
-  // Generate SVG cross-section chart for a site
+  // Generate SVG cross-section chart for a site (exact frontend replication)
   const generateCrossSectionSVG = (site: any) => {
     if (!site.measurement_points || site.measurement_points.length === 0) {
       return '<div style="text-align: center; color: #6b7280; padding: 40px;">No measurement points available for cross-section chart</div>';
@@ -139,175 +139,263 @@ function createReportHTML(riverWalk: RiverWalk | null, sites: Site[] | null) {
 
     const points = site.measurement_points.sort((a: any, b: any) => a.point_number - b.point_number);
     const width = 600;
-    const height = 300;
-    const margin = { top: 40, right: 40, bottom: 60, left: 60 };
+    const height = 400;
+    const margin = { top: 60, right: 40, bottom: 60, left: 60 };
     const chartWidth = width - margin.left - margin.right;
     const chartHeight = height - margin.top - margin.bottom;
 
-    // Calculate scales
-    const maxDistance = Math.max(...points.map((p: any) => p.distance_from_bank));
-    const maxDepth = Math.max(...points.map((p: any) => p.depth));
-    
-    const xScale = (d: number) => (d / maxDistance) * chartWidth;
-    const yScale = (d: number) => chartHeight - (d / maxDepth) * chartHeight;
+    // Calculate exact frontend scaling
+    const riverWidth = site.river_width;
+    const xRange = [-0.5, riverWidth + 0.5];
+    const distances = points.map((p: any) => p.distance_from_bank);
+    const depths = points.map((p: any) => p.depth);
+    const minDepth = Math.min(...depths);
+    const brownFillDepth = minDepth + 0.5; // extends below deepest point
 
-    // Create path for water surface and riverbed
-    const surfacePath = `M 0,0 L ${chartWidth},0`;
-    const points_path = points.map((p: any, i: number) => {
-      const x = xScale(p.distance_from_bank);
-      const y = yScale(p.depth);
-      return `${i === 0 ? 'M' : 'L'} ${x},${y}`;
-    }).join(' ');
+    // Frontend uses autorange for Y, we'll calculate the range
+    const yRange = [Math.min(-brownFillDepth, 0) - 0.5, 0.5];
     
-    // Close the path to create filled area
-    const riverbedPath = `${points_path} L ${chartWidth},${chartHeight} L 0,${chartHeight} Z`;
+    const xScale = (x: number) => ((x - xRange[0]) / (xRange[1] - xRange[0])) * chartWidth;
+    const yScale = (y: number) => chartHeight - ((y - yRange[0]) / (yRange[1] - yRange[0])) * chartHeight;
+
+    // Generate paths exactly like frontend
+    // 1. Brown underground area
+    const undergroundPath = `M ${xScale(-0.5)} ${yScale(-brownFillDepth)} 
+                            L ${xScale(riverWidth + 0.5)} ${yScale(-brownFillDepth)} 
+                            L ${xScale(riverWidth + 0.5)} ${yScale(0)} 
+                            L ${xScale(-0.5)} ${yScale(0)} Z`;
+
+    // 2. Left bank
+    const leftBankPath = `M ${xScale(-0.5)} ${yScale(0.5)} 
+                         L ${xScale(0)} ${yScale(0)} 
+                         L ${xScale(-0.5)} ${yScale(0)} Z`;
+
+    // 3. Right bank  
+    const rightBankPath = `M ${xScale(riverWidth)} ${yScale(0)} 
+                          L ${xScale(riverWidth + 0.5)} ${yScale(0.5)} 
+                          L ${xScale(riverWidth + 0.5)} ${yScale(0)} Z`;
+
+    // 4. River bed (main profile) - filled to zero
+    const riverBedPoints = points.map((p: any) => `${xScale(p.distance_from_bank)},${yScale(-p.depth)}`).join(' L ');
+    const riverBedPath = `M ${xScale(0)},${yScale(0)} L ${riverBedPoints} L ${xScale(riverWidth)},${yScale(0)} Z`;
+
+    // 5. Water surface line
+    const waterSurfacePath = `M ${xScale(0)} ${yScale(0)} L ${xScale(riverWidth)} ${yScale(0)}`;
+
+    // Width indicator shapes (frontend annotations)
+    const widthLineY = yScale(0.2);
+    const widthTickY1 = yScale(0.1);
 
     return `
-      <svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" style="border: 1px solid #e5e7eb; background: white;">
-        <!-- Background -->
+      <svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" style="background: lightcyan;">
+        <defs>
+          <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+            <path d="M 20 0 L 0 0 0 20" fill="none" stroke="lightgray" stroke-width="0.5"/>
+          </pattern>
+        </defs>
+        
+        <!-- Plot background -->
         <rect width="${width}" height="${height}" fill="white"/>
+        <rect x="${margin.left}" y="${margin.top}" width="${chartWidth}" height="${chartHeight}" fill="lightcyan"/>
+        
+        <!-- Grid -->
+        <rect x="${margin.left}" y="${margin.top}" width="${chartWidth}" height="${chartHeight}" fill="url(#grid)"/>
         
         <!-- Chart area -->
         <g transform="translate(${margin.left}, ${margin.top})">
-          <!-- Water area (blue) -->
-          <path d="${riverbedPath}" fill="#93c5fd" stroke="#3b82f6" stroke-width="2" opacity="0.7"/>
+          <!-- 1. Brown underground area -->
+          <path d="${undergroundPath}" fill="peru" stroke="brown" stroke-width="0"/>
           
-          <!-- Underground area (brown) -->
-          <rect x="0" y="${chartHeight}" width="${chartWidth}" height="40" fill="#8b5cf6" opacity="0.6"/>
+          <!-- 2. Left bank -->
+          <path d="${leftBankPath}" fill="peru" stroke="brown" stroke-width="0"/>
           
-          <!-- Water surface line -->
-          <path d="${surfacePath}" stroke="#1d4ed8" stroke-width="3"/>
+          <!-- 3. Right bank -->
+          <path d="${rightBankPath}" fill="peru" stroke="brown" stroke-width="0"/>
           
-          <!-- Measurement points -->
+          <!-- 4. River bed (main profile) -->
+          <path d="${riverBedPath}" fill="lightblue" stroke="royalblue" stroke-width="2"/>
+          
+          <!-- 5. Water surface line -->
+          <path d="${waterSurfacePath}" stroke="lightblue" stroke-width="2"/>
+          
+          <!-- Measurement points (darkblue circles) -->
           ${points.map((p: any) => {
             const x = xScale(p.distance_from_bank);
-            const y = yScale(p.depth);
-            return `<circle cx="${x}" cy="${y}" r="4" fill="#ef4444" stroke="white" stroke-width="2"/>`;
+            const y = yScale(-p.depth);
+            return `<circle cx="${x}" cy="${y}" r="4" fill="darkblue" stroke="darkblue" stroke-width="1"/>`;
           }).join('')}
           
-          <!-- Grid lines -->
-          ${[0, 0.25, 0.5, 0.75, 1].map(ratio => 
-            `<line x1="${ratio * chartWidth}" y1="0" x2="${ratio * chartWidth}" y2="${chartHeight}" stroke="#e5e7eb" stroke-dasharray="3,3"/>`
-          ).join('')}
-          ${[0, 0.25, 0.5, 0.75, 1].map(ratio => 
-            `<line x1="0" y1="${ratio * chartHeight}" x2="${chartWidth}" y2="${ratio * chartHeight}" stroke="#e5e7eb" stroke-dasharray="3,3"/>`
-          ).join('')}
-          
-          <!-- Axes -->
-          <line x1="0" y1="${chartHeight}" x2="${chartWidth}" y2="${chartHeight}" stroke="#374151" stroke-width="2"/>
-          <line x1="0" y1="0" x2="0" y2="${chartHeight}" stroke="#374151" stroke-width="2"/>
-          
-          <!-- X-axis labels -->
-          ${[0, 0.25, 0.5, 0.75, 1].map((ratio, i) => 
-            `<text x="${ratio * chartWidth}" y="${chartHeight + 20}" text-anchor="middle" font-size="12" fill="#6b7280">${(ratio * maxDistance).toFixed(1)}m</text>`
-          ).join('')}
-          
-          <!-- Y-axis labels -->
-          ${[0, 0.25, 0.5, 0.75, 1].map((ratio, i) => 
-            `<text x="-10" y="${chartHeight - ratio * chartHeight + 4}" text-anchor="end" font-size="12" fill="#6b7280">${(ratio * maxDepth).toFixed(1)}m</text>`
-          ).join('')}
+          <!-- Width indicator line -->
+          <line x1="${xScale(0)}" y1="${widthLineY}" x2="${xScale(riverWidth)}" y2="${widthLineY}" stroke="black" stroke-width="2"/>
+          <!-- Width indicator ticks -->
+          <line x1="${xScale(0)}" y1="${widthLineY}" x2="${xScale(0)}" y2="${widthTickY1}" stroke="black" stroke-width="2"/>
+          <line x1="${xScale(riverWidth)}" y1="${widthLineY}" x2="${xScale(riverWidth)}" y2="${widthTickY1}" stroke="black" stroke-width="2"/>
         </g>
         
-        <!-- Axis titles -->
-        <text x="${width/2}" y="${height - 10}" text-anchor="middle" font-size="14" fill="#374151" font-weight="600">Distance from Bank (m)</text>
-        <text x="20" y="${height/2}" text-anchor="middle" font-size="14" fill="#374151" font-weight="600" transform="rotate(-90, 20, ${height/2})">Depth (m)</text>
+        <!-- Annotations -->
+        <!-- Depth labels at each measurement point -->
+        ${points.map((p: any) => {
+          const x = margin.left + xScale(p.distance_from_bank);
+          const y = margin.top + yScale(-p.depth - 0.1);
+          return `<text x="${x}" y="${y}" text-anchor="middle" font-size="10" fill="black">${p.depth}m</text>`;
+        }).join('')}
+        
+        <!-- Width label -->
+        <text x="${margin.left + xScale(riverWidth/2)}" y="${margin.top + yScale(0.4)}" text-anchor="middle" font-size="12" fill="black" font-weight="bold">${riverWidth}m</text>
+        
+        <!-- Axis labels -->
+        <text x="${width/2}" y="${height - 10}" text-anchor="middle" font-size="12" fill="black">Distance from Bank (m)</text>
+        <text x="15" y="${height/2}" text-anchor="middle" font-size="12" fill="black" transform="rotate(-90, 15, ${height/2})">Depth (m)</text>
         
         <!-- Title -->
-        <text x="${width/2}" y="20" text-anchor="middle" font-size="16" fill="#1e40af" font-weight="bold">River Cross-Section Profile</text>
+        <text x="${width/2}" y="25" text-anchor="middle" font-size="16" fill="black" font-weight="bold">Cross-Section: Site ${site.site_number}</text>
       </svg>
     `;
   };
 
-  // Generate SVG wind rose chart for sediment roundness
+  // Generate SVG wind rose chart for sediment roundness (exact frontend replication)
   const generateWindRoseSVG = (sites: any[]) => {
-    const width = 400;
+    const width = 600;
     const height = 400;
     const centerX = width / 2;
     const centerY = height / 2;
-    const radius = 140;
+    const maxRadius = 120;
 
-    // Collect all sediment roundness data
-    const allRoundnessData: number[] = [];
-    sites.forEach(site => {
-      if (site.sedimentation_data?.measurements) {
-        site.sedimentation_data.measurements.forEach((m: any) => {
-          allRoundnessData.push(m.sediment_roundness);
+    // Frontend roundness ranges and colors (per site)
+    const roundnessRanges = ['1 - Very Angular', '2 - Angular', '3 - Sub Angular', '4 - Sub Rounded', '5 - Rounded', '6 - Well Rounded'];
+    const thetas = [0, 60, 120, 180, 240, 300];
+    const siteColors = ['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899'];
+
+    if (sites.length === 0) {
+      return '<div style="text-align: center; color: #6b7280; padding: 40px;">No site data available for wind rose chart</div>';
+    }
+
+    // Process data exactly like frontend
+    const allSedimentData: any[] = [];
+    sites.forEach((site, siteIndex) => {
+      if (site.sedimentation_data?.measurements && site.sedimentation_data.measurements.length > 0) {
+        // Count roundness for each category (1-6)
+        const siteRoundnessCounts = [0, 0, 0, 0, 0, 0];
+        
+        site.sedimentation_data.measurements.forEach((measurement: any) => {
+          const roundness = Math.round(measurement.sediment_roundness);
+          const index = Math.max(0, Math.min(5, roundness - 1)); // Clamp to 0-5
+          siteRoundnessCounts[index]++;
+        });
+
+        allSedimentData.push({
+          siteNumber: site.site_number,
+          counts: siteRoundnessCounts,
+          color: siteColors[siteIndex % siteColors.length],
+          siteIndex: siteIndex
         });
       }
     });
 
-    if (allRoundnessData.length === 0) {
+    if (allSedimentData.length === 0) {
       return '<div style="text-align: center; color: #6b7280; padding: 40px;">No sediment data available for wind rose chart</div>';
     }
 
-    // Create 6 bins for roundness (1-6 scale)
-    const bins = [0, 0, 0, 0, 0, 0]; // indices 0-5 for roundness 1-6
-    allRoundnessData.forEach(roundness => {
-      const binIndex = Math.min(5, Math.max(0, Math.floor(roundness) - 1));
-      bins[binIndex]++;
-    });
+    // Calculate radial scale (max count across all sites)
+    const maxCount = Math.max(...allSedimentData.flatMap(site => site.counts)) + 1;
 
-    const maxCount = Math.max(...bins);
-    const colors = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#3b82f6', '#8b5cf6'];
-    const labels = ['Very Rounded', 'Rounded', 'Sub-Rounded', 'Sub-Angular', 'Angular', 'Very Angular'];
+    // Generate polar bars for each site
+    const polarBars = allSedimentData.map((siteData, layerIndex) => {
+      return siteData.counts.map((count, angleIndex) => {
+        if (count === 0) return '';
 
-    // Generate sectors
-    const sectors = bins.map((count, i) => {
-      const angle = (i * 60) - 90; // Start from top, 60 degrees each
-      const startAngle = (angle - 30) * Math.PI / 180;
-      const endAngle = (angle + 30) * Math.PI / 180;
-      const barRadius = (count / maxCount) * radius;
+        const theta = thetas[angleIndex];
+        const barRadius = (count / maxCount) * maxRadius;
+        const innerRadius = 0; // Start from center
+        
+        // Convert to SVG coordinates (theta=0 is top, clockwise)
+        const startAngle = (theta - 30) * Math.PI / 180;
+        const endAngle = (theta + 30) * Math.PI / 180;
 
-      const x1 = centerX + Math.cos(startAngle) * 20;
-      const y1 = centerY + Math.sin(startAngle) * 20;
-      const x2 = centerX + Math.cos(endAngle) * 20;
-      const y2 = centerY + Math.sin(endAngle) * 20;
-      const x3 = centerX + Math.cos(endAngle) * barRadius;
-      const y3 = centerY + Math.sin(endAngle) * barRadius;
-      const x4 = centerX + Math.cos(startAngle) * barRadius;
-      const y4 = centerY + Math.sin(startAngle) * barRadius;
+        // Calculate sector path
+        const largeArcFlag = 60 > 180 ? 1 : 0;
+        
+        const x1 = centerX + Math.cos(startAngle) * innerRadius;
+        const y1 = centerY + Math.sin(startAngle) * innerRadius;
+        const x2 = centerX + Math.cos(startAngle) * barRadius;
+        const y2 = centerY + Math.sin(startAngle) * barRadius;
+        const x3 = centerX + Math.cos(endAngle) * barRadius;
+        const y3 = centerY + Math.sin(endAngle) * barRadius;
+        const x4 = centerX + Math.cos(endAngle) * innerRadius;
+        const y4 = centerY + Math.sin(endAngle) * innerRadius;
 
-      const largeArc = 60 > 180 ? 1 : 0;
+        const sectorPath = `M ${x1} ${y1} 
+                           L ${x2} ${y2} 
+                           A ${barRadius} ${barRadius} 0 ${largeArcFlag} 1 ${x3} ${y3} 
+                           L ${x4} ${y4} 
+                           A ${innerRadius} ${innerRadius} 0 ${largeArcFlag} 0 ${x1} ${y1} Z`;
 
-      return `
-        <path d="M ${x1} ${y1} A 20 20 0 0 1 ${x2} ${y2} L ${x3} ${y3} A ${barRadius} ${barRadius} 0 0 0 ${x4} ${y4} Z" 
-              fill="${colors[i]}" stroke="white" stroke-width="2" opacity="0.8"/>
-        <text x="${centerX + Math.cos(angle * Math.PI / 180) * (radius + 30)}" 
-              y="${centerY + Math.sin(angle * Math.PI / 180) * (radius + 30)}" 
-              text-anchor="middle" font-size="10" fill="#374151">${count}</text>
-      `;
+        return `<path d="${sectorPath}" 
+                      fill="${siteData.color}" 
+                      fill-opacity="0.6" 
+                      stroke="${siteData.color}" 
+                      stroke-width="3" 
+                      stroke-opacity="1"/>`;
+      }).join('');
     }).join('');
 
     return `
-      <svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" style="border: 1px solid #e5e7eb; background: white;">
-        <!-- Background circles -->
-        <circle cx="${centerX}" cy="${centerY}" r="${radius * 0.25}" fill="none" stroke="#e5e7eb" stroke-dasharray="3,3"/>
-        <circle cx="${centerX}" cy="${centerY}" r="${radius * 0.5}" fill="none" stroke="#e5e7eb" stroke-dasharray="3,3"/>
-        <circle cx="${centerX}" cy="${centerY}" r="${radius * 0.75}" fill="none" stroke="#e5e7eb" stroke-dasharray="3,3"/>
-        <circle cx="${centerX}" cy="${centerY}" r="${radius}" fill="none" stroke="#d1d5db"/>
+      <svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" style="background: white;">
+        <!-- Plot background -->
+        <rect width="${width}" height="${height}" fill="white"/>
         
-        <!-- Radial lines -->
-        ${[0, 60, 120, 180, 240, 300].map(angle => {
-          const x = centerX + Math.cos((angle - 90) * Math.PI / 180) * radius;
-          const y = centerY + Math.sin((angle - 90) * Math.PI / 180) * radius;
-          return `<line x1="${centerX}" y1="${centerY}" x2="${x}" y2="${y}" stroke="#d1d5db"/>`;
+        <!-- Radial grid lines -->
+        ${[0.25, 0.5, 0.75, 1].map(ratio => 
+          `<circle cx="${centerX}" cy="${centerY}" r="${ratio * maxRadius}" 
+                   fill="none" stroke="lightgray" stroke-width="0.5"/>`
+        ).join('')}
+        
+        <!-- Angular grid lines -->
+        ${thetas.map(theta => {
+          const angle = theta * Math.PI / 180;
+          const x = centerX + Math.cos(angle) * maxRadius;
+          const y = centerY + Math.sin(angle) * maxRadius;
+          return `<line x1="${centerX}" y1="${centerY}" x2="${x}" y2="${y}" 
+                        stroke="lightgray" stroke-width="0.5"/>`;
         }).join('')}
         
-        <!-- Data sectors -->
-        ${sectors}
+        <!-- Outer circle -->
+        <circle cx="${centerX}" cy="${centerY}" r="${maxRadius}" 
+                fill="none" stroke="black" stroke-width="1"/>
         
-        <!-- Center circle -->
-        <circle cx="${centerX}" cy="${centerY}" r="20" fill="white" stroke="#374151" stroke-width="2"/>
+        <!-- Polar bars -->
+        ${polarBars}
         
-        <!-- Title -->
-        <text x="${centerX}" y="20" text-anchor="middle" font-size="16" fill="#92400e" font-weight="bold">Sediment Roundness Distribution</text>
+        <!-- Radial axis labels -->
+        ${[0, 0.25, 0.5, 0.75, 1].map(ratio => {
+          const r = ratio * maxRadius;
+          const value = (ratio * maxCount).toFixed(0);
+          return `<text x="${centerX + r + 5}" y="${centerY + 4}" 
+                        font-size="10" fill="black">${value}</text>`;
+        }).join('')}
+        
+        <!-- Angular axis labels -->
+        ${roundnessRanges.map((label, i) => {
+          const theta = thetas[i];
+          const angle = theta * Math.PI / 180;
+          const labelRadius = maxRadius + 20;
+          const x = centerX + Math.cos(angle) * labelRadius;
+          const y = centerY + Math.sin(angle) * labelRadius;
+          
+          // Split long labels
+          const shortLabel = label.split(' - ')[1] || label;
+          return `<text x="${x}" y="${y}" text-anchor="middle" 
+                        font-size="9" fill="black">${shortLabel}</text>`;
+        }).join('')}
         
         <!-- Legend -->
-        <g transform="translate(10, ${height - 100})">
-          ${labels.map((label, i) => `
-            <g transform="translate(0, ${i * 15})">
-              <rect x="0" y="-8" width="12" height="12" fill="${colors[i]}" opacity="0.8"/>
-              <text x="18" y="2" font-size="10" fill="#374151">${label}</text>
+        <g transform="translate(20, 30)">
+          ${allSedimentData.map((siteData, i) => `
+            <g transform="translate(0, ${i * 20})">
+              <rect x="0" y="-8" width="15" height="15" 
+                    fill="${siteData.color}" fill-opacity="0.6"
+                    stroke="${siteData.color}" stroke-width="3"/>
+              <text x="22" y="2" font-size="10" fill="black">Site ${siteData.siteNumber}</text>
             </g>
           `).join('')}
         </g>
