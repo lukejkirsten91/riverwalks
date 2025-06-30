@@ -247,6 +247,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
+    console.log('🔍 Fetching river walk with ID:', riverWalkId);
+    
     // Fetch river walk data
     const { data: riverWalk, error: riverWalkError } = await supabase
       .from('river_walks')
@@ -254,10 +256,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       .eq('id', riverWalkId)
       .single();
 
+    console.log('📊 Database response:', { riverWalk, riverWalkError });
+
     if (riverWalkError || !riverWalk) {
-      return res.status(404).json({ error: 'River walk not found' });
+      console.error('❌ River walk not found:', riverWalkError);
+      return res.status(404).json({ 
+        error: 'River walk not found',
+        details: riverWalkError?.message || 'No data returned',
+        searchedId: riverWalkId
+      });
     }
 
+    console.log('🏞️ Fetching sites for river walk:', riverWalkId);
+    
     // Fetch sites with measurement points
     const { data: sites, error: sitesError } = await supabase
       .from('sites')
@@ -268,7 +279,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       .eq('river_walk_id', riverWalkId)
       .order('site_number');
 
+    console.log('📍 Sites response:', { sitesCount: sites?.length || 0, sitesError });
+
     if (sitesError) {
+      console.error('❌ Sites query error:', sitesError);
       throw sitesError;
     }
 
