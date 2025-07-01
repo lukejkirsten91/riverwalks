@@ -520,7 +520,7 @@ function renderTableOfContents(tocEntries: any[]) {
 
 function renderExecutiveSummary(reportData: any, totalSites: number, totalArea: number, avgVelocity: number, totalDischarge: number, sitesData: any[], formatDate: Function, formatUnitWithSuperscript: Function, formatUnit: Function, generateMapSVG: Function, getNextFigureNumber: Function) {
   return `
-    <section class="page-break-before">
+    <section>
         <header>
             <h1 style="font-size: var(--font-size-3xl); color: var(--clr-primary); text-align: center; margin-bottom: var(--sp-2xl); border-bottom: 3px solid var(--clr-primary); padding-bottom: var(--sp-md);">Executive Summary</h1>
         </header>
