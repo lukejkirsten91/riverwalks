@@ -153,13 +153,17 @@ export async function getInviteDetails(token: string): Promise<InviteDetails> {
     return { valid: false, user_email: '', role: '', expires_at: '' };
   }
 
+  const collaborationMeta = Array.isArray(data.collaboration_metadata) 
+    ? data.collaboration_metadata[0] 
+    : data.collaboration_metadata;
+
   return {
     valid: true,
     user_email: data.user_email,
     role: data.role,
     expires_at: data.invite_expires_at,
-    river_walk_id: data.collaboration_metadata?.river_walk_reference_id,
-    owner_id: data.collaboration_metadata?.owner_id,
+    river_walk_id: collaborationMeta?.river_walk_reference_id,
+    owner_id: collaborationMeta?.owner_id,
   };
 }
 
