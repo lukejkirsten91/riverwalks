@@ -79,9 +79,9 @@ export function useOfflinePhoto(
       });
 
       if (isUrl) {
-        showSuccess('Photo Uploaded', 'Photo successfully uploaded to the cloud.');
+        showSuccess('Photo Attached', 'Photo successfully attached.');
       } else {
-        showSuccess('Photo Saved', 'Photo saved locally and will upload when online.');
+        showSuccess('Photo Attached', 'Photo successfully attached.');
       }
       
     } catch (error) {
@@ -98,7 +98,7 @@ export function useOfflinePhoto(
       if (photoState.isOfflinePhoto) {
         // Remove from offline storage
         await offlineDataService.deletePhotoOffline(photoState.photoUrl, relatedId);
-        showSuccess('Photo Removed', 'Photo removed from local storage.');
+        showSuccess('Photo Removed', 'Photo successfully removed.');
       } else {
         // For online photos, we'll handle deletion through the existing API
         // This would need to be integrated with the form submission

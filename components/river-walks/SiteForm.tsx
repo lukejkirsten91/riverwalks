@@ -90,22 +90,6 @@ export function SiteForm({
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <div>
-            <label className="block text-foreground mb-3 font-medium">Site Name</label>
-            <input
-              type="text"
-              name="site_name"
-              value={formData.site_name}
-              onChange={handleInputChange}
-              className="input-modern"
-              placeholder="e.g., Upstream, Meander, Confluence"
-              required
-            />
-            <p className="text-muted-foreground text-xs mt-2">
-              Choose a descriptive name for this measurement location
-            </p>
-          </div>
-          
-          <div>
             <label className="block text-foreground mb-3 font-medium">
               <span className="flex items-center gap-2">
                 <Ruler className="w-4 h-4" />

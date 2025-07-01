@@ -145,7 +145,7 @@ export function EnhancedSiteForm({
       if (existing.length !== numSedimentationMeasurements) {
         const newMeasurements = Array.from({ length: numSedimentationMeasurements }, (_, index) => ({
           sediment_size: index < existing.length ? existing[index].sediment_size : 0,
-          sediment_roundness: index < existing.length ? existing[index].sediment_roundness : 0,
+          sediment_roundness: index < existing.length ? existing[index].sediment_roundness : 1,
         }));
         setSedimentationMeasurements(newMeasurements);
       } else {
@@ -156,7 +156,7 @@ export function EnhancedSiteForm({
       // Initialize with empty measurements for new sites
       const newMeasurements = Array.from({ length: numSedimentationMeasurements }, () => ({
         sediment_size: 0,
-        sediment_roundness: 0,
+        sediment_roundness: 1,
       }));
       setSedimentationMeasurements(newMeasurements);
     }
@@ -352,19 +352,6 @@ export function EnhancedSiteForm({
 
           <div className="bg-blue-50/50 rounded-xl p-6 border border-blue-100">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-foreground mb-3 font-medium">Site Name</label>
-                <input
-                  type="text"
-                  name="site_name"
-                  value={formData.site_name}
-                  onChange={handleInputChange}
-                  className="input-modern"
-                  placeholder="e.g., Site 1, Upstream, Meander"
-                  required
-                />
-              </div>
-
               <div>
                 <label className="block text-foreground mb-3 font-medium">
                   <span className="flex items-center gap-2">
@@ -756,7 +743,7 @@ export function EnhancedSiteForm({
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Sediment Roundness (0-6 scale)
+                      Sediment Roundness (1-6 scale)
                     </label>
                     <select
                       value={measurement.sediment_roundness}
@@ -765,13 +752,12 @@ export function EnhancedSiteForm({
                       }
                       className="input-modern"
                     >
-                      <option value={0}>0 - Angular</option>
                       <option value={1}>1 - Very Angular</option>
-                      <option value={2}>2 - Sub-angular</option>
-                      <option value={3}>3 - Sub-rounded</option>
-                      <option value={4}>4 - Rounded</option>
-                      <option value={5}>5 - Well-rounded</option>
-                      <option value={6}>6 - Very Well-rounded</option>
+                      <option value={2}>2 - Angular</option>
+                      <option value={3}>3 - Sub-angular</option>
+                      <option value={4}>4 - Sub-rounded</option>
+                      <option value={5}>5 - Rounded</option>
+                      <option value={6}>6 - Well-rounded</option>
                     </select>
                   </div>
                 </div>

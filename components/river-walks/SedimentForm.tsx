@@ -194,12 +194,12 @@ export function SedimentForm({
               <div>2 = Angular</div>
               <div>5 = Rounded</div>
               <div>3 = Sub-angular</div>
-              <div>6 = Very Rounded</div>
+              <div>6 = Well-rounded</div>
             </div>
           </div>
         </div>
         <p className="text-xs text-gray-600 text-center mt-2">
-          Use this scale to rate sediment roundness: 1 = Very Angular, 6 = Very Rounded
+          Use this scale to rate sediment roundness: 1 = Very Angular, 6 = Well-rounded
         </p>
       </div>
       
@@ -301,13 +301,12 @@ export function SedimentForm({
                     }
                     className="input-modern"
                   >
-                    <option value={0}>0 - Angular</option>
                     <option value={1}>1 - Very Angular</option>
-                    <option value={2}>2 - Sub-angular</option>
-                    <option value={3}>3 - Sub-rounded</option>
-                    <option value={4}>4 - Rounded</option>
-                    <option value={5}>5 - Well-rounded</option>
-                    <option value={6}>6 - Very Well-rounded</option>
+                    <option value={2}>2 - Angular</option>
+                    <option value={3}>3 - Sub-angular</option>
+                    <option value={4}>4 - Sub-rounded</option>
+                    <option value={5}>5 - Rounded</option>
+                    <option value={6}>6 - Well-rounded</option>
                   </select>
                 </div>
               </div>

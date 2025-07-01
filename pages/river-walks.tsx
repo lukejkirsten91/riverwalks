@@ -708,7 +708,7 @@ export default function RiverWalksPage() {
       {/* Profile dropdown portal - renders at top level */}
       {showProfileDropdown && dropdownPosition && typeof window !== 'undefined' && createPortal(
         <div 
-          className="fixed w-48 bg-white rounded-lg shadow-modern border border-white/30 py-2 z-[99999]"
+          className="fixed w-48 bg-white rounded-lg shadow-modern border border-white/30 py-2 z-[99999] animate-in slide-in-from-top-2 fade-in-0 duration-200"
           style={{
             top: dropdownPosition.top,
             right: dropdownPosition.right,
@@ -728,7 +728,7 @@ export default function RiverWalksPage() {
               setShowProfileDropdown(false);
               handleSwitchAccount();
             }}
-            className="w-full text-left px-4 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors flex items-center gap-2"
+            className="w-full text-left px-4 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all duration-200 hover:scale-[1.02] flex items-center gap-2"
           >
             <UserCheck className="w-4 h-4" />
             Switch Account
@@ -740,7 +740,7 @@ export default function RiverWalksPage() {
               setShowProfileDropdown(false);
               handleSignOut();
             }}
-            className="w-full text-left px-4 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors flex items-center gap-2"
+            className="w-full text-left px-4 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all duration-200 hover:scale-[1.02] flex items-center gap-2"
           >
             <LogOut className="w-4 h-4" />
             Sign Out
