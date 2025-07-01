@@ -768,35 +768,35 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
 
   return (
     <div 
-      className="bg-white rounded-lg w-full max-w-6xl max-h-[98vh] sm:max-h-[90vh] overflow-y-auto mt-2 sm:mt-0"
+      className="bg-white rounded-lg w-full max-w-[95vw] sm:max-w-5xl lg:max-w-6xl max-h-[95vh] sm:max-h-[90vh] overflow-y-auto m-2 sm:m-0"
     >
         {/* Header with controls */}
-        <div className="sticky top-0 bg-white border-b p-4 sm:p-6 z-10 rounded-t-lg shadow-sm">
-          <div className="flex items-start justify-between gap-4">
+        <div className="sticky top-0 bg-white border-b p-3 sm:p-4 lg:p-6 z-10 rounded-t-lg shadow-sm">
+          <div className="flex items-start justify-between gap-2 sm:gap-4">
             {/* Left side: Report info and export buttons */}
-            <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 min-w-0 flex-1">
-              <div className="flex items-center gap-3 min-w-0">
-                <FileText className="w-5 h-5 sm:w-6 sm:h-6 text-primary shrink-0" />
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 lg:gap-4 min-w-0 flex-1">
+              <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                <FileText className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-primary shrink-0" />
                 <div className="min-w-0">
-                  <h2 className="text-lg sm:text-xl font-bold truncate">River Walk Report</h2>
+                  <h2 className="text-base sm:text-lg lg:text-xl font-bold truncate">River Walk Report</h2>
                   <p className="text-xs sm:text-sm text-muted-foreground truncate">{riverWalk.name}</p>
                 </div>
               </div>
-              <div className="flex gap-2">
+              <div className="flex gap-1 sm:gap-2">
                 <button
                   onClick={exportToPDF}
                   disabled={isExporting}
-                  className="btn-primary flex items-center gap-2 disabled:opacity-50 text-sm sm:text-base px-3 py-2 sm:px-4 sm:py-3 shrink-0"
+                  className="btn-primary flex items-center gap-1 sm:gap-2 disabled:opacity-50 text-xs sm:text-sm lg:text-base px-2 py-1 sm:px-3 sm:py-2 lg:px-4 lg:py-3 shrink-0"
                 >
                   {isExporting ? (
                     <>
-                      <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full"></div>
+                      <div className="animate-spin w-3 h-3 sm:w-4 sm:h-4 border-2 border-white border-t-transparent rounded-full"></div>
                       <span className="hidden sm:inline">Generating...</span>
                       <span className="sm:hidden">Gen...</span>
                     </>
                   ) : (
                     <>
-                      <Download className="w-4 h-4" />
+                      <Download className="w-3 h-3 sm:w-4 sm:h-4" />
                       <span className="hidden sm:inline">Export PDF</span>
                       <span className="sm:hidden">PDF</span>
                     </>
@@ -805,28 +805,28 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
                 <button
                   onClick={exportToExcel}
                   disabled={isExporting}
-                  className="btn-primary flex items-center gap-2 disabled:opacity-50 text-sm sm:text-base px-3 py-2 sm:px-4 sm:py-3 shrink-0"
+                  className="btn-primary flex items-center gap-1 sm:gap-2 disabled:opacity-50 text-xs sm:text-sm lg:text-base px-2 py-1 sm:px-3 sm:py-2 lg:px-4 lg:py-3 shrink-0"
                 >
-                  <FileSpreadsheet className="w-4 h-4" />
+                  <FileSpreadsheet className="w-3 h-3 sm:w-4 sm:h-4" />
                   <span className="hidden sm:inline">Export Excel</span>
                   <span className="sm:hidden">Excel</span>
                 </button>
               </div>
             </div>
             
-            {/* Right side: Close button - always top-right */}
+            {/* Right side: Close button - always visible and accessible */}
             <button
               onClick={onClose}
-              className="text-gray-500 hover:text-gray-700 p-2 touch-manipulation shrink-0"
+              className="text-gray-500 hover:text-gray-700 p-1 sm:p-2 touch-manipulation shrink-0 ml-1"
               aria-label="Close"
             >
-              <X className="w-5 h-5" />
+              <X className="w-4 h-4 sm:w-5 sm:h-5" />
             </button>
           </div>
         </div>
 
         {/* Report content */}
-        <div ref={reportRef} className="p-4 sm:p-6 lg:p-8 bg-white">
+        <div ref={reportRef} className="p-3 sm:p-4 lg:p-6 xl:p-8 bg-white overflow-x-auto">
           <style>{`
             /* ===== COMPREHENSIVE PAGE BREAK PROTECTION ===== */
             /* Based on latest CSS best practices and research findings */
@@ -1043,15 +1043,55 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
                 font-size: 12px !important;
                 margin: 10pt 0 !important;
                 padding: 5pt !important;
+                max-width: 100% !important;
+                overflow-x: auto !important;
               }
               
               .responsive-chart {
                 min-height: 250px !important;
+                max-width: 100% !important;
               }
               
               .pdf-component {
                 padding: 5pt !important;
                 margin-bottom: 15pt !important;
+              }
+              
+              /* Mobile table optimizations */
+              table {
+                font-size: 11px !important;
+                min-width: auto !important;
+              }
+              
+              table th, table td {
+                padding: 6px 8px !important;
+                font-size: 11px !important;
+                white-space: nowrap !important;
+              }
+              
+              .overflow-x-auto {
+                -webkit-overflow-scrolling: touch !important;
+                scrollbar-width: thin !important;
+              }
+              
+              /* Make table headers stick on mobile scroll */
+              table thead th {
+                position: sticky !important;
+                top: 0 !important;
+                background: white !important;
+                z-index: 1 !important;
+              }
+              
+              /* Responsive map for mobile */
+              .map-container {
+                max-width: 100% !important;
+                overflow-x: auto !important;
+              }
+              
+              /* Responsive images and SVGs */
+              img, svg {
+                max-width: 100% !important;
+                height: auto !important;
               }
             }
             
@@ -1267,7 +1307,7 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
                 });
                 
                 return (
-                  <div className="bg-white rounded-lg border border-gray-300 overflow-hidden">
+                  <div className="bg-white rounded-lg border border-gray-300 overflow-hidden map-container">
                     {/* Static Map with Site Markers */}
                     <div className="relative">
                       {/* Google Maps Static API - clean background without markers */}
@@ -1451,8 +1491,8 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
               {/* Cross-Sectional Area Summary Table */}
               <div className="pdf-component">
                 <h3 className="text-lg sm:text-xl font-semibold mb-4 border-b pb-2">Cross-Sectional Area Summary</h3>
-                <div className="overflow-x-auto pdf-component">
-                  <table className="w-full border-collapse border border-gray-300 text-sm">
+                <div className="overflow-x-auto pdf-component table-container">
+                  <table className="w-full border-collapse border border-gray-300 text-sm min-w-max">
                     <thead>
                       <tr className="bg-blue-50">
                         <th className="border border-gray-300 px-3 py-2 text-left font-semibold">Measurement</th>
@@ -1516,8 +1556,8 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
               {/* Velocity Summary Table */}
               <div>
                 <h3 className="text-lg sm:text-xl font-semibold mb-4 border-b pb-2">Velocity Summary</h3>
-                <div className="overflow-x-auto">
-                  <table className="w-full border-collapse border border-gray-300 text-sm">
+                <div className="overflow-x-auto table-container">
+                  <table className="w-full border-collapse border border-gray-300 text-sm min-w-max">
                     <thead>
                       <tr className="bg-green-50">
                         <th className="border border-gray-300 px-3 py-2 text-left font-semibold">Measurement</th>
@@ -1563,8 +1603,8 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
               {/* Sediment Summary Table */}
               <div>
                 <h3 className="text-lg sm:text-xl font-semibold mb-4 border-b pb-2">Sediment Analysis Summary</h3>
-                <div className="overflow-x-auto">
-                  <table className="w-full border-collapse border border-gray-300 text-sm">
+                <div className="overflow-x-auto table-container">
+                  <table className="w-full border-collapse border border-gray-300 text-sm min-w-max">
                     <thead>
                       <tr className="bg-amber-50">
                         <th className="border border-gray-300 px-3 py-2 text-left font-semibold">Measurement</th>

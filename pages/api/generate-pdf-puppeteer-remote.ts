@@ -140,7 +140,6 @@ body {
 
 .toc {
   page-break-after: always;
-  page-break-before: always;
 }
 
 /* Page break utilities for proper layout */
