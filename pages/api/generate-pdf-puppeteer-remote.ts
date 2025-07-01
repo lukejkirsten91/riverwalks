@@ -108,6 +108,17 @@ body {
 
 /* Print-friendly grayscale override */
 @media print {
+  /* Fix cover page overflow by removing body padding during print */
+  body {
+    padding: 0;
+  }
+  
+  /* Ensure cover page uses full viewport height without overflow */
+  .cover-page {
+    min-height: 100vh;
+    page-break-after: always;
+  }
+  
   .print-bw {
     --clr-cross-section: #4a5568;
     --clr-cross-section-light: #f7fafc;
