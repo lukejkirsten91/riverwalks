@@ -418,6 +418,8 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
   const handleSedimentSubmit = async (
     sedimentationData: {
       photo?: File;
+      photoUrl?: string;
+      isOfflinePhoto?: boolean;
       measurements: SedimentationMeasurement[];
     },
     numSedimentationMeasurements: number,
