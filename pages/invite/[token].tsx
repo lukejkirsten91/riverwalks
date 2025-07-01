@@ -91,11 +91,24 @@ export default function AcceptInvitePage() {
       
       // Email matches or universal invite, proceed with acceptance
       console.log('🔍 [DEBUG] Email matches, proceeding with invite acceptance');
-      await handleAcceptInvite(inviteToken);
       
-      // Immediately redirect to river-walks after successful processing
-      console.log('🔍 [DEBUG] Invite processed, redirecting to river-walks');
-      router.push('/river-walks');
+      try {
+        setStatus('loading');
+        const result = await acceptInvite(inviteToken);
+        
+        if (result.success) {
+          // Immediately redirect to river-walks without showing success page
+          console.log('🔍 [DEBUG] Invite accepted, redirecting to river-walks');
+          router.replace('/river-walks');
+          return;
+        } else {
+          setStatus('error');
+          setMessage(result.message);
+        }
+      } catch (error) {
+        setStatus('error');
+        setMessage(error instanceof Error ? error.message : 'An unexpected error occurred');
+      }
     } catch (error) {
       console.error('🔍 [DEBUG] Error processing invite:', error);
       setStatus('error');
@@ -135,7 +148,7 @@ export default function AcceptInvitePage() {
       console.log('🔍 [DEBUG] Stored invite token in localStorage:', token.substring(0, 10) + '...');
     }
     
-    console.log('🔍 [DEBUG] Starting OAuth, will redirect to river-walks');
+    console.log('🔍 [DEBUG] Starting OAuth, will redirect directly to river-walks');
     
     supabase.auth.signInWithOAuth({
       provider: 'google',
