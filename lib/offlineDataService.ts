@@ -125,6 +125,60 @@ export class OfflineDataService {
     console.log('Added to sync queue:', queueItem);
   }
 
+  // Public method for manual sync trigger
+  async manualSync(): Promise<{ success: boolean; message: string; details?: any }> {
+    console.log('🔄 Manual sync triggered');
+    
+    if (!this.checkOnline()) {
+      return {
+        success: false,
+        message: 'Cannot sync: Device is offline'
+      };
+    }
+
+    try {
+      await this.syncWhenOnline();
+      return {
+        success: true,
+        message: 'Sync completed successfully'
+      };
+    } catch (error) {
+      console.error('Manual sync failed:', error);
+      return {
+        success: false,
+        message: `Sync failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        details: error
+      };
+    }
+  }
+
+  // Get sync queue status for debugging
+  async getSyncStatus(): Promise<{
+    isOnline: boolean;
+    pendingItems: number;
+    queueItems: any[];
+    offlinePhotos: any[];
+    sitesWithLocalPhotos: any[];
+  }> {
+    const syncQueue = await offlineDB.getSyncQueue();
+    const allPhotos = await offlineDB.getAll('photos');
+    const allSites = await offlineDB.getAll('sites');
+    
+    const offlinePhotos = allPhotos.filter((photo: any) => !photo.synced);
+    const sitesWithLocalPhotos = allSites.filter((site: any) => {
+      return (site.photo_url && site.photo_url.startsWith('local_')) ||
+             (site.sedimentation_photo_url && site.sedimentation_photo_url.startsWith('local_'));
+    });
+
+    return {
+      isOnline: this.checkOnline(),
+      pendingItems: syncQueue.length,
+      queueItems: syncQueue,
+      offlinePhotos,
+      sitesWithLocalPhotos
+    };
+  }
+
   // Sync data when coming back online
   private async syncWhenOnline(): Promise<void> {
     if (!this.checkOnline()) return;
@@ -1427,7 +1481,10 @@ export class OfflineDataService {
         // Auto-sync any pending items when coming online
         const syncQueue = await offlineDB.getSyncQueue();
         if (syncQueue.length > 0) {
-          console.log('Found pending sync items, starting auto-sync...');
+          console.log('Found pending sync items, starting auto-sync...', {
+            queueLength: syncQueue.length,
+            items: syncQueue.map(item => ({ table: item.table, type: item.type, localId: item.localId }))
+          });
           setTimeout(() => this.syncWhenOnline(), 1000); // Small delay to ensure everything is initialized
         }
       }
@@ -1447,24 +1504,6 @@ export class OfflineDataService {
     }
   }
 
-  // Get sync status
-  async getSyncStatus(): Promise<{ pendingItems: number; isOnline: boolean }> {
-    const syncQueue = await offlineDB.getSyncQueue();
-    console.log('Getting sync status:', { 
-      queueLength: syncQueue.length, 
-      queueItems: syncQueue.map(item => ({ 
-        type: item.type, 
-        table: item.table, 
-        localId: item.localId,
-        attempts: item.attempts,
-        timestamp: new Date(item.timestamp).toLocaleString()
-      }))
-    });
-    return {
-      pendingItems: syncQueue.length,
-      isOnline: this.checkOnline()
-    };
-  }
 
   // Debug method to get detailed sync queue info
   async getDetailedSyncQueue(): Promise<any[]> {
