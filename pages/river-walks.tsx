@@ -278,6 +278,11 @@ export default function RiverWalksPage() {
   const handleAddNewRiverWalk = () => {
     setShowForm(!showForm);
     setCurrentRiverWalk(null);
+    // Close join collaboration if it's open
+    if (showJoinCollaboration) {
+      setShowJoinCollaboration(false);
+      setJoinCollabLink('');
+    }
   };
 
   const handleJoinCollaboration = () => {
@@ -362,60 +367,6 @@ export default function RiverWalksPage() {
           </div>
         </div>
 
-        {/* Join Collaboration Feature */}
-        {collaborationEnabled && (
-          <div className="glass rounded-xl p-4 mb-6 border border-white/20">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-sm font-semibold text-foreground">Join Someone's River Walk</h3>
-              <button
-                onClick={() => setShowJoinCollaboration(!showJoinCollaboration)}
-                className="text-xs bg-primary/10 hover:bg-primary/20 text-primary px-3 py-1 rounded-lg transition-colors"
-              >
-                {showJoinCollaboration ? 'Cancel' : 'Join Collaboration'}
-              </button>
-            </div>
-            
-            {showJoinCollaboration && (
-              <div className="space-y-3">
-                <div>
-                  <input
-                    type="text"
-                    value={joinCollabLink}
-                    onChange={(e) => setJoinCollabLink(e.target.value)}
-                    placeholder="Paste collaboration link here (e.g., https://riverwalks.co.uk/invite/...)"
-                    className="w-full p-3 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
-                  />
-                </div>
-                <div className="flex gap-2">
-                  <button
-                    onClick={handleJoinCollaboration}
-                    disabled={!joinCollabLink.trim()}
-                    className="flex-1 bg-primary hover:bg-primary/90 disabled:bg-gray-300 disabled:cursor-not-allowed text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
-                  >
-                    Join River Walk
-                  </button>
-                  <button
-                    onClick={() => {
-                      setShowJoinCollaboration(false);
-                      setJoinCollabLink('');
-                    }}
-                    className="px-4 py-2 border border-border rounded-lg text-sm text-muted-foreground hover:text-foreground transition-colors"
-                  >
-                    Cancel
-                  </button>
-                </div>
-                <div className="text-xs text-muted-foreground bg-blue-50 border border-blue-200 rounded-lg p-3">
-                  <p className="font-medium text-blue-900 mb-1">How it works:</p>
-                  <ul className="text-blue-800 space-y-1">
-                    <li>• Get a collaboration link from someone via email or message</li>
-                    <li>• Paste the full link above (starts with https://riverwalks.co.uk/invite/)</li>
-                    <li>• Click "Join River Walk" to accept the invitation</li>
-                  </ul>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
 
         {/* Pending Invites Notification */}
         {(() => {
@@ -514,16 +465,33 @@ export default function RiverWalksPage() {
           </div>
         )}
 
-        {/* Morphing Add River Walk Button/Form */}
-        <div className={`morph-container ${showForm ? 'morph-form-state' : 'morph-button-state'} mb-6`}>
+        {/* Action Buttons / Form */}
+        <div className={`morph-container ${showForm || showJoinCollaboration ? 'morph-form-state' : 'morph-button-state'} mb-6`}>
           {/* Button State */}
-          <div className={`add-button-morph ${showForm ? 'add-button-hidden' : 'add-button-visible'}`}>
-            <button
-              className="btn-primary touch-manipulation"
-              onClick={handleAddNewRiverWalk}
-            >
-              + Add River Walk
-            </button>
+          <div className={`add-button-morph ${showForm || showJoinCollaboration ? 'add-button-hidden' : 'add-button-visible'}`}>
+            <div className="flex gap-3">
+              <button
+                className="btn-primary touch-manipulation flex-1"
+                onClick={handleAddNewRiverWalk}
+              >
+                + Add River Walk
+              </button>
+              {collaborationEnabled && (
+                <button
+                  className="btn-secondary touch-manipulation"
+                  onClick={() => {
+                    setShowJoinCollaboration(true);
+                    // Close add form if it's open
+                    if (showForm) {
+                      setShowForm(false);
+                      setCurrentRiverWalk(null);
+                    }
+                  }}
+                >
+                  Join Collaboration
+                </button>
+              )}
+            </div>
           </div>
 
           {/* Form State */}
@@ -537,10 +505,73 @@ export default function RiverWalksPage() {
               />
             </div>
           )}
+
+          {/* Join Collaboration State */}
+          {showJoinCollaboration && (
+            <div className={`form-morph form-enter`}>
+              <div className="glass rounded-2xl p-6 border border-white/20">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-xl font-semibold text-foreground">Join Someone's River Walk</h2>
+                  <button
+                    onClick={() => {
+                      setShowJoinCollaboration(false);
+                      setJoinCollabLink('');
+                    }}
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    ✕
+                  </button>
+                </div>
+                
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-foreground mb-2">
+                      Collaboration Link
+                    </label>
+                    <input
+                      type="text"
+                      value={joinCollabLink}
+                      onChange={(e) => setJoinCollabLink(e.target.value)}
+                      placeholder="Paste collaboration link here (e.g., https://riverwalks.co.uk/invite/...)"
+                      className="w-full p-3 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                    />
+                  </div>
+                  
+                  <div className="flex gap-3">
+                    <button
+                      onClick={handleJoinCollaboration}
+                      disabled={!joinCollabLink.trim()}
+                      className="flex-1 btn-primary disabled:bg-gray-300 disabled:cursor-not-allowed"
+                    >
+                      Join River Walk
+                    </button>
+                    <button
+                      onClick={() => {
+                        setShowJoinCollaboration(false);
+                        setJoinCollabLink('');
+                      }}
+                      className="btn-secondary"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                  
+                  <div className="text-sm text-muted-foreground bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <p className="font-medium text-blue-900 mb-2">How it works:</p>
+                    <ul className="text-blue-800 space-y-1">
+                      <li>• Get a collaboration link from someone via email or message</li>
+                      <li>• Paste the full link above (starts with https://riverwalks.co.uk/invite/)</li>
+                      <li>• Click "Join River Walk" to accept the invitation</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
-        {/* River walks list - hidden when form is showing */}
-        {!showForm && (
+        {/* River walks list - hidden when form or join collaboration is showing */}
+        {!showForm && !showJoinCollaboration && (
           <RiverWalkList
             riverWalks={activeRiverWalks}
             archivedRiverWalks={archivedRiverWalks}
