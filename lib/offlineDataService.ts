@@ -121,8 +121,20 @@ export class OfflineDataService {
       attempts: 0
     };
 
-    await offlineDB.addToSyncQueue(queueItem);
-    console.log('Added to sync queue:', queueItem);
+    try {
+      await offlineDB.addToSyncQueue(queueItem);
+      console.log('Added to sync queue:', queueItem);
+      
+      // Verify the item was actually added
+      const syncQueue = await offlineDB.getSyncQueue();
+      const wasAdded = syncQueue.some(item => item.id === queueItem.id);
+      if (!wasAdded) {
+        throw new Error('Sync queue item was not persisted correctly');
+      }
+    } catch (error) {
+      console.error('Failed to add item to sync queue:', error);
+      throw error;
+    }
   }
 
   // Public method for manual sync trigger
@@ -177,6 +189,65 @@ export class OfflineDataService {
       offlinePhotos,
       sitesWithLocalPhotos
     };
+  }
+
+  // Validate that a photo with local ID is properly queued for sync
+  private async validatePhotoInSyncQueue(localPhotoId: string): Promise<boolean> {
+    if (!localPhotoId.startsWith('local_')) {
+      return true; // Server URLs are fine
+    }
+    
+    const syncQueue = await offlineDB.getSyncQueue();
+    const isQueued = syncQueue.some(item => 
+      item.table === 'photos' && item.localId === localPhotoId
+    );
+    
+    if (!isQueued) {
+      console.warn('⚠️ Photo with local ID not found in sync queue:', localPhotoId);
+    }
+    
+    return isQueued;
+  }
+
+  // Detect and report orphaned photos (for monitoring/alerting)
+  private async detectAndReportOrphanedPhotos(): Promise<void> {
+    try {
+      const allSites = await offlineDB.getAll('sites') as OfflineSite[];
+      const syncQueue = await offlineDB.getSyncQueue();
+      
+      const orphanedPhotos: string[] = [];
+      
+      for (const site of allSites) {
+        // Check site photo
+        if (site.photo_url && site.photo_url.startsWith('local_')) {
+          const isQueued = syncQueue.some(item => 
+            item.table === 'photos' && item.localId === site.photo_url
+          );
+          if (!isQueued) {
+            orphanedPhotos.push(`Site ${site.site_number}: site_photo=${site.photo_url}`);
+          }
+        }
+        
+        // Check sediment photo
+        if (site.sedimentation_photo_url && site.sedimentation_photo_url.startsWith('local_')) {
+          const isQueued = syncQueue.some(item => 
+            item.table === 'photos' && item.localId === site.sedimentation_photo_url
+          );
+          if (!isQueued) {
+            orphanedPhotos.push(`Site ${site.site_number}: sediment_photo=${site.sedimentation_photo_url}`);
+          }
+        }
+      }
+      
+      if (orphanedPhotos.length > 0) {
+        console.warn('🚨 Detected orphaned photos after sync:', orphanedPhotos);
+        // Could trigger user notification or automatic cleanup here
+      } else {
+        console.log('✅ No orphaned photos detected after sync');
+      }
+    } catch (error) {
+      console.error('Failed to detect orphaned photos:', error);
+    }
   }
 
   // Fix orphaned local photo IDs by adding them to sync queue
@@ -406,6 +477,9 @@ export class OfflineDataService {
       
       // Refresh local data from server
       await this.downloadLatestData();
+      
+      // Check for any orphaned photos after sync
+      await this.detectAndReportOrphanedPhotos();
       
       // Force sync status update before dispatching completion event
       window.dispatchEvent(new CustomEvent('riverwalks-data-changed'));
@@ -1537,11 +1611,18 @@ export class OfflineDataService {
     }
     
     // Add to sync queue for later upload
-    await this.addToSyncQueue('CREATE', 'photos', {
-      file,
-      type,
-      relatedId
-    }, localId);
+    try {
+      await this.addToSyncQueue('CREATE', 'photos', {
+        file,
+        type,
+        relatedId
+      }, localId);
+      console.log('✅ Photo queued for sync:', { localId, type, relatedId });
+    } catch (error) {
+      console.error('❌ Failed to queue photo for sync:', error);
+      // This is critical - if we can't queue for sync, we shouldn't save the local ID
+      throw new Error('Failed to queue photo for sync: ' + (error instanceof Error ? error.message : 'Unknown error'));
+    }
     
     return localId;
   }
