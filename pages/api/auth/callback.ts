@@ -39,8 +39,9 @@ export default async function handler(
     }
   }
 
-  // Always redirect to river-walks after OAuth
-  // Any pending invite tokens will be processed automatically there
-  console.log('OAuth completed, redirecting to river-walks');
-  res.redirect('/river-walks');
+  // Check for redirect_to parameter, default to river-walks
+  const redirectTo = typeof req.query.redirect_to === 'string' ? req.query.redirect_to : '/river-walks';
+  
+  console.log('OAuth completed, redirecting to:', redirectTo);
+  res.redirect(redirectTo);
 }

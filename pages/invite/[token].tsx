@@ -153,7 +153,7 @@ export default function AcceptInvitePage() {
     supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/river-walks`,
+        redirectTo: `${window.location.origin}/api/auth/callback?redirect_to=${encodeURIComponent('/river-walks')}`,
         queryParams: {
           prompt: 'select_account',
           access_type: 'online'
