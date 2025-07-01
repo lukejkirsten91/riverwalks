@@ -247,6 +247,18 @@ export class OfflineDataService {
                 foundPhoto: !!photo,
                 photoHasFile: photo ? !!photo.file : 'no photo'
               });
+              
+              // Clean up the invalid photo reference
+              console.log('Cleaning up invalid site photo reference:', { siteId: site.id, photoLocalId });
+              site.photo_url = null;
+              await offlineDB.addSite(site);
+              
+              fixedPhotos.push({
+                siteId: site.id,
+                photoType: 'site_photo',
+                localId: photoLocalId,
+                action: 'cleaned_up_invalid_reference'
+              });
             }
           }
         }
@@ -285,6 +297,18 @@ export class OfflineDataService {
                 availablePhotos: allPhotos.map(p => ({ localId: p.localId, hasFile: !!p.file })),
                 foundPhoto: !!photo,
                 photoHasFile: photo ? !!photo.file : 'no photo'
+              });
+              
+              // Clean up the invalid photo reference
+              console.log('Cleaning up invalid sediment photo reference:', { siteId: site.id, photoLocalId });
+              site.sedimentation_photo_url = null;
+              await offlineDB.addSite(site);
+              
+              fixedPhotos.push({
+                siteId: site.id,
+                photoType: 'sediment_photo',
+                localId: photoLocalId,
+                action: 'cleaned_up_invalid_reference'
               });
             }
           }
