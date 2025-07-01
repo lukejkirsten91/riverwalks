@@ -35,6 +35,43 @@ export function ShareModal({ riverWalk, isOpen, onClose }: ShareModalProps) {
 
   if (!isOpen) return null;
 
+  // Enhanced clipboard function with fallback for Mac
+  const copyToClipboard = async (text: string): Promise<boolean> => {
+    // Try modern clipboard API first
+    if (navigator.clipboard && window.isSecureContext) {
+      try {
+        await navigator.clipboard.writeText(text);
+        return true;
+      } catch (err) {
+        console.warn('Modern clipboard failed, trying fallback:', err);
+      }
+    }
+    
+    // Fallback for older browsers or when clipboard API fails
+    try {
+      const textArea = document.createElement('textarea');
+      textArea.value = text;
+      textArea.style.position = 'fixed';
+      textArea.style.opacity = '0';
+      textArea.style.pointerEvents = 'none';
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      
+      // Try the old execCommand method
+      const successful = document.execCommand('copy');
+      document.body.removeChild(textArea);
+      
+      if (successful) {
+        return true;
+      }
+    } catch (err) {
+      console.error('Fallback clipboard failed:', err);
+    }
+    
+    return false;
+  };
+
   const handleCreateInvite = async () => {
     console.log('🔍 [DEBUG] ShareModal.handleCreateInvite: Starting invite creation', {
       useSpecificEmail,
@@ -61,25 +98,22 @@ export function ShareModal({ riverWalk, isOpen, onClose }: ShareModalProps) {
         urlLength: result.invite_url ? result.invite_url.length : 0
       });
       
-      // Copy to clipboard
+      // Copy to clipboard with enhanced fallback
       console.log('🔍 [DEBUG] ShareModal.handleCreateInvite: About to copy to clipboard', {
         clipboardSupported: !!navigator.clipboard,
+        isSecureContext: !!window.isSecureContext,
         urlToWrite: result.invite_url
       });
       
-      try {
-        await navigator.clipboard.writeText(result.invite_url);
+      const copySuccess = await copyToClipboard(result.invite_url);
+      
+      if (copySuccess) {
         console.log('🔍 [DEBUG] ShareModal.handleCreateInvite: Clipboard copy successful');
         setCopiedToken(result.invite_token);
-      } catch (clipboardError) {
-        console.error('🔍 [DEBUG] ShareModal.handleCreateInvite: Clipboard copy failed', {
-          error: clipboardError,
-          errorName: clipboardError instanceof Error ? clipboardError.name : 'unknown',
-          errorMessage: clipboardError instanceof Error ? clipboardError.message : String(clipboardError),
-          isNotAllowedError: clipboardError instanceof Error && clipboardError.name === 'NotAllowedError'
-        });
-        // Don't throw - invite was created successfully, just clipboard failed
-        setCopiedToken(result.invite_token); // Still show as copied for UI
+      } else {
+        console.error('🔍 [DEBUG] ShareModal.handleCreateInvite: All clipboard methods failed');
+        // Still show as copied for UI, but user can manually copy
+        setCopiedToken(result.invite_token);
       }
       
       // Clear form
@@ -106,22 +140,21 @@ export function ShareModal({ riverWalk, isOpen, onClose }: ShareModalProps) {
       hasUrl: !!url,
       hasToken: !!token,
       urlLength: url ? url.length : 0,
-      clipboardSupported: !!navigator.clipboard
+      clipboardSupported: !!navigator.clipboard,
+      isSecureContext: !!window.isSecureContext
     });
     
-    try {
-      await navigator.clipboard.writeText(url);
+    const copySuccess = await copyToClipboard(url);
+    
+    if (copySuccess) {
       console.log('🔍 [DEBUG] ShareModal.handleCopyLink: Clipboard copy successful');
       setCopiedToken(token);
       setTimeout(() => setCopiedToken(null), 3000);
-    } catch (err) {
-      console.error('🔍 [DEBUG] ShareModal.handleCopyLink: Clipboard copy failed', {
-        error: err,
-        errorName: err instanceof Error ? err.name : 'unknown',
-        errorMessage: err instanceof Error ? err.message : String(err),
-        isNotAllowedError: err instanceof Error && err.name === 'NotAllowedError'
-      });
-      console.error('Failed to copy link:', err);
+    } else {
+      console.error('🔍 [DEBUG] ShareModal.handleCopyLink: All clipboard methods failed');
+      // Still show as copied for UI feedback
+      setCopiedToken(token);
+      setTimeout(() => setCopiedToken(null), 3000);
     }
   };
 
@@ -136,6 +169,24 @@ export function ShareModal({ riverWalk, isOpen, onClose }: ShareModalProps) {
 
   const activeCollaborators = collaborators.filter((c: CollaboratorAccess) => c.accepted_at !== null);
   const pendingInvites = collaborators.filter((c: CollaboratorAccess) => c.accepted_at === null);
+  
+  // Helper function to get invite status
+  const getInviteStatus = (invite: CollaboratorAccess) => {
+    const now = new Date();
+    const expiresAt = invite.invite_expires_at ? new Date(invite.invite_expires_at) : null;
+    
+    if (invite.accepted_at) {
+      return { type: 'accepted', label: '✅ Accepted', color: 'text-green-600' };
+    } else if (expiresAt && now > expiresAt) {
+      return { type: 'expired', label: '⏰ Expired', color: 'text-red-600' };
+    } else if (invite.user_email === '*') {
+      // For public links, we can't tell if they've been "used" without acceptance
+      // But we can show if they're still valid
+      return { type: 'pending-public', label: '🔗 Active (One-time use)', color: 'text-orange-600' };
+    } else {
+      return { type: 'pending', label: '⏳ Pending', color: 'text-blue-600' };
+    }
+  };
 
   return (
     <div className="bg-white rounded-lg shadow-modern-lg max-w-2xl w-full max-h-[80vh] overflow-hidden">
@@ -287,55 +338,77 @@ export function ShareModal({ riverWalk, isOpen, onClose }: ShareModalProps) {
                 <div>
                   <h3 className="text-sm font-medium text-foreground mb-3">Pending Invites</h3>
                   <div className="space-y-2">
-                    {pendingInvites.map((invite: CollaboratorAccess) => (
-                      <div
-                        key={invite.id}
-                        className="flex items-center justify-between p-3 bg-muted rounded-lg"
-                      >
-                        <div className="flex-1">
-                          <div className="text-sm font-medium">
-                            {invite.user_email === '*' ? 'Anyone with link' : invite.user_email}
-                          </div>
-                          <div className="text-xs text-muted-foreground">
-                            <span className="capitalize">{invite.role}</span>
-                            <span> • Created {new Date(invite.invited_at).toLocaleDateString()}</span>
-                            <span> • Expires {invite.invite_expires_at ? new Date(invite.invite_expires_at).toLocaleDateString() : 'N/A'}</span>
-                            {invite.user_email === '*' && (
-                              <div className="text-orange-600 font-medium mt-1">
-                                ⚠️ One-time use - will be invalid after first use
+                    {pendingInvites.map((invite: CollaboratorAccess) => {
+                      const status = getInviteStatus(invite);
+                      return (
+                        <div
+                          key={invite.id}
+                          className={`flex items-center justify-between p-3 rounded-lg border ${
+                            status.type === 'expired' ? 'bg-red-50 border-red-200' : 
+                            status.type === 'pending-public' ? 'bg-orange-50 border-orange-200' :
+                            'bg-muted border-border'
+                          }`}
+                        >
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              <div className="text-sm font-medium">
+                                {invite.user_email === '*' ? 'Anyone with link' : invite.user_email}
+                              </div>
+                              <span className={`text-xs font-medium ${status.color}`}>
+                                {status.label}
+                              </span>
+                            </div>
+                            <div className="text-xs text-muted-foreground">
+                              <span className="capitalize">{invite.role}</span>
+                              <span> • Created {new Date(invite.invited_at).toLocaleDateString()}</span>
+                              <span> • Expires {invite.invite_expires_at ? new Date(invite.invite_expires_at).toLocaleDateString() : 'N/A'}</span>
+                            </div>
+                            {invite.user_email === '*' && status.type !== 'expired' && (
+                              <div className="text-orange-600 font-medium mt-1 text-xs">
+                                ⚠️ Will become invalid after first use
+                              </div>
+                            )}
+                            {status.type === 'expired' && (
+                              <div className="text-red-600 font-medium mt-1 text-xs">
+                                🚫 This link has expired and can no longer be used
                               </div>
                             )}
                           </div>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          {invite.invite_token && (
-                            <button
-                              onClick={() => handleCopyLink(
-                                `https://riverwalks.co.uk/invite/${invite.invite_token}`,
-                                invite.invite_token!
-                              )}
-                              className="p-2 hover:bg-background rounded transition-colors"
-                              title="Copy link"
-                            >
-                              {copiedToken === invite.invite_token ? (
-                                <Check className="w-4 h-4 text-green-600" />
-                              ) : (
+                          <div className="flex items-center space-x-2">
+                            {invite.invite_token && status.type !== 'expired' && (
+                              <button
+                                onClick={() => handleCopyLink(
+                                  `https://riverwalks.co.uk/invite/${invite.invite_token}`,
+                                  invite.invite_token!
+                                )}
+                                className="p-2 hover:bg-background rounded transition-colors"
+                                title="Copy link"
+                              >
+                                {copiedToken === invite.invite_token ? (
+                                  <Check className="w-4 h-4 text-green-600" />
+                                ) : (
+                                  <Copy className="w-4 h-4" />
+                                )}
+                              </button>
+                            )}
+                            {status.type === 'expired' && (
+                              <div className="p-2 text-gray-400" title="Link expired">
                                 <Copy className="w-4 h-4" />
-                              )}
-                            </button>
-                          )}
-                          {isOwner() && (
-                            <button
-                              onClick={() => handleRevokeAccess(invite.id)}
-                              className="p-2 hover:bg-background rounded transition-colors text-red-600"
-                              title="Remove invite"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          )}
+                              </div>
+                            )}
+                            {isOwner() && (
+                              <button
+                                onClick={() => handleRevokeAccess(invite.id)}
+                                className="p-2 hover:bg-background rounded transition-colors text-red-600"
+                                title={status.type === 'expired' ? 'Remove expired invite' : 'Remove invite'}
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
               )}
