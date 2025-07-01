@@ -348,11 +348,16 @@ export class OfflineDataService {
       const photoField = photoType === 'site_photo' ? 'photo_url' : 'sedimentation_photo_url';
       
       // Update the server record
-      const { error } = await supabase
+      console.log(`Updating site ${siteId} ${photoField} from ${localPhotoId} to ${serverPhotoUrl}`);
+      
+      const { data, error } = await supabase
         .from('sites')
         .update({ [photoField]: serverPhotoUrl })
         .eq('id', siteId)
-        .eq(photoField, localPhotoId); // Only update if it still has the local ID
+        .eq(photoField, localPhotoId) // Only update if it still has the local ID
+        .select();
+      
+      console.log('Site photo URL update result:', { data, error, updated: data?.length });
       
       if (error) {
         console.error('Failed to update site photo URL on server:', error);
@@ -362,6 +367,12 @@ export class OfflineDataService {
       // Update the local record if it exists
       const allSites = await offlineDB.getAll<OfflineSite>('sites');
       const localSite = allSites.find(s => s.id === siteId || s.localId === siteId);
+      
+      console.log('Found local site for photo URL update:', { 
+        siteId, 
+        foundSite: !!localSite, 
+        currentPhotoUrl: localSite ? (photoType === 'site_photo' ? localSite.photo_url : localSite.sedimentation_photo_url) : null 
+      });
       
       if (localSite) {
         if (photoType === 'site_photo') {

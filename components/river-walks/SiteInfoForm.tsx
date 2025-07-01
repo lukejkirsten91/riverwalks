@@ -13,7 +13,8 @@ interface SiteInfoFormProps {
     formData: SiteFormData, 
     sitePhoto?: File, 
     removeSitePhoto?: boolean,
-    todoStatus?: TodoStatus
+    todoStatus?: TodoStatus,
+    offlinePhotoInfo?: { isOfflinePhoto: boolean; photoUrl: string | null }
   ) => Promise<void>;
   onCancel: () => void;
   loading: boolean;
@@ -102,7 +103,12 @@ export const SiteInfoForm = forwardRef<SiteInfoFormRef, SiteInfoFormProps>(({
     const todoStatus: TodoStatus = markComplete ? 'complete' : 'in_progress';
     // Only pass the file if it's not already stored offline
     const photoFile = photoState.isOfflinePhoto ? undefined : (photoState.file || undefined);
-    await onSubmit(formData, photoFile, false, todoStatus);
+    // Pass offline photo information
+    const offlinePhotoInfo = photoState.isOfflinePhoto ? {
+      isOfflinePhoto: true,
+      photoUrl: photoState.photoUrl
+    } : undefined;
+    await onSubmit(formData, photoFile, false, todoStatus, offlinePhotoInfo);
     setHasUnsavedChanges(false);
   };
 
@@ -114,7 +120,12 @@ export const SiteInfoForm = forwardRef<SiteInfoFormRef, SiteInfoFormProps>(({
     const todoStatus: TodoStatus = 'complete';
     // Only pass the file if it's not already stored offline
     const photoFile = photoState.isOfflinePhoto ? undefined : (photoState.file || undefined);
-    await onSubmit(formData, photoFile, false, todoStatus);
+    // Pass offline photo information
+    const offlinePhotoInfo = photoState.isOfflinePhoto ? {
+      isOfflinePhoto: true,
+      photoUrl: photoState.photoUrl
+    } : undefined;
+    await onSubmit(formData, photoFile, false, todoStatus, offlinePhotoInfo);
     setHasUnsavedChanges(false);
     setShowConfirmDialog(false);
     onCancel();
@@ -124,7 +135,12 @@ export const SiteInfoForm = forwardRef<SiteInfoFormRef, SiteInfoFormProps>(({
     const todoStatus: TodoStatus = 'in_progress';
     // Only pass the file if it's not already stored offline
     const photoFile = photoState.isOfflinePhoto ? undefined : (photoState.file || undefined);
-    await onSubmit(formData, photoFile, false, todoStatus);
+    // Pass offline photo information
+    const offlinePhotoInfo = photoState.isOfflinePhoto ? {
+      isOfflinePhoto: true,
+      photoUrl: photoState.photoUrl
+    } : undefined;
+    await onSubmit(formData, photoFile, false, todoStatus, offlinePhotoInfo);
     setHasUnsavedChanges(false);
     setShowConfirmDialog(false);
     onCancel();

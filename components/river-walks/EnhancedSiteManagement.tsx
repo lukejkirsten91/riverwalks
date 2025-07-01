@@ -254,7 +254,8 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
     formData: SiteFormData,
     sitePhoto?: File,
     removeSitePhoto?: boolean,
-    todoStatus?: TodoStatus
+    todoStatus?: TodoStatus,
+    offlinePhotoInfo?: { isOfflinePhoto: boolean; photoUrl: string | null }
   ) => {
     if (!currentSite) return;
 
@@ -278,6 +279,9 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
           await deleteSitePhoto(currentSite.photo_url);
         }
         sitePhotoUrl = await uploadSitePhoto(currentSite.id, sitePhoto, session.user.id);
+      } else if (offlinePhotoInfo?.isOfflinePhoto && offlinePhotoInfo.photoUrl) {
+        // Use the offline photo URL directly
+        sitePhotoUrl = offlinePhotoInfo.photoUrl;
       } else {
         // Preserve existing photo URL (could be offline or online)
         sitePhotoUrl = currentSite.photo_url;
