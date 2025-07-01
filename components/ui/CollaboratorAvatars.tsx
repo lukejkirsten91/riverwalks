@@ -5,12 +5,14 @@ interface CollaboratorAvatarsProps {
   collaboratorInfo: CollaboratorInfo | null;
   maxVisible?: number;
   size?: 'sm' | 'md' | 'lg';
+  onClick?: () => void;
 }
 
 export function CollaboratorAvatars({ 
   collaboratorInfo, 
   maxVisible = 3,
-  size = 'sm' 
+  size = 'sm',
+  onClick
 }: CollaboratorAvatarsProps) {
   if (!collaboratorInfo || !collaboratorInfo.hasCollaborators) {
     return null;
@@ -35,8 +37,12 @@ export function CollaboratorAvatars({
     'bg-indigo-500'
   ];
 
+  const containerClasses = onClick 
+    ? "flex items-center gap-1 cursor-pointer hover:bg-gray-100 rounded-lg p-1 transition-colors" 
+    : "flex items-center gap-1";
+
   return (
-    <div className="flex items-center gap-1">
+    <div className={containerClasses} onClick={onClick}>
       {/* Collaborator avatars */}
       <div className="flex -space-x-1">
         {visibleInitials.map((initials, index) => (
@@ -50,6 +56,7 @@ export function CollaboratorAvatars({
               text-white font-medium 
               border-2 border-white 
               shadow-sm
+              ${onClick ? 'hover:scale-110 transition-transform' : ''}
             `}
             title={`Collaborator ${index + 1}`}
           >
@@ -68,6 +75,7 @@ export function CollaboratorAvatars({
               text-white font-medium 
               border-2 border-white 
               shadow-sm
+              ${onClick ? 'hover:scale-110 transition-transform' : ''}
             `}
             title={`+${remainingCount} more collaborator${remainingCount > 1 ? 's' : ''}`}
           >
@@ -77,7 +85,7 @@ export function CollaboratorAvatars({
       </div>
       
       {/* Collaborator count text */}
-      <span className="text-xs text-muted-foreground ml-1">
+      <span className={`text-xs text-muted-foreground ml-1 ${onClick ? 'hover:text-foreground transition-colors' : ''}`}>
         {collaboratorCount} collaborator{collaboratorCount !== 1 ? 's' : ''}
       </span>
     </div>

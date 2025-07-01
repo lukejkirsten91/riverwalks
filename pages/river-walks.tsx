@@ -51,6 +51,7 @@ export default function RiverWalksPage() {
   const [shareRiverWalk, setShareRiverWalk] = useState<RiverWalk | null>(null);
   const [showJoinCollaboration, setShowJoinCollaboration] = useState(false);
   const [joinCollabLink, setJoinCollabLink] = useState('');
+  const [manageCollaboratorsRiverWalk, setManageCollaboratorsRiverWalk] = useState<RiverWalk | null>(null);
 
   const {
     riverWalks,
@@ -246,6 +247,14 @@ export default function RiverWalksPage() {
 
   const handleCloseShare = () => {
     setShareRiverWalk(null);
+  };
+
+  const handleManageCollaborators = (riverWalk: RiverWalk) => {
+    setManageCollaboratorsRiverWalk(riverWalk);
+  };
+
+  const handleCloseManageCollaborators = () => {
+    setManageCollaboratorsRiverWalk(null);
   };
 
   const handleSignOut = async () => {
@@ -471,14 +480,14 @@ export default function RiverWalksPage() {
           <div className={`add-button-morph ${showForm || showJoinCollaboration ? 'add-button-hidden' : 'add-button-visible'}`}>
             <div className="flex gap-3">
               <button
-                className="btn-primary touch-manipulation flex-1"
+                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-200 transform hover:scale-105 shadow-lg touch-manipulation flex-1"
                 onClick={handleAddNewRiverWalk}
               >
-                + Add River Walk
+                + New River Walk
               </button>
               {collaborationEnabled && (
                 <button
-                  className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium transition-colors touch-manipulation"
+                  className="bg-green-500 hover:bg-green-600 text-white px-4 py-3 rounded-lg font-medium transition-colors touch-manipulation"
                   onClick={() => {
                     setShowJoinCollaboration(true);
                     // Close add form if it's open
@@ -582,6 +591,7 @@ export default function RiverWalksPage() {
             onManageSites={handleManageSites}
             onGenerateReport={handleGenerateReport}
             onShare={collaborationEnabled ? handleShare : undefined}
+            onManageCollaborators={collaborationEnabled ? handleManageCollaborators : undefined}
             isRiverWalkSynced={isRiverWalkSynced}
             archiveLoading={archiveLoading}
           />
@@ -629,6 +639,22 @@ export default function RiverWalksPage() {
                 riverWalk={shareRiverWalk}
                 isOpen={true}
                 onClose={handleCloseShare}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Manage Collaborators modal */}
+        {manageCollaboratorsRiverWalk && collaborationEnabled && (
+          <div 
+            className="fixed inset-0 bg-black bg-opacity-50 flex items-start sm:items-center justify-center p-2 sm:p-4 z-50"
+            onClick={handleCloseManageCollaborators}
+          >
+            <div onClick={(e) => e.stopPropagation()}>
+              <ShareModal
+                riverWalk={manageCollaboratorsRiverWalk}
+                isOpen={true}
+                onClose={handleCloseManageCollaborators}
               />
             </div>
           </div>

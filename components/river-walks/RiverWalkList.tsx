@@ -16,6 +16,7 @@ interface RiverWalkListProps {
   onManageSites: (riverWalk: RiverWalk) => void;
   onGenerateReport: (riverWalk: RiverWalk) => void;
   onShare?: (riverWalk: RiverWalk) => void;
+  onManageCollaborators?: (riverWalk: RiverWalk) => void;
   isRiverWalkSynced: (riverWalk: RiverWalk) => boolean;
   archiveLoading?: string | null;
 }
@@ -30,6 +31,7 @@ export function RiverWalkList({
   onManageSites,
   onGenerateReport,
   onShare,
+  onManageCollaborators,
   isRiverWalkSynced,
   archiveLoading,
 }: RiverWalkListProps) {
@@ -123,9 +125,14 @@ export function RiverWalkList({
               </div>
             )}
 
-            {/* Collaborator avatars - now inline with other indicators */}
+            {/* Collaborator avatars - now inline with other indicators and clickable */}
             {collaborators && (
-              <CollaboratorAvatars collaboratorInfo={collaborators} size="sm" maxVisible={3} />
+              <CollaboratorAvatars 
+                collaboratorInfo={collaborators} 
+                size="sm" 
+                maxVisible={3} 
+                onClick={onManageCollaborators ? () => onManageCollaborators(riverWalk) : undefined}
+              />
             )}
           </div>
         </div>
