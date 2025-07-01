@@ -97,7 +97,7 @@ export function SiteList({
                         });
                         // Show fallback instead of hiding
                         e.currentTarget.style.display = 'none';
-                        const fallback = e.currentTarget.parentElement?.nextElementSibling;
+                        const fallback = e.currentTarget.parentElement?.nextElementSibling as HTMLElement;
                         if (fallback) fallback.style.display = 'flex';
                       }}
                       onLoad={() => {
