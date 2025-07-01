@@ -62,13 +62,54 @@ export class OfflineDataService {
   constructor() {
     if (typeof window !== 'undefined') {
       this.isOnline = navigator.onLine;
-      window.addEventListener('online', () => {
+      
+      // Enhanced online detection
+      const handleOnline = () => {
+        console.log('🌐 Browser detected online - triggering sync');
         this.isOnline = true;
-        this.syncWhenOnline();
-      });
-      window.addEventListener('offline', () => {
+        // Small delay to ensure network is actually ready
+        setTimeout(() => {
+          this.syncWhenOnline();
+        }, 1000);
+      };
+      
+      const handleOffline = () => {
+        console.log('📵 Browser detected offline');
         this.isOnline = false;
+      };
+      
+      window.addEventListener('online', handleOnline);
+      window.addEventListener('offline', handleOffline);
+      
+      // Additional sync triggers for better reliability
+      window.addEventListener('focus', () => {
+        console.log('🔍 Window focus - checking for sync');
+        if (this.checkOnline()) {
+          this.syncWhenOnline();
+        }
       });
+      
+      // Sync on page visibility change (user switches back to tab)
+      document.addEventListener('visibilitychange', () => {
+        if (!document.hidden && this.checkOnline()) {
+          console.log('👁️ Page visible - checking for sync');
+          this.syncWhenOnline();
+        }
+      });
+      
+      // Periodic sync check (every 30 seconds when online)
+      setInterval(() => {
+        if (this.checkOnline()) {
+          this.periodicSyncCheck();
+        }
+      }, 30000);
+      
+      // More frequent sync check (every 5 seconds) for critical periods
+      setInterval(() => {
+        if (this.checkOnline()) {
+          this.quickSyncCheck();
+        }
+      }, 5000);
       
       // Cache user ID from localStorage if available
       this.cachedUserId = localStorage.getItem('riverwalks_user_id');
@@ -78,6 +119,32 @@ export class OfflineDataService {
   // Check if we're online
   private checkOnline(): boolean {
     return this.isOnline && typeof window !== 'undefined' && navigator.onLine;
+  }
+
+  // Periodic sync check to catch missed sync opportunities
+  private async periodicSyncCheck(): Promise<void> {
+    try {
+      const syncQueue = await offlineDB.getSyncQueue();
+      if (syncQueue.length > 0) {
+        console.log('⏰ Periodic sync check found pending items - syncing now');
+        await this.syncWhenOnline();
+      }
+    } catch (error) {
+      console.error('Periodic sync check failed:', error);
+    }
+  }
+
+  // Quick sync check (runs every 5 seconds, silent unless it finds items)
+  private async quickSyncCheck(): Promise<void> {
+    try {
+      const syncQueue = await offlineDB.getSyncQueue();
+      if (syncQueue.length > 0) {
+        console.log('⚡ Quick sync check found pending items - syncing now');
+        await this.syncWhenOnline();
+      }
+    } catch (error) {
+      // Silent failure for quick checks to avoid spam
+    }
   }
 
   // Cache user ID for offline use
@@ -447,9 +514,21 @@ export class OfflineDataService {
 
   // Sync data when coming back online
   private async syncWhenOnline(): Promise<void> {
-    if (!this.checkOnline()) return;
+    if (!this.checkOnline()) {
+      console.log('Skipping sync - device is offline');
+      return;
+    }
 
-    console.log('Syncing offline data...');
+    console.log('🔄 Syncing offline data...');
+    
+    // Check if there's actually anything to sync
+    const syncQueue = await offlineDB.getSyncQueue();
+    if (syncQueue.length === 0) {
+      console.log('✅ No items in sync queue');
+      return;
+    }
+    
+    console.log(`📤 Found ${syncQueue.length} items to sync`);
     
     try {
       // Trigger sync event for UI updates
