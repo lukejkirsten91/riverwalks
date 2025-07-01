@@ -478,7 +478,7 @@ export default function RiverWalksPage() {
               </button>
               {collaborationEnabled && (
                 <button
-                  className="btn-secondary touch-manipulation"
+                  className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium transition-colors touch-manipulation"
                   onClick={() => {
                     setShowJoinCollaboration(true);
                     // Close add form if it's open
@@ -488,7 +488,7 @@ export default function RiverWalksPage() {
                     }
                   }}
                 >
-                  Join Collaboration
+                  Join a Walk
                 </button>
               )}
             </div>
@@ -511,7 +511,7 @@ export default function RiverWalksPage() {
             <div className={`form-morph form-enter`}>
               <div className="glass rounded-2xl p-6 border border-white/20">
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-xl font-semibold text-foreground">Join Someone's River Walk</h2>
+                  <h2 className="text-xl font-semibold text-foreground">Join a Walk</h2>
                   <button
                     onClick={() => {
                       setShowJoinCollaboration(false);
@@ -541,9 +541,9 @@ export default function RiverWalksPage() {
                     <button
                       onClick={handleJoinCollaboration}
                       disabled={!joinCollabLink.trim()}
-                      className="flex-1 btn-primary disabled:bg-gray-300 disabled:cursor-not-allowed"
+                      className="flex-1 bg-green-600 hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white px-4 py-2 rounded-lg font-medium transition-colors"
                     >
-                      Join River Walk
+                      Join Walk
                     </button>
                     <button
                       onClick={() => {
@@ -561,7 +561,7 @@ export default function RiverWalksPage() {
                     <ul className="text-blue-800 space-y-1">
                       <li>• Get a collaboration link from someone via email or message</li>
                       <li>• Paste the full link above (starts with https://riverwalks.co.uk/invite/)</li>
-                      <li>• Click "Join River Walk" to accept the invitation</li>
+                      <li>• Click "Join Walk" to accept the invitation</li>
                     </ul>
                   </div>
                 </div>
