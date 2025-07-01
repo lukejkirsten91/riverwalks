@@ -83,20 +83,42 @@ export function SiteList({
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-3 mb-2">
                 {/* Site photo or camera emoji */}
-                {site.photo_url ? (
+                {site.photo_url && site.photo_url.startsWith('http') ? (
                   <div className="relative">
                     <img
                       src={site.photo_url}
                       alt={`${site.site_name} photo`}
                       className="w-12 h-12 rounded-lg object-cover border border-border shadow-modern"
                       onError={(e) => {
-                        console.error('Image failed to load:', site.photo_url);
+                        console.error('Supabase image failed to load:', {
+                          url: site.photo_url,
+                          siteId: site.id,
+                          siteName: site.site_name
+                        });
+                        // Show fallback instead of hiding
                         e.currentTarget.style.display = 'none';
+                        const fallback = e.currentTarget.parentElement?.nextElementSibling;
+                        if (fallback) fallback.style.display = 'flex';
+                      }}
+                      onLoad={() => {
+                        console.log('Supabase image loaded successfully:', {
+                          url: site.photo_url,
+                          siteId: site.id,
+                          siteName: site.site_name
+                        });
                       }}
                     />
+                    <div className="w-12 h-12 rounded-lg bg-red-100 border border-red-200 shadow-modern flex items-center justify-center absolute inset-0" style={{ display: 'none' }}>
+                      <span className="text-xs text-red-600">❌</span>
+                    </div>
+                  </div>
+                ) : site.photo_url ? (
+                  <div className="w-12 h-12 rounded-lg bg-yellow-100 border border-yellow-200 shadow-modern flex items-center justify-center" title={`Offline photo: ${site.photo_url}`}>
+                    <span className="text-xs text-yellow-600">⏳</span>
                   </div>
                 ) : (
-                  <div className="w-12 h-12 rounded-lg bg-muted/50 border border-border shadow-modern">
+                  <div className="w-12 h-12 rounded-lg bg-muted/50 border border-border shadow-modern flex items-center justify-center">
+                    <span className="text-xs text-muted-foreground">📷</span>
                   </div>
                 )}
                 <div className="flex-1 min-w-0">

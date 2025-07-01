@@ -325,7 +325,12 @@ export class OfflineDataService {
               // Update the site record to use the server photo URL instead of local ID
               await this.updateSitePhotoUrl(relatedId, item.localId, photoUrl, photoType);
               
-              console.log('Photo uploaded and site record updated:', photoUrl);
+              console.log('Photo uploaded and site record updated:', { 
+                relatedId, 
+                localId: item.localId, 
+                serverUrl: photoUrl,
+                photoType 
+              });
             }
           } catch (error) {
             console.error('Failed to upload photo during sync:', error);
