@@ -49,6 +49,8 @@ export default function RiverWalksPage() {
   const [dropdownPosition, setDropdownPosition] = useState<{top: number, right: number} | null>(null);
   const [archiveLoading, setArchiveLoading] = useState<string | null>(null);
   const [shareRiverWalk, setShareRiverWalk] = useState<RiverWalk | null>(null);
+  const [showJoinCollaboration, setShowJoinCollaboration] = useState(false);
+  const [joinCollabLink, setJoinCollabLink] = useState('');
 
   const {
     riverWalks,
@@ -278,6 +280,27 @@ export default function RiverWalksPage() {
     setCurrentRiverWalk(null);
   };
 
+  const handleJoinCollaboration = () => {
+    if (!joinCollabLink.trim()) {
+      showError('Invalid Link', 'Please enter a valid collaboration link.');
+      return;
+    }
+
+    // Extract token from the link
+    const linkPattern = /\/invite\/([a-zA-Z0-9-_]+)/;
+    const match = joinCollabLink.match(linkPattern);
+    
+    if (!match) {
+      showError('Invalid Link', 'This doesn\'t appear to be a valid collaboration link.');
+      return;
+    }
+
+    const token = match[1];
+    
+    // Navigate to the invite page with the token
+    router.push(`/invite/${token}`);
+  };
+
   // Loading state
   if (loading && !riverWalks.length) {
     return (
@@ -338,6 +361,61 @@ export default function RiverWalksPage() {
             )}
           </div>
         </div>
+
+        {/* Join Collaboration Feature */}
+        {collaborationEnabled && (
+          <div className="glass rounded-xl p-4 mb-6 border border-white/20">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-semibold text-foreground">Join Someone's River Walk</h3>
+              <button
+                onClick={() => setShowJoinCollaboration(!showJoinCollaboration)}
+                className="text-xs bg-primary/10 hover:bg-primary/20 text-primary px-3 py-1 rounded-lg transition-colors"
+              >
+                {showJoinCollaboration ? 'Cancel' : 'Join Collaboration'}
+              </button>
+            </div>
+            
+            {showJoinCollaboration && (
+              <div className="space-y-3">
+                <div>
+                  <input
+                    type="text"
+                    value={joinCollabLink}
+                    onChange={(e) => setJoinCollabLink(e.target.value)}
+                    placeholder="Paste collaboration link here (e.g., https://riverwalks.co.uk/invite/...)"
+                    className="w-full p-3 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleJoinCollaboration}
+                    disabled={!joinCollabLink.trim()}
+                    className="flex-1 bg-primary hover:bg-primary/90 disabled:bg-gray-300 disabled:cursor-not-allowed text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                  >
+                    Join River Walk
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowJoinCollaboration(false);
+                      setJoinCollabLink('');
+                    }}
+                    className="px-4 py-2 border border-border rounded-lg text-sm text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    Cancel
+                  </button>
+                </div>
+                <div className="text-xs text-muted-foreground bg-blue-50 border border-blue-200 rounded-lg p-3">
+                  <p className="font-medium text-blue-900 mb-1">How it works:</p>
+                  <ul className="text-blue-800 space-y-1">
+                    <li>• Get a collaboration link from someone via email or message</li>
+                    <li>• Paste the full link above (starts with https://riverwalks.co.uk/invite/)</li>
+                    <li>• Click "Join River Walk" to accept the invitation</li>
+                  </ul>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Pending Invites Notification */}
         {(() => {

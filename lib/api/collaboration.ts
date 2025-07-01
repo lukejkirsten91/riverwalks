@@ -43,6 +43,8 @@ export interface InviteDetails {
   expires_at: string;
   river_walk_name?: string;
   invited_by?: string;
+  river_walk_id?: string;
+  owner_id?: string;
 }
 
 /**
@@ -133,7 +135,8 @@ export async function getInviteDetails(token: string): Promise<InviteDetails> {
       role,
       invite_expires_at,
       collaboration_metadata!inner (
-        river_walk_reference_id
+        river_walk_reference_id,
+        owner_id
       )
     `)
     .eq('invite_token', token)
@@ -155,6 +158,8 @@ export async function getInviteDetails(token: string): Promise<InviteDetails> {
     user_email: data.user_email,
     role: data.role,
     expires_at: data.invite_expires_at,
+    river_walk_id: data.collaboration_metadata?.river_walk_reference_id,
+    owner_id: data.collaboration_metadata?.owner_id,
   };
 }
 

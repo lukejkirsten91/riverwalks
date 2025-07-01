@@ -232,13 +232,34 @@ export function ShareModal({ riverWalk, isOpen, onClose }: ShareModalProps) {
                   <span>Send to specific email address</span>
                 </label>
                 {useSpecificEmail && (
-                  <input
-                    type="email"
-                    value={specificEmail}
-                    onChange={(e) => setSpecificEmail(e.target.value)}
-                    placeholder="Enter email address"
-                    className="mt-2 w-full p-2 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-                  />
+                  <>
+                    <input
+                      type="email"
+                      value={specificEmail}
+                      onChange={(e) => setSpecificEmail(e.target.value)}
+                      placeholder="Enter email address"
+                      className="mt-2 w-full p-2 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                    />
+                    <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm">
+                      <p className="font-medium text-blue-900 mb-1">Email-specific invites:</p>
+                      <ul className="text-blue-800 space-y-1">
+                        <li>• Can only be used by the specified email address</li>
+                        <li>• More secure for controlled sharing</li>
+                        <li>• Still expires after 7 days</li>
+                      </ul>
+                    </div>
+                  </>
+                )}
+                {!useSpecificEmail && (
+                  <div className="mt-2 p-3 bg-orange-50 border border-orange-200 rounded-lg text-sm">
+                    <p className="font-medium text-orange-900 mb-1">Public links ("Anyone with link"):</p>
+                    <ul className="text-orange-800 space-y-1">
+                      <li>• <strong>One-time use only</strong> - link becomes invalid after first use</li>
+                      <li>• Can be used by anyone who has the link</li>
+                      <li>• Expires after 7 days if unused</li>
+                      <li>• More convenient but less secure</li>
+                    </ul>
+                  </div>
                 )}
               </div>
 
@@ -275,8 +296,15 @@ export function ShareModal({ riverWalk, isOpen, onClose }: ShareModalProps) {
                           <div className="text-sm font-medium">
                             {invite.user_email === '*' ? 'Anyone with link' : invite.user_email}
                           </div>
-                          <div className="text-xs text-muted-foreground capitalize">
-                            {invite.role} • Created {new Date(invite.invited_at).toLocaleDateString()}
+                          <div className="text-xs text-muted-foreground">
+                            <span className="capitalize">{invite.role}</span>
+                            <span> • Created {new Date(invite.invited_at).toLocaleDateString()}</span>
+                            <span> • Expires {new Date(invite.invite_expires_at).toLocaleDateString()}</span>
+                            {invite.user_email === '*' && (
+                              <div className="text-orange-600 font-medium mt-1">
+                                ⚠️ One-time use - will be invalid after first use
+                              </div>
+                            )}
                           </div>
                         </div>
                         <div className="flex items-center space-x-2">
@@ -354,10 +382,12 @@ export function ShareModal({ riverWalk, isOpen, onClose }: ShareModalProps) {
 
         {/* Footer */}
         <div className="px-6 py-4 bg-muted/50 border-t border-border">
-          <div className="flex justify-between items-center">
-            <p className="text-xs text-muted-foreground">
-              Links expire after 7 days
-            </p>
+          <div className="flex justify-between items-start">
+            <div className="text-xs text-muted-foreground space-y-1">
+              <p>📅 All links expire after 7 days</p>
+              <p>🔐 Email-specific links are more secure</p>
+              <p>⚠️ Public links are one-time use only</p>
+            </div>
             <button
               onClick={onClose}
               className="btn-secondary"

@@ -11,7 +11,7 @@ export default function AcceptInvitePage() {
   const { token } = router.query;
   const { acceptInvite, collaborationEnabled } = useCollaboration();
   
-  const [status, setStatus] = useState<'loading' | 'success' | 'error' | 'auth-required' | 'email-mismatch'>('loading');
+  const [status, setStatus] = useState<'loading' | 'success' | 'error' | 'auth-required' | 'email-mismatch' | 'self-collaboration'>('loading');
   const [message, setMessage] = useState('');
   const [riverWalkId, setRiverWalkId] = useState<string | null>(null);
   const [user, setUser] = useState<any>(null);
@@ -44,6 +44,13 @@ export default function AcceptInvitePage() {
           
           setInviteEmail(inviteDetails.user_email);
           
+          // Check for self-collaboration
+          if (inviteDetails.owner_id && inviteDetails.owner_id === user.id) {
+            setStatus('self-collaboration');
+            setMessage('You cannot collaborate with yourself on your own river walk');
+            return;
+          }
+          
           // Check for email mismatch (only for specific email invites)
           if (inviteDetails.user_email !== '*' && inviteDetails.user_email !== user.email) {
             setStatus('email-mismatch');
@@ -66,35 +73,63 @@ export default function AcceptInvitePage() {
   // Listen for auth state changes
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('🔍 [DEBUG] Auth state change:', { event, hasSession: !!session, hasUser: !!session?.user, token });
+      
       if (event === 'SIGNED_IN' && session?.user && token && typeof token === 'string') {
+        console.log('🔍 [DEBUG] Processing sign-in for invite:', { 
+          userId: session.user.id, 
+          userEmail: session.user.email,
+          token: typeof token === 'string' ? token.substring(0, 10) + '...' : token
+        });
+        
         setUser(session.user);
         setUserEmail(session.user.email || '');
         
-        // Check invite details again on new sign in
-        try {
-          const inviteDetails = await getInviteDetails(token);
-          
-          if (!inviteDetails.valid) {
+        // Small delay to ensure auth is fully processed
+        setTimeout(async () => {
+          try {
+            console.log('🔍 [DEBUG] Getting invite details after sign-in...');
+            const inviteDetails = await getInviteDetails(token);
+            console.log('🔍 [DEBUG] Invite details received:', { 
+              valid: inviteDetails.valid,
+              userEmail: inviteDetails.user_email,
+              ownerId: inviteDetails.owner_id,
+              currentUserId: session.user.id
+            });
+            
+            if (!inviteDetails.valid) {
+              setStatus('error');
+              setMessage('This invite link is invalid or has expired');
+              return;
+            }
+            
+            setInviteEmail(inviteDetails.user_email);
+            
+            // Check for self-collaboration
+            if (inviteDetails.owner_id && inviteDetails.owner_id === session.user.id) {
+              console.log('🔍 [DEBUG] Self-collaboration detected');
+              setStatus('self-collaboration');
+              setMessage('You cannot collaborate with yourself on your own river walk');
+              return;
+            }
+            
+            // Check for email mismatch again
+            if (inviteDetails.user_email !== '*' && inviteDetails.user_email !== session.user.email) {
+              console.log('🔍 [DEBUG] Email mismatch detected');
+              setStatus('email-mismatch');
+              setMessage(`This invite was sent to ${inviteDetails.user_email}, but you're signed in as ${session.user.email}`);
+              return;
+            }
+            
+            // Email matches, proceed with acceptance
+            console.log('🔍 [DEBUG] Email matches, proceeding with invite acceptance');
+            await handleAcceptInvite(token);
+          } catch (error) {
+            console.error('🔍 [DEBUG] Error processing invite after sign-in:', error);
             setStatus('error');
-            setMessage('This invite link is invalid or has expired');
-            return;
+            setMessage('Failed to check invite details');
           }
-          
-          setInviteEmail(inviteDetails.user_email);
-          
-          // Check for email mismatch again
-          if (inviteDetails.user_email !== '*' && inviteDetails.user_email !== session.user.email) {
-            setStatus('email-mismatch');
-            setMessage(`This invite was sent to ${inviteDetails.user_email}, but you're signed in as ${session.user.email}`);
-            return;
-          }
-          
-          // Email matches, proceed with acceptance
-          await handleAcceptInvite(token);
-        } catch (error) {
-          setStatus('error');
-          setMessage('Failed to check invite details');
-        }
+        }, 1000); // 1 second delay to ensure auth is fully processed
       }
     });
 
@@ -247,6 +282,48 @@ export default function AcceptInvitePage() {
             </div>
             <p className="text-xs text-muted-foreground mt-4">
               You need to sign in with the email address that received this invite to accept it.
+            </p>
+          </div>
+        )}
+
+        {status === 'self-collaboration' && (
+          <div className="text-center">
+            <AlertCircle className="w-16 h-16 text-orange-500 mx-auto mb-4" />
+            <h1 className="text-2xl font-bold text-foreground mb-2">Can't Collaborate with Yourself</h1>
+            <p className="text-muted-foreground mb-2">You opened a sharing link for your own river walk.</p>
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 text-sm text-left">
+              <p className="mb-2"><strong>Want to share with someone else?</strong></p>
+              <p>Sign in as a different Google account, then click this link again to collaborate.</p>
+            </div>
+            <div className="space-y-3">
+              <button 
+                onClick={async () => {
+                  await supabase.auth.signOut();
+                  // Force account selection on next sign in
+                  const redirectUrl = `${window.location.origin}/invite/${token}`;
+                  setTimeout(() => {
+                    supabase.auth.signInWithOAuth({
+                      provider: 'google',
+                      options: {
+                        redirectTo: redirectUrl,
+                        queryParams: {
+                          prompt: 'select_account',
+                          access_type: 'online'
+                        }
+                      }
+                    });
+                  }, 500); // Small delay to ensure sign out completes
+                }} 
+                className="btn-primary w-full"
+              >
+                Sign In as Different Account
+              </button>
+              <Link href="/river-walks" className="btn-secondary w-full">
+                Go to My River Walks
+              </Link>
+            </div>
+            <p className="text-xs text-muted-foreground mt-4">
+              Share this link with others to invite them to collaborate on your river walk.
             </p>
           </div>
         )}
