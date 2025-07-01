@@ -7,7 +7,7 @@ Riverwalks is a web application designed primarily for GCSE Geography students t
 ## 🚀 Live Application
 
 - **Production URL**: https://riverwalks.co.uk
-- **Current Status**: ✅ **PRODUCTION-READY EDUCATIONAL PLATFORM** - Professional Educational Platform | Todo-Based Site Management + Educational Workflow + Four Specialized Forms + Progress Tracking + Velocity Measurements + Professional Report Generation & PDF Export + **COMPREHENSIVE EXCEL DATA EXPORT** + Mobile-First Design + Archive System + **COMPREHENSIVE REPORT RESTRUCTURE WITH ENHANCED ANALYSIS** + **GOOGLE MAPS INTEGRATION** + **SEDIMENT VISUALIZATION CHARTS** + **EDUCATIONAL INSTRUCTIONS** + **✅ ENHANCED PDF GENERATION WITH MAXIMUM ELEMENT PROTECTION** + **MOBILE INTERACTION OPTIMIZATION** + **SAVE CONFIRMATION DIALOGS** + **COMPLETE GDPR LEGAL COMPLIANCE** + **CUSTOM DOMAIN (riverwalks.co.uk) LIVE** + **✅ COMPREHENSIVE OFFLINE CAPABILITIES WITH PWA FUNCTIONALITY** + **✅ INTELLIGENT SITE MANAGEMENT WITH AUTO-RENUMBERING** + **✅ ENHANCED ARCHIVE SYSTEM WITH LOADING STATES** + **✅ CRUD OPERATIONS FULLY RESTORED** + **✅ FULL COLLABORATION SYSTEM** + **✅ ALL MOBILE UX ISSUES RESOLVED** + **✅ FINAL UI POLISH COMPLETED** + **✅ PDF ELEMENT SPLITTING ISSUES RESOLVED** - **COMPLETED JUNE 2025**
+- **Current Status**: ✅ **PRODUCTION-READY EDUCATIONAL PLATFORM** - Professional Educational Platform | Todo-Based Site Management + Educational Workflow + Four Specialized Forms + Progress Tracking + Velocity Measurements + Professional Report Generation & PDF Export + **COMPREHENSIVE EXCEL DATA EXPORT** + Mobile-First Design + Archive System + **COMPREHENSIVE REPORT RESTRUCTURE WITH ENHANCED ANALYSIS** + **GOOGLE MAPS INTEGRATION** + **SEDIMENT VISUALIZATION CHARTS** + **EDUCATIONAL INSTRUCTIONS** + **✅ COMPREHENSIVE PDF IMPROVEMENTS WITH PROFESSIONAL FORMATTING** + **✅ MOBILE REPORT OPTIMIZATION** + **SAVE CONFIRMATION DIALOGS** + **COMPLETE GDPR LEGAL COMPLIANCE** + **CUSTOM DOMAIN (riverwalks.co.uk) LIVE** + **✅ COMPREHENSIVE OFFLINE CAPABILITIES WITH PWA FUNCTIONALITY** + **✅ INTELLIGENT SITE MANAGEMENT WITH AUTO-RENUMBERING** + **✅ ENHANCED ARCHIVE SYSTEM WITH LOADING STATES** + **✅ CRUD OPERATIONS FULLY RESTORED** + **✅ FULL COLLABORATION SYSTEM** + **✅ ALL MOBILE UX ISSUES RESOLVED** + **✅ FINAL UI POLISH COMPLETED** + **✅ ALL PDF LAYOUT ISSUES RESOLVED** + **✅ API KEY SECURITY CLEANUP COMPLETED** - **COMPLETED JULY 2025**
 
 ## 🏗️ Technical Stack
 
@@ -19,7 +19,7 @@ Riverwalks is a web application designed primarily for GCSE Geography students t
 - **Database**: Supabase PostgreSQL with Row Level Security
 - **Storage**: Supabase Storage for photo uploads with RLS policies
 - **Visualization**: Plotly.js for 2D cross-section charts, 3D river profiles, and comprehensive data visualization
-- **PDF Generation**: jsPDF and html2canvas for professional report export
+- **PDF Generation**: Puppeteer for server-side PDF generation with professional formatting, semantic HTML, and comprehensive page break control
 - **Excel Export**: xlsx library for comprehensive multi-sheet data export
 - **Deployment**: Vercel with continuous deployment from GitHub
 - **Repository**: https://github.com/lukejkirsten91/riverwalks
@@ -241,13 +241,41 @@ Riverwalks is a web application designed primarily for GCSE Geography students t
 - **Educational Enhancement**: Clear labeling from 1 (very angular) to 6 (very rounded) with visual examples
 - **Seamless Integration**: Positioned strategically above measurement input section for easy reference
 
-### ✅ **ENHANCED PDF GENERATION WITH ADVANCED ELEMENT PROTECTION** (COMPLETED - JUNE 2025)
+### ✅ **COMPREHENSIVE PDF REPORT IMPROVEMENTS WITH PROFESSIONAL FORMATTING** (COMPLETED - JULY 2025)
 
-#### **Dual-Mode Responsive System**
-- **Context-Aware Chart Sizing**: Intelligent switching between web responsive mode and PDF fixed-size mode
-- **Mobile Device Detection**: Dynamic detection with window.innerWidth and userAgent for optimal chart configuration
-- **Responsive Web Design**: Charts fully responsive on desktop/mobile with proper scaling and touch-friendly behavior
-- **PDF Consistency**: Fixed 650x400px chart dimensions for consistent PDF output across all devices
+#### **Professional Document Structure**
+- **Cover Page & Table of Contents**: Automatic professional cover page with study metadata and calculated TOC with page numbers
+- **Semantic HTML5 Structure**: Complete conversion to semantic tags (header, section, article, figure, figcaption)
+- **CSS Variables System**: Centralized design system with CSS variables for colors (--clr-*), spacing (--sp-*), and typography (--font-size-*)
+- **Headers & Footers**: Professional page headers/footers with page numbers via Puppeteer's headerTemplate/footerTemplate
+
+#### **Enhanced Typography & Data Presentation**
+- **UK Number Localization**: All numbers use `toLocaleString('en-GB')` for proper UK formatting
+- **Consistent Significant Figures**: Professional data formatting with `formatSignificantFigures()` function throughout
+- **Tabular Numbers**: Applied `font-variant-numeric: tabular-nums` for perfect number alignment
+- **Superscript Units**: Proper unit formatting with superscript notation (m², m³/s)
+
+#### **Figure Captions & Visual Hierarchy**
+- **Numbered Figure Captions**: All charts and maps have numbered captions (Figure 1, Figure 2, etc.)
+- **Professional Chart Labels**: Enhanced figure captions with descriptive text for academic context
+- **Visual Consistency**: Standardized chart sizing and layout for professional appearance
+
+#### **Page Layout & Print Optimization**
+- **Page Break Control**: Comprehensive CSS page break rules preventing content splitting
+- **Print-Friendly Styling**: @media print rules with grayscale color overrides
+- **A4 Optimization**: Proper @page margins and sizing for A4 print format
+- **Content Protection**: Headers always stay with their content using page-break-after: avoid
+
+#### **Mobile Report Optimization**
+- **Responsive Modal Design**: Progressive sizing `max-w-[95vw] sm:max-w-5xl lg:max-w-6xl` prevents mobile overflow
+- **Touch-Friendly Interface**: Optimized button sizes, spacing, and touch targets for mobile devices
+- **Horizontal Scroll Management**: Tables and wide content use touch-friendly scrolling with sticky headers
+- **Accessible Close Button**: Always visible and reachable close button with proper touch targets
+
+#### **Security & Performance Enhancements**
+- **API Key Security**: Removed hardcoded Google Maps API keys with graceful fallback when unavailable
+- **Git History Cleanup**: Removed leaked API keys from git history using git filter-branch
+- **Modular Code Organization**: Separated render functions (renderCoverPage, renderTableOfContents, renderExecutiveSummary)
 
 #### **Advanced Chart Protection Logic**
 - **Smart Component Detection**: Accurate detection of charts, tables, and protected elements using coordinate system fixes
@@ -255,40 +283,11 @@ Riverwalks is a web application designed primarily for GCSE Geography students t
 - **Hard Break Protection**: 50mm minimum tail space prevents sub-pixel layout issues from splitting charts
 - **Atomic Chart Treatment**: Plotly charts treated as single indivisible units, preventing duplicate protection zones
 
-#### **Mobile UI Improvements & Permission-Based Controls** (UPDATED - JUNE 2025)
-- **Responsive Layouts**: Mobile-first design with flexible layouts that adapt from mobile to desktop
-- **Permission-Based Button Visibility**: Hide buttons users can't use instead of showing error messages
-- **Touch-Friendly Controls**: Proper touch targets and responsive sizing throughout
-- **Role-Based UI**: Visual indicators for Owner/Editor/Viewer roles with clean permission handling
-- **Mobile Optimization**: Compact layouts, responsive text sizing, and efficient space usage
-
-#### **Mobile Interaction Optimization**
-- **Non-Interactive Charts on Mobile**: `staticPlot: true` with `pointerEvents: 'none'` prevents scroll interference
-- **Context-Sensitive Behavior**: PDF mode (static), Mobile mode (non-interactive), Desktop mode (limited interactions)
-- **Smooth Mobile Scrolling**: Charts remain responsive for sizing but don't capture touch events
-- **Enhanced Chart Configuration**: Dynamic config functions that adapt to device context
-
-#### **Enhanced PDF Page Management**
-- **Stronger Component Protection**: Increased thresholds (40mm→50mm, 90%→80% fitting, 10mm→15mm padding)
-- **Coordinate System Accuracy**: Fixed getBoundingClientRect calculations relative to root element
-- **Natural Break Point Detection**: Looks for semantic boundaries within large components for cleaner breaks
-- **Advanced Pagination Logic**: Three-layer protection system with logging for debugging
-
-#### **Latest Improvements (June 27, 2025) - COMPLETED**
-- **Maximum Element Protection**: Enhanced protected element detection with comprehensive CSS selectors covering all charts, tables, maps, and analysis sections
-- **Stricter Protection Thresholds**: Increased minimum tail space to 60mm (from 50mm), reduced size threshold to 75% (from 80%) for maximum protection
-- **Advanced CSS Page Break Controls**: Added webkit fallbacks (-webkit-region-break-inside, -webkit-column-break-inside) for better cross-browser compatibility
-- **Generous Component Padding**: Increased padding around protected components to 20mm (from 15mm) to prevent near-misses
-- **Enhanced html2canvas Configuration**: Improved scale to 2.5x, added foreignObjectRendering for better SVG/chart rendering, enhanced element filtering
-- **Extended Rendering Wait Times**: Increased base wait to 4 seconds plus additional 2 seconds for Plotly charts to ensure full rendering
-- **Comprehensive Element Coverage**: Added protection for KPI containers, Google Maps, analysis sections, measurement tables, and all colored background sections
-- **Improved Natural Break Detection**: Enhanced algorithm with minimum spacing requirements and better candidate selection for content flow
-
-#### **Visual Quality & Layout**
-- **Centered Wind Rose Charts**: Proper centering with max-width constraints for optimal visual balance
-- **Responsive Chart Containers**: Mobile-first design with proper breakpoints and sizing constraints
-- **Enhanced CSS Protection**: Modern page-break properties with mobile-specific chart adjustments
-- **Professional PDF Output**: Desktop layout forced during generation with enhanced component protection
+#### **Latest PDF Layout Fixes (July 1, 2025) - COMPLETED**
+- **Eliminated Blank Page 2**: Removed duplicate page-break-before from TOC to ensure clean page flow
+- **Duplicate Content Removal**: Fixed broken HTML structure causing duplicate map rendering
+- **Enhanced Page Break CSS**: Added comprehensive page break utilities with proper semantic structure
+- **Professional Output**: PDFs now flow seamlessly from cover → TOC → content without layout issues
 
 ### ✅ **COMPREHENSIVE OFFLINE CAPABILITIES** (COMPLETED - JUNE 2025)
 
@@ -1111,9 +1110,37 @@ CREATE TABLE measurement_points (
 - Logo sizing and placement needs optimization for better brand integration
 - No advanced analysis features yet (flow rate calculations, hydraulic radius, etc.)
 - 3D visualization could be enhanced with additional interactive features
-- ✅ **PDF Component Splitting**: FULLY RESOLVED - Comprehensive CSS page-break protection prevents all form elements and charts from splitting across PDF pages
+- ✅ **All PDF Issues**: FULLY RESOLVED - Professional PDF generation with proper page layout, no content splitting, comprehensive formatting
+- ✅ **Mobile Report Access**: FULLY RESOLVED - Responsive modal design with touch-friendly interface and accessible controls
 
 ## ✅ Recently Resolved Issues
+
+- ✅ **Comprehensive PDF Report Improvements (July 1, 2025)**: Complete professional formatting overhaul with academic-quality output
+  - **PDF Blank Page Issue**: Eliminated blank page 2 by removing duplicate page-break-before from table of contents
+  - **Professional Document Structure**: Added cover page, automatic TOC with page numbers, headers/footers via Puppeteer
+  - **Typography Enhancement**: UK number localization, consistent significant figures, tabular numbers, superscript units
+  - **Semantic HTML Conversion**: Complete migration to semantic tags (header, section, article, figure, figcaption)
+  - **CSS Variables System**: Centralized design system with proper color, spacing, and typography variables
+  - **Figure Captions**: Added numbered captions to all charts and maps for academic context
+  - **Result**: PDF reports now meet academic submission standards with professional formatting and layout
+  - **Impact**: Students receive coursework-ready PDFs that require no additional formatting for GCSE Geography submissions
+
+- ✅ **Mobile Report Optimization (July 1, 2025)**: Complete mobile interface overhaul for touch-friendly access
+  - **Problem**: Report modal too wide for mobile screens, inaccessible close button, horizontal overflow issues
+  - **Responsive Modal Design**: Progressive sizing with proper viewport constraints (95vw → 5xl → 6xl)
+  - **Touch Interface**: Optimized button sizes, spacing, and touch targets for mobile devices
+  - **Table Optimization**: Horizontal scrolling with sticky headers and touch-friendly navigation
+  - **Close Button Access**: Always visible and reachable close button with proper touch targets
+  - **Result**: Full mobile accessibility with no horizontal overflow or navigation issues
+  - **Impact**: Students can access and use reports effectively on mobile devices and tablets
+
+- ✅ **API Key Security Cleanup (July 1, 2025)**: Complete removal of leaked credentials from git history
+  - **Problem**: Google Maps API key accidentally committed to git history and exposed on GitHub
+  - **Git History Cleanup**: Used git filter-branch to remove leaked credentials from all commits
+  - **Environment Variable Security**: Proper API key management with graceful fallbacks when unavailable
+  - **Repository Sanitization**: Force-pushed clean history and verified no sensitive data remains
+  - **Result**: Repository is secure with no exposed credentials in git history
+  - **Impact**: Maintains security best practices and protects API key integrity
 
 - ✅ **PDF Component Splitting Issues (June 27, 2025)**: Complete resolution of element splitting across PDF pages
   - **Problem**: Charts, tables, and other components were frequently split across page boundaries in generated PDFs
@@ -1460,7 +1487,7 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 
 ---
 
-_Last Updated: June 27, 2025_
-_Status: ✅ **MVP COMPLETE + COLLABORATION SYSTEM FULLY IMPLEMENTED + PDF GENERATION PERFECTED**: Todo-Based Site Management System + Educational Workflow + Four Specialized Forms + Progress Tracking + Velocity Measurements + **COMPREHENSIVE REPORT RESTRUCTURE WITH ENHANCED ANALYSIS** + Professional Report Generation & **✅ ENHANCED PDF GENERATION WITH MAXIMUM ELEMENT PROTECTION** + **MOBILE INTERACTION OPTIMIZATION** + **SAVE CONFIRMATION DIALOGS** + **COMPREHENSIVE OFFLINE CAPABILITIES WITH PWA FUNCTIONALITY** + **✅ CRUD OPERATIONS FULLY RESTORED** + Mobile-First Design + All Educational Features Complete + **✅ DATABASE ISSUES RESOLVED** + **✅ COLLABORATION SYSTEM COMPLETE** (Real-time Sync + Microsoft-style UI + Collaborative Editing) + **✅ PDF ELEMENT SPLITTING RESOLVED**_
-_Current Focus: **FEATURE COMPLETE PLATFORM** - All core educational, collaboration, and PDF generation features implemented and working perfectly_
+_Last Updated: July 1, 2025_
+_Status: ✅ **PRODUCTION-READY EDUCATIONAL PLATFORM WITH PROFESSIONAL PDF GENERATION**: Todo-Based Site Management System + Educational Workflow + Four Specialized Forms + Progress Tracking + Velocity Measurements + **COMPREHENSIVE REPORT RESTRUCTURE WITH ENHANCED ANALYSIS** + **✅ PROFESSIONAL PDF GENERATION WITH ACADEMIC-QUALITY FORMATTING** + **✅ MOBILE-OPTIMIZED REPORT ACCESS** + **SAVE CONFIRMATION DIALOGS** + **COMPREHENSIVE OFFLINE CAPABILITIES WITH PWA FUNCTIONALITY** + **✅ CRUD OPERATIONS FULLY RESTORED** + Mobile-First Design + All Educational Features Complete + **✅ COLLABORATION SYSTEM COMPLETE** (Real-time Sync + Microsoft-style UI + Collaborative Editing) + **✅ ALL PDF LAYOUT ISSUES RESOLVED** + **✅ API KEY SECURITY COMPLETED**_
+_Current Focus: **FEATURE COMPLETE PLATFORM** - All core educational, collaboration, PDF generation, and mobile optimization features implemented and working perfectly_
 _Next Phase: **PHASE 7-8 EXPANSION** (Payment Infrastructure, Microsoft Auth) → **PRODUCTION SAAS LAUNCH** - Target: £1.49/year subscription model_
