@@ -44,14 +44,30 @@ export default function AcceptInvitePage() {
       
       setUserEmail(user.email || '');
       
-      // Check invite details first
-      if (token && typeof token === 'string') {
-        await processInviteForUser(token, user);
+      // Check for stored invite token from OAuth flow
+      const storedToken = localStorage.getItem('pending_invite_token');
+      let inviteToken = token;
+      
+      if (storedToken && (!token || !inviteToken)) {
+        console.log('🔍 [DEBUG] Found stored invite token from OAuth flow:', storedToken.substring(0, 10) + '...');
+        inviteToken = storedToken;
+        // Clean up stored token
+        localStorage.removeItem('pending_invite_token');
+        
+        // Update URL to reflect the correct token
+        if (typeof inviteToken === 'string') {
+          router.replace(`/invite/${inviteToken}`, undefined, { shallow: true });
+        }
+      }
+      
+      // Check invite details
+      if (inviteToken && typeof inviteToken === 'string') {
+        await processInviteForUser(inviteToken, user);
       }
     };
 
     checkAuth();
-  }, [token]);
+  }, [token, router]);
 
   // Separate function to process invite for a user
   const processInviteForUser = async (inviteToken: string, user: any) => {
@@ -117,7 +133,25 @@ export default function AcceptInvitePage() {
         // Small delay to ensure auth is fully processed, then process the invite
         setTimeout(async () => {
           console.log('🔍 [DEBUG] Processing invite after OAuth sign-in');
-          await processInviteForUser(token, session.user);
+          
+          // Check for stored token first, then use URL token
+          const storedToken = localStorage.getItem('pending_invite_token');
+          let inviteToken = token;
+          
+          if (storedToken) {
+            console.log('🔍 [DEBUG] Using stored token from OAuth flow:', storedToken.substring(0, 10) + '...');
+            inviteToken = storedToken;
+            localStorage.removeItem('pending_invite_token');
+            
+            // Update URL to reflect the correct token
+            if (typeof inviteToken === 'string') {
+              router.replace(`/invite/${inviteToken}`, undefined, { shallow: true });
+            }
+          }
+          
+          if (inviteToken && typeof inviteToken === 'string') {
+            await processInviteForUser(inviteToken, session.user);
+          }
         }, 1000); // 1 second delay to ensure auth is fully processed
       }
     });
@@ -165,7 +199,15 @@ export default function AcceptInvitePage() {
   };
 
   const handleSignIn = () => {
+    // Store the current invite token in localStorage before OAuth
+    if (token && typeof token === 'string') {
+      localStorage.setItem('pending_invite_token', token);
+      console.log('🔍 [DEBUG] Stored invite token in localStorage:', token.substring(0, 10) + '...');
+    }
+    
     const redirectUrl = `${window.location.origin}/invite/${token}`;
+    console.log('🔍 [DEBUG] Starting OAuth with redirect URL:', redirectUrl);
+    
     supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
