@@ -92,6 +92,10 @@ export default function AcceptInvitePage() {
       // Email matches or universal invite, proceed with acceptance
       console.log('🔍 [DEBUG] Email matches, proceeding with invite acceptance');
       await handleAcceptInvite(inviteToken);
+      
+      // Immediately redirect to river-walks after successful processing
+      console.log('🔍 [DEBUG] Invite processed, redirecting to river-walks');
+      router.push('/river-walks');
     } catch (error) {
       console.error('🔍 [DEBUG] Error processing invite:', error);
       setStatus('error');
@@ -112,14 +116,8 @@ export default function AcceptInvitePage() {
       const result = await acceptInvite(inviteToken);
       
       if (result.success) {
-        setStatus('success');
-        setMessage(result.message);
-        setRiverWalkId(result.river_walk_id);
-        
-        // Redirect to river walks after a delay
-        setTimeout(() => {
-          router.push('/river-walks');
-        }, 3000);
+        // Don't show success page, just redirect immediately
+        router.push('/river-walks');
       } else {
         setStatus('error');
         setMessage(result.message);
