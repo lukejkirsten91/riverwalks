@@ -179,6 +179,131 @@ export class OfflineDataService {
     };
   }
 
+  // Fix orphaned local photo IDs by adding them to sync queue
+  async fixOrphanedPhotos(): Promise<{ 
+    success: boolean; 
+    message: string; 
+    fixed: number;
+    details?: any[];
+  }> {
+    console.log('🔧 Scanning for orphaned local photo IDs...');
+    
+    if (!this.checkOnline()) {
+      return {
+        success: false,
+        message: 'Cannot fix orphaned photos: Device is offline',
+        fixed: 0
+      };
+    }
+
+    try {
+      const allSites = await offlineDB.getAll('sites') as OfflineSite[];
+      const allPhotos = await offlineDB.getAll('photos') as OfflinePhoto[];
+      const syncQueue = await offlineDB.getSyncQueue();
+      
+      // Find sites with local photo IDs
+      const sitesWithLocalPhotos = allSites.filter((site: OfflineSite) => {
+        return (site.photo_url && site.photo_url.startsWith('local_')) ||
+               (site.sedimentation_photo_url && site.sedimentation_photo_url.startsWith('local_'));
+      });
+
+      console.log('Found sites with local photos:', sitesWithLocalPhotos.length);
+      
+      const fixedPhotos: any[] = [];
+      
+      for (const site of sitesWithLocalPhotos) {
+        // Check site photo
+        if (site.photo_url && site.photo_url.startsWith('local_')) {
+          const photoLocalId = site.photo_url;
+          
+          // Check if already in sync queue
+          const alreadyQueued = syncQueue.some(item => 
+            item.table === 'photos' && item.localId === photoLocalId
+          );
+          
+          if (!alreadyQueued) {
+            // Find the photo in IndexedDB
+            const photo = allPhotos.find((p: OfflinePhoto) => p.localId === photoLocalId);
+            
+            if (photo && photo.file) {
+              console.log('Queueing orphaned site photo:', { siteId: site.id, photoLocalId });
+              
+              // Add to sync queue
+              await this.addToSyncQueue('CREATE', 'photos', {
+                file: photo.file,
+                type: 'site_photo',
+                relatedId: site.id
+              }, photoLocalId);
+              
+              fixedPhotos.push({
+                siteId: site.id,
+                photoType: 'site_photo',
+                localId: photoLocalId
+              });
+            } else {
+              console.warn('Photo file not found for local ID:', photoLocalId);
+            }
+          }
+        }
+        
+        // Check sediment photo
+        if (site.sedimentation_photo_url && site.sedimentation_photo_url.startsWith('local_')) {
+          const photoLocalId = site.sedimentation_photo_url;
+          
+          // Check if already in sync queue
+          const alreadyQueued = syncQueue.some(item => 
+            item.table === 'photos' && item.localId === photoLocalId
+          );
+          
+          if (!alreadyQueued) {
+            // Find the photo in IndexedDB
+            const photo = allPhotos.find((p: OfflinePhoto) => p.localId === photoLocalId);
+            
+            if (photo && photo.file) {
+              console.log('Queueing orphaned sediment photo:', { siteId: site.id, photoLocalId });
+              
+              // Add to sync queue
+              await this.addToSyncQueue('CREATE', 'photos', {
+                file: photo.file,
+                type: 'sediment_photo',
+                relatedId: site.id
+              }, photoLocalId);
+              
+              fixedPhotos.push({
+                siteId: site.id,
+                photoType: 'sediment_photo',
+                localId: photoLocalId
+              });
+            } else {
+              console.warn('Photo file not found for local ID:', photoLocalId);
+            }
+          }
+        }
+      }
+      
+      // Trigger sync if we fixed any photos
+      if (fixedPhotos.length > 0) {
+        console.log('Triggering sync for', fixedPhotos.length, 'orphaned photos');
+        await this.syncWhenOnline();
+      }
+      
+      return {
+        success: true,
+        message: `Fixed ${fixedPhotos.length} orphaned photos and triggered sync`,
+        fixed: fixedPhotos.length,
+        details: fixedPhotos
+      };
+      
+    } catch (error) {
+      console.error('Failed to fix orphaned photos:', error);
+      return {
+        success: false,
+        message: `Failed to fix orphaned photos: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        fixed: 0
+      };
+    }
+  }
+
   // Sync data when coming back online
   private async syncWhenOnline(): Promise<void> {
     if (!this.checkOnline()) return;

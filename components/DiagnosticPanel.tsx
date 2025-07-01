@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { AlertTriangle, CheckCircle, Settings, RefreshCw, Database } from 'lucide-react';
+import { AlertTriangle, CheckCircle, Settings, RefreshCw, Database, Wrench } from 'lucide-react';
 import { checkDatabaseSchema, checkStorageBucket, testPhotoUpload } from '../lib/api/diagnostics';
 import { offlineDataService } from '../lib/offlineDataService';
 
@@ -10,6 +10,8 @@ export function DiagnosticPanel() {
   const [syncStatus, setSyncStatus] = useState<any>(null);
   const [syncLoading, setSyncLoading] = useState(false);
   const [syncResult, setSyncResult] = useState<any>(null);
+  const [fixLoading, setFixLoading] = useState(false);
+  const [fixResult, setFixResult] = useState<any>(null);
 
   const runDiagnostics = async () => {
     setLoading(true);
@@ -63,6 +65,26 @@ export function DiagnosticPanel() {
     }
   };
 
+  const fixOrphanedPhotos = async () => {
+    setFixLoading(true);
+    setFixResult(null);
+    try {
+      const result = await offlineDataService.fixOrphanedPhotos();
+      setFixResult(result);
+      // Refresh sync status after fix
+      await getSyncStatus();
+    } catch (error) {
+      console.error('Fix orphaned photos failed:', error);
+      setFixResult({
+        success: false,
+        message: 'Fix failed: ' + (error instanceof Error ? error.message : 'Unknown error'),
+        fixed: 0
+      });
+    } finally {
+      setFixLoading(false);
+    }
+  };
+
   if (!showPanel) {
     return (
       <button
@@ -108,14 +130,27 @@ export function DiagnosticPanel() {
           </button>
         </div>
 
-        <button
-          onClick={triggerManualSync}
-          disabled={syncLoading}
-          className="w-full bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 disabled:opacity-50 flex items-center justify-center gap-2"
-        >
-          <RefreshCw className={`w-4 h-4 ${syncLoading ? 'animate-spin' : ''}`} />
-          {syncLoading ? 'Syncing...' : 'Force Manual Sync'}
-        </button>
+        <div className="grid grid-cols-1 gap-2">
+          <button
+            onClick={triggerManualSync}
+            disabled={syncLoading || fixLoading}
+            className="w-full bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 disabled:opacity-50 flex items-center justify-center gap-2"
+          >
+            <RefreshCw className={`w-4 h-4 ${syncLoading ? 'animate-spin' : ''}`} />
+            {syncLoading ? 'Syncing...' : 'Force Manual Sync'}
+          </button>
+          
+          {syncStatus && syncStatus.sitesWithLocalPhotos.length > 0 && (
+            <button
+              onClick={fixOrphanedPhotos}
+              disabled={fixLoading || syncLoading}
+              className="w-full bg-orange-600 text-white px-4 py-2 rounded hover:bg-orange-700 disabled:opacity-50 flex items-center justify-center gap-2"
+            >
+              <Wrench className={`w-4 h-4 ${fixLoading ? 'animate-spin' : ''}`} />
+              {fixLoading ? 'Fixing...' : `Fix ${syncStatus.sitesWithLocalPhotos.length} Orphaned Photos`}
+            </button>
+          )}
+        </div>
 
         {syncResult && (
           <div className={`p-3 rounded text-sm ${
@@ -132,6 +167,38 @@ export function DiagnosticPanel() {
               <span className="font-medium">Manual Sync Result</span>
             </div>
             <p>{syncResult.message}</p>
+          </div>
+        )}
+
+        {fixResult && (
+          <div className={`p-3 rounded text-sm ${
+            fixResult.success 
+              ? 'bg-green-50 text-green-800 border border-green-200' 
+              : 'bg-red-50 text-red-800 border border-red-200'
+          }`}>
+            <div className="flex items-center gap-2 mb-1">
+              {fixResult.success ? (
+                <CheckCircle className="w-4 h-4" />
+              ) : (
+                <AlertTriangle className="w-4 h-4" />
+              )}
+              <span className="font-medium">Fix Orphaned Photos Result</span>
+            </div>
+            <p>{fixResult.message}</p>
+            {fixResult.success && fixResult.fixed > 0 && fixResult.details && (
+              <details className="mt-2">
+                <summary className="cursor-pointer text-green-600">Fixed Photos Details</summary>
+                <div className="mt-1 space-y-1">
+                  {fixResult.details.map((detail: any, i: number) => (
+                    <div key={i} className="text-xs bg-green-50 p-1 rounded">
+                      <p>Site: {detail.siteId}</p>
+                      <p>Type: {detail.photoType}</p>
+                      <p>Local ID: {detail.localId}</p>
+                    </div>
+                  ))}
+                </div>
+              </details>
+            )}
           </div>
         )}
 
