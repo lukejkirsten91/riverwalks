@@ -299,7 +299,7 @@ export function ShareModal({ riverWalk, isOpen, onClose }: ShareModalProps) {
                           <div className="text-xs text-muted-foreground">
                             <span className="capitalize">{invite.role}</span>
                             <span> • Created {new Date(invite.invited_at).toLocaleDateString()}</span>
-                            <span> • Expires {new Date(invite.invite_expires_at).toLocaleDateString()}</span>
+                            <span> • Expires {invite.invite_expires_at ? new Date(invite.invite_expires_at).toLocaleDateString() : 'N/A'}</span>
                             {invite.user_email === '*' && (
                               <div className="text-orange-600 font-medium mt-1">
                                 ⚠️ One-time use - will be invalid after first use
