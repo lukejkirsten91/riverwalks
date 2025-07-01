@@ -100,7 +100,9 @@ export const SiteInfoForm = forwardRef<SiteInfoFormRef, SiteInfoFormProps>(({
   const handleSubmit = async (e: React.FormEvent, markComplete: boolean = false) => {
     e.preventDefault();
     const todoStatus: TodoStatus = markComplete ? 'complete' : 'in_progress';
-    await onSubmit(formData, photoState.file || undefined, false, todoStatus);
+    // Only pass the file if it's not already stored offline
+    const photoFile = photoState.isOfflinePhoto ? undefined : (photoState.file || undefined);
+    await onSubmit(formData, photoFile, false, todoStatus);
     setHasUnsavedChanges(false);
   };
 
@@ -110,7 +112,9 @@ export const SiteInfoForm = forwardRef<SiteInfoFormRef, SiteInfoFormProps>(({
 
   const handleConfirmSaveComplete = async () => {
     const todoStatus: TodoStatus = 'complete';
-    await onSubmit(formData, photoState.file || undefined, false, todoStatus);
+    // Only pass the file if it's not already stored offline
+    const photoFile = photoState.isOfflinePhoto ? undefined : (photoState.file || undefined);
+    await onSubmit(formData, photoFile, false, todoStatus);
     setHasUnsavedChanges(false);
     setShowConfirmDialog(false);
     onCancel();
@@ -118,7 +122,9 @@ export const SiteInfoForm = forwardRef<SiteInfoFormRef, SiteInfoFormProps>(({
 
   const handleConfirmSaveInProgress = async () => {
     const todoStatus: TodoStatus = 'in_progress';
-    await onSubmit(formData, photoState.file || undefined, false, todoStatus);
+    // Only pass the file if it's not already stored offline
+    const photoFile = photoState.isOfflinePhoto ? undefined : (photoState.file || undefined);
+    await onSubmit(formData, photoFile, false, todoStatus);
     setHasUnsavedChanges(false);
     setShowConfirmDialog(false);
     onCancel();

@@ -273,10 +273,14 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
         }
         sitePhotoUrl = null;
       } else if (sitePhoto) {
+        // Only upload if it's a new photo file, not already stored offline
         if (currentSite.photo_url) {
           await deleteSitePhoto(currentSite.photo_url);
         }
         sitePhotoUrl = await uploadSitePhoto(currentSite.id, sitePhoto, session.user.id);
+      } else {
+        // Preserve existing photo URL (could be offline or online)
+        sitePhotoUrl = currentSite.photo_url;
       }
 
       // Update site
@@ -437,7 +441,8 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
           await deleteSitePhoto(currentSite.sedimentation_photo_url);
         }
         sedimentationPhotoUrl = null;
-      } else if (sedimentationData.photo) {
+      } else if (sedimentationData.photo && !sedimentationData.isOfflinePhoto) {
+        // Only upload if it's not already stored offline
         if (currentSite.sedimentation_photo_url) {
           await deleteSitePhoto(currentSite.sedimentation_photo_url);
         }
@@ -447,6 +452,12 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
           session.user.id,
           'sedimentation'
         );
+      } else if (sedimentationData.isOfflinePhoto && sedimentationData.photoUrl) {
+        // Use the offline photo URL directly
+        sedimentationPhotoUrl = sedimentationData.photoUrl;
+      } else {
+        // Preserve existing photo URL (could be offline or online)
+        sedimentationPhotoUrl = currentSite.sedimentation_photo_url;
       }
 
       const updateData: UpdateSiteData = {
