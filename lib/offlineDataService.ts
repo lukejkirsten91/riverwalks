@@ -241,7 +241,12 @@ export class OfflineDataService {
                 localId: photoLocalId
               });
             } else {
-              console.warn('Photo file not found for local ID:', photoLocalId);
+              console.warn('Photo file not found for local ID:', photoLocalId, {
+                photoLocalId,
+                availablePhotos: allPhotos.map(p => ({ localId: p.localId, hasFile: !!p.file })),
+                foundPhoto: !!photo,
+                photoHasFile: photo ? !!photo.file : 'no photo'
+              });
             }
           }
         }
@@ -275,7 +280,12 @@ export class OfflineDataService {
                 localId: photoLocalId
               });
             } else {
-              console.warn('Photo file not found for local ID:', photoLocalId);
+              console.warn('Photo file not found for local ID:', photoLocalId, {
+                photoLocalId,
+                availablePhotos: allPhotos.map(p => ({ localId: p.localId, hasFile: !!p.file })),
+                foundPhoto: !!photo,
+                photoHasFile: photo ? !!photo.file : 'no photo'
+              });
             }
           }
         }
