@@ -321,7 +321,11 @@ export class OfflineDataService {
                 localPhoto.synced = true;
                 await offlineDB.addPhoto(localPhoto);
               }
-              console.log('Photo uploaded and marked as synced:', photoUrl);
+              
+              // Update the site record to use the server photo URL instead of local ID
+              await this.updateSitePhotoUrl(relatedId, item.localId, photoUrl, photoType);
+              
+              console.log('Photo uploaded and site record updated:', photoUrl);
             }
           } catch (error) {
             console.error('Failed to upload photo during sync:', error);
@@ -329,6 +333,48 @@ export class OfflineDataService {
           }
         }
         break;
+    }
+  }
+
+  // Update site record to replace local photo ID with server URL
+  private async updateSitePhotoUrl(
+    siteId: string, 
+    localPhotoId: string, 
+    serverPhotoUrl: string, 
+    photoType: 'site_photo' | 'sediment_photo'
+  ): Promise<void> {
+    try {
+      // Determine which field to update based on photo type
+      const photoField = photoType === 'site_photo' ? 'photo_url' : 'sedimentation_photo_url';
+      
+      // Update the server record
+      const { error } = await supabase
+        .from('sites')
+        .update({ [photoField]: serverPhotoUrl })
+        .eq('id', siteId)
+        .eq(photoField, localPhotoId); // Only update if it still has the local ID
+      
+      if (error) {
+        console.error('Failed to update site photo URL on server:', error);
+        return;
+      }
+      
+      // Update the local record if it exists
+      const allSites = await offlineDB.getAll<OfflineSite>('sites');
+      const localSite = allSites.find(s => s.id === siteId || s.localId === siteId);
+      
+      if (localSite) {
+        if (photoType === 'site_photo') {
+          localSite.photo_url = serverPhotoUrl;
+        } else {
+          localSite.sedimentation_photo_url = serverPhotoUrl;
+        }
+        await offlineDB.addSite(localSite);
+        console.log(`Updated local site ${photoField} from ${localPhotoId} to ${serverPhotoUrl}`);
+      }
+      
+    } catch (error) {
+      console.error('Error updating site photo URL:', error);
     }
   }
 
@@ -1214,6 +1260,10 @@ export class OfflineDataService {
           // Mark as synced and store server URL
           offlinePhoto.synced = true;
           await offlineDB.addPhoto(offlinePhoto);
+          
+          // Update the site record to use the server photo URL instead of local ID
+          await this.updateSitePhotoUrl(relatedId, localId, uploadedUrl, type);
+          
           return uploadedUrl;
         }
       } catch (error) {
