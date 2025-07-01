@@ -710,32 +710,49 @@ export class OfflineDataService {
         
       case 'photos':
         if (type === 'CREATE') {
-          // Upload photo to server
+          // Upload photo to server with robust retry logic
+          console.log(`📷 Processing photo sync: ${item.localId}`);
+          
           try {
             const { file, type: photoType, relatedId } = data;
-            const photoUrl = await this.uploadPhotoToServer(file, photoType, relatedId);
             
-            if (photoUrl) {
-              // Mark the local photo as synced
-              const allPhotos = await offlineDB.getAll<OfflinePhoto>('photos');
-              const localPhoto = allPhotos.find(p => p.localId === item.localId);
-              if (localPhoto) {
-                localPhoto.synced = true;
-                await offlineDB.addPhoto(localPhoto);
-              }
-              
-              // Update the site record to use the server photo URL instead of local ID
-              await this.updateSitePhotoUrl(relatedId, item.localId, photoUrl, photoType);
-              
-              console.log('Photo uploaded and site record updated:', { 
-                relatedId, 
-                localId: item.localId, 
-                serverUrl: photoUrl,
-                photoType 
-              });
+            // Validate we have everything we need
+            if (!file || !photoType || !relatedId) {
+              throw new Error(`Missing photo data: file=${!!file}, type=${photoType}, relatedId=${relatedId}`);
             }
+            
+            console.log(`🔄 Uploading photo: ${photoType} for ${relatedId}`);
+            const photoUrl = await this.uploadPhotoToServerWithRetry(file, photoType, relatedId, item.attempts || 0);
+            
+            if (!photoUrl) {
+              throw new Error('Photo upload returned null URL');
+            }
+            
+            console.log(`✅ Photo uploaded successfully: ${photoUrl}`);
+            
+            // Mark the local photo as synced
+            const allPhotos = await offlineDB.getAll<OfflinePhoto>('photos');
+            const localPhoto = allPhotos.find(p => p.localId === item.localId);
+            if (localPhoto) {
+              localPhoto.synced = true;
+              await offlineDB.addPhoto(localPhoto);
+              console.log(`📝 Marked local photo as synced: ${item.localId}`);
+            }
+            
+            // Update the site record to use the server photo URL instead of local ID
+            console.log(`🔗 Updating site record: ${relatedId} ${photoType}`);
+            await this.updateSitePhotoUrl(relatedId, item.localId, photoUrl, photoType);
+            
+            console.log('🎉 Photo sync completed:', { 
+              relatedId, 
+              localId: item.localId, 
+              serverUrl: photoUrl,
+              photoType 
+            });
+            
           } catch (error) {
-            console.error('Failed to upload photo during sync:', error);
+            console.error('❌ Failed to upload photo during sync:', error);
+            // Re-throw so retry logic in main sync loop can handle it
             throw error;
           }
         }
@@ -1752,19 +1769,43 @@ export class OfflineDataService {
     }
   }
 
+  // Upload photo with retry logic (like other data sync)
+  async uploadPhotoToServerWithRetry(file: File, type: 'site_photo' | 'sediment_photo', relatedId: string, attemptNumber: number = 0): Promise<string | null> {
+    const maxRetries = 3;
+    const retryDelay = [1000, 2000, 5000][attemptNumber] || 5000; // Exponential backoff
+    
+    try {
+      console.log(`📤 Photo upload attempt ${attemptNumber + 1}/${maxRetries + 1}`);
+      return await this.uploadPhotoToServer(file, type, relatedId);
+    } catch (error) {
+      console.error(`💥 Photo upload attempt ${attemptNumber + 1} failed:`, error);
+      
+      if (attemptNumber < maxRetries) {
+        console.log(`⏳ Retrying photo upload in ${retryDelay}ms...`);
+        await new Promise(resolve => setTimeout(resolve, retryDelay));
+        return await this.uploadPhotoToServerWithRetry(file, type, relatedId, attemptNumber + 1);
+      } else {
+        console.error(`🚨 Photo upload failed after ${maxRetries + 1} attempts`);
+        throw error;
+      }
+    }
+  }
+
   async uploadPhotoToServer(file: File, type: 'site_photo' | 'sediment_photo', relatedId: string): Promise<string | null> {
     if (!this.checkOnline()) {
-      console.log('Cannot upload photo while offline');
-      return null;
+      throw new Error('Cannot upload photo while offline');
     }
 
     try {
+      console.log(`🔐 Checking authentication for photo upload...`);
       // Get user session for upload
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.user) {
-        throw new Error('User not authenticated');
+        throw new Error('User not authenticated - please log in again');
       }
+      console.log(`✅ User authenticated: ${session.user.id}`);
 
+      console.log(`📁 Loading storage upload function...`);
       // Import upload function dynamically to avoid circular dependencies
       const { uploadSitePhoto } = await import('./api/storage');
       
@@ -1772,21 +1813,34 @@ export class OfflineDataService {
       const storageType = type === 'sediment_photo' ? 'sedimentation' : 'site';
       
       // Upload to server
-      try {
-        const photoUrl = await uploadSitePhoto(relatedId, file, session.user.id, storageType);
-        console.log('Photo uploaded to server:', { type, relatedId, photoUrl });
-        return photoUrl;
-      } catch (storageError) {
-        // Handle storage-specific errors gracefully
-        console.error('Storage upload failed:', storageError);
-        if (storageError instanceof Error && storageError.message.includes('STORAGE_SETUP_REQUIRED')) {
-          console.log('Storage not configured - photo will remain offline until storage is set up');
-        }
-        return null;
+      console.log(`☁️ Uploading ${file.name} (${(file.size / 1024).toFixed(1)}KB) to storage...`);
+      const photoUrl = await uploadSitePhoto(relatedId, file, session.user.id, storageType);
+      
+      if (!photoUrl) {
+        throw new Error('Storage upload returned empty URL');
       }
+      
+      console.log('✅ Photo uploaded to server:', { type, relatedId, photoUrl });
+      return photoUrl;
+      
     } catch (error) {
-      console.error('Error uploading photo to server:', error);
-      return null;
+      console.error('💥 Error uploading photo to server:', error);
+      
+      // Handle specific error types
+      if (error instanceof Error) {
+        if (error.message.includes('STORAGE_SETUP_REQUIRED')) {
+          throw new Error('Storage bucket not configured - cannot upload photos');
+        }
+        if (error.message.includes('User not authenticated')) {
+          throw new Error('Authentication expired - please log in again');
+        }
+        if (error.message.includes('row-level security')) {
+          throw new Error('Storage permissions error - check RLS policies');
+        }
+      }
+      
+      // Re-throw the original error for retry logic
+      throw error;
     }
   }
 
