@@ -21,54 +21,83 @@ export default function AcceptInvitePage() {
   useEffect(() => {
     // Check authentication status and invite details
     const checkAuth = async () => {
+      console.log('🔍 [DEBUG] Initial auth check on page load', {
+        hasToken: !!token,
+        tokenType: typeof token,
+        timestamp: new Date().toISOString()
+      });
+      
       const { data: { user } } = await supabase.auth.getUser();
       setUser(user);
       
       if (!user) {
+        console.log('🔍 [DEBUG] No user found, showing auth required');
         setStatus('auth-required');
         return;
       }
+      
+      console.log('🔍 [DEBUG] User found, processing invite', {
+        userId: user.id,
+        userEmail: user.email,
+        token: typeof token === 'string' ? token.substring(0, 10) + '...' : token
+      });
       
       setUserEmail(user.email || '');
       
       // Check invite details first
       if (token && typeof token === 'string') {
-        try {
-          const inviteDetails = await getInviteDetails(token);
-          
-          if (!inviteDetails.valid) {
-            setStatus('error');
-            setMessage('This invite link is invalid or has expired');
-            return;
-          }
-          
-          setInviteEmail(inviteDetails.user_email);
-          
-          // Check for self-collaboration
-          if (inviteDetails.owner_id && inviteDetails.owner_id === user.id) {
-            setStatus('self-collaboration');
-            setMessage('You cannot collaborate with yourself on your own river walk');
-            return;
-          }
-          
-          // Check for email mismatch (only for specific email invites)
-          if (inviteDetails.user_email !== '*' && inviteDetails.user_email !== user.email) {
-            setStatus('email-mismatch');
-            setMessage(`This invite was sent to ${inviteDetails.user_email}, but you're signed in as ${user.email}`);
-            return;
-          }
-          
-          // Email matches or universal invite, proceed with acceptance
-          await handleAcceptInvite(token);
-        } catch (error) {
-          setStatus('error');
-          setMessage('Failed to check invite details');
-        }
+        await processInviteForUser(token, user);
       }
     };
 
     checkAuth();
   }, [token]);
+
+  // Separate function to process invite for a user
+  const processInviteForUser = async (inviteToken: string, user: any) => {
+    try {
+      console.log('🔍 [DEBUG] Processing invite for user', {
+        inviteToken: inviteToken.substring(0, 10) + '...',
+        userId: user.id,
+        userEmail: user.email
+      });
+      
+      const inviteDetails = await getInviteDetails(inviteToken);
+      
+      if (!inviteDetails.valid) {
+        console.log('🔍 [DEBUG] Invalid invite details');
+        setStatus('error');
+        setMessage('This invite link is invalid or has expired');
+        return;
+      }
+      
+      setInviteEmail(inviteDetails.user_email);
+      
+      // Check for self-collaboration
+      if (inviteDetails.owner_id && inviteDetails.owner_id === user.id) {
+        console.log('🔍 [DEBUG] Self-collaboration detected');
+        setStatus('self-collaboration');
+        setMessage('You cannot collaborate with yourself on your own river walk');
+        return;
+      }
+      
+      // Check for email mismatch (only for specific email invites)
+      if (inviteDetails.user_email !== '*' && inviteDetails.user_email !== user.email) {
+        console.log('🔍 [DEBUG] Email mismatch detected');
+        setStatus('email-mismatch');
+        setMessage(`This invite was sent to ${inviteDetails.user_email}, but you're signed in as ${user.email}`);
+        return;
+      }
+      
+      // Email matches or universal invite, proceed with acceptance
+      console.log('🔍 [DEBUG] Email matches, proceeding with invite acceptance');
+      await handleAcceptInvite(inviteToken);
+    } catch (error) {
+      console.error('🔍 [DEBUG] Error processing invite:', error);
+      setStatus('error');
+      setMessage('Failed to check invite details');
+    }
+  };
 
   // Listen for auth state changes
   useEffect(() => {
@@ -85,56 +114,25 @@ export default function AcceptInvitePage() {
         setUser(session.user);
         setUserEmail(session.user.email || '');
         
-        // Small delay to ensure auth is fully processed
+        // Small delay to ensure auth is fully processed, then process the invite
         setTimeout(async () => {
-          try {
-            console.log('🔍 [DEBUG] Getting invite details after sign-in...');
-            const inviteDetails = await getInviteDetails(token);
-            console.log('🔍 [DEBUG] Invite details received:', { 
-              valid: inviteDetails.valid,
-              userEmail: inviteDetails.user_email,
-              ownerId: inviteDetails.owner_id,
-              currentUserId: session.user.id
-            });
-            
-            if (!inviteDetails.valid) {
-              setStatus('error');
-              setMessage('This invite link is invalid or has expired');
-              return;
-            }
-            
-            setInviteEmail(inviteDetails.user_email);
-            
-            // Check for self-collaboration
-            if (inviteDetails.owner_id && inviteDetails.owner_id === session.user.id) {
-              console.log('🔍 [DEBUG] Self-collaboration detected');
-              setStatus('self-collaboration');
-              setMessage('You cannot collaborate with yourself on your own river walk');
-              return;
-            }
-            
-            // Check for email mismatch again
-            if (inviteDetails.user_email !== '*' && inviteDetails.user_email !== session.user.email) {
-              console.log('🔍 [DEBUG] Email mismatch detected');
-              setStatus('email-mismatch');
-              setMessage(`This invite was sent to ${inviteDetails.user_email}, but you're signed in as ${session.user.email}`);
-              return;
-            }
-            
-            // Email matches, proceed with acceptance
-            console.log('🔍 [DEBUG] Email matches, proceeding with invite acceptance');
-            await handleAcceptInvite(token);
-          } catch (error) {
-            console.error('🔍 [DEBUG] Error processing invite after sign-in:', error);
-            setStatus('error');
-            setMessage('Failed to check invite details');
-          }
+          console.log('🔍 [DEBUG] Processing invite after OAuth sign-in');
+          await processInviteForUser(token, session.user);
         }, 1000); // 1 second delay to ensure auth is fully processed
       }
     });
 
     return () => subscription.unsubscribe();
   }, [token]);
+
+  // Additional effect to handle cases where user arrives from OAuth redirect
+  // and auth state is already set but invite wasn't processed
+  useEffect(() => {
+    if (user && token && typeof token === 'string' && status === 'loading') {
+      console.log('🔍 [DEBUG] User already authenticated but invite not processed, retrying...');
+      processInviteForUser(token, user);
+    }
+  }, [user, token, status]);
 
   const handleAcceptInvite = async (inviteToken: string) => {
     if (!collaborationEnabled) {
