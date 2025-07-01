@@ -253,6 +253,24 @@ export class OfflineDataService {
               site.photo_url = null;
               await offlineDB.addSite(site);
               
+              // Also update the server record if we're online and have a server ID
+              if (this.checkOnline() && site.id && !site.id.startsWith('local_')) {
+                try {
+                  const { error } = await supabase
+                    .from('sites')
+                    .update({ photo_url: null })
+                    .eq('id', site.id);
+                  
+                  if (error) {
+                    console.error('Failed to clean up photo reference on server:', error);
+                  } else {
+                    console.log('Successfully cleaned up photo reference on server');
+                  }
+                } catch (error) {
+                  console.error('Error cleaning up photo reference on server:', error);
+                }
+              }
+              
               fixedPhotos.push({
                 siteId: site.id,
                 photoType: 'site_photo',
@@ -303,6 +321,24 @@ export class OfflineDataService {
               console.log('Cleaning up invalid sediment photo reference:', { siteId: site.id, photoLocalId });
               site.sedimentation_photo_url = null;
               await offlineDB.addSite(site);
+              
+              // Also update the server record if we're online and have a server ID
+              if (this.checkOnline() && site.id && !site.id.startsWith('local_')) {
+                try {
+                  const { error } = await supabase
+                    .from('sites')
+                    .update({ sedimentation_photo_url: null })
+                    .eq('id', site.id);
+                  
+                  if (error) {
+                    console.error('Failed to clean up sediment photo reference on server:', error);
+                  } else {
+                    console.log('Successfully cleaned up sediment photo reference on server');
+                  }
+                } catch (error) {
+                  console.error('Error cleaning up sediment photo reference on server:', error);
+                }
+              }
               
               fixedPhotos.push({
                 siteId: site.id,
