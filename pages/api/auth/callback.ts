@@ -5,7 +5,13 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  console.log('Auth callback received:', req.query);
+  console.log('Auth callback received:', {
+    query: req.query,
+    headers: {
+      referer: req.headers.referer,
+      referrer: req.headers.referrer
+    }
+  });
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -33,28 +39,8 @@ export default async function handler(
     }
   }
 
-  // Check for original redirect URL in the request
-  // Supabase typically preserves this in the 'next' parameter or referrer
-  let redirectUrl = '/river-walks'; // Default fallback
-  
-  // Check if this is a collaboration invite redirect
-  const referrer = req.headers.referer || req.headers.referrer;
-  if (referrer && typeof referrer === 'string' && referrer.includes('/invite/')) {
-    // Extract the invite token from referrer and redirect back to invite page
-    const inviteMatch = referrer.match(/\/invite\/([^?&#]+)/);
-    if (inviteMatch) {
-      redirectUrl = `/invite/${inviteMatch[1]}`;
-      console.log('Redirecting back to invite page:', redirectUrl);
-    }
-  }
-
-  // Check for explicit next parameter (some OAuth implementations use this)
-  const nextParam = req.query.next;
-  if (nextParam && typeof nextParam === 'string' && nextParam.includes('/invite/')) {
-    redirectUrl = nextParam;
-    console.log('Using next parameter for redirect:', redirectUrl);
-  }
-
-  console.log('Final redirect URL:', redirectUrl);
-  res.redirect(redirectUrl);
+  // Always redirect to river-walks after OAuth
+  // Any pending invite tokens will be processed automatically there
+  console.log('OAuth completed, redirecting to river-walks');
+  res.redirect('/river-walks');
 }

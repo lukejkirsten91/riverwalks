@@ -44,30 +44,14 @@ export default function AcceptInvitePage() {
       
       setUserEmail(user.email || '');
       
-      // Check for stored invite token from OAuth flow
-      const storedToken = localStorage.getItem('pending_invite_token');
-      let inviteToken = token;
-      
-      if (storedToken && (!token || !inviteToken)) {
-        console.log('🔍 [DEBUG] Found stored invite token from OAuth flow:', storedToken.substring(0, 10) + '...');
-        inviteToken = storedToken;
-        // Clean up stored token
-        localStorage.removeItem('pending_invite_token');
-        
-        // Update URL to reflect the correct token
-        if (typeof inviteToken === 'string') {
-          router.replace(`/invite/${inviteToken}`, undefined, { shallow: true });
-        }
-      }
-      
-      // Check invite details
-      if (inviteToken && typeof inviteToken === 'string') {
-        await processInviteForUser(inviteToken, user);
+      // Process the invite token from URL
+      if (token && typeof token === 'string') {
+        await processInviteForUser(token, user);
       }
     };
 
     checkAuth();
-  }, [token, router]);
+  }, [token]);
 
   // Separate function to process invite for a user
   const processInviteForUser = async (inviteToken: string, user: any) => {
@@ -115,58 +99,6 @@ export default function AcceptInvitePage() {
     }
   };
 
-  // Listen for auth state changes
-  useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('🔍 [DEBUG] Auth state change:', { event, hasSession: !!session, hasUser: !!session?.user, token });
-      
-      if (event === 'SIGNED_IN' && session?.user && token && typeof token === 'string') {
-        console.log('🔍 [DEBUG] Processing sign-in for invite:', { 
-          userId: session.user.id, 
-          userEmail: session.user.email,
-          token: typeof token === 'string' ? token.substring(0, 10) + '...' : token
-        });
-        
-        setUser(session.user);
-        setUserEmail(session.user.email || '');
-        
-        // Small delay to ensure auth is fully processed, then process the invite
-        setTimeout(async () => {
-          console.log('🔍 [DEBUG] Processing invite after OAuth sign-in');
-          
-          // Check for stored token first, then use URL token
-          const storedToken = localStorage.getItem('pending_invite_token');
-          let inviteToken = token;
-          
-          if (storedToken) {
-            console.log('🔍 [DEBUG] Using stored token from OAuth flow:', storedToken.substring(0, 10) + '...');
-            inviteToken = storedToken;
-            localStorage.removeItem('pending_invite_token');
-            
-            // Update URL to reflect the correct token
-            if (typeof inviteToken === 'string') {
-              router.replace(`/invite/${inviteToken}`, undefined, { shallow: true });
-            }
-          }
-          
-          if (inviteToken && typeof inviteToken === 'string') {
-            await processInviteForUser(inviteToken, session.user);
-          }
-        }, 1000); // 1 second delay to ensure auth is fully processed
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, [token]);
-
-  // Additional effect to handle cases where user arrives from OAuth redirect
-  // and auth state is already set but invite wasn't processed
-  useEffect(() => {
-    if (user && token && typeof token === 'string' && status === 'loading') {
-      console.log('🔍 [DEBUG] User already authenticated but invite not processed, retrying...');
-      processInviteForUser(token, user);
-    }
-  }, [user, token, status]);
 
   const handleAcceptInvite = async (inviteToken: string) => {
     if (!collaborationEnabled) {
@@ -205,15 +137,14 @@ export default function AcceptInvitePage() {
       console.log('🔍 [DEBUG] Stored invite token in localStorage:', token.substring(0, 10) + '...');
     }
     
-    const redirectUrl = `${window.location.origin}/invite/${token}`;
-    console.log('🔍 [DEBUG] Starting OAuth with redirect URL:', redirectUrl);
+    console.log('🔍 [DEBUG] Starting OAuth, will redirect to river-walks');
     
     supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: redirectUrl,
+        redirectTo: `${window.location.origin}/river-walks`,
         queryParams: {
-          prompt: 'select_account', // Force Google to show account selection
+          prompt: 'select_account',
           access_type: 'online'
         }
       }

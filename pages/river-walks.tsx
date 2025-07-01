@@ -96,10 +96,30 @@ export default function RiverWalksPage() {
         userId: session.user?.id,
         timestamp: new Date().toISOString()
       });
+
+      // Check for pending invite token from OAuth flow
+      const storedToken = localStorage.getItem('pending_invite_token');
+      if (storedToken && collaborationEnabled && acceptInvite) {
+        console.log('🔍 [DEBUG] RiverWalksPage: Processing stored invite token from OAuth');
+        localStorage.removeItem('pending_invite_token');
+        
+        try {
+          const result = await acceptInvite(storedToken);
+          if (result.success) {
+            showSuccess('Invite Accepted', 'You now have access to this river walk!');
+            await refetch(); // Refresh the river walks list
+          } else {
+            showError('Invite Failed', result.message);
+          }
+        } catch (error) {
+          console.error('Failed to process stored invite token:', error);
+          showError('Invite Failed', error instanceof Error ? error.message : 'Failed to accept invite');
+        }
+      }
     };
 
     checkUser();
-  }, [router]);
+  }, [router, collaborationEnabled, acceptInvite, showSuccess, showError, refetch]);
 
   // One-time sync queue cleanup (remove after deployment)
   useEffect(() => {
