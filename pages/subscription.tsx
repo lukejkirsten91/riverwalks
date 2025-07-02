@@ -61,15 +61,9 @@ const SubscriptionPage: React.FC = () => {
       const { error } = await stripe.redirectToCheckout({
         lineItems,
         mode: 'payment',
-        successUrl: `${window.location.origin}/subscription/success?session_id={CHECKOUT_SESSION_ID}`,
+        successUrl: `${window.location.origin}/subscription/success?session_id={CHECKOUT_SESSION_ID}&plan=${planType}&voucher=${discount?.code || ''}&discount=${discount ? (basePrice - finalPrice) : 0}`,
         cancelUrl: `${window.location.origin}/subscription`,
         customerEmail: undefined, // Will be collected by Stripe
-        metadata: {
-          planType: planType,
-          voucherCode: discount?.code || '',
-          originalPrice: basePrice.toString(),
-          discountApplied: discount ? (basePrice - finalPrice).toString() : '0',
-        },
       });
 
       if (error) {
