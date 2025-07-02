@@ -3,7 +3,7 @@ import { createServerSupabaseClient } from '@supabase/auth-helpers-nextjs';
 import { Database } from '@/types';
 
 // Admin email - only this user can manage vouchers
-const ADMIN_EMAIL = 'lukekirsten91@gmail.com';
+const ADMIN_EMAIL = 'luke.kirsten@gmail.com';
 
 async function isAdmin(supabase: any): Promise<boolean> {
   const { data: { user } } = await supabase.auth.getUser();

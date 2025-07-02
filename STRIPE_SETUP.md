@@ -185,7 +185,7 @@ const voucher = {
 
 ### Admin Access
 
-- ✅ **Email-based admin**: Only `lukekirsten91@gmail.com` can manage vouchers
+- ✅ **Email-based admin**: Only `luke.kirsten@gmail.com` can manage vouchers
 - ✅ **No admin UI exposure**: Admin endpoints require authentication
 - ✅ **Audit logging**: All admin actions logged
 

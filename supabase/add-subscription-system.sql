@@ -90,7 +90,7 @@ CREATE POLICY "Admin can manage vouchers" ON vouchers
     EXISTS (
       SELECT 1 FROM auth.users 
       WHERE auth.users.id = auth.uid() 
-      AND auth.users.email = 'lukekirsten91@gmail.com' -- Admin email
+      AND auth.users.email = 'luke.kirsten@gmail.com' -- Admin email
     )
   );
 
@@ -133,7 +133,7 @@ CREATE POLICY "Admin can view all voucher usage" ON voucher_usage
     EXISTS (
       SELECT 1 FROM auth.users 
       WHERE auth.users.id = auth.uid() 
-      AND auth.users.email = 'lukekirsten91@gmail.com'
+      AND auth.users.email = 'luke.kirsten@gmail.com'
     )
   );
 
@@ -176,7 +176,7 @@ CREATE POLICY "Admin can view all payment events" ON payment_events
     EXISTS (
       SELECT 1 FROM auth.users 
       WHERE auth.users.id = auth.uid() 
-      AND auth.users.email = 'lukekirsten91@gmail.com'
+      AND auth.users.email = 'luke.kirsten@gmail.com'
     )
   );
 
@@ -223,7 +223,7 @@ CREATE POLICY "Admin can manage GDPR requests" ON gdpr_requests
     EXISTS (
       SELECT 1 FROM auth.users 
       WHERE auth.users.id = auth.uid() 
-      AND auth.users.email = 'lukekirsten91@gmail.com'
+      AND auth.users.email = 'luke.kirsten@gmail.com'
     )
   );
 
@@ -379,11 +379,11 @@ CREATE TRIGGER update_gdpr_requests_updated_at
 INSERT INTO vouchers (code, discount_type, discount_value, max_uses, description, created_by)
 VALUES 
   ('LAUNCH50', 'percentage', 50, 100, '50% off launch promotion', 
-   (SELECT id FROM auth.users WHERE email = 'lukekirsten91@gmail.com' LIMIT 1)),
+   (SELECT id FROM auth.users WHERE email = 'luke.kirsten@gmail.com' LIMIT 1)),
   ('TEACHER100', 'percentage', 100, 50, '100% off for teachers', 
-   (SELECT id FROM auth.users WHERE email = 'lukekirsten91@gmail.com' LIMIT 1)),
+   (SELECT id FROM auth.users WHERE email = 'luke.kirsten@gmail.com' LIMIT 1)),
   ('FREEYEAR', 'fixed_amount', 199, 25, 'Free first year', 
-   (SELECT id FROM auth.users WHERE email = 'lukekirsten91@gmail.com' LIMIT 1))
+   (SELECT id FROM auth.users WHERE email = 'luke.kirsten@gmail.com' LIMIT 1))
 ON CONFLICT (code) DO NOTHING;
 
 -- Note: Run this script in your Supabase SQL editor
