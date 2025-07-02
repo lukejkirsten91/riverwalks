@@ -59,28 +59,42 @@ const SubscriptionPage: React.FC = () => {
         console.log('💸 No discount applied');
       }
 
-      // Create a custom line item with the discounted price
-      const lineItems = [{
-        price_data: {
-          currency: 'gbp',
-          product_data: {
-            name: `Riverwalks ${planType === 'yearly' ? 'Annual' : 'Lifetime'} Access`,
-            description: discount 
-              ? `${plans[planType].name} with ${discount.percentage}% discount (${discount.code})`
-              : plans[planType].name,
+      // Create line item - use predefined prices if no discount, custom price_data if discount
+      let lineItems;
+      
+      if (discount && finalPrice !== basePrice) {
+        // Use custom price_data for discounted prices
+        lineItems = [{
+          price_data: {
+            currency: 'gbp',
+            product_data: {
+              name: `Riverwalks ${planType === 'yearly' ? 'Annual' : 'Lifetime'} Access`,
+              description: `${plans[planType].name} with ${discount.percentage}% discount (${discount.code})`,
+            },
+            unit_amount: finalPrice,
           },
-          unit_amount: finalPrice,
-        },
-        quantity: 1,
-      }];
+          quantity: 1,
+        }];
+      } else {
+        // Use predefined price IDs for regular prices
+        lineItems = [{
+          price: plans[planType].priceId,
+          quantity: 1,
+        }];
+      }
 
       console.log('📦 Line items:', JSON.stringify(lineItems, null, 2));
+
+      const successUrl = `${window.location.origin}/subscription/success?session_id={CHECKOUT_SESSION_ID}&plan=${planType}${discount ? `&voucher=${encodeURIComponent(discount.code)}&discount=${basePrice - finalPrice}` : ''}`;
+      const cancelUrl = `${window.location.origin}/subscription`;
+      
+      console.log('🔗 URLs:', { successUrl, cancelUrl });
 
       const checkoutOptions = {
         lineItems: lineItems,
         mode: 'payment' as const,
-        successUrl: `${window.location.origin}/subscription/success?session_id={CHECKOUT_SESSION_ID}&plan=${planType}&voucher=${discount?.code || ''}&discount=${discount ? (basePrice - finalPrice) : 0}`,
-        cancelUrl: `${window.location.origin}/subscription`,
+        successUrl: successUrl,
+        cancelUrl: cancelUrl,
       };
 
       console.log('⚙️ Checkout options:', JSON.stringify(checkoutOptions, null, 2));
