@@ -324,7 +324,7 @@ BEGIN
     IF plan_type_input = 'yearly' THEN
       discount_amount := ROUND((199 * voucher_record.discount_value) / 100.0);
     ELSE -- lifetime
-      discount_amount := ROUND((350 * voucher_record.discount_value) / 100.0);
+      discount_amount := ROUND((349 * voucher_record.discount_value) / 100.0);
     END IF;
   ELSE -- fixed_amount
     discount_amount := voucher_record.discount_value;

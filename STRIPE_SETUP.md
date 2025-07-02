@@ -5,7 +5,7 @@ Complete guide for implementing Stripe payments in Riverwalks with voucher syste
 ## 🎯 Overview
 
 This setup implements:
-- **Two subscription plans**: £1.99/year and £3.50 lifetime
+- **Two subscription plans**: £1.99/year and £3.49 lifetime
 - **Voucher system**: Discounts up to 100% with admin management
 - **GDPR compliance**: Data export, account deletion, user rights
 - **Legal transparency**: Clear terms, easy cancellation, refund policies
@@ -42,7 +42,7 @@ This setup implements:
 **Product 2: Riverwalks Lifetime Access**
 - Name: "Riverwalks Lifetime Access" 
 - Description: "Lifetime access to Riverwalks for GCSE Geography students"
-- Price: £3.50 GBP (one-time payment)
+- Price: £3.49 GBP (one-time payment)
 
 > **Note**: We use one-time payments instead of subscriptions to simplify billing and cancellation for students.
 
