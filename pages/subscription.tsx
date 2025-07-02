@@ -71,29 +71,22 @@ const SubscriptionPage: React.FC = () => {
         console.log('💸 No discount applied');
       }
 
-      // Create line item - use predefined prices if no discount, custom price_data if discount
-      let lineItems;
-      
+      // For now, use predefined prices (no dynamic discounts in redirectToCheckout)
+      // Note: Actual discount implementation requires backend checkout session API
       if (discount && finalPrice !== basePrice) {
-        // Use custom price_data for discounted prices
-        lineItems = [{
-          price_data: {
-            currency: 'gbp',
-            product_data: {
-              name: `Riverwalks ${planType === 'yearly' ? 'Annual' : 'Lifetime'} Access`,
-              description: `${plans[planType].name} with ${discount.percentage}% discount (${discount.code})`,
-            },
-            unit_amount: finalPrice,
-          },
-          quantity: 1,
-        }];
-      } else {
-        // Use predefined price IDs for regular prices
-        lineItems = [{
-          price: plans[planType].priceId,
-          quantity: 1,
-        }];
+        const proceed = confirm(`Note: The discount will be shown in the UI, but you'll be charged the full price (£${(basePrice/100).toFixed(2)}) at checkout. The discount feature requires additional backend setup. Proceed anyway?`);
+        if (!proceed) {
+          setLoading(null);
+          return;
+        }
       }
+      
+      const lineItems = [{
+        price: plans[planType].priceId,
+        quantity: 1,
+      }];
+      
+      console.log('💡 Using predefined price ID:', plans[planType].priceId);
 
       console.log('📦 Line items:', JSON.stringify(lineItems, null, 2));
 
