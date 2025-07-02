@@ -87,6 +87,7 @@ const SubscriptionPage: React.FC = () => {
       }];
       
       console.log('💡 Using predefined price ID:', plans[planType].priceId);
+      console.log('🔄 Build timestamp:', new Date().toISOString());
 
       console.log('📦 Line items:', JSON.stringify(lineItems, null, 2));
 
