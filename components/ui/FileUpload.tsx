@@ -65,7 +65,7 @@ export function FileUpload({
     e.preventDefault();
     setDragOver(false);
 
-    if (disabled || loading || (!isOnline && !isOfflineCapable)) return;
+    if (disabled || loading || !isOnline) return;
 
     const file = e.dataTransfer.files[0];
     if (file) {
@@ -75,7 +75,7 @@ export function FileUpload({
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
-    if (!disabled && !loading && (isOnline || isOfflineCapable)) {
+    if (!disabled && !loading && isOnline) {
       setDragOver(true);
     }
   };
@@ -85,7 +85,7 @@ export function FileUpload({
   };
 
   const openFileDialog = () => {
-    if (!disabled && !loading && (isOnline || isOfflineCapable)) {
+    if (!disabled && !loading && isOnline) {
       fileInputRef.current?.click();
     }
   };
@@ -139,10 +139,8 @@ export function FileUpload({
             border-2 border-dashed rounded-lg p-6 text-center transition-all duration-200
             ${dragOver 
               ? 'border-primary bg-primary/5 cursor-pointer' 
-              : (!isOnline && !isOfflineCapable)
-              ? 'border-amber-300 bg-amber-50/50 cursor-not-allowed'
               : !isOnline
-              ? 'border-blue-300 bg-blue-50/50 cursor-pointer hover:border-blue-400 hover:bg-blue-100/50'
+              ? 'border-amber-300 bg-amber-50/50 cursor-not-allowed'
               : 'border-border hover:border-primary/50 hover:bg-muted/30 cursor-pointer'
             }
             ${disabled || loading ? 'opacity-50 cursor-not-allowed' : ''}
@@ -153,10 +151,8 @@ export function FileUpload({
               <Loader2 className="w-8 h-8 text-primary animate-spin" />
             ) : dragOver ? (
               <Upload className="w-8 h-8 text-primary" />
-            ) : !isOnline && !isOfflineCapable ? (
-              <CloudOff className="w-8 h-8 text-amber-600" />
             ) : !isOnline ? (
-              <CloudOff className="w-8 h-8 text-blue-600" />
+              <CloudOff className="w-8 h-8 text-amber-600" />
             ) : (
               <ImageIcon className="w-8 h-8 text-muted-foreground" />
             )}
@@ -167,19 +163,15 @@ export function FileUpload({
                   ? loadingText 
                   : dragOver 
                   ? 'Drop image here' 
-                  : !isOnline && !isOfflineCapable
-                  ? 'Photo upload unavailable offline'
                   : !isOnline
-                  ? 'Save photo (will upload when online)'
+                  ? 'Photo upload unavailable offline'
                   : uploadText}
               </p>
               {!loading && (
                 <>
                   <p className="text-muted-foreground text-sm mt-1">
-                    {!isOnline && !isOfflineCapable 
+                    {!isOnline
                       ? 'Connect to internet to upload photos'
-                      : !isOnline
-                      ? 'Photo will be saved locally and synced later'
                       : 'Click to browse or drag and drop'}
                   </p>
                   <p className="text-muted-foreground text-xs mt-1">
@@ -199,7 +191,7 @@ export function FileUpload({
         accept={accept}
         onChange={handleInputChange}
         className="hidden"
-        disabled={disabled || loading || (!isOnline && !isOfflineCapable)}
+        disabled={disabled || loading || !isOnline}
       />
 
       {/* Error display */}

@@ -43,12 +43,14 @@ export const SiteInfoForm = forwardRef<SiteInfoFormRef, SiteInfoFormProps>(({
   const {
     photoState,
     selectPhoto,
-    removePhoto,
     hasPhoto,
     isUploading: photoUploading,
     preview: sitePhotoPreview,
     isOfflinePhoto
   } = useOfflinePhoto('site_photo', site.id, site.photo_url);
+
+  // Track photo removal state
+  const [photoMarkedForRemoval, setPhotoMarkedForRemoval] = useState(false);
 
   // Map state
   const [showMap, setShowMap] = useState(false);
@@ -90,11 +92,12 @@ export const SiteInfoForm = forwardRef<SiteInfoFormRef, SiteInfoFormProps>(({
 
   const handleSitePhotoSelect = async (file: File) => {
     await selectPhoto(file);
+    setPhotoMarkedForRemoval(false); // Clear removal flag if new photo selected
     setHasUnsavedChanges(true);
   };
 
-  const handleSitePhotoRemove = async () => {
-    await removePhoto();
+  const handleSitePhotoRemove = () => {
+    setPhotoMarkedForRemoval(true);
     setHasUnsavedChanges(true);
   };
 
@@ -108,7 +111,7 @@ export const SiteInfoForm = forwardRef<SiteInfoFormRef, SiteInfoFormProps>(({
       isOfflinePhoto: true,
       photoUrl: photoState.photoUrl
     } : undefined;
-    await onSubmit(formData, photoFile, false, todoStatus, offlinePhotoInfo);
+    await onSubmit(formData, photoFile, photoMarkedForRemoval, todoStatus, offlinePhotoInfo);
     setHasUnsavedChanges(false);
   };
 
@@ -125,7 +128,7 @@ export const SiteInfoForm = forwardRef<SiteInfoFormRef, SiteInfoFormProps>(({
       isOfflinePhoto: true,
       photoUrl: photoState.photoUrl
     } : undefined;
-    await onSubmit(formData, photoFile, false, todoStatus, offlinePhotoInfo);
+    await onSubmit(formData, photoFile, photoMarkedForRemoval, todoStatus, offlinePhotoInfo);
     setHasUnsavedChanges(false);
     setShowConfirmDialog(false);
     onCancel();
@@ -140,7 +143,7 @@ export const SiteInfoForm = forwardRef<SiteInfoFormRef, SiteInfoFormProps>(({
       isOfflinePhoto: true,
       photoUrl: photoState.photoUrl
     } : undefined;
-    await onSubmit(formData, photoFile, false, todoStatus, offlinePhotoInfo);
+    await onSubmit(formData, photoFile, photoMarkedForRemoval, todoStatus, offlinePhotoInfo);
     setHasUnsavedChanges(false);
     setShowConfirmDialog(false);
     onCancel();
@@ -324,12 +327,34 @@ export const SiteInfoForm = forwardRef<SiteInfoFormRef, SiteInfoFormProps>(({
             <FileUpload
               onFileSelect={handleSitePhotoSelect}
               onFileRemove={handleSitePhotoRemove}
-              currentImageUrl={sitePhotoPreview}
+              currentImageUrl={photoMarkedForRemoval ? null : sitePhotoPreview}
               disabled={loading || photoUploading}
               loading={photoUploading}
               loadingText="Saving site photo..."
               uploadText={isOfflinePhoto ? "📱 Site photo (offline)" : "Upload site photo"}
             />
+            {photoMarkedForRemoval && sitePhotoPreview && (
+              <div className="mt-2 p-3 bg-red-50 border border-red-200 rounded-lg">
+                <p className="text-red-700 text-sm font-medium mb-2">Photo marked for removal</p>
+                <div className="relative inline-block">
+                  <img
+                    src={sitePhotoPreview}
+                    alt="Photo to be removed"
+                    className="h-20 w-20 object-cover rounded-lg border border-red-300 opacity-60"
+                  />
+                  <div className="absolute inset-0 bg-red-500/20 rounded-lg flex items-center justify-center">
+                    <span className="text-red-600 text-xs font-bold">Will be deleted</span>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setPhotoMarkedForRemoval(false)}
+                  className="mt-2 text-sm text-red-600 hover:text-red-800 underline"
+                >
+                  Keep photo
+                </button>
+              </div>
+            )}
             {isOfflinePhoto && (
               <p className="text-sm text-blue-600 mt-2 flex items-center gap-1">
                 <span>📱</span>

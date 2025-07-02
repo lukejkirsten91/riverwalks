@@ -49,12 +49,14 @@ export function SedimentForm({
   const {
     photoState,
     selectPhoto,
-    removePhoto,
     hasPhoto,
     isUploading: photoUploading,
     preview: sedimentationPhotoPreview,
     isOfflinePhoto
   } = useOfflinePhoto('sediment_photo', site.id, site.sedimentation_photo_url);
+
+  // Track photo removal state
+  const [photoMarkedForRemoval, setPhotoMarkedForRemoval] = useState(false);
 
   // Track if form has been modified
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
@@ -114,11 +116,12 @@ export function SedimentForm({
 
   const handleSedimentationPhotoSelect = async (file: File) => {
     await selectPhoto(file);
+    setPhotoMarkedForRemoval(false); // Clear removal flag if new photo selected
     setHasUnsavedChanges(true);
   };
 
-  const handleSedimentationPhotoRemove = async () => {
-    await removePhoto();
+  const handleSedimentationPhotoRemove = () => {
+    setPhotoMarkedForRemoval(true);
     setHasUnsavedChanges(true);
   };
 
@@ -137,7 +140,7 @@ export function SedimentForm({
       sedimentationData,
       numSedimentationMeasurements,
       sedimentationUnits,
-      false, // removeSedimentationPhoto - handled by the photo hook now
+      photoMarkedForRemoval, // removeSedimentationPhoto
       todoStatus
     );
     setHasUnsavedChanges(false);
@@ -257,12 +260,34 @@ export function SedimentForm({
             <FileUpload
               onFileSelect={handleSedimentationPhotoSelect}
               onFileRemove={handleSedimentationPhotoRemove}
-              currentImageUrl={sedimentationPhotoPreview}
+              currentImageUrl={photoMarkedForRemoval ? null : sedimentationPhotoPreview}
               disabled={loading || photoUploading}
               loading={photoUploading}
               loadingText="Saving sediment photo..."
               uploadText={isOfflinePhoto ? "📱 Sediment photo (offline)" : "Upload sediment photo"}
             />
+            {photoMarkedForRemoval && sedimentationPhotoPreview && (
+              <div className="mt-2 p-3 bg-red-50 border border-red-200 rounded-lg">
+                <p className="text-red-700 text-sm font-medium mb-2">Photo marked for removal</p>
+                <div className="relative inline-block">
+                  <img
+                    src={sedimentationPhotoPreview}
+                    alt="Photo to be removed"
+                    className="h-20 w-20 object-cover rounded-lg border border-red-300 opacity-60"
+                  />
+                  <div className="absolute inset-0 bg-red-500/20 rounded-lg flex items-center justify-center">
+                    <span className="text-red-600 text-xs font-bold">Will be deleted</span>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setPhotoMarkedForRemoval(false)}
+                  className="mt-2 text-sm text-red-600 hover:text-red-800 underline"
+                >
+                  Keep photo
+                </button>
+              </div>
+            )}
             {isOfflinePhoto && (
               <p className="text-sm text-blue-600 mt-2 flex items-center gap-1">
                 <span>📱</span>
