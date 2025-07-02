@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { createServerSupabaseClient } from '@supabase/auth-helpers-nextjs';
-import { Database } from '@/types/database';
+import { Database } from '@/types';
 
 export default async function handler(
   req: NextApiRequest,
@@ -28,9 +28,11 @@ export default async function handler(
       return res.status(500).json({ error: 'Failed to fetch subscription status' });
     }
 
+    const status = subscriptionStatus as any;
+
     // Get detailed subscription info if user has one
     let subscriptionDetails = null;
-    if (subscriptionStatus.has_subscription) {
+    if (status.has_subscription) {
       const { data: details } = await supabase
         .from('subscriptions')
         .select('*')
@@ -42,11 +44,11 @@ export default async function handler(
     }
 
     res.status(200).json({
-      hasSubscription: subscriptionStatus.has_subscription,
-      planType: subscriptionStatus.plan_type,
-      status: subscriptionStatus.status,
-      expiresAt: subscriptionStatus.expires_at,
-      isTrial: subscriptionStatus.is_trial,
+      hasSubscription: status.has_subscription,
+      planType: status.plan_type,
+      status: status.status,
+      expiresAt: status.expires_at,
+      isTrial: status.is_trial,
       subscriptionDetails,
     });
 

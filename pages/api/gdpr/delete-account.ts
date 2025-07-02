@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { createClient } from '@supabase/supabase-js';
-import { Database } from '@/types/database';
+import { Database } from '@/types';
 import Stripe from 'stripe';
 
 // Use service role for admin operations
@@ -10,7 +10,7 @@ const supabaseAdmin = createClient<Database>(
 );
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2024-12-18.acacia',
+  apiVersion: '2025-06-30.basil',
 });
 
 export default async function handler(
@@ -156,32 +156,40 @@ async function deleteUserData(userId: string) {
   try {
     // Delete in order to handle foreign key constraints
     
-    // 1. Delete measurement points (child of sites)
-    await supabaseAdmin
-      .from('measurement_points')
-      .delete()
-      .in('site_id', 
-        supabaseAdmin
-          .from('sites')
-          .select('id')
-          .in('river_walk_id',
-            supabaseAdmin
-              .from('river_walks')
-              .select('id')
-              .eq('user_id', userId)
-          )
-      );
+    // 1. Get all river walk IDs for this user
+    const { data: riverWalks } = await supabaseAdmin
+      .from('river_walks')
+      .select('id')
+      .eq('user_id', userId);
+    
+    if (riverWalks && riverWalks.length > 0) {
+      const riverWalkIds = riverWalks.map(rw => rw.id);
+      
+      // Get all site IDs for these river walks
+      const { data: sites } = await supabaseAdmin
+        .from('sites')
+        .select('id')
+        .in('river_walk_id', riverWalkIds);
+      
+      if (sites && sites.length > 0) {
+        const siteIds = sites.map(s => s.id);
+        
+        // Delete measurement points
+        await supabaseAdmin
+          .from('measurement_points')
+          .delete()
+          .in('site_id', siteIds);
+      }
+    }
 
     // 2. Delete sites (child of river walks)
-    await supabaseAdmin
-      .from('sites')
-      .delete()
-      .in('river_walk_id',
-        supabaseAdmin
-          .from('river_walks')
-          .select('id')
-          .eq('user_id', userId)
-      );
+    if (riverWalks && riverWalks.length > 0) {
+      const riverWalkIds = riverWalks.map(rw => rw.id);
+      await supabaseAdmin
+        .from('sites')
+        .delete()
+        .in('river_walk_id', riverWalkIds);
+    }
 
     // 3. Delete river walks
     await supabaseAdmin

@@ -1,10 +1,10 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import Stripe from 'stripe';
 import { createClient } from '@supabase/supabase-js';
-import { Database } from '@/types/database';
+import { Database } from '@/types';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2024-12-18.acacia',
+  apiVersion: '2025-06-30.basil',
 });
 
 // Use service role key for webhook (bypasses RLS)
@@ -192,8 +192,8 @@ async function handleSubscriptionChange(subscription: Stripe.Subscription) {
     .update({
       stripe_subscription_id: subscription.id,
       status,
-      current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
-      current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
+      current_period_start: new Date((subscription as any).current_period_start * 1000).toISOString(),
+      current_period_end: new Date((subscription as any).current_period_end * 1000).toISOString(),
     })
     .eq('user_id', userSub.user_id);
 
@@ -269,10 +269,18 @@ async function recordVoucherUsage(
   });
 
   // Update voucher usage count
-  await supabase
+  const { data: currentVoucher } = await supabase
     .from('vouchers')
-    .update({ uses_count: supabase.sql`uses_count + 1` })
-    .eq('id', voucher.id);
+    .select('uses_count')
+    .eq('id', voucher.id)
+    .single();
+  
+  if (currentVoucher) {
+    await supabase
+      .from('vouchers')
+      .update({ uses_count: currentVoucher.uses_count + 1 })
+      .eq('id', voucher.id);
+  }
 }
 
 async function logPaymentEvent(event: Stripe.Event) {

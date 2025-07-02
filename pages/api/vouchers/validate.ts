@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { createServerSupabaseClient } from '@supabase/auth-helpers-nextjs';
-import { Database } from '@/types/database';
+import { Database } from '@/types';
 
 export default async function handler(
   req: NextApiRequest,
@@ -42,26 +42,27 @@ export default async function handler(
       return res.status(500).json({ error: 'Failed to validate voucher' });
     }
 
-    if (!validation.is_valid) {
+    const result = validation as any;
+    if (!result.is_valid) {
       return res.status(400).json({ 
-        error: validation.error_message || 'Invalid voucher code',
+        error: result.error_message || 'Invalid voucher code',
         isValid: false 
       });
     }
 
     // Calculate final price
     const basePrice = planType === 'yearly' ? 199 : 350; // in pence
-    const finalPrice = Math.max(0, basePrice - validation.final_discount_pence);
+    const finalPrice = Math.max(0, basePrice - result.final_discount_pence);
 
     res.status(200).json({
       isValid: true,
-      discountType: validation.discount_type,
-      discountValue: validation.discount_value,
-      discountAmountPence: validation.final_discount_pence,
+      discountType: result.discount_type,
+      discountValue: result.discount_value,
+      discountAmountPence: result.final_discount_pence,
       originalPricePence: basePrice,
       finalPricePence: finalPrice,
-      savedAmount: validation.final_discount_pence,
-      savedPercentage: Math.round((validation.final_discount_pence / basePrice) * 100),
+      savedAmount: result.final_discount_pence,
+      savedPercentage: Math.round((result.final_discount_pence / basePrice) * 100),
     });
 
   } catch (error) {

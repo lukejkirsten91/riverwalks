@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { createServerSupabaseClient } from '@supabase/auth-helpers-nextjs';
-import { Database } from '@/types/database';
+import { Database } from '@/types';
 
 export default async function handler(
   req: NextApiRequest,
