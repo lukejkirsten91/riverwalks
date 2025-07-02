@@ -59,10 +59,10 @@ const SubscriptionPage: React.FC = () => {
       }];
 
       const { error } = await stripe.redirectToCheckout({
-        line_items: lineItems,
+        lineItems: lineItems,
         mode: 'payment',
-        success_url: `${window.location.origin}/subscription/success?session_id={CHECKOUT_SESSION_ID}&plan=${planType}&voucher=${discount?.code || ''}&discount=${discount ? (basePrice - finalPrice) : 0}`,
-        cancel_url: `${window.location.origin}/subscription`,
+        successUrl: `${window.location.origin}/subscription/success?session_id={CHECKOUT_SESSION_ID}&plan=${planType}&voucher=${discount?.code || ''}&discount=${discount ? (basePrice - finalPrice) : 0}`,
+        cancelUrl: `${window.location.origin}/subscription`,
       });
 
       if (error) {
