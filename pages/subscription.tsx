@@ -34,19 +34,42 @@ const SubscriptionPage: React.FC = () => {
       const stripe = await stripePromise;
       if (!stripe) throw new Error('Stripe failed to load');
 
-      // For now, redirect directly to Stripe Checkout
-      // Later we'll add our API endpoint here
+      // Calculate the final price with discount
+      const basePrice = plans[planType].price;
+      let finalPrice = basePrice;
+      
+      if (discount) {
+        const discountAmount = Math.round((basePrice * discount.percentage) / 100);
+        finalPrice = Math.max(0, basePrice - discountAmount);
+      }
+
+      // Create a custom line item with the discounted price
+      const lineItems = [{
+        price_data: {
+          currency: 'gbp',
+          product_data: {
+            name: `Riverwalks ${planType === 'yearly' ? 'Annual' : 'Lifetime'} Access`,
+            description: discount 
+              ? `${plans[planType].name} with ${discount.percentage}% discount (${discount.code})`
+              : plans[planType].name,
+          },
+          unit_amount: finalPrice,
+        },
+        quantity: 1,
+      }];
+
       const { error } = await stripe.redirectToCheckout({
-        lineItems: [
-          {
-            price: plans[planType].priceId,
-            quantity: 1,
-          }
-        ],
+        lineItems,
         mode: 'payment',
         successUrl: `${window.location.origin}/subscription/success?session_id={CHECKOUT_SESSION_ID}`,
         cancelUrl: `${window.location.origin}/subscription`,
         customerEmail: undefined, // Will be collected by Stripe
+        metadata: {
+          planType: planType,
+          voucherCode: discount?.code || '',
+          originalPrice: basePrice.toString(),
+          discountApplied: discount ? (basePrice - finalPrice).toString() : '0',
+        },
       });
 
       if (error) {
