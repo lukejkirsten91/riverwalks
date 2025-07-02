@@ -350,13 +350,6 @@ export default function RiverWalksPage() {
 
             {/* Right side: Navigation and Profile */}
             <div className="flex items-center gap-3">
-              {/* Subscription Link */}
-              <Link href="/subscription">
-                <button className="px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors text-sm">
-                  Upgrade
-                </button>
-              </Link>
-              
               {user && (
                 <div className="relative flex-shrink-0" data-profile-dropdown>
                 {/* Profile button */}

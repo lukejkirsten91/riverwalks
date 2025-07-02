@@ -1,11 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Download, FileText, X, FileSpreadsheet } from 'lucide-react';
+import { Download, FileText, X, FileSpreadsheet, Crown } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import * as XLSX from 'xlsx';
 import { formatDate } from '../../lib/utils';
 import { supabase } from '../../lib/supabase';
+import { UpgradePrompt } from '../ui/UpgradePrompt';
+import { useSubscription, canAccessReports, canExportData } from '../../hooks/useSubscription';
 import type { RiverWalk, Site, MeasurementPoint } from '../../types';
 
 // Dynamically import Plotly to avoid SSR issues
@@ -22,8 +24,11 @@ interface ReportGeneratorProps {
 
 export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorProps) {
   const [isExporting, setIsExporting] = useState(false);
+  const [showUpgradePrompt, setShowUpgradePrompt] = useState<'reports' | 'export' | null>(null);
   const reportRef = useRef<HTMLDivElement>(null);
   
+  // Get subscription status
+  const subscription = useSubscription();
   
   // Detect if user is on mobile device
   const [isMobile, setIsMobile] = useState(false);
@@ -767,6 +772,7 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
   };
 
   return (
+    <>
     <div 
       className="bg-white rounded-lg w-full max-w-[95vw] sm:max-w-5xl lg:max-w-6xl max-h-[95vh] sm:max-h-[90vh] overflow-y-auto m-2 sm:m-0"
     >
@@ -783,34 +789,63 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
                 </div>
               </div>
               <div className="flex gap-1 sm:gap-2">
-                <button
-                  onClick={exportToPDF}
-                  disabled={isExporting}
-                  className="btn-primary flex items-center gap-1 sm:gap-2 disabled:opacity-50 text-xs sm:text-sm lg:text-base px-2 py-1 sm:px-3 sm:py-2 lg:px-4 lg:py-3 shrink-0"
-                >
-                  {isExporting ? (
-                    <>
-                      <div className="animate-spin w-3 h-3 sm:w-4 sm:h-4 border-2 border-white border-t-transparent rounded-full"></div>
-                      <span className="hidden sm:inline">Generating...</span>
-                      <span className="sm:hidden">Gen...</span>
-                    </>
-                  ) : (
-                    <>
-                      <Download className="w-3 h-3 sm:w-4 sm:h-4" />
-                      <span className="hidden sm:inline">Export PDF</span>
-                      <span className="sm:hidden">PDF</span>
-                    </>
-                  )}
-                </button>
-                <button
-                  onClick={exportToExcel}
-                  disabled={isExporting}
-                  className="btn-primary flex items-center gap-1 sm:gap-2 disabled:opacity-50 text-xs sm:text-sm lg:text-base px-2 py-1 sm:px-3 sm:py-2 lg:px-4 lg:py-3 shrink-0"
-                >
-                  <FileSpreadsheet className="w-3 h-3 sm:w-4 sm:h-4" />
-                  <span className="hidden sm:inline">Export Excel</span>
-                  <span className="sm:hidden">Excel</span>
-                </button>
+                {canAccessReports(subscription) ? (
+                  <button
+                    onClick={exportToPDF}
+                    disabled={isExporting}
+                    className="btn-primary flex items-center gap-1 sm:gap-2 disabled:opacity-50 text-xs sm:text-sm lg:text-base px-2 py-1 sm:px-3 sm:py-2 lg:px-4 lg:py-3 shrink-0"
+                  >
+                    {isExporting ? (
+                      <>
+                        <div className="animate-spin w-3 h-3 sm:w-4 sm:h-4 border-2 border-white border-t-transparent rounded-full"></div>
+                        <span className="hidden sm:inline">Generating...</span>
+                        <span className="sm:hidden">Gen...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Download className="w-3 h-3 sm:w-4 sm:h-4" />
+                        <span className="hidden sm:inline">Export PDF</span>
+                        <span className="sm:hidden">PDF</span>
+                      </>
+                    )}
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => setShowUpgradePrompt('reports')}
+                    className="bg-gradient-to-r from-blue-500 to-teal-500 hover:from-blue-600 hover:to-teal-600 text-white flex items-center gap-1 sm:gap-2 text-xs sm:text-sm lg:text-base px-2 py-1 sm:px-3 sm:py-2 lg:px-4 lg:py-3 shrink-0 rounded-lg font-medium transition-all relative"
+                  >
+                    <Crown className="w-3 h-3 sm:w-4 sm:h-4" />
+                    <span className="hidden sm:inline">Export PDF</span>
+                    <span className="sm:hidden">PDF</span>
+                    <div className="absolute -top-1 -right-1 bg-orange-500 text-white text-xs px-1 py-0.5 rounded-full">
+                      Pro
+                    </div>
+                  </button>
+                )}
+                
+                {canExportData(subscription) ? (
+                  <button
+                    onClick={exportToExcel}
+                    disabled={isExporting}
+                    className="btn-primary flex items-center gap-1 sm:gap-2 disabled:opacity-50 text-xs sm:text-sm lg:text-base px-2 py-1 sm:px-3 sm:py-2 lg:px-4 lg:py-3 shrink-0"
+                  >
+                    <FileSpreadsheet className="w-3 h-3 sm:w-4 sm:h-4" />
+                    <span className="hidden sm:inline">Export Excel</span>
+                    <span className="sm:hidden">Excel</span>
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => setShowUpgradePrompt('export')}
+                    className="bg-gradient-to-r from-blue-500 to-teal-500 hover:from-blue-600 hover:to-teal-600 text-white flex items-center gap-1 sm:gap-2 text-xs sm:text-sm lg:text-base px-2 py-1 sm:px-3 sm:py-2 lg:px-4 lg:py-3 shrink-0 rounded-lg font-medium transition-all relative"
+                  >
+                    <Crown className="w-3 h-3 sm:w-4 sm:h-4" />
+                    <span className="hidden sm:inline">Export Excel</span>
+                    <span className="sm:hidden">Excel</span>
+                    <div className="absolute -top-1 -right-1 bg-orange-500 text-white text-xs px-1 py-0.5 rounded-full">
+                      Pro
+                    </div>
+                  </button>
+                )}
               </div>
             </div>
             
@@ -2190,5 +2225,14 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
           </div>
         </div>
       </div>
+
+      {/* Upgrade Prompt Modal */}
+      {showUpgradePrompt && (
+        <UpgradePrompt
+          feature={showUpgradePrompt}
+          onClose={() => setShowUpgradePrompt(null)}
+        />
+      )}
+    </>
   );
 }
