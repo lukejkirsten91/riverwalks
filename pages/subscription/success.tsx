@@ -20,30 +20,30 @@ const SubscriptionSuccessPage: React.FC = () => {
   }, [session_id]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-teal-50 py-12 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 to-teal-50 py-6 sm:py-12 px-4">
       <div className="max-w-2xl mx-auto text-center">
         {/* Success Icon */}
-        <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-8">
-          <svg className="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="w-16 h-16 sm:w-20 sm:h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6 sm:mb-8">
+          <svg className="w-8 h-8 sm:w-10 sm:h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
           </svg>
         </div>
 
         {/* Success Message */}
-        <h1 className="text-4xl font-bold text-gray-900 mb-4">
+        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-3 sm:mb-4 px-2">
           Payment Successful! 🎉
         </h1>
         
-        <p className="text-xl text-gray-600 mb-8">
+        <p className="text-base sm:text-lg lg:text-xl text-gray-600 mb-6 sm:mb-8 px-2">
           Welcome to Riverwalks! Your subscription is now active.
         </p>
 
         {/* Payment Details */}
         {sessionDetails && (
-          <div className="bg-white rounded-lg shadow-lg p-6 mb-8 text-left">
-            <h3 className="text-lg font-semibold mb-4">Payment Details</h3>
-            <div className="space-y-2 text-gray-600">
-              <p><strong>Session ID:</strong> {sessionDetails.id}</p>
+          <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6 mb-6 sm:mb-8 text-left">
+            <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4">Payment Details</h3>
+            <div className="space-y-2 text-gray-600 text-sm sm:text-base">
+              <p><strong>Session ID:</strong> <span className="break-all">{sessionDetails.id}</span></p>
               <p><strong>Amount:</strong> £{(sessionDetails.amount_total / 100).toFixed(2)}</p>
               <p><strong>Status:</strong> <span className="text-green-600 font-medium">Completed</span></p>
             </div>
@@ -51,45 +51,45 @@ const SubscriptionSuccessPage: React.FC = () => {
         )}
 
         {/* Next Steps */}
-        <div className="bg-blue-50 rounded-lg p-6 mb-8">
-          <h3 className="text-lg font-semibold text-blue-900 mb-4">What's Next?</h3>
-          <ul className="text-left space-y-2 text-blue-800">
-            <li className="flex items-center">
-              <span className="w-5 h-5 bg-blue-200 text-blue-700 rounded-full flex items-center justify-center text-sm mr-3">1</span>
+        <div className="bg-blue-50 rounded-lg p-4 sm:p-6 mb-6 sm:mb-8">
+          <h3 className="text-base sm:text-lg font-semibold text-blue-900 mb-3 sm:mb-4">What's Next?</h3>
+          <ul className="text-left space-y-2 sm:space-y-3 text-blue-800">
+            <li className="flex items-center text-sm sm:text-base">
+              <span className="w-5 h-5 bg-blue-200 text-blue-700 rounded-full flex items-center justify-center text-sm mr-3 flex-shrink-0">1</span>
               Start documenting your river studies
             </li>
-            <li className="flex items-center">
-              <span className="w-5 h-5 bg-blue-200 text-blue-700 rounded-full flex items-center justify-center text-sm mr-3">2</span>
+            <li className="flex items-center text-sm sm:text-base">
+              <span className="w-5 h-5 bg-blue-200 text-blue-700 rounded-full flex items-center justify-center text-sm mr-3 flex-shrink-0">2</span>
               Generate professional PDF reports
             </li>
-            <li className="flex items-center">
-              <span className="w-5 h-5 bg-blue-200 text-blue-700 rounded-full flex items-center justify-center text-sm mr-3">3</span>
+            <li className="flex items-center text-sm sm:text-base">
+              <span className="w-5 h-5 bg-blue-200 text-blue-700 rounded-full flex items-center justify-center text-sm mr-3 flex-shrink-0">3</span>
               Export data for further analysis
             </li>
-            <li className="flex items-center">
-              <span className="w-5 h-5 bg-blue-200 text-blue-700 rounded-full flex items-center justify-center text-sm mr-3">4</span>
+            <li className="flex items-center text-sm sm:text-base">
+              <span className="w-5 h-5 bg-blue-200 text-blue-700 rounded-full flex items-center justify-center text-sm mr-3 flex-shrink-0">4</span>
               Collaborate with classmates if needed
             </li>
           </ul>
         </div>
 
         {/* Action Buttons */}
-        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center px-2">
           <Link href="/river-walks" className="inline-block">
-            <button className="w-full sm:w-auto px-8 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors">
+            <button className="w-full sm:w-auto px-6 sm:px-8 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors min-h-[48px] touch-manipulation">
               Start Using Riverwalks
             </button>
           </Link>
           
           <Link href="/" className="inline-block">
-            <button className="w-full sm:w-auto px-8 py-3 bg-gray-200 text-gray-700 font-semibold rounded-lg hover:bg-gray-300 transition-colors">
+            <button className="w-full sm:w-auto px-6 sm:px-8 py-3 bg-gray-200 text-gray-700 font-semibold rounded-lg hover:bg-gray-300 transition-colors min-h-[48px] touch-manipulation">
               Return to Home
             </button>
           </Link>
         </div>
 
         {/* Support Information */}
-        <div className="mt-12 text-sm text-gray-500">
+        <div className="mt-8 sm:mt-12 text-xs sm:text-sm text-gray-500 px-4">
           <p className="mb-2">
             Need help? Contact us at support@riverwalks.co.uk
           </p>
