@@ -31,16 +31,32 @@ const SubscriptionPage: React.FC = () => {
     setLoading(planType);
     
     try {
+      console.log('🚀 Starting checkout for plan:', planType);
+      
       const stripe = await stripePromise;
-      if (!stripe) throw new Error('Stripe failed to load');
+      if (!stripe) {
+        console.error('❌ Stripe failed to load');
+        throw new Error('Stripe failed to load');
+      }
+      console.log('✅ Stripe loaded successfully');
 
       // Calculate the final price with discount
       const basePrice = plans[planType].price;
       let finalPrice = basePrice;
       
+      console.log('💰 Base price:', basePrice, 'pence');
+      
       if (discount) {
         const discountAmount = Math.round((basePrice * discount.percentage) / 100);
         finalPrice = Math.max(0, basePrice - discountAmount);
+        console.log('🎯 Discount applied:', {
+          code: discount.code,
+          percentage: discount.percentage,
+          discountAmount,
+          finalPrice
+        });
+      } else {
+        console.log('💸 No discount applied');
       }
 
       // Create a custom line item with the discounted price
@@ -58,20 +74,29 @@ const SubscriptionPage: React.FC = () => {
         quantity: 1,
       }];
 
-      const { error } = await stripe.redirectToCheckout({
+      console.log('📦 Line items:', JSON.stringify(lineItems, null, 2));
+
+      const checkoutOptions = {
         lineItems: lineItems,
-        mode: 'payment',
+        mode: 'payment' as const,
         successUrl: `${window.location.origin}/subscription/success?session_id={CHECKOUT_SESSION_ID}&plan=${planType}&voucher=${discount?.code || ''}&discount=${discount ? (basePrice - finalPrice) : 0}`,
         cancelUrl: `${window.location.origin}/subscription`,
-      });
+      };
+
+      console.log('⚙️ Checkout options:', JSON.stringify(checkoutOptions, null, 2));
+
+      const { error } = await stripe.redirectToCheckout(checkoutOptions);
 
       if (error) {
-        console.error('Stripe checkout error:', error);
-        alert('Failed to redirect to checkout. Please try again.');
+        console.error('❌ Stripe checkout error:', error);
+        alert(`Stripe checkout failed: ${error.message || 'Unknown error'}`);
+      } else {
+        console.log('✅ Checkout initiated successfully');
       }
     } catch (error) {
-      console.error('Checkout error:', error);
-      alert('Something went wrong. Please try again.');
+      console.error('💥 Checkout error:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      alert(`Something went wrong: ${errorMessage}`);
     } finally {
       setLoading(null);
     }
