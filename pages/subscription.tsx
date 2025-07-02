@@ -3,7 +3,14 @@ import { loadStripe } from '@stripe/stripe-js';
 import { useRouter } from 'next/router';
 
 // Initialize Stripe
-const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
+const stripeKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
+console.log('🔑 Stripe publishable key:', stripeKey ? `Found: ${stripeKey.substring(0, 12)}...` : 'Missing');
+
+if (!stripeKey) {
+  console.error('❌ NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY is not set');
+}
+
+const stripePromise = stripeKey ? loadStripe(stripeKey) : null;
 
 const SubscriptionPage: React.FC = () => {
   const [loading, setLoading] = useState<string | null>(null);
@@ -32,6 +39,11 @@ const SubscriptionPage: React.FC = () => {
     
     try {
       console.log('🚀 Starting checkout for plan:', planType);
+      
+      if (!stripePromise) {
+        console.error('❌ Stripe not initialized - missing publishable key');
+        throw new Error('Stripe configuration error - missing publishable key');
+      }
       
       const stripe = await stripePromise;
       if (!stripe) {
