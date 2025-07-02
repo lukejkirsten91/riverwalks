@@ -298,17 +298,26 @@ Riverwalks is a web application designed primarily for GCSE Geography students t
 - ✅ **Photo Persistence Fix**: Resolved issue where photos remained after marking sites complete and using red arrow removal
 - ✅ **Enhanced Error Handling**: Improved photo upload/removal error handling with proper user feedback
 
+#### **Photo Upload Simplification (July 2, 2025) - COMPLETED**
+- ✅ **Disabled Offline Photo Upload**: Completely disabled photo upload when offline to eliminate complex sync issues
+- ✅ **Fixed Red Cross Removal**: Red cross now marks photos for deletion rather than immediately removing them
+- ✅ **Visual Deletion Indicators**: Photos marked for removal show clear visual feedback with "Will be deleted" overlay
+- ✅ **Keep Photo Option**: Users can unmark photos for deletion before saving
+- ✅ **Proper Supabase Deletion**: Photos are deleted from storage when saving after marking for removal
+- ✅ **Consistent Behavior**: Applied same logic to both SiteInfoForm and SedimentForm
+
 #### **Technical Implementation (July 2, 2025):**
-- **removeOnlinePhoto() Function**: New method in offlineDataService.ts that properly handles online photo deletion from both storage and database
-- **Sync Verification**: Added verification step after photo URL updates to ensure successful completion and prevent orphans
-- **Auto-Fix During Sync**: Integrated orphan detection and fixing directly into sync completion process
-- **Enhanced useOfflinePhoto Hook**: Updated to properly handle online photo removal instead of just logging to console
+- **Simplified Photo Handling**: Removed complex offline photo sync in favor of online-only uploads
+- **Photo Removal State**: Added `photoMarkedForRemoval` state tracking in forms
+- **FileUpload Component**: Updated to disable upload when offline and show clear messaging
+- **Form Submission**: Updated to pass removal flags to backend for proper deletion
+- **Backend Integration**: Existing deletion logic in EnhancedSiteManagement properly handles removal flags
 
 #### **Issue Resolution:**
-- **Problem**: Photos uploaded offline becoming orphaned during sync, photos persisting after removal attempts
-- **Root Cause**: Multi-step photo sync process created failure points where photo files uploaded but site records weren't updated
-- **Solution**: Added verification, retry logic, and automatic orphan cleanup to photo sync process
-- **Result**: Photos now sync reliably and remove properly, eliminating orphaned photo issues
+- **Problem**: Complex offline photo sync causing orphaned photos, red cross not actually removing photos
+- **Root Cause**: Multi-step photo sync process and immediate removal without form save integration
+- **Solution**: Simplified to online-only uploads with mark-for-deletion pattern
+- **Result**: Photos are reliably uploaded and removed, with clear user feedback and proper Supabase integration
 
 #### **Latest UX Improvements (June 27, 2025) - COMPLETED**
 - ✅ **Smooth Morph Animations**: Added dialog animations for Leave Form confirmation with scale and slide effects

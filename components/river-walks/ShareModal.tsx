@@ -73,48 +73,13 @@ export function ShareModal({ riverWalk, isOpen, onClose }: ShareModalProps) {
   };
 
   const handleCreateInvite = async () => {
-    console.log('🔍 [DEBUG] ShareModal.handleCreateInvite: Starting invite creation', {
-      useSpecificEmail,
-      specificEmail: specificEmail ? '[EMAIL_PROVIDED]' : '[NO_EMAIL]',
-      inviteRole,
-      timestamp: new Date().toISOString()
-    });
-    
     try {
       clearError();
       const email = useSpecificEmail && specificEmail.trim() ? specificEmail.trim() : '*';
-      
-      console.log('🔍 [DEBUG] ShareModal.handleCreateInvite: About to call createInvite API', {
-        email: email === '*' ? 'WILDCARD' : '[EMAIL_PROVIDED]',
-        role: inviteRole
-      });
-      
       const result = await createInvite(email, inviteRole);
       
-      console.log('🔍 [DEBUG] ShareModal.handleCreateInvite: API call successful', {
-        hasInviteToken: !!result.invite_token,
-        hasInviteUrl: !!result.invite_url,
-        tokenLength: result.invite_token ? result.invite_token.length : 0,
-        urlLength: result.invite_url ? result.invite_url.length : 0
-      });
-      
-      // Copy to clipboard with enhanced fallback
-      console.log('🔍 [DEBUG] ShareModal.handleCreateInvite: About to copy to clipboard', {
-        clipboardSupported: !!navigator.clipboard,
-        isSecureContext: !!window.isSecureContext,
-        urlToWrite: result.invite_url
-      });
-      
       const copySuccess = await copyToClipboard(result.invite_url);
-      
-      if (copySuccess) {
-        console.log('🔍 [DEBUG] ShareModal.handleCreateInvite: Clipboard copy successful');
-        setCopiedToken(result.invite_token);
-      } else {
-        console.error('🔍 [DEBUG] ShareModal.handleCreateInvite: All clipboard methods failed');
-        // Still show as copied for UI, but user can manually copy
-        setCopiedToken(result.invite_token);
-      }
+      setCopiedToken(result.invite_token);
       
       // Clear form
       setSpecificEmail('');
@@ -122,40 +87,16 @@ export function ShareModal({ riverWalk, isOpen, onClose }: ShareModalProps) {
       
       // Auto-clear copied state after 3 seconds
       setTimeout(() => setCopiedToken(null), 3000);
-      
-      console.log('🔍 [DEBUG] ShareModal.handleCreateInvite: Invite creation process completed successfully');
     } catch (err) {
-      console.error('🔍 [DEBUG] ShareModal.handleCreateInvite: API call failed', {
-        error: err,
-        errorName: err instanceof Error ? err.name : 'unknown',
-        errorMessage: err instanceof Error ? err.message : String(err),
-        errorStack: err instanceof Error ? err.stack : undefined
-      });
       console.error('Failed to create invite:', err);
+      // Error will be handled by the useCollaboration hook
     }
   };
 
   const handleCopyLink = async (url: string, token: string) => {
-    console.log('🔍 [DEBUG] ShareModal.handleCopyLink: Starting clipboard copy', {
-      hasUrl: !!url,
-      hasToken: !!token,
-      urlLength: url ? url.length : 0,
-      clipboardSupported: !!navigator.clipboard,
-      isSecureContext: !!window.isSecureContext
-    });
-    
     const copySuccess = await copyToClipboard(url);
-    
-    if (copySuccess) {
-      console.log('🔍 [DEBUG] ShareModal.handleCopyLink: Clipboard copy successful');
-      setCopiedToken(token);
-      setTimeout(() => setCopiedToken(null), 3000);
-    } else {
-      console.error('🔍 [DEBUG] ShareModal.handleCopyLink: All clipboard methods failed');
-      // Still show as copied for UI feedback
-      setCopiedToken(token);
-      setTimeout(() => setCopiedToken(null), 3000);
-    }
+    setCopiedToken(token);
+    setTimeout(() => setCopiedToken(null), 3000);
   };
 
   const handleRevokeAccess = async (collaboratorId: string) => {

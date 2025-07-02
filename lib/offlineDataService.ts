@@ -65,7 +65,6 @@ export class OfflineDataService {
       
       // Enhanced online detection
       const handleOnline = () => {
-        console.log('🌐 Browser detected online - triggering sync');
         this.isOnline = true;
         // Small delay to ensure network is actually ready
         setTimeout(() => {
@@ -74,7 +73,6 @@ export class OfflineDataService {
       };
       
       const handleOffline = () => {
-        console.log('📵 Browser detected offline');
         this.isOnline = false;
       };
       
@@ -83,7 +81,6 @@ export class OfflineDataService {
       
       // Additional sync triggers for better reliability
       window.addEventListener('focus', () => {
-        console.log('🔍 Window focus - checking for sync');
         if (this.checkOnline()) {
           this.syncWhenOnline();
         }
@@ -92,7 +89,6 @@ export class OfflineDataService {
       // Sync on page visibility change (user switches back to tab)
       document.addEventListener('visibilitychange', () => {
         if (!document.hidden && this.checkOnline()) {
-          console.log('👁️ Page visible - checking for sync');
           this.syncWhenOnline();
         }
       });
@@ -126,7 +122,6 @@ export class OfflineDataService {
     try {
       const syncQueue = await offlineDB.getSyncQueue();
       if (syncQueue.length > 0) {
-        console.log('⏰ Periodic sync check found pending items - syncing now');
         await this.syncWhenOnline();
       }
     } catch (error) {
@@ -139,7 +134,6 @@ export class OfflineDataService {
     try {
       const syncQueue = await offlineDB.getSyncQueue();
       if (syncQueue.length > 0) {
-        console.log('⚡ Quick sync check found pending items - syncing now');
         await this.syncWhenOnline();
       }
     } catch (error) {
@@ -190,7 +184,6 @@ export class OfflineDataService {
 
     try {
       await offlineDB.addToSyncQueue(queueItem);
-      console.log('Added to sync queue:', queueItem);
       
       // Verify the item was actually added
       const syncQueue = await offlineDB.getSyncQueue();
@@ -206,7 +199,6 @@ export class OfflineDataService {
 
   // Public method for manual sync trigger
   async manualSync(): Promise<{ success: boolean; message: string; details?: any }> {
-    console.log('🔄 Manual sync triggered');
     
     if (!this.checkOnline()) {
       return {
@@ -270,7 +262,6 @@ export class OfflineDataService {
     );
     
     if (!isQueued) {
-      console.warn('⚠️ Photo with local ID not found in sync queue:', localPhotoId);
     }
     
     return isQueued;
@@ -307,10 +298,8 @@ export class OfflineDataService {
       }
       
       if (orphanedPhotos.length > 0) {
-        console.warn('🚨 Detected orphaned photos after sync:', orphanedPhotos);
         // Could trigger user notification or automatic cleanup here
       } else {
-        console.log('✅ No orphaned photos detected after sync');
       }
     } catch (error) {
       console.error('Failed to detect orphaned photos:', error);
@@ -324,7 +313,6 @@ export class OfflineDataService {
     fixed: number;
     details?: any[];
   }> {
-    console.log('🔧 Scanning for orphaned local photo IDs...');
     
     if (!this.checkOnline()) {
       return {
@@ -345,7 +333,6 @@ export class OfflineDataService {
                (site.sedimentation_photo_url && site.sedimentation_photo_url.startsWith('local_'));
       });
 
-      console.log('Found sites with local photos:', sitesWithLocalPhotos.length);
       
       const fixedPhotos: any[] = [];
       
@@ -364,7 +351,6 @@ export class OfflineDataService {
             const photo = allPhotos.find((p: OfflinePhoto) => p.localId === photoLocalId);
             
             if (photo && photo.file) {
-              console.log('Queueing orphaned site photo:', { siteId: site.id, photoLocalId });
               
               // Add to sync queue
               await this.addToSyncQueue('CREATE', 'photos', {
@@ -379,15 +365,8 @@ export class OfflineDataService {
                 localId: photoLocalId
               });
             } else {
-              console.warn('Photo file not found for local ID:', photoLocalId, {
-                photoLocalId,
-                availablePhotos: allPhotos.map(p => ({ localId: p.localId, hasFile: !!p.file })),
-                foundPhoto: !!photo,
-                photoHasFile: photo ? !!photo.file : 'no photo'
-              });
               
               // Clean up the invalid photo reference
-              console.log('Cleaning up invalid site photo reference:', { siteId: site.id, photoLocalId });
               site.photo_url = null;
               await offlineDB.addSite(site);
               
@@ -402,7 +381,6 @@ export class OfflineDataService {
                   if (error) {
                     console.error('Failed to clean up photo reference on server:', error);
                   } else {
-                    console.log('Successfully cleaned up photo reference on server');
                   }
                 } catch (error) {
                   console.error('Error cleaning up photo reference on server:', error);
@@ -433,7 +411,6 @@ export class OfflineDataService {
             const photo = allPhotos.find((p: OfflinePhoto) => p.localId === photoLocalId);
             
             if (photo && photo.file) {
-              console.log('Queueing orphaned sediment photo:', { siteId: site.id, photoLocalId });
               
               // Add to sync queue
               await this.addToSyncQueue('CREATE', 'photos', {
@@ -448,15 +425,8 @@ export class OfflineDataService {
                 localId: photoLocalId
               });
             } else {
-              console.warn('Photo file not found for local ID:', photoLocalId, {
-                photoLocalId,
-                availablePhotos: allPhotos.map(p => ({ localId: p.localId, hasFile: !!p.file })),
-                foundPhoto: !!photo,
-                photoHasFile: photo ? !!photo.file : 'no photo'
-              });
               
               // Clean up the invalid photo reference
-              console.log('Cleaning up invalid sediment photo reference:', { siteId: site.id, photoLocalId });
               site.sedimentation_photo_url = null;
               await offlineDB.addSite(site);
               
@@ -471,7 +441,6 @@ export class OfflineDataService {
                   if (error) {
                     console.error('Failed to clean up sediment photo reference on server:', error);
                   } else {
-                    console.log('Successfully cleaned up sediment photo reference on server');
                   }
                 } catch (error) {
                   console.error('Error cleaning up sediment photo reference on server:', error);
@@ -491,7 +460,6 @@ export class OfflineDataService {
       
       // Trigger sync if we fixed any photos
       if (fixedPhotos.length > 0) {
-        console.log('Triggering sync for', fixedPhotos.length, 'orphaned photos');
         await this.syncWhenOnline();
       }
       
@@ -515,20 +483,16 @@ export class OfflineDataService {
   // Sync data when coming back online
   private async syncWhenOnline(): Promise<void> {
     if (!this.checkOnline()) {
-      console.log('Skipping sync - device is offline');
       return;
     }
 
-    console.log('🔄 Syncing offline data...');
     
     // Check if there's actually anything to sync
     const syncQueue = await offlineDB.getSyncQueue();
     if (syncQueue.length === 0) {
-      console.log('✅ No items in sync queue');
       return;
     }
     
-    console.log(`📤 Found ${syncQueue.length} items to sync`);
     
     try {
       // Trigger sync event for UI updates
@@ -546,7 +510,6 @@ export class OfflineDataService {
           // Increment attempts and remove if too many failures
           item.attempts++;
           if (item.attempts >= 3) {
-            console.warn('Removing item after 3 failed attempts:', item);
             await offlineDB.removeSyncQueueItem(item.id);
           } else {
             await offlineDB.updateSyncQueueItem(item);
@@ -563,7 +526,6 @@ export class OfflineDataService {
       // Check if there are any sites with local photo IDs that need fixing
       const syncStatus = await this.getSyncStatus();
       if (syncStatus.sitesWithLocalPhotos.length > 0) {
-        console.log('🔧 Auto-fixing orphaned photos detected after sync...');
         await this.fixOrphanedPhotos();
       }
       
@@ -571,7 +533,6 @@ export class OfflineDataService {
       window.dispatchEvent(new CustomEvent('riverwalks-data-changed'));
       
       window.dispatchEvent(new CustomEvent('riverwalks-sync-completed'));
-      console.log('Sync completed successfully');
       
     } catch (error) {
       console.error('Sync failed:', error);
@@ -677,7 +638,6 @@ export class OfflineDataService {
               .eq('id', data.id);
             
             if (error) throw error;
-            console.log('Site deleted from server:', data.id);
           }
         }
         break;
@@ -710,7 +670,6 @@ export class OfflineDataService {
               .eq('id', data.id);
             
             if (error) throw error;
-            console.log('Measurement point deleted from server:', data.id);
           }
         }
         break;
@@ -718,7 +677,6 @@ export class OfflineDataService {
       case 'photos':
         if (type === 'CREATE') {
           // Upload photo to server with robust retry logic
-          console.log(`📷 Processing photo sync: ${item.localId}`);
           
           try {
             const { file, type: photoType, relatedId } = data;
@@ -728,14 +686,12 @@ export class OfflineDataService {
               throw new Error(`Missing photo data: file=${!!file}, type=${photoType}, relatedId=${relatedId}`);
             }
             
-            console.log(`🔄 Uploading photo: ${photoType} for ${relatedId}`);
             const photoUrl = await this.uploadPhotoToServerWithRetry(file, photoType, relatedId, item.attempts || 0);
             
             if (!photoUrl) {
               throw new Error('Photo upload returned null URL');
             }
             
-            console.log(`✅ Photo uploaded successfully: ${photoUrl}`);
             
             // Mark the local photo as synced
             const allPhotos = await offlineDB.getAll<OfflinePhoto>('photos');
@@ -743,11 +699,9 @@ export class OfflineDataService {
             if (localPhoto) {
               localPhoto.synced = true;
               await offlineDB.addPhoto(localPhoto);
-              console.log(`📝 Marked local photo as synced: ${item.localId}`);
             }
             
             // Update the site record to use the server photo URL instead of local ID
-            console.log(`🔗 Updating site record: ${relatedId} ${photoType}`);
             await this.updateSitePhotoUrl(relatedId, item.localId, photoUrl, photoType);
             
             // Verify the update was successful to prevent orphans
@@ -755,7 +709,6 @@ export class OfflineDataService {
             const updatedSite = allSites.find(s => s.localId === relatedId || s.id === relatedId);
             const photoField = photoType === 'site_photo' ? 'photo_url' : 'sedimentation_photo_url';
             if (updatedSite && (updatedSite as any)[photoField] === item.localId) {
-              console.warn(`⚠️ Photo URL update verification failed for ${relatedId}. Retrying...`);
               await this.updateSitePhotoUrl(relatedId, item.localId, photoUrl, photoType);
             }
             
@@ -767,7 +720,6 @@ export class OfflineDataService {
             });
             
           } catch (error) {
-            console.error('❌ Failed to upload photo during sync:', error);
             // Re-throw so retry logic in main sync loop can handle it
             throw error;
           }
@@ -1729,9 +1681,7 @@ export class OfflineDataService {
         type,
         relatedId
       }, localId);
-      console.log('✅ Photo queued for sync:', { localId, type, relatedId });
     } catch (error) {
-      console.error('❌ Failed to queue photo for sync:', error);
       // This is critical - if we can't queue for sync, we shouldn't save the local ID
       throw new Error('Failed to queue photo for sync: ' + (error instanceof Error ? error.message : 'Unknown error'));
     }
@@ -1828,17 +1778,13 @@ export class OfflineDataService {
     const retryDelay = [1000, 2000, 5000][attemptNumber] || 5000; // Exponential backoff
     
     try {
-      console.log(`📤 Photo upload attempt ${attemptNumber + 1}/${maxRetries + 1}`);
       return await this.uploadPhotoToServer(file, type, relatedId);
     } catch (error) {
-      console.error(`💥 Photo upload attempt ${attemptNumber + 1} failed:`, error);
       
       if (attemptNumber < maxRetries) {
-        console.log(`⏳ Retrying photo upload in ${retryDelay}ms...`);
         await new Promise(resolve => setTimeout(resolve, retryDelay));
         return await this.uploadPhotoToServerWithRetry(file, type, relatedId, attemptNumber + 1);
       } else {
-        console.error(`🚨 Photo upload failed after ${maxRetries + 1} attempts`);
         throw error;
       }
     }
@@ -1850,15 +1796,12 @@ export class OfflineDataService {
     }
 
     try {
-      console.log(`🔐 Checking authentication for photo upload...`);
       // Get user session for upload
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.user) {
         throw new Error('User not authenticated - please log in again');
       }
-      console.log(`✅ User authenticated: ${session.user.id}`);
 
-      console.log(`📁 Loading storage upload function...`);
       // Import upload function dynamically to avoid circular dependencies
       const { uploadSitePhoto } = await import('./api/storage');
       
@@ -1866,18 +1809,15 @@ export class OfflineDataService {
       const storageType = type === 'sediment_photo' ? 'sedimentation' : 'site';
       
       // Upload to server
-      console.log(`☁️ Uploading ${file.name} (${(file.size / 1024).toFixed(1)}KB) to storage...`);
       const photoUrl = await uploadSitePhoto(relatedId, file, session.user.id, storageType);
       
       if (!photoUrl) {
         throw new Error('Storage upload returned empty URL');
       }
       
-      console.log('✅ Photo uploaded to server:', { type, relatedId, photoUrl });
       return photoUrl;
       
     } catch (error) {
-      console.error('💥 Error uploading photo to server:', error);
       
       // Handle specific error types
       if (error instanceof Error) {
@@ -2054,7 +1994,6 @@ export class OfflineDataService {
       }
     }
     
-    console.log(`✅ Cleared ${sitesToClear.length} sites from cache`);
   }
 }
 

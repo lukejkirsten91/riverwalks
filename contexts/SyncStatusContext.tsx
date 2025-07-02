@@ -32,12 +32,10 @@ export function SyncStatusProvider({ children }: SyncStatusProviderProps) {
   
   const [hasShownOfflineMessage, setHasShownOfflineMessage] = useState(false);
 
-  console.log('SyncStatusProvider instance, current syncStatus:', syncStatus);
 
   const updateSyncStatus = useCallback(async () => {
     try {
       const status = await offlineDataService.getSyncStatus();
-      console.log('Context updating sync status:', status);
       
       const wasOnline = syncStatus.isOnline;
       const isNowOffline = !status.isOnline;
@@ -122,7 +120,6 @@ export function SyncStatusProvider({ children }: SyncStatusProviderProps) {
 
     const handleDataChanged = () => {
       // Update sync status when data changes
-      console.log('Data changed event received - updating sync status');
       updateSyncStatus();
     };
 

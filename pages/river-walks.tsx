@@ -11,7 +11,6 @@ import {
 } from '../components/river-walks';
 import { ReportGenerator } from '../components/river-walks/ReportGenerator';
 import { ShareModal } from '../components/river-walks/ShareModal';
-import { DiagnosticPanel } from '../components/DiagnosticPanel';
 import { useOfflineRiverWalks } from '../hooks/useOfflineData';
 import { useCollaboration, useCollaborationFeatureFlag } from '../hooks/useCollaboration';
 import { useToast } from '../components/ui/ToastProvider';
@@ -26,14 +25,6 @@ export default function RiverWalksPage() {
   const { collaborationEnabled } = useCollaborationFeatureFlag();
   const { pendingInvites, acceptInvite } = useCollaboration();
   
-  // Debug logging for collaboration state
-  console.log('🔍 [DEBUG] RiverWalksPage: Collaboration state', {
-    collaborationEnabled,
-    pendingInvites,
-    pendingInvitesCount: pendingInvites?.length || 0,
-    shouldShowNotification: collaborationEnabled && pendingInvites && pendingInvites.length > 0,
-    timestamp: new Date().toISOString()
-  });
   const [user, setUser] = useState<User | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [currentRiverWalk, setCurrentRiverWalk] = useState<RiverWalk | null>(
@@ -90,32 +81,22 @@ export default function RiverWalksPage() {
       }
 
       setUser(session.user);
-      console.log('🔍 [DEBUG] RiverWalksPage: User authentication check', {
-        hasSession: !!session,
-        userEmail: session.user?.email,
-        userId: session.user?.id,
-        timestamp: new Date().toISOString()
-      });
 
       // Check for pending invite token from OAuth flow
       const storedToken = localStorage.getItem('pending_invite_token');
       if (storedToken && collaborationEnabled && acceptInvite) {
-        console.log('🔍 [DEBUG] RiverWalksPage: Processing stored invite token from OAuth flow');
         localStorage.removeItem('pending_invite_token');
         
         try {
-          console.log('🔍 [DEBUG] RiverWalksPage: Calling acceptInvite with stored token');
           const result = await acceptInvite(storedToken);
           if (result.success) {
-            console.log('🔍 [DEBUG] RiverWalksPage: Invite accepted successfully');
             showSuccess('Welcome to the Team!', 'You now have access to this river walk!');
             await refetch(); // Refresh the river walks list
           } else {
-            console.log('🔍 [DEBUG] RiverWalksPage: Invite acceptance failed:', result.message);
             showError('Invite Failed', result.message);
           }
         } catch (error) {
-          console.error('🔍 [DEBUG] RiverWalksPage: Error processing stored invite token:', error);
+          console.error('Error processing stored invite token:', error);
           showError('Invite Failed', error instanceof Error ? error.message : 'Failed to accept invite');
         }
       }
@@ -130,10 +111,8 @@ export default function RiverWalksPage() {
       try {
         const hasCleared = localStorage.getItem('riverwalks_sync_queue_cleared');
         if (!hasCleared) {
-          console.log('Performing one-time sync queue cleanup...');
           await offlineDataService.clearSyncQueue();
           localStorage.setItem('riverwalks_sync_queue_cleared', 'true');
-          console.log('✅ Sync queue cleared');
         }
       } catch (error) {
         console.error('Error during sync queue cleanup:', error);
@@ -196,7 +175,6 @@ export default function RiverWalksPage() {
       const riverWalk = activeRiverWalks.find(rw => rw.id === id);
       await archiveRiverWalk(id);
       showSuccess('River Walk Archived', `${riverWalk?.name || 'River walk'} has been archived.`);
-      console.log('River walk archived successfully:', id);
     } catch (error) {
       console.error('Failed to archive river walk:', error);
       showError('Archive Failed', error instanceof Error ? error.message : 'Failed to archive river walk');
@@ -212,7 +190,6 @@ export default function RiverWalksPage() {
       const riverWalk = archivedRiverWalks.find(rw => rw.id === id);
       await restoreRiverWalk(id);
       showSuccess('River Walk Restored', `${riverWalk?.name || 'River walk'} has been restored.`);
-      console.log('River walk restored successfully:', id);
     } catch (error) {
       console.error('Failed to restore river walk:', error);
       showError('Restore Failed', error instanceof Error ? error.message : 'Failed to restore river walk');
@@ -228,7 +205,6 @@ export default function RiverWalksPage() {
       const riverWalk = archivedRiverWalks.find(rw => rw.id === id);
       await deleteRiverWalk(id);
       showSuccess('River Walk Deleted', `${riverWalk?.name || 'River walk'} has been permanently deleted.`);
-      console.log('River walk deleted successfully:', id);
     } catch (error) {
       console.error('Failed to delete river walk:', error);
       showError('Delete Failed', error instanceof Error ? error.message : 'Failed to delete river walk');
@@ -401,17 +377,7 @@ export default function RiverWalksPage() {
 
 
         {/* Pending Invites Notification */}
-        {(() => {
-          const shouldShow = collaborationEnabled && pendingInvites && pendingInvites.length > 0;
-          console.log('🔍 [DEBUG] RiverWalksPage: Notification panel render check', {
-            collaborationEnabled,
-            hasPendingInvites: !!pendingInvites,
-            pendingInvitesLength: pendingInvites?.length || 0,
-            shouldShow,
-            timestamp: new Date().toISOString()
-          });
-          return shouldShow;
-        })() && (
+        {collaborationEnabled && pendingInvites && pendingInvites.length > 0 && (
           <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
             <div className="flex items-start gap-3">
               <div className="bg-blue-100 rounded-full p-2 flex-shrink-0">
@@ -437,33 +403,12 @@ export default function RiverWalksPage() {
                       </div>
                       <button
                         onClick={async () => {
-                          console.log('🔍 [DEBUG] RiverWalksPage: Accept button clicked', {
-                            inviteId: invite.id,
-                            inviteToken: invite.invite_token ? invite.invite_token.substring(0, 10) + '...' : null,
-                            inviteRole: invite.role,
-                            timestamp: new Date().toISOString()
-                          });
-                          
                           try {
-                            console.log('🔍 [DEBUG] RiverWalksPage: Calling acceptInvite');
                             const result = await acceptInvite(invite.invite_token);
-                            
-                            console.log('🔍 [DEBUG] RiverWalksPage: Accept successful', {
-                              success: result.success,
-                              message: result.message,
-                              riverWalkId: result.river_walk_id
-                            });
-                            
-                            console.log('🔍 [DEBUG] RiverWalksPage: Refreshing main river walks list');
                             await refetch();
-                            console.log('🔍 [DEBUG] RiverWalksPage: River walks list refreshed');
-                            
                             showSuccess('Invite Accepted', 'You now have access to this river walk!');
                           } catch (error) {
-                            console.error('🔍 [DEBUG] RiverWalksPage: Accept failed', {
-                              error: error,
-                              errorMessage: error instanceof Error ? error.message : String(error)
-                            });
+                            console.error('Failed to accept invite:', error);
                             showError('Accept Failed', error instanceof Error ? error.message : 'Failed to accept invite');
                           }
                         }}
@@ -702,8 +647,6 @@ export default function RiverWalksPage() {
         )}
       </div>
       
-      {/* Diagnostic Panel for debugging photo uploads */}
-      <DiagnosticPanel />
 
       {/* Profile dropdown portal - renders at top level */}
       {showProfileDropdown && dropdownPosition && typeof window !== 'undefined' && createPortal(

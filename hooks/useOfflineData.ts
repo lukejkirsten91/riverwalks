@@ -21,10 +21,6 @@ export function useOfflineRiverWalks() {
 
   // Real-time collaboration callback to update river walks when collaboration data changes
   const handleRealtimeUpdate = useCallback((freshRiverWalks: RiverWalk[]) => {
-    console.log('🔄 [REALTIME] Applying real-time river walks update', {
-      currentCount: riverWalks.length,
-      newCount: freshRiverWalks.length
-    });
     setRiverWalks(freshRiverWalks);
   }, [riverWalks.length]);
 
@@ -400,7 +396,6 @@ export function useOfflineSites(riverWalkId?: string) {
           filter: `river_walk_id=eq.${riverWalkId}`,
         },
         (payload) => {
-          console.log('🔄 [REALTIME] Site changed in river walk:', riverWalkId, payload);
           // Refresh sites when changes occur
           fetchSites();
         }
@@ -418,7 +413,6 @@ export function useOfflineSites(riverWalkId?: string) {
           table: 'measurement_points',
         },
         (payload) => {
-          console.log('🔄 [REALTIME] Measurement point changed:', payload);
           // Refresh sites to get updated measurement points
           fetchSites();
         }
