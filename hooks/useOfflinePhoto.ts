@@ -100,9 +100,9 @@ export function useOfflinePhoto(
         await offlineDataService.deletePhotoOffline(photoState.photoUrl, relatedId);
         showSuccess('Photo Removed', 'Photo successfully removed.');
       } else {
-        // For online photos, we'll handle deletion through the existing API
-        // This would need to be integrated with the form submission
-        console.log('Online photo deletion would be handled by form submission');
+        // For online photos, handle deletion immediately
+        await offlineDataService.removeOnlinePhoto(photoState.photoUrl, relatedId, type);
+        showSuccess('Photo Removed', 'Photo successfully removed.');
       }
 
       // Clean up preview URL
@@ -122,7 +122,7 @@ export function useOfflinePhoto(
       console.error('Failed to remove photo:', error);
       showError('Remove Failed', 'Failed to remove photo. Please try again.');
     }
-  }, [photoState, relatedId, showSuccess, showError]);
+  }, [photoState, relatedId, type, showSuccess, showError]);
 
   const getPhotoUrl = useCallback(async (photoId: string) => {
     if (!photoId || !relatedId) return null;

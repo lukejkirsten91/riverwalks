@@ -557,8 +557,15 @@ export class OfflineDataService {
       // Refresh local data from server
       await this.downloadLatestData();
       
-      // Check for any orphaned photos after sync
+      // Check for and automatically fix any orphaned photos after sync
       await this.detectAndReportOrphanedPhotos();
+      
+      // Check if there are any sites with local photo IDs that need fixing
+      const syncStatus = await this.getSyncStatus();
+      if (syncStatus.sitesWithLocalPhotos.length > 0) {
+        console.log('🔧 Auto-fixing orphaned photos detected after sync...');
+        await this.fixOrphanedPhotos();
+      }
       
       // Force sync status update before dispatching completion event
       window.dispatchEvent(new CustomEvent('riverwalks-data-changed'));
@@ -742,6 +749,15 @@ export class OfflineDataService {
             // Update the site record to use the server photo URL instead of local ID
             console.log(`🔗 Updating site record: ${relatedId} ${photoType}`);
             await this.updateSitePhotoUrl(relatedId, item.localId, photoUrl, photoType);
+            
+            // Verify the update was successful to prevent orphans
+            const allSites = await offlineDB.getAll<OfflineSite>('sites');
+            const updatedSite = allSites.find(s => s.localId === relatedId || s.id === relatedId);
+            const photoField = photoType === 'site_photo' ? 'photo_url' : 'sedimentation_photo_url';
+            if (updatedSite && (updatedSite as any)[photoField] === item.localId) {
+              console.warn(`⚠️ Photo URL update verification failed for ${relatedId}. Retrying...`);
+              await this.updateSitePhotoUrl(relatedId, item.localId, photoUrl, photoType);
+            }
             
             console.log('🎉 Photo sync completed:', { 
               relatedId, 
@@ -1766,6 +1782,43 @@ export class OfflineDataService {
     } catch (error) {
       console.error('Error deleting photo offline:', error);
       return false;
+    }
+  }
+
+  async removeOnlinePhoto(photoUrl: string, relatedId: string, photoType: 'site_photo' | 'sediment_photo'): Promise<void> {
+    try {
+      // Delete from storage
+      const { deleteSitePhoto } = await import('./api/storage');
+      await deleteSitePhoto(photoUrl);
+      
+      // Clear photo URL from site record
+      const photoField = photoType === 'site_photo' ? 'photo_url' : 'sedimentation_photo_url';
+      
+      // Update both local and server records
+      const allSites = await offlineDB.getAll<OfflineSite>('sites');
+      const site = allSites.find(s => s.localId === relatedId || s.id === relatedId);
+      if (site) {
+        (site as any)[photoField] = null;
+        await offlineDB.put('sites', site);
+        
+        // If online, also update server
+        if (this.isOnline && !site.id?.startsWith('local_')) {
+          const { error } = await supabase
+            .from('sites')
+            .update({ [photoField]: null })
+            .eq('id', site.id);
+          
+          if (error) {
+            console.error('Failed to update site on server:', error);
+            throw error;
+          }
+        }
+      }
+      
+      console.log('Online photo removed:', photoUrl);
+    } catch (error) {
+      console.error('Error removing online photo:', error);
+      throw new Error('Failed to remove photo');
     }
   }
 

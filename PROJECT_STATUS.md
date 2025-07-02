@@ -291,6 +291,25 @@ Riverwalks is a web application designed primarily for GCSE Geography students t
 
 ### ✅ **COMPREHENSIVE OFFLINE CAPABILITIES** (COMPLETED - JUNE 2025)
 
+#### **Photo Upload and Sync Fixes (July 2, 2025) - COMPLETED**
+- ✅ **Online Photo Removal**: Fixed photo removal when clicking red arrow - now properly deletes from storage and clears database references
+- ✅ **Orphaned Photo Prevention**: Added automatic verification and retry logic during photo sync to prevent local photo IDs from persisting
+- ✅ **Auto-Fix Integration**: Orphaned photo fix logic now runs automatically after every sync operation
+- ✅ **Photo Persistence Fix**: Resolved issue where photos remained after marking sites complete and using red arrow removal
+- ✅ **Enhanced Error Handling**: Improved photo upload/removal error handling with proper user feedback
+
+#### **Technical Implementation (July 2, 2025):**
+- **removeOnlinePhoto() Function**: New method in offlineDataService.ts that properly handles online photo deletion from both storage and database
+- **Sync Verification**: Added verification step after photo URL updates to ensure successful completion and prevent orphans
+- **Auto-Fix During Sync**: Integrated orphan detection and fixing directly into sync completion process
+- **Enhanced useOfflinePhoto Hook**: Updated to properly handle online photo removal instead of just logging to console
+
+#### **Issue Resolution:**
+- **Problem**: Photos uploaded offline becoming orphaned during sync, photos persisting after removal attempts
+- **Root Cause**: Multi-step photo sync process created failure points where photo files uploaded but site records weren't updated
+- **Solution**: Added verification, retry logic, and automatic orphan cleanup to photo sync process
+- **Result**: Photos now sync reliably and remove properly, eliminating orphaned photo issues
+
 #### **Latest UX Improvements (June 27, 2025) - COMPLETED**
 - ✅ **Smooth Morph Animations**: Added dialog animations for Leave Form confirmation with scale and slide effects
 - ✅ **Site Management Width Consistency**: Fixed width discrepancies across all site management views and forms
