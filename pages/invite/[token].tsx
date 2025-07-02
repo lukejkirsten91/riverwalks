@@ -21,26 +21,13 @@ export default function AcceptInvitePage() {
   useEffect(() => {
     // Check authentication status and invite details
     const checkAuth = async () => {
-      console.log('🔍 [DEBUG] Initial auth check on page load', {
-        hasToken: !!token,
-        tokenType: typeof token,
-        timestamp: new Date().toISOString()
-      });
-      
       const { data: { user } } = await supabase.auth.getUser();
       setUser(user);
       
       if (!user) {
-        console.log('🔍 [DEBUG] No user found, showing auth required');
         setStatus('auth-required');
         return;
       }
-      
-      console.log('🔍 [DEBUG] User found, processing invite', {
-        userId: user.id,
-        userEmail: user.email,
-        token: typeof token === 'string' ? token.substring(0, 10) + '...' : token
-      });
       
       setUserEmail(user.email || '');
       
@@ -56,16 +43,9 @@ export default function AcceptInvitePage() {
   // Separate function to process invite for a user
   const processInviteForUser = async (inviteToken: string, user: any) => {
     try {
-      console.log('🔍 [DEBUG] Processing invite for user', {
-        inviteToken: inviteToken.substring(0, 10) + '...',
-        userId: user.id,
-        userEmail: user.email
-      });
-      
       const inviteDetails = await getInviteDetails(inviteToken);
       
       if (!inviteDetails.valid) {
-        console.log('🔍 [DEBUG] Invalid invite details');
         setStatus('error');
         setMessage('This invite link is invalid or has expired');
         return;
@@ -75,7 +55,6 @@ export default function AcceptInvitePage() {
       
       // Check for self-collaboration
       if (inviteDetails.owner_id && inviteDetails.owner_id === user.id) {
-        console.log('🔍 [DEBUG] Self-collaboration detected');
         setStatus('self-collaboration');
         setMessage('You cannot collaborate with yourself on your own river walk');
         return;
@@ -83,22 +62,18 @@ export default function AcceptInvitePage() {
       
       // Check for email mismatch (only for specific email invites)
       if (inviteDetails.user_email !== '*' && inviteDetails.user_email !== user.email) {
-        console.log('🔍 [DEBUG] Email mismatch detected');
         setStatus('email-mismatch');
         setMessage(`This invite was sent to ${inviteDetails.user_email}, but you're signed in as ${user.email}`);
         return;
       }
       
       // Email matches or universal invite, proceed with acceptance
-      console.log('🔍 [DEBUG] Email matches, proceeding with invite acceptance');
-      
       try {
         setStatus('loading');
         const result = await acceptInvite(inviteToken);
         
         if (result.success) {
           // Immediately redirect to river-walks without showing success page
-          console.log('🔍 [DEBUG] Invite accepted, redirecting to river-walks');
           router.replace('/river-walks');
           return;
         } else {
@@ -110,12 +85,10 @@ export default function AcceptInvitePage() {
         setMessage(error instanceof Error ? error.message : 'An unexpected error occurred');
       }
     } catch (error) {
-      console.error('🔍 [DEBUG] Error processing invite:', error);
       setStatus('error');
       setMessage('Failed to check invite details');
     }
   };
-
 
   const handleAcceptInvite = async (inviteToken: string) => {
     if (!collaborationEnabled) {
@@ -145,10 +118,7 @@ export default function AcceptInvitePage() {
     // Store the current invite token in localStorage before OAuth
     if (token && typeof token === 'string') {
       localStorage.setItem('pending_invite_token', token);
-      console.log('🔍 [DEBUG] Stored invite token in localStorage:', token.substring(0, 10) + '...');
     }
-    
-    console.log('🔍 [DEBUG] Starting OAuth, will redirect directly to river-walks');
     
     supabase.auth.signInWithOAuth({
       provider: 'google',

@@ -84,11 +84,6 @@ export function useCollaboration(riverWalkId?: string) {
 
   // Fetch pending invites for current user
   const swrKey = collaborationEnabled ? 'user-pending-invites' : null;
-  console.log('🔍 [DEBUG] useCollaboration: SWR key for pending invites', {
-    collaborationEnabled,
-    swrKey,
-    timestamp: new Date().toISOString()
-  });
   
   const {
     data: pendingInvites,
@@ -97,26 +92,10 @@ export function useCollaboration(riverWalkId?: string) {
   } = useSWR(
     swrKey,
     async () => {
-      console.log('🔍 [DEBUG] useCollaboration: SWR fetcher called for pending invites', {
-        collaborationEnabled,
-        timestamp: new Date().toISOString()
-      });
-      
       try {
         const result = await getUserPendingInvites();
-        console.log('🔍 [DEBUG] useCollaboration: SWR fetcher result', {
-          success: true,
-          inviteCount: result.length,
-          invites: result.map(invite => ({
-            id: invite.id,
-            user_email: invite.user_email,
-            role: invite.role,
-            expires_at: invite.invite_expires_at
-          }))
-        });
         return result;
       } catch (error) {
-        console.error('🔍 [DEBUG] useCollaboration: SWR fetcher error', error);
         throw error;
       }
     },
@@ -124,13 +103,10 @@ export function useCollaboration(riverWalkId?: string) {
       revalidateOnFocus: false,
       dedupingInterval: 30000, // 30 seconds
       onSuccess: (data) => {
-        console.log('🔍 [DEBUG] useCollaboration: SWR onSuccess callback', {
-          inviteCount: data.length,
-          timestamp: new Date().toISOString()
-        });
+        // Success callback
       },
       onError: (error) => {
-        console.error('🔍 [DEBUG] useCollaboration: SWR onError callback', error);
+        // Error callback
       }
     }
   );
@@ -168,47 +144,25 @@ export function useCollaboration(riverWalkId?: string) {
 
   // Accept an invite using a token
   const acceptInvite = useCallback(async (token: string): Promise<AcceptInviteResult> => {
-    console.log('🔍 [DEBUG] useCollaboration.acceptInvite: Starting accept process', {
-      tokenPreview: token ? token.substring(0, 10) + '...' : null,
-      tokenLength: token ? token.length : 0,
-      timestamp: new Date().toISOString()
-    });
-
     setIsLoading(true);
     setError(null);
 
     try {
-      console.log('🔍 [DEBUG] useCollaboration.acceptInvite: Calling API function');
       const result = await acceptCollaborationInvite(token);
       
-      console.log('🔍 [DEBUG] useCollaboration.acceptInvite: API call successful', {
-        success: result.success,
-        message: result.message,
-        riverWalkId: result.river_walk_id,
-        hasRiverWalkId: !!result.river_walk_id
-      });
-      
       // Refresh accessible river walks and pending invites
-      console.log('🔍 [DEBUG] useCollaboration.acceptInvite: Refreshing data');
       await Promise.all([
         mutateAccessibleRiverWalks(),
         mutatePendingInvites()
       ]);
 
-      console.log('🔍 [DEBUG] useCollaboration.acceptInvite: Data refresh completed');
       return result;
     } catch (err) {
-      console.error('🔍 [DEBUG] useCollaboration.acceptInvite: Error occurred', {
-        error: err,
-        errorName: err instanceof Error ? err.name : 'unknown',
-        errorMessage: err instanceof Error ? err.message : String(err)
-      });
       const errorMessage = err instanceof Error ? err.message : 'Failed to accept invite';
       setError(errorMessage);
       throw err;
     } finally {
       setIsLoading(false);
-      console.log('🔍 [DEBUG] useCollaboration.acceptInvite: Process completed');
     }
   }, [mutateAccessibleRiverWalks, mutatePendingInvites]);
 
@@ -278,15 +232,6 @@ export function useCollaboration(riverWalkId?: string) {
   const combinedError = error || metadataError?.message || collaboratorsError?.message || 
                        accessError?.message || accessibleError?.message || pendingError?.message;
 
-  // Debug logging for the hook return values
-  console.log('🔍 [DEBUG] useCollaboration: Hook return values', {
-    collaborationEnabled,
-    pendingInvitesData: pendingInvites,
-    pendingInvitesCount: pendingInvites?.length || 0,
-    pendingError: pendingError?.message,
-    combinedError,
-    timestamp: new Date().toISOString()
-  });
 
   return {
     // Data

@@ -42,7 +42,6 @@ export function useCollaboratorInfo(riverWalks: RiverWalk[]) {
           return;
         }
 
-        console.log('🔍 [DEBUG] useCollaboratorInfo: Fetching collaborator info for:', ownedRiverWalkIds);
 
         // Fetch collaboration metadata and collaborators in one query
         const { data: collaboratorsData, error } = await supabase
@@ -62,7 +61,6 @@ export function useCollaboratorInfo(riverWalks: RiverWalk[]) {
           return;
         }
 
-        console.log('🔍 [DEBUG] useCollaboratorInfo: Fetched collaborators:', collaboratorsData);
 
         // Process the data into our map structure
         const infoMap = new Map<string, CollaboratorInfo>();
@@ -112,7 +110,6 @@ export function useCollaboratorInfo(riverWalks: RiverWalk[]) {
         });
 
         setCollaboratorInfo(infoMap);
-        console.log('🔍 [DEBUG] useCollaboratorInfo: Processed collaborator info:', infoMap);
         
       } catch (error) {
         console.error('Error in useCollaboratorInfo:', error);
