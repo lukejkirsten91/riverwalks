@@ -3,6 +3,7 @@ import { buffer } from 'micro';
 import Stripe from 'stripe';
 import { supabase } from '../../../lib/supabase';
 import { createClient } from '@supabase/supabase-js';
+import { getCurrentPrices, getStripeMode } from '../../../lib/stripe-config';
 
 // Create service role client for admin operations
 const supabaseAdmin = process.env.SUPABASE_SERVICE_ROLE_KEY 
@@ -155,28 +156,33 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     
     console.log('✅ Found user for subscription creation');
 
-    // Determine subscription type from price ID
+    // Determine subscription type from price ID using centralized config
     console.log('💰 Getting line items for session:', session.id);
     const lineItems = await stripe.checkout.sessions.listLineItems(session.id);
     const priceId = lineItems.data[0]?.price?.id;
     
     console.log('🏷️ Price ID from session:', priceId);
+    console.log('🔧 Stripe mode:', getStripeMode());
     console.log('📋 Line items:', lineItems.data.map(item => ({
       price_id: item.price?.id,
       description: item.description,
       amount_total: item.amount_total
     })));
     
+    // Get current price configuration
+    const currentPrices = getCurrentPrices();
+    
     let subscriptionType: 'annual' | 'lifetime';
-    if (priceId === 'price_1RgTO54CotGwBUxNPQl3SLAP' || priceId === 'price_1RgTPb4CotGwBUxN4LVbW9vO') {
+    if (priceId === currentPrices.annual || priceId === currentPrices.annualSecondary) {
       subscriptionType = 'annual';
       console.log('✅ Detected annual subscription');
-    } else if (priceId === 'price_1RgTPF4CotGwBUxNiayDAzep') {
+    } else if (priceId === currentPrices.lifetime) {
       subscriptionType = 'lifetime';
       console.log('✅ Detected lifetime subscription');
     } else {
       console.error('❌ Unknown price ID:', priceId);
-      throw new Error(`Unknown price ID: ${priceId}`);
+      console.error('Expected prices:', currentPrices);
+      throw new Error(`Unknown price ID: ${priceId} (mode: ${getStripeMode()})`);
     }
 
     // Create subscription record using service role client

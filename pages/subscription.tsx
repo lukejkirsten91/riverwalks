@@ -1,15 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { loadStripe } from '@stripe/stripe-js';
 import { useRouter } from 'next/router';
+import { getCurrentPublishableKey, getCurrentPrices, logStripeConfig, validateStripeConfig } from '../lib/stripe-config';
 
-// Initialize Stripe
-const stripeKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
-console.log('🔑 Stripe publishable key:', stripeKey ? `Found: ${stripeKey.substring(0, 12)}...` : 'Missing');
-
-if (!stripeKey) {
-  console.error('❌ NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY is not set');
-}
-
+// Initialize Stripe with centralized configuration
+const stripeKey = getCurrentPublishableKey();
 const stripePromise = stripeKey ? loadStripe(stripeKey) : null;
 
 const SubscriptionPage: React.FC = () => {
@@ -18,21 +13,31 @@ const SubscriptionPage: React.FC = () => {
   const [discount, setDiscount] = useState<any>(null);
   const router = useRouter();
 
-  // Stripe Price IDs from your dashboard
+  // Get current price configuration (test or live mode)
+  const currentPrices = getCurrentPrices();
   const plans = {
     yearly: {
       name: 'Annual Access',
       price: 199, // £1.99 in pence
       duration: '1 year',
-      priceId: 'price_1RgTPb4CotGwBUxN4LVbW9vO', // Annual plan
+      priceId: currentPrices.annual,
     },
     lifetime: {
       name: 'Lifetime Access', 
       price: 349, // £3.49 in pence
       duration: 'Forever',
-      priceId: 'price_1RgTPF4CotGwBUxNiayDAzep', // Lifetime plan
+      priceId: currentPrices.lifetime,
     }
   };
+
+  // Log configuration on mount (for debugging)
+  useEffect(() => {
+    logStripeConfig();
+    const config = validateStripeConfig();
+    if (!config.isValid) {
+      console.error('❌ Stripe configuration incomplete:', config.missingKeys);
+    }
+  }, []);
 
   const handleCheckout = async (planType: 'yearly' | 'lifetime') => {
     setLoading(planType);
