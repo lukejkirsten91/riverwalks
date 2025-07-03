@@ -32,6 +32,8 @@ export function useSubscription() {
         }
 
         // Check if user has a subscription record
+        console.log('🔍 Checking subscription for user:', user.email, 'ID:', user.id);
+        
         const { data: subscription, error } = await supabase
           .from('subscriptions')
           .select('*')
@@ -39,13 +41,22 @@ export function useSubscription() {
           .eq('status', 'active')
           .single();
 
+        console.log('📊 Subscription query result:', { subscription, error });
+
         if (error && error.code !== 'PGRST116') {
-          console.error('Error checking subscription:', error);
+          console.error('❌ Error checking subscription:', error);
         }
 
         const isSubscribed = !!subscription;
         const hasLifetimeAccess = subscription?.subscription_type === 'lifetime';
         const subscriptionType = subscription?.subscription_type || 'free';
+
+        console.log('✅ Final subscription status:', {
+          isSubscribed,
+          hasLifetimeAccess,
+          subscriptionType,
+          subscriptionData: subscription
+        });
 
         setStatus({
           isSubscribed,
