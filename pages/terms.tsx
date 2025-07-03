@@ -141,95 +141,177 @@ export default function TermsOfService() {
               </p>
 
               <h2>7. Subscription and Payment Terms</h2>
-              <h3>7.1 Subscription Service</h3>
+              <h3>7.1 Freemium Service Model</h3>
               <p>
-                Riverwalks operates on an annual subscription model. Subscription fees are £1.49 per user per year, 
-                payable in advance.
+                Riverwalks operates on a freemium model. Basic features (creating and managing river walks) are free. 
+                Premium features require a paid subscription:
+              </p>
+              <ul>
+                <li><strong>Annual Subscription:</strong> £1.99 per year</li>
+                <li><strong>Lifetime Access:</strong> £3.49 one-time payment</li>
+              </ul>
+
+              <h3>7.2 Free Features</h3>
+              <p>
+                All users can access basic river walk creation, site management, and data collection tools at no cost. 
+                No credit card required for basic functionality.
               </p>
 
-              <h3>7.2 Free Trial</h3>
+              <h3>7.3 Premium Features</h3>
               <p>
-                New users may be eligible for a free trial period. At the end of the trial, 
-                continued use requires an active subscription.
+                Premium subscriptions unlock advanced features including:
+              </p>
+              <ul>
+                <li>Professional PDF report generation with charts and analysis</li>
+                <li>Excel data export for statistical analysis</li>
+                <li>River walk sharing and collaboration</li>
+                <li>Advanced data visualization tools</li>
+              </ul>
+
+              <h3>7.4 Payment Processing</h3>
+              <p>
+                Payments are processed securely through Stripe. We comply with PCI DSS standards and do not store 
+                payment card information on our servers. By making a payment, you agree to Stripe's Terms of Service.
               </p>
 
-              <h3>7.3 Refunds</h3>
+              <h3>7.5 Refund Policy</h3>
               <p>
-                Due to the low cost of our service, refunds are generally not provided. However, 
-                we will consider refund requests on a case-by-case basis for exceptional circumstances.
+                Due to the digital nature and low cost of our service, we generally do not offer refunds. However, 
+                we will consider refund requests within 14 days of purchase for exceptional circumstances such as:
+              </p>
+              <ul>
+                <li>Technical issues preventing service access</li>
+                <li>Accidental duplicate purchases</li>
+                <li>Service not meeting educational requirements</li>
+              </ul>
+              <p>
+                To request a refund, contact support@riverwalks.co.uk with your payment details and reason for the request.
               </p>
 
-              <h3>7.4 Cancellation</h3>
+              <h3>7.6 Subscription Management</h3>
               <p>
-                You may cancel your subscription at any time. Access will continue until the end of your billing period. 
-                Cancelled accounts will retain data for 30 days before deletion.
+                Annual subscriptions automatically renew unless cancelled. You can manage your subscription status 
+                in your account settings. Lifetime subscriptions do not require renewal. Access to premium features 
+                continues until subscription expiry or cancellation.
               </p>
 
-              <h2>8. Intellectual Property</h2>
-              <h3>8.1 Service Content</h3>
+              <h3>7.7 Price Changes</h3>
+              <p>
+                We reserve the right to modify subscription prices with 30 days notice to existing subscribers. 
+                Price changes do not affect active subscription periods paid in advance.
+              </p>
+
+              <h2>8. Data Processing and GDPR Compliance</h2>
+              <h3>8.1 Data Controller</h3>
+              <p>
+                Riverwalks acts as the data controller for personal data collected through the Service. 
+                We process data in accordance with UK GDPR and Data Protection Act 2018.
+              </p>
+
+              <h3>8.2 Lawful Basis for Processing</h3>
+              <p>
+                We process personal data on the following lawful bases:
+              </p>
+              <ul>
+                <li><strong>Consent:</strong> For marketing communications and cookies (where required)</li>
+                <li><strong>Contract:</strong> To provide the Service and process payments</li>
+                <li><strong>Legitimate Interest:</strong> For service improvement and fraud prevention</li>
+              </ul>
+
+              <h3>8.3 Your Rights</h3>
+              <p>
+                Under UK GDPR, you have the right to:
+              </p>
+              <ul>
+                <li>Access your personal data (data portability)</li>
+                <li>Rectify inaccurate personal data</li>
+                <li>Erase your personal data (right to be forgotten)</li>
+                <li>Restrict processing of your personal data</li>
+                <li>Object to processing based on legitimate interests</li>
+                <li>Withdraw consent where processing is based on consent</li>
+              </ul>
+              <p>
+                To exercise these rights, contact us at support@riverwalks.co.uk. We will respond within one month.
+              </p>
+
+              <h3>8.4 Data Retention</h3>
+              <p>
+                We retain personal data for as long as necessary to provide the Service and comply with legal obligations. 
+                Account data is retained for 30 days after account deletion to allow for recovery. Payment data is retained 
+                as required by financial regulations (typically 7 years).
+              </p>
+
+              <h3>8.5 International Transfers</h3>
+              <p>
+                Our service providers (including Supabase and Stripe) may process data outside the UK. We ensure adequate 
+                protections are in place through appropriate safeguards such as adequacy decisions or standard contractual clauses.
+              </p>
+
+              <h2>9. Intellectual Property</h2>
+              <h3>9.1 Service Content</h3>
               <p>
                 The Service, including its design, functionality, and content, is owned by Riverwalks and protected by 
                 intellectual property laws.
               </p>
 
-              <h3>8.2 User Content</h3>
+              <h3>9.2 User Content</h3>
               <p>
                 You retain ownership of data you input into the Service. By using the Service, you grant us a license to 
                 store, process, and display your content solely for providing the Service to you.
               </p>
 
-              <h3>8.3 Educational Use License</h3>
+              <h3>9.3 Educational Use License</h3>
               <p>
                 We grant you a non-exclusive, non-transferable license to use the Service for educational purposes in 
                 accordance with these Terms.
               </p>
 
-              <h2>9. Service Availability</h2>
-              <h3>9.1 Uptime</h3>
+              <h2>10. Service Availability</h2>
+              <h3>10.1 Uptime</h3>
               <p>
                 We strive to maintain high availability but cannot guarantee 100% uptime. The Service may be temporarily 
                 unavailable for maintenance or technical issues.
               </p>
 
-              <h3>9.2 Data Backup</h3>
+              <h3>10.2 Data Backup</h3>
               <p>
                 While we implement backup procedures, users are encouraged to export important data regularly. 
                 We are not liable for data loss due to technical failures.
               </p>
 
-              <h2>10. Modifications and Termination</h2>
-              <h3>10.1 Terms Modifications</h3>
+              <h2>11. Modifications and Termination</h2>
+              <h3>11.1 Terms Modifications</h3>
               <p>
                 We may modify these Terms at any time. Significant changes will be communicated via email or Service notification. 
                 Continued use constitutes acceptance of modified Terms.
               </p>
 
-              <h3>10.2 Service Modifications</h3>
+              <h3>11.2 Service Modifications</h3>
               <p>
                 We may modify, suspend, or discontinue features at any time. We will provide reasonable notice for 
                 significant changes affecting functionality.
               </p>
 
-              <h3>10.3 Account Termination</h3>
+              <h3>11.3 Account Termination</h3>
               <p>
                 We may terminate accounts for violation of these Terms. Users may terminate their accounts at any time 
                 through account settings.
               </p>
 
-              <h2>11. Limitation of Liability</h2>
+              <h2>12. Limitation of Liability</h2>
               <p>
                 To the maximum extent permitted by law, Riverwalks shall not be liable for any indirect, incidental, 
                 special, or consequential damages arising from use of the Service. Our total liability shall not exceed 
                 the amount paid for the Service in the 12 months preceding the claim.
               </p>
 
-              <h2>12. Governing Law</h2>
+              <h2>13. Governing Law</h2>
               <p>
                 These Terms are governed by the laws of England and Wales. Any disputes will be resolved in the courts 
                 of England and Wales.
               </p>
 
-              <h2>13. Contact Information</h2>
+              <h2>14. Contact Information</h2>
               <p>
                 For questions about these Terms, please contact us at:
               </p>
