@@ -6,16 +6,17 @@ import { SubscriptionStatus } from '../../hooks/useSubscription';
 interface SubscriptionBadgeProps {
   subscription: SubscriptionStatus;
   userEmail?: string;
+  compact?: boolean; // For mobile version
 }
 
-export function SubscriptionBadge({ subscription, userEmail }: SubscriptionBadgeProps) {
+export function SubscriptionBadge({ subscription, userEmail, compact = false }: SubscriptionBadgeProps) {
   const { isSubscribed, hasLifetimeAccess, subscriptionType, loading } = subscription;
 
   if (loading) {
     return (
-      <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 rounded-lg">
+      <div className={`flex items-center gap-2 bg-gray-100 rounded-lg ${compact ? 'px-2 py-1' : 'px-3 py-1.5'}`}>
         <div className="w-4 h-4 bg-gray-300 rounded animate-pulse"></div>
-        <span className="text-sm text-gray-500">Loading...</span>
+        {!compact && <span className="text-sm text-gray-500">Loading...</span>}
       </div>
     );
   }
@@ -31,14 +32,25 @@ export function SubscriptionBadge({ subscription, userEmail }: SubscriptionBadge
     // Basic user - encourage upgrade
     return (
       <Link href="/subscription">
-        <div className="flex items-center gap-2 px-3 py-1.5 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg transition-colors cursor-pointer group">
-          <div className="w-4 h-4 bg-gray-400 rounded-full flex items-center justify-center">
+        <div className={`flex items-center gap-2 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg transition-colors cursor-pointer group relative ${compact ? 'px-2 py-1' : 'px-3 py-1.5'}`}>
+          <div className="w-4 h-4 bg-gray-400 rounded-full flex items-center justify-center flex-shrink-0">
             <span className="text-xs text-white font-bold">B</span>
           </div>
-          <span className="text-sm font-medium text-blue-700 group-hover:text-blue-800">
-            Basic RiverWalker
-          </span>
-          <Info className="w-3 h-3 text-blue-500 opacity-60" />
+          {compact ? (
+            <>
+              <span className="text-xs font-medium text-blue-700 group-hover:text-blue-800 truncate">
+                Basic
+              </span>
+              <Info className="w-3 h-3 text-blue-500 opacity-60 flex-shrink-0" />
+            </>
+          ) : (
+            <>
+              <span className="text-sm font-medium text-blue-700 group-hover:text-blue-800">
+                Basic RiverWalker
+              </span>
+              <Info className="w-3 h-3 text-blue-500 opacity-60" />
+            </>
+          )}
           
           {/* Tooltip */}
           <div className="absolute top-full mt-2 left-0 bg-white border border-gray-200 rounded-lg p-3 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity z-50 w-64 pointer-events-none">
@@ -58,12 +70,23 @@ export function SubscriptionBadge({ subscription, userEmail }: SubscriptionBadge
   if (hasLifetimeAccess) {
     // Lifetime Pro user
     return (
-      <div className="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-amber-50 to-yellow-50 border border-amber-200 rounded-lg relative group">
-        <Crown className="w-4 h-4 text-amber-600" />
-        <span className="text-sm font-medium text-amber-800">
-          Pro RiverWalker for life
-        </span>
-        <Info className="w-3 h-3 text-amber-500 opacity-60" />
+      <div className={`flex items-center gap-2 bg-gradient-to-r from-amber-50 to-yellow-50 border border-amber-200 rounded-lg relative group ${compact ? 'px-2 py-1' : 'px-3 py-1.5'}`}>
+        <Crown className="w-4 h-4 text-amber-600 flex-shrink-0" />
+        {compact ? (
+          <>
+            <span className="text-xs font-medium text-amber-800 truncate">
+              Pro
+            </span>
+            <Info className="w-3 h-3 text-amber-500 opacity-60 flex-shrink-0" />
+          </>
+        ) : (
+          <>
+            <span className="text-sm font-medium text-amber-800">
+              Pro RiverWalker for life
+            </span>
+            <Info className="w-3 h-3 text-amber-500 opacity-60" />
+          </>
+        )}
         
         {/* Tooltip */}
         <div className="absolute top-full mt-2 left-0 bg-white border border-gray-200 rounded-lg p-3 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity z-50 w-64 pointer-events-none">
@@ -83,12 +106,23 @@ export function SubscriptionBadge({ subscription, userEmail }: SubscriptionBadge
   // Annual Pro user
   const daysRemaining = getDaysRemaining();
   return (
-    <div className="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-green-50 to-teal-50 border border-green-200 rounded-lg relative group">
-      <Crown className="w-4 h-4 text-green-600" />
-      <span className="text-sm font-medium text-green-800">
-        Pro RiverWalker for {daysRemaining} days
-      </span>
-      <Info className="w-3 h-3 text-green-500 opacity-60" />
+    <div className={`flex items-center gap-2 bg-gradient-to-r from-green-50 to-teal-50 border border-green-200 rounded-lg relative group ${compact ? 'px-2 py-1' : 'px-3 py-1.5'}`}>
+      <Crown className="w-4 h-4 text-green-600 flex-shrink-0" />
+      {compact ? (
+        <>
+          <span className="text-xs font-medium text-green-800 truncate">
+            Pro {daysRemaining}d
+          </span>
+          <Info className="w-3 h-3 text-green-500 opacity-60 flex-shrink-0" />
+        </>
+      ) : (
+        <>
+          <span className="text-sm font-medium text-green-800">
+            Pro RiverWalker for {daysRemaining} days
+          </span>
+          <Info className="w-3 h-3 text-green-500 opacity-60" />
+        </>
+      )}
       
       {/* Tooltip */}
       <div className="absolute top-full mt-2 left-0 bg-white border border-gray-200 rounded-lg p-3 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity z-50 w-64 pointer-events-none">

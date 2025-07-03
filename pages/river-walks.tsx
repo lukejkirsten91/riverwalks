@@ -337,7 +337,43 @@ export default function RiverWalksPage() {
       <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
         {/* Compact header with logo and profile */}
         <div className="glass rounded-2xl p-4 sm:p-6 mb-6 border border-white/20">
-          <div className="flex items-center justify-between gap-4">
+          {/* Mobile Header - Single Row */}
+          <div className="flex sm:hidden items-center justify-between gap-2 mb-3">
+            <div className="flex items-center gap-3 flex-1 min-w-0">
+              <img 
+                src="/logo.png" 
+                alt="Riverwalks Logo" 
+                className="h-10 w-10 rounded-xl object-contain shadow-lg flex-shrink-0"
+              />
+              <h1 className="text-lg font-bold text-foreground truncate">River Walks</h1>
+            </div>
+            <div className="flex items-center gap-2">
+              <SubscriptionBadge subscription={subscription} userEmail={user?.email} compact />
+              {user && (
+                <div className="relative flex-shrink-0" data-profile-dropdown>
+                  <button
+                    onClick={(e) => {
+                      const rect = e.currentTarget.getBoundingClientRect();
+                      setDropdownPosition({
+                        top: rect.bottom + 8,
+                        right: window.innerWidth - rect.right
+                      });
+                      setShowProfileDropdown(!showProfileDropdown);
+                    }}
+                    className="flex items-center gap-2 text-muted-foreground hover:text-foreground p-2 rounded-lg bg-white/50 hover:bg-white/80 transition-all duration-200 touch-manipulation border border-white/30"
+                    title="Profile menu"
+                  >
+                    <div className="w-6 h-6 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center">
+                      <UserIcon className="w-3 h-3 text-primary" />
+                    </div>
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Desktop Header - Two Row Layout */}
+          <div className="hidden sm:flex items-center justify-between gap-4">
             {/* Left side: Logo and title */}
             <div className="flex items-center gap-4 flex-1 min-w-0">
               <img 
@@ -352,7 +388,7 @@ export default function RiverWalksPage() {
             </div>
 
             {/* Center: Subscription Status */}
-            <div className="hidden sm:block">
+            <div>
               <SubscriptionBadge subscription={subscription} userEmail={user?.email} />
             </div>
 
