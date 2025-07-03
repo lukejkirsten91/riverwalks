@@ -2,8 +2,8 @@
 // This file centralizes all Stripe-related configuration
 
 export const STRIPE_CONFIG = {
-  // Environment detection
-  isLiveMode: process.env.NODE_ENV === 'production' && process.env.STRIPE_LIVE_MODE === 'true',
+  // Environment detection - Allow live mode in development if explicitly set
+  isLiveMode: process.env.STRIPE_LIVE_MODE === 'true',
   
   // Price IDs - Update these when switching to live mode
   prices: {
@@ -78,6 +78,10 @@ export function logStripeConfig() {
   const config = validateStripeConfig();
   
   console.log(`🔧 Stripe Configuration (${mode.toUpperCase()} mode):`);
+  console.log(`   Environment Variables:`);
+  console.log(`     NODE_ENV: ${process.env.NODE_ENV}`);
+  console.log(`     STRIPE_LIVE_MODE: ${process.env.STRIPE_LIVE_MODE}`);
+  console.log(`     isLiveMode calculated: ${STRIPE_CONFIG.isLiveMode}`);
   console.log(`   Valid: ${config.isValid ? '✅' : '❌'}`);
   
   if (!config.isValid) {
