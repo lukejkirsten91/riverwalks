@@ -2,14 +2,13 @@
 -- This will create a sample river study that users can interact with
 
 -- First, get luke.kirsten@gmail.com user ID
--- This query helps identify the user ID for the demo data
--- SELECT id FROM auth.users WHERE email = 'luke.kirsten@gmail.com';
+-- Run this query to get your user ID: SELECT id FROM auth.users WHERE email = 'luke.kirsten@gmail.com';
+-- Then replace 'USER_ID_HERE' below with the actual UUID
 
--- Insert demo river walk (replace USER_ID with actual ID from above query)
--- You'll need to replace this UUID with the actual user ID
+-- Insert demo river walk
 INSERT INTO river_walks (id, name, date, country, county, user_id, archived, notes) 
 VALUES (
-  'demo-river-walk-uuid',
+  '72618ab0-5079-43e3-a4ea-bbdb773196d9',
   'River Dart Interactive Demo',
   '2024-06-15',
   'UK',
@@ -27,8 +26,8 @@ INSERT INTO sites (
 ) VALUES 
 -- Site 1: Upstream Meadow
 (
-  'demo-site-1-uuid',
-  'demo-river-walk-uuid',
+  '11b74132-9613-41f3-a4b0-7f8196c23c11',
+  '72618ab0-5079-43e3-a4ea-bbdb773196d9',
   1,
   'Upstream Meadow',
   3.2,
@@ -44,8 +43,8 @@ INSERT INTO sites (
 ),
 -- Site 2: Bridge Crossing  
 (
-  'demo-site-2-uuid',
-  'demo-river-walk-uuid',
+  'bf4f8cf8-c76b-451e-af85-1259decd0898',
+  '72618ab0-5079-43e3-a4ea-bbdb773196d9',
   2,
   'Bridge Crossing',
   2.8,
@@ -61,8 +60,8 @@ INSERT INTO sites (
 ),
 -- Site 3: Wooded Bend
 (
-  'demo-site-3-uuid',
-  'demo-river-walk-uuid', 
+  '33e2c1d1-e4b1-487a-bddb-3616b05cbbe0',
+  '72618ab0-5079-43e3-a4ea-bbdb773196d9', 
   3,
   'Wooded Bend',
   4.1,
@@ -78,8 +77,8 @@ INSERT INTO sites (
 ),
 -- Site 4: Rocky Rapids
 (
-  'demo-site-4-uuid',
-  'demo-river-walk-uuid',
+  'be6d91b3-71da-4882-840a-a8d2f29b8dae',
+  '72618ab0-5079-43e3-a4ea-bbdb773196d9',
   4,
   'Rocky Rapids', 
   2.5,
@@ -95,8 +94,8 @@ INSERT INTO sites (
 ),
 -- Site 5: Village Outflow
 (
-  'demo-site-5-uuid',
-  'demo-river-walk-uuid',
+  '3b3d1e3d-69c6-42e2-8c54-ef63a6837ae6',
+  '72618ab0-5079-43e3-a4ea-bbdb773196d9',
   5,
   'Village Outflow',
   3.8,
@@ -114,43 +113,43 @@ INSERT INTO sites (
 -- Insert measurement points for each site
 -- Site 1 measurement points
 INSERT INTO measurement_points (site_id, point_number, distance_from_bank, depth) VALUES
-('demo-site-1-uuid', 1, 0, 0),
-('demo-site-1-uuid', 2, 0.8, 0.4),
-('demo-site-1-uuid', 3, 1.6, 0.8),
-('demo-site-1-uuid', 4, 2.4, 0.6),
-('demo-site-1-uuid', 5, 3.2, 0);
+('11b74132-9613-41f3-a4b0-7f8196c23c11', 1, 0, 0),
+('11b74132-9613-41f3-a4b0-7f8196c23c11', 2, 0.8, 0.4),
+('11b74132-9613-41f3-a4b0-7f8196c23c11', 3, 1.6, 0.8),
+('11b74132-9613-41f3-a4b0-7f8196c23c11', 4, 2.4, 0.6),
+('11b74132-9613-41f3-a4b0-7f8196c23c11', 5, 3.2, 0);
 
 -- Site 2 measurement points
 INSERT INTO measurement_points (site_id, point_number, distance_from_bank, depth) VALUES
-('demo-site-2-uuid', 1, 0, 0),
-('demo-site-2-uuid', 2, 0.7, 0.6),
-('demo-site-2-uuid', 3, 1.4, 1.2),
-('demo-site-2-uuid', 4, 2.1, 0.8),
-('demo-site-2-uuid', 5, 2.8, 0);
+('bf4f8cf8-c76b-451e-af85-1259decd0898', 1, 0, 0),
+('bf4f8cf8-c76b-451e-af85-1259decd0898', 2, 0.7, 0.6),
+('bf4f8cf8-c76b-451e-af85-1259decd0898', 3, 1.4, 1.2),
+('bf4f8cf8-c76b-451e-af85-1259decd0898', 4, 2.1, 0.8),
+('bf4f8cf8-c76b-451e-af85-1259decd0898', 5, 2.8, 0);
 
 -- Site 3 measurement points  
 INSERT INTO measurement_points (site_id, point_number, distance_from_bank, depth) VALUES
-('demo-site-3-uuid', 1, 0, 0),
-('demo-site-3-uuid', 2, 1.0, 0.3),
-('demo-site-3-uuid', 3, 2.0, 0.7),
-('demo-site-3-uuid', 4, 3.1, 0.5),
-('demo-site-3-uuid', 5, 4.1, 0);
+('33e2c1d1-e4b1-487a-bddb-3616b05cbbe0', 1, 0, 0),
+('33e2c1d1-e4b1-487a-bddb-3616b05cbbe0', 2, 1.0, 0.3),
+('33e2c1d1-e4b1-487a-bddb-3616b05cbbe0', 3, 2.0, 0.7),
+('33e2c1d1-e4b1-487a-bddb-3616b05cbbe0', 4, 3.1, 0.5),
+('33e2c1d1-e4b1-487a-bddb-3616b05cbbe0', 5, 4.1, 0);
 
 -- Site 4 measurement points
 INSERT INTO measurement_points (site_id, point_number, distance_from_bank, depth) VALUES
-('demo-site-4-uuid', 1, 0, 0),
-('demo-site-4-uuid', 2, 0.6, 0.5),
-('demo-site-4-uuid', 3, 1.25, 0.9),
-('demo-site-4-uuid', 4, 1.9, 0.4),
-('demo-site-4-uuid', 5, 2.5, 0);
+('be6d91b3-71da-4882-840a-a8d2f29b8dae', 1, 0, 0),
+('be6d91b3-71da-4882-840a-a8d2f29b8dae', 2, 0.6, 0.5),
+('be6d91b3-71da-4882-840a-a8d2f29b8dae', 3, 1.25, 0.9),
+('be6d91b3-71da-4882-840a-a8d2f29b8dae', 4, 1.9, 0.4),
+('be6d91b3-71da-4882-840a-a8d2f29b8dae', 5, 2.5, 0);
 
 -- Site 5 measurement points
 INSERT INTO measurement_points (site_id, point_number, distance_from_bank, depth) VALUES
-('demo-site-5-uuid', 1, 0, 0),
-('demo-site-5-uuid', 2, 0.95, 0.4),
-('demo-site-5-uuid', 3, 1.9, 0.8),
-('demo-site-5-uuid', 4, 2.85, 0.6),
-('demo-site-5-uuid', 5, 3.8, 0);
+('3b3d1e3d-69c6-42e2-8c54-ef63a6837ae6', 1, 0, 0),
+('3b3d1e3d-69c6-42e2-8c54-ef63a6837ae6', 2, 0.95, 0.4),
+('3b3d1e3d-69c6-42e2-8c54-ef63a6837ae6', 3, 1.9, 0.8),
+('3b3d1e3d-69c6-42e2-8c54-ef63a6837ae6', 4, 2.85, 0.6),
+('3b3d1e3d-69c6-42e2-8c54-ef63a6837ae6', 5, 3.8, 0);
 
 -- Add sedimentation data to sites (store as JSONB)
 UPDATE sites SET sedimentation_data = '{
@@ -159,7 +158,7 @@ UPDATE sites SET sedimentation_data = '{
     {"size_mm": 52, "roundness": 4, "point": 2}, 
     {"size_mm": 38, "roundness": 3, "point": 3}
   ]
-}' WHERE id = 'demo-site-1-uuid';
+}' WHERE id = '11b74132-9613-41f3-a4b0-7f8196c23c11';
 
 UPDATE sites SET sedimentation_data = '{
   "measurements": [
@@ -167,7 +166,7 @@ UPDATE sites SET sedimentation_data = '{
     {"size_mm": 156, "roundness": 2, "point": 2},
     {"size_mm": 142, "roundness": 3, "point": 3}
   ]
-}' WHERE id = 'demo-site-2-uuid';
+}' WHERE id = 'bf4f8cf8-c76b-451e-af85-1259decd0898';
 
 UPDATE sites SET sedimentation_data = '{
   "measurements": [
@@ -175,7 +174,7 @@ UPDATE sites SET sedimentation_data = '{
     {"size_mm": 12, "roundness": 5, "point": 2},
     {"size_mm": 6, "roundness": 4, "point": 3}
   ]
-}' WHERE id = 'demo-site-3-uuid';
+}' WHERE id = '33e2c1d1-e4b1-487a-bddb-3616b05cbbe0';
 
 UPDATE sites SET sedimentation_data = '{
   "measurements": [
@@ -183,7 +182,7 @@ UPDATE sites SET sedimentation_data = '{
     {"size_mm": 425, "roundness": 2, "point": 2},
     {"size_mm": 356, "roundness": 1, "point": 3}
   ]
-}' WHERE id = 'demo-site-4-uuid';
+}' WHERE id = 'be6d91b3-71da-4882-840a-a8d2f29b8dae';
 
 UPDATE sites SET sedimentation_data = '{
   "measurements": [
@@ -191,11 +190,11 @@ UPDATE sites SET sedimentation_data = '{
     {"size_mm": 0.8, "roundness": 6, "point": 2},
     {"size_mm": 1.5, "roundness": 5, "point": 3}
   ]
-}' WHERE id = 'demo-site-5-uuid';
+}' WHERE id = '3b3d1e3d-69c6-42e2-8c54-ef63a6837ae6';
 
 -- Instructions:
 -- 1. First run: SELECT id FROM auth.users WHERE email = 'luke.kirsten@gmail.com';
 -- 2. Copy the returned UUID
--- 3. Replace 'USER_ID_HERE' in the river_walks INSERT with the actual UUID
--- 4. Replace all 'demo-*-uuid' values with actual generated UUIDs
--- 5. Run this script in Supabase SQL editor
+-- 3. Replace 'USER_ID_HERE' in the river_walks INSERT with the actual UUID  
+-- 4. Run this script in Supabase SQL editor
+-- 5. All other UUIDs have been pre-filled!
