@@ -339,68 +339,33 @@ export default function RiverWalksPage() {
       <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
         {/* Compact header with logo and profile */}
         <div className="glass rounded-2xl p-4 sm:p-6 mb-6 border border-white/20">
-          {/* Mobile Header - Two Row Layout */}
-          <div className="flex sm:hidden flex-col gap-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <img 
-                  src="/logo.png" 
-                  alt="Riverwalks Logo" 
-                  className="h-10 w-10 rounded-xl object-contain shadow-lg flex-shrink-0"
-                />
-                <h1 className="text-lg font-bold text-foreground">River Walks</h1>
-              </div>
-              {user && (
-                <div className="relative flex-shrink-0" data-profile-dropdown>
-                  <button
-                    onClick={(e) => {
-                      const rect = e.currentTarget.getBoundingClientRect();
-                      setDropdownPosition({
-                        top: rect.bottom + 8,
-                        right: window.innerWidth - rect.right
-                      });
-                      setShowProfileDropdown(!showProfileDropdown);
-                    }}
-                    className="flex items-center gap-2 text-muted-foreground hover:text-foreground p-2 rounded-lg bg-white/50 hover:bg-white/80 transition-all duration-200 touch-manipulation border border-white/30"
-                    title="Profile menu"
-                  >
-                    <div className="w-6 h-6 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center">
-                      <UserIcon className="w-3 h-3 text-primary" />
-                    </div>
-                  </button>
-                </div>
-              )}
-            </div>
-            <div className="flex justify-center">
-              <SubscriptionBadge subscription={subscription} userEmail={user?.email} compact />
-            </div>
-          </div>
-
-          {/* Desktop Header - Two Row Layout */}
-          <div className="hidden sm:flex items-center justify-between gap-4">
+          <div className="flex items-center justify-between gap-4">
             {/* Left side: Logo and title */}
             <div className="flex items-center gap-4 flex-1 min-w-0">
               <img 
                 src="/logo.png" 
                 alt="Riverwalks Logo" 
-                className="h-12 w-12 sm:h-16 sm:w-16 rounded-xl object-contain shadow-lg flex-shrink-0"
+                className="h-10 w-10 sm:h-12 sm:w-12 lg:h-16 lg:w-16 rounded-xl object-contain shadow-lg flex-shrink-0"
               />
               <div className="min-w-0">
-                <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-foreground">River Walks</h1>
-                <p className="text-sm sm:text-base text-muted-foreground mt-1">Manage your River Work Documentation</p>
+                <h1 className="text-lg sm:text-xl lg:text-2xl xl:text-3xl font-bold text-foreground">River Walks</h1>
+                <p className="text-xs sm:text-sm lg:text-base text-muted-foreground mt-1 hidden sm:block">Manage your River Work Documentation</p>
               </div>
             </div>
 
-            {/* Center: Subscription Status */}
-            <div>
+            {/* Center: Subscription Status - Hidden on very small screens */}
+            <div className="hidden md:block">
               <SubscriptionBadge subscription={subscription} userEmail={user?.email} />
             </div>
 
             {/* Right side: Navigation and Profile */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3">
+              {/* Show compact subscription badge on small screens */}
+              <div className="block md:hidden">
+                <SubscriptionBadge subscription={subscription} userEmail={user?.email} compact />
+              </div>
               {user && (
                 <div className="relative flex-shrink-0" data-profile-dropdown>
-                {/* Profile button */}
                 <button
                   onClick={(e) => {
                     const rect = e.currentTarget.getBoundingClientRect();
@@ -410,15 +375,14 @@ export default function RiverWalksPage() {
                     });
                     setShowProfileDropdown(!showProfileDropdown);
                   }}
-                  className="flex items-center gap-2 text-muted-foreground hover:text-foreground px-3 py-2 rounded-lg bg-white/50 hover:bg-white/80 transition-all duration-200 touch-manipulation border border-white/30"
+                  className="flex items-center gap-2 text-muted-foreground hover:text-foreground px-2 sm:px-3 py-2 rounded-lg bg-white/50 hover:bg-white/80 transition-all duration-200 touch-manipulation border border-white/30"
                   title="Profile menu"
                 >
-                  <div className="w-8 h-8 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center">
-                    <UserIcon className="w-4 h-4 text-primary" />
+                  <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center">
+                    <UserIcon className="w-3 h-3 sm:w-4 sm:h-4 text-primary" />
                   </div>
-                  <span className="hidden sm:block text-sm truncate max-w-32">{user.email}</span>
+                  <span className="hidden lg:block text-sm truncate max-w-32">{user.email}</span>
                 </button>
-
                 </div>
               )}
             </div>
@@ -493,12 +457,12 @@ export default function RiverWalksPage() {
         )}
 
         {/* Action Buttons / Form */}
-        <div className={`morph-container ${showForm || showJoinCollaboration ? 'morph-form-state' : 'morph-button-state'} mb-6`}>
+        <div className={`morph-container ${showForm || showJoinCollaboration ? 'morph-form-state' : 'morph-button-state'} mb-8`}>
           {/* Button State */}
           <div className={`add-button-morph ${showForm || showJoinCollaboration ? 'add-button-hidden' : 'add-button-visible'}`}>
-            <div className="flex gap-3">
+            <div className="flex flex-col sm:flex-row gap-3">
               <button
-                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-200 transform hover:scale-105 shadow-lg touch-manipulation flex-1"
+                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-200 transform hover:scale-105 shadow-lg touch-manipulation w-full sm:flex-1"
                 onClick={handleAddNewRiverWalk}
               >
                 + New River Walk
@@ -506,7 +470,7 @@ export default function RiverWalksPage() {
               {collaborationEnabled && (
                 canAccessAdvancedFeatures(subscription) ? (
                   <button
-                    className="bg-green-500 hover:bg-green-600 text-white px-4 py-3 rounded-lg font-medium transition-colors touch-manipulation"
+                    className="bg-green-500 hover:bg-green-600 text-white px-4 py-3 rounded-lg font-medium transition-colors touch-manipulation w-full sm:w-auto"
                     onClick={() => {
                       setShowJoinCollaboration(true);
                       // Close add form if it's open
@@ -520,7 +484,7 @@ export default function RiverWalksPage() {
                   </button>
                 ) : (
                   <button
-                    className="bg-gradient-to-r from-blue-50 to-teal-50 hover:from-blue-100 hover:to-teal-100 text-blue-700 px-4 py-3 rounded-lg font-medium transition-all duration-200 border-2 border-blue-200 shadow-modern hover:shadow-modern-lg touch-manipulation relative"
+                    className="bg-gradient-to-r from-blue-50 to-teal-50 hover:from-blue-100 hover:to-teal-100 text-blue-700 px-4 py-3 rounded-lg font-medium transition-all duration-200 border-2 border-blue-200 shadow-modern hover:shadow-modern-lg touch-manipulation relative w-full sm:w-auto"
                     onClick={() => setShowUpgradePrompt('advanced')}
                   >
                     <Crown className="w-4 h-4 mr-2" />
