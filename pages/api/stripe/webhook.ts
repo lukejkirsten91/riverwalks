@@ -5,10 +5,12 @@ import { supabase } from '../../../lib/supabase';
 import { createClient } from '@supabase/supabase-js';
 
 // Create service role client for admin operations
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+const supabaseAdmin = process.env.SUPABASE_SERVICE_ROLE_KEY 
+  ? createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY
+    )
+  : null;
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-06-30.basil',
@@ -105,6 +107,11 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
 
     // Get user by email using service role client
     console.log('🔍 Looking for user with email:', customerEmail);
+    
+    if (!supabaseAdmin) {
+      throw new Error('Supabase service role client not configured - missing SUPABASE_SERVICE_ROLE_KEY');
+    }
+    
     const { data: user, error: userError } = await supabaseAdmin.auth.admin.listUsers();
     
     if (userError) {
@@ -153,6 +160,11 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
 
     // Create subscription record using service role client
     console.log('💾 Creating subscription record for user:', foundUser.id);
+    
+    if (!supabaseAdmin) {
+      throw new Error('Supabase service role client not configured');
+    }
+    
     const { error: subError } = await supabaseAdmin
       .from('subscriptions')
       .upsert({
@@ -200,24 +212,26 @@ async function logPaymentEvent(event: Stripe.Event) {
       const session = event.data.object as Stripe.Checkout.Session;
       const customerEmail = session.customer_details?.email;
       
-      if (customerEmail) {
+      if (customerEmail && supabaseAdmin) {
         const { data: user } = await supabaseAdmin.auth.admin.listUsers();
         const foundUser = user?.users.find(u => u.email === customerEmail);
         userId = foundUser?.id || null;
       }
     }
 
-    await supabaseAdmin
-      .from('payment_events')
-      .insert({
+    if (supabaseAdmin) {
+      await supabaseAdmin
+        .from('payment_events')
+        .insert({
         stripe_event_id: event.id,
         event_type: event.type,
         user_id: userId,
         data: event.data,
         processed_at: new Date(),
-      });
+        });
 
-    console.log('📝 Payment event logged:', event.type);
+      console.log('📝 Payment event logged:', event.type);
+    }
   } catch (error) {
     console.error('❌ Error logging payment event:', error);
   }

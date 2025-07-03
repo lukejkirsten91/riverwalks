@@ -7,8 +7,10 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
     environment: {
       hasStripeSecret: !!process.env.STRIPE_SECRET_KEY,
       hasWebhookSecret: !!process.env.STRIPE_WEBHOOK_SECRET,
+      hasServiceRoleKey: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
       stripeSecretPrefix: process.env.STRIPE_SECRET_KEY?.substring(0, 8) || 'missing',
       webhookSecretPrefix: process.env.STRIPE_WEBHOOK_SECRET?.substring(0, 8) || 'missing',
+      serviceRolePrefix: process.env.SUPABASE_SERVICE_ROLE_KEY?.substring(0, 8) || 'missing',
       nodeEnv: process.env.NODE_ENV,
     },
     endpoints: {
