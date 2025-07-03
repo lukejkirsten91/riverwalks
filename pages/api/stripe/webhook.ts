@@ -89,9 +89,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
   } catch (error) {
     console.error('❌ Webhook handler error:', error);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    const errorStack = error instanceof Error ? error.stack : undefined;
+    
+    console.error('❌ Error details:', {
+      message: errorMessage,
+      stack: errorStack,
+      type: typeof error,
+      error: error
+    });
+    
     return res.status(500).json({ 
       error: 'Webhook handler failed',
-      details: error instanceof Error ? error.message : 'Unknown error'
+      details: errorMessage || 'Unknown error',
+      type: typeof error,
+      timestamp: new Date().toISOString()
     });
   }
 }
