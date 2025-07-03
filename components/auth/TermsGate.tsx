@@ -95,11 +95,11 @@ export function TermsGate({ user, children }: TermsGateProps) {
   // Show terms acceptance if needed
   if (needsAcceptance) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-sky-50 via-blue-50 to-teal-50">
-        <div className="container mx-auto px-4 py-8">
-          <div className="max-w-2xl mx-auto">
+      <div className="min-h-screen bg-gradient-to-br from-sky-50 via-blue-50 to-teal-50 overflow-y-auto">
+        <div className="container mx-auto px-4 py-4 sm:py-8">
+          <div className="max-w-2xl mx-auto min-h-screen flex flex-col justify-center">
             {/* Welcome Header */}
-            <div className="text-center mb-8">
+            <div className="text-center mb-6 sm:mb-8">
               <div className="flex items-center justify-center mb-4">
                 {user.user_metadata?.avatar_url ? (
                   <img

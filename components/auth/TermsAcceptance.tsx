@@ -27,9 +27,9 @@ export function TermsAcceptance({ onAcceptance, loading = false, required = true
   };
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-6">
+    <div className="bg-white rounded-lg border border-gray-200 p-4 sm:p-6 max-h-[85vh] overflow-y-auto">
       {/* Header */}
-      <div className="flex items-center gap-3 mb-6">
+      <div className="flex items-center gap-3 mb-4 sm:mb-6">
         <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
           <Scale className="w-5 h-5 text-blue-600" />
         </div>
@@ -42,7 +42,7 @@ export function TermsAcceptance({ onAcceptance, loading = false, required = true
       </div>
 
       {/* Educational Context */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 sm:p-4 mb-4 sm:mb-6">
         <div className="flex items-start gap-3">
           <Shield className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
           <div>
@@ -56,7 +56,7 @@ export function TermsAcceptance({ onAcceptance, loading = false, required = true
       </div>
 
       {/* Required Agreements */}
-      <div className="space-y-4 mb-6">
+      <div className="space-y-3 sm:space-y-4 mb-4 sm:mb-6">
         {/* Terms of Service */}
         <div 
           className="flex items-start gap-3 p-4 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"
