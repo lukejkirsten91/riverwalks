@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
+import { createPortal } from 'react-dom';
 import { Crown, Info } from 'lucide-react';
 import { SubscriptionStatus } from '../../hooks/useSubscription';
 
@@ -11,6 +12,37 @@ interface SubscriptionBadgeProps {
 
 export function SubscriptionBadge({ subscription, userEmail, compact = false }: SubscriptionBadgeProps) {
   const { isSubscribed, hasLifetimeAccess, subscriptionType, loading } = subscription;
+  const [showTooltip, setShowTooltip] = useState(false);
+  const [tooltipPosition, setTooltipPosition] = useState<{top: number, left: number} | null>(null);
+  const badgeRef = useRef<HTMLDivElement>(null);
+
+  // Handle tooltip positioning
+  const handleMouseEnter = () => {
+    if (badgeRef.current) {
+      const rect = badgeRef.current.getBoundingClientRect();
+      setTooltipPosition({
+        top: rect.bottom + 8,
+        left: rect.left
+      });
+      setShowTooltip(true);
+    }
+  };
+
+  const handleMouseLeave = () => {
+    setShowTooltip(false);
+  };
+
+  // Close tooltip when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (showTooltip && badgeRef.current && !badgeRef.current.contains(event.target as Node)) {
+        setShowTooltip(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showTooltip]);
 
   if (loading) {
     return (
@@ -28,68 +60,98 @@ export function SubscriptionBadge({ subscription, userEmail, compact = false }: 
     return 365; // Replace with actual calculation
   };
 
+  // Tooltip component for portals
+  const TooltipContent = ({ children }: { children: React.ReactNode }) => {
+    if (!showTooltip || !tooltipPosition || typeof window === 'undefined') return null;
+    
+    return createPortal(
+      <div 
+        className="fixed bg-white border border-gray-200 rounded-lg p-3 shadow-modern opacity-100 z-[99999] w-64 animate-in slide-in-from-top-2 fade-in-0 duration-200"
+        style={{
+          top: tooltipPosition.top,
+          left: tooltipPosition.left,
+        }}
+      >
+        {children}
+      </div>,
+      document.body
+    );
+  };
+
   if (!isSubscribed) {
     // Basic user - encourage upgrade
     return (
-      <Link href="/subscription">
-        <div className={`flex items-center gap-2 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg transition-colors cursor-pointer group relative ${compact ? 'px-2 py-1' : 'px-3 py-1.5'}`}>
-          <div className="w-4 h-4 bg-gray-400 rounded-full flex items-center justify-center flex-shrink-0">
-            <span className="text-xs text-white font-bold">B</span>
-          </div>
-          {compact ? (
-            <>
-              <span className="text-xs font-medium text-blue-700 group-hover:text-blue-800 truncate">
-                Basic
-              </span>
-              <Info className="w-3 h-3 text-blue-500 opacity-60 flex-shrink-0" />
-            </>
-          ) : (
-            <>
-              <span className="text-sm font-medium text-blue-700 group-hover:text-blue-800">
-                Basic RiverWalker
-              </span>
-              <Info className="w-3 h-3 text-blue-500 opacity-60" />
-            </>
-          )}
-          
-          {/* Tooltip */}
-          <div className="absolute top-full mt-2 left-0 bg-white border border-gray-200 rounded-lg p-3 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity z-50 w-64 pointer-events-none">
-            <div className="text-sm">
-              <p className="font-semibold text-gray-900 mb-1">Basic Plan</p>
-              <p className="text-gray-600 mb-2">✓ Create unlimited river walks</p>
-              <p className="text-gray-600 mb-2">✓ Add sites and measurements</p>
-              <p className="text-gray-600 mb-3">✓ Collaborate with others</p>
-              <p className="text-blue-600 font-medium">Click to upgrade for reports & export!</p>
+      <>
+        <Link href="/subscription">
+          <div 
+            ref={badgeRef}
+            className={`flex items-center gap-2 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg transition-colors cursor-pointer ${compact ? 'px-2 py-1' : 'px-3 py-1.5'}`}
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
+          >
+            <div className="w-4 h-4 bg-gray-400 rounded-full flex items-center justify-center flex-shrink-0">
+              <span className="text-xs text-white font-bold">B</span>
             </div>
+            {compact ? (
+              <>
+                <span className="text-xs font-medium text-blue-700 hover:text-blue-800 truncate">
+                  Basic
+                </span>
+                <Info className="w-3 h-3 text-blue-500 opacity-60 flex-shrink-0" />
+              </>
+            ) : (
+              <>
+                <span className="text-sm font-medium text-blue-700 hover:text-blue-800">
+                  Basic RiverWalker
+                </span>
+                <Info className="w-3 h-3 text-blue-500 opacity-60" />
+              </>
+            )}
           </div>
-        </div>
-      </Link>
+        </Link>
+        
+        <TooltipContent>
+          <div className="text-sm">
+            <p className="font-semibold text-gray-900 mb-1">Basic Plan</p>
+            <p className="text-gray-600 mb-2">✓ Create unlimited river walks</p>
+            <p className="text-gray-600 mb-2">✓ Add sites and measurements</p>
+            <p className="text-gray-600 mb-3">✓ Collaborate with others</p>
+            <p className="text-blue-600 font-medium">Click to upgrade for reports & export!</p>
+          </div>
+        </TooltipContent>
+      </>
     );
   }
 
   if (hasLifetimeAccess) {
     // Lifetime Pro user
     return (
-      <div className={`flex items-center gap-2 bg-gradient-to-r from-amber-50 to-yellow-50 border border-amber-200 rounded-lg relative group ${compact ? 'px-2 py-1' : 'px-3 py-1.5'}`}>
-        <Crown className="w-4 h-4 text-amber-600 flex-shrink-0" />
-        {compact ? (
-          <>
-            <span className="text-xs font-medium text-amber-800 truncate">
-              Pro
-            </span>
-            <Info className="w-3 h-3 text-amber-500 opacity-60 flex-shrink-0" />
-          </>
-        ) : (
-          <>
-            <span className="text-sm font-medium text-amber-800">
-              Pro RiverWalker for life
-            </span>
-            <Info className="w-3 h-3 text-amber-500 opacity-60" />
-          </>
-        )}
+      <>
+        <div 
+          ref={badgeRef}
+          className={`flex items-center gap-2 bg-gradient-to-r from-amber-50 to-yellow-50 border border-amber-200 rounded-lg ${compact ? 'px-2 py-1' : 'px-3 py-1.5'}`}
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
+        >
+          <Crown className="w-4 h-4 text-amber-600 flex-shrink-0" />
+          {compact ? (
+            <>
+              <span className="text-xs font-medium text-amber-800 truncate">
+                Pro
+              </span>
+              <Info className="w-3 h-3 text-amber-500 opacity-60 flex-shrink-0" />
+            </>
+          ) : (
+            <>
+              <span className="text-sm font-medium text-amber-800">
+                Pro RiverWalker for life
+              </span>
+              <Info className="w-3 h-3 text-amber-500 opacity-60" />
+            </>
+          )}
+        </div>
         
-        {/* Tooltip */}
-        <div className="absolute top-full mt-2 left-0 bg-white border border-gray-200 rounded-lg p-3 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity z-50 w-64 pointer-events-none">
+        <TooltipContent>
           <div className="text-sm">
             <p className="font-semibold text-gray-900 mb-1">Pro Lifetime</p>
             <p className="text-gray-600 mb-1">✓ All Basic features</p>
@@ -98,34 +160,40 @@ export function SubscriptionBadge({ subscription, userEmail, compact = false }: 
             <p className="text-gray-600 mb-1">✓ Advanced sharing</p>
             <p className="text-amber-600 font-medium">Never expires!</p>
           </div>
-        </div>
-      </div>
+        </TooltipContent>
+      </>
     );
   }
 
   // Annual Pro user
   const daysRemaining = getDaysRemaining();
   return (
-    <div className={`flex items-center gap-2 bg-gradient-to-r from-green-50 to-teal-50 border border-green-200 rounded-lg relative group ${compact ? 'px-2 py-1' : 'px-3 py-1.5'}`}>
-      <Crown className="w-4 h-4 text-green-600 flex-shrink-0" />
-      {compact ? (
-        <>
-          <span className="text-xs font-medium text-green-800 truncate">
-            Pro {daysRemaining}d
-          </span>
-          <Info className="w-3 h-3 text-green-500 opacity-60 flex-shrink-0" />
-        </>
-      ) : (
-        <>
-          <span className="text-sm font-medium text-green-800">
-            Pro RiverWalker for {daysRemaining} days
-          </span>
-          <Info className="w-3 h-3 text-green-500 opacity-60" />
-        </>
-      )}
+    <>
+      <div 
+        ref={badgeRef}
+        className={`flex items-center gap-2 bg-gradient-to-r from-green-50 to-teal-50 border border-green-200 rounded-lg ${compact ? 'px-2 py-1' : 'px-3 py-1.5'}`}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+      >
+        <Crown className="w-4 h-4 text-green-600 flex-shrink-0" />
+        {compact ? (
+          <>
+            <span className="text-xs font-medium text-green-800 truncate">
+              Pro {daysRemaining}d
+            </span>
+            <Info className="w-3 h-3 text-green-500 opacity-60 flex-shrink-0" />
+          </>
+        ) : (
+          <>
+            <span className="text-sm font-medium text-green-800">
+              Pro RiverWalker for {daysRemaining} days
+            </span>
+            <Info className="w-3 h-3 text-green-500 opacity-60" />
+          </>
+        )}
+      </div>
       
-      {/* Tooltip */}
-      <div className="absolute top-full mt-2 left-0 bg-white border border-gray-200 rounded-lg p-3 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity z-50 w-64 pointer-events-none">
+      <TooltipContent>
         <div className="text-sm">
           <p className="font-semibold text-gray-900 mb-1">Pro Annual</p>
           <p className="text-gray-600 mb-1">✓ All Basic features</p>
@@ -134,7 +202,7 @@ export function SubscriptionBadge({ subscription, userEmail, compact = false }: 
           <p className="text-gray-600 mb-1">✓ Advanced sharing</p>
           <p className="text-green-600 font-medium">{daysRemaining} days remaining</p>
         </div>
-      </div>
-    </div>
+      </TooltipContent>
+    </>
   );
 }
