@@ -15,6 +15,8 @@ import { useOfflineRiverWalks } from '../hooks/useOfflineData';
 import { useCollaboration, useCollaborationFeatureFlag } from '../hooks/useCollaboration';
 import { useToast } from '../components/ui/ToastProvider';
 import { offlineDataService } from '../lib/offlineDataService';
+import { SubscriptionBadge } from '../components/ui/SubscriptionBadge';
+import { useSubscription } from '../hooks/useSubscription';
 import type { RiverWalk, RiverWalkFormData, Site } from '../types';
 import { getSitesForRiverWalk } from '../lib/api/sites';
 import type { User } from '@supabase/supabase-js';
@@ -24,6 +26,7 @@ export default function RiverWalksPage() {
   const { showSuccess, showError } = useToast();
   const { collaborationEnabled } = useCollaborationFeatureFlag();
   const { pendingInvites, acceptInvite } = useCollaboration();
+  const subscription = useSubscription();
   
   const [user, setUser] = useState<User | null>(null);
   const [showForm, setShowForm] = useState(false);
@@ -346,6 +349,11 @@ export default function RiverWalksPage() {
                 <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-foreground">River Walks</h1>
                 <p className="text-sm sm:text-base text-muted-foreground mt-1">Manage your River Work Documentation</p>
               </div>
+            </div>
+
+            {/* Center: Subscription Status */}
+            <div className="hidden sm:block">
+              <SubscriptionBadge subscription={subscription} userEmail={user?.email} />
             </div>
 
             {/* Right side: Navigation and Profile */}

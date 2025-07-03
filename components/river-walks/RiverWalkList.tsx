@@ -5,7 +5,7 @@ import { InlineEdit } from '../ui/InlineEdit';
 import { CollaboratorAvatars } from '../ui/CollaboratorAvatars';
 import { UpgradePrompt } from '../ui/UpgradePrompt';
 import { useCollaboratorInfo } from '../../hooks/useCollaboratorInfo';
-import { useSubscription, canAccessReports } from '../../hooks/useSubscription';
+import { useSubscription, canAccessReports, canAccessAdvancedFeatures } from '../../hooks/useSubscription';
 import type { RiverWalk } from '../../types';
 
 interface RiverWalkListProps {
@@ -41,7 +41,7 @@ export function RiverWalkList({
   const [showMyRiverWalks, setShowMyRiverWalks] = useState(true);
   const [showSharedWithMe, setShowSharedWithMe] = useState(true);
   const [showSharedByMe, setShowSharedByMe] = useState(true);
-  const [showUpgradePrompt, setShowUpgradePrompt] = useState<'reports' | null>(null);
+  const [showUpgradePrompt, setShowUpgradePrompt] = useState<'reports' | 'advanced' | null>(null);
   
   // Get collaborator information for all river walks
   const { collaboratorInfo, getCollaboratorInfo } = useCollaboratorInfo(riverWalks);
@@ -221,13 +221,26 @@ export function RiverWalkList({
         )}
         
         {canShare && (
-          <button
-            onClick={() => onShare(riverWalk)}
-            className="bg-blue-50 hover:bg-blue-100 text-blue-600 px-3 py-2 sm:px-4 sm:py-3 rounded-lg font-medium transition-all duration-200 border border-blue-200 shadow-modern hover:shadow-modern-lg touch-manipulation flex-1 sm:flex-none flex items-center justify-center text-sm sm:text-base"
-          >
-            <Link className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
-            <span className="truncate">Share</span>
-          </button>
+          canAccessAdvancedFeatures(subscription) ? (
+            <button
+              onClick={() => onShare(riverWalk)}
+              className="bg-blue-50 hover:bg-blue-100 text-blue-600 px-3 py-2 sm:px-4 sm:py-3 rounded-lg font-medium transition-all duration-200 border border-blue-200 shadow-modern hover:shadow-modern-lg touch-manipulation flex-1 sm:flex-none flex items-center justify-center text-sm sm:text-base"
+            >
+              <Link className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
+              <span className="truncate">Share</span>
+            </button>
+          ) : (
+            <button
+              onClick={() => setShowUpgradePrompt('advanced')}
+              className="bg-gradient-to-r from-blue-50 to-teal-50 hover:from-blue-100 hover:to-teal-100 text-blue-700 px-3 py-2 sm:px-4 sm:py-3 rounded-lg font-medium transition-all duration-200 border-2 border-blue-200 shadow-modern hover:shadow-modern-lg touch-manipulation flex-1 sm:flex-none flex items-center justify-center text-sm sm:text-base relative"
+            >
+              <Crown className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
+              <span className="truncate">Share</span>
+              <div className="absolute -top-1 -right-1 bg-blue-600 text-white text-xs px-1.5 py-0.5 rounded-full">
+                Pro
+              </div>
+            </button>
+          )
         )}
         
         {isArchived ? (
