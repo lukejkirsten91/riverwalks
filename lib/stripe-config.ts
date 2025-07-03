@@ -13,9 +13,9 @@ export const STRIPE_CONFIG = {
       lifetime: 'price_1RgTPF4CotGwBUxNiayDAzep'    // £3.49 lifetime test
     },
     live: {
-      annual: 'price_live_REPLACE_WITH_LIVE_ANNUAL_PRICE_ID',
-      annualSecondary: 'price_live_REPLACE_WITH_LIVE_ANNUAL_ALT_PRICE_ID',
-      lifetime: 'price_live_REPLACE_WITH_LIVE_LIFETIME_PRICE_ID'
+      annual: 'price_1RgVZOKPYCLDBTOzdQOeYilW',
+      annualSecondary: 'price_1RgVZOKPYCLDBTOzdQOeYilW', // Same as annual for now
+      lifetime: 'price_1RgVZwKPYCLDBTOzITlyzdDB'
     }
   },
 
