@@ -83,8 +83,20 @@ export default function AdminDashboard() {
 
   const loadDashboardData = async () => {
     try {
-      // Load stats - we'll need to create an API endpoint for this since admin functions require service role
-      const response = await fetch('/api/admin/stats');
+      // Get current session token
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        router.push('/');
+        return;
+      }
+
+      // Load stats with proper auth
+      const response = await fetch('/api/admin/stats', {
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`
+        }
+      });
+      
       if (response.ok) {
         const data = await response.json();
         setStats(data.stats);
@@ -171,6 +183,34 @@ export default function AdminDashboard() {
       }
     } catch (error) {
       console.error('Error updating voucher:', error);
+    }
+  };
+
+  const updateUserSubscription = async (userId: string, subscriptionType: string | null) => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
+      const response = await fetch('/api/admin/update-subscription', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        },
+        body: JSON.stringify({
+          userId,
+          subscriptionType
+        })
+      });
+
+      if (response.ok) {
+        await loadDashboardData(); // Refresh data
+      } else {
+        const error = await response.json();
+        console.error('Failed to update subscription:', error);
+      }
+    } catch (error) {
+      console.error('Error updating subscription:', error);
     }
   };
 
@@ -296,6 +336,7 @@ export default function AdminDashboard() {
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subscription</th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Joined</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
@@ -326,6 +367,17 @@ export default function AdminDashboard() {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                           {new Date(user.created_at).toLocaleDateString()}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                          <select
+                            value={user.subscription_type || 'free'}
+                            onChange={(e) => updateUserSubscription(user.id, e.target.value === 'free' ? null : e.target.value)}
+                            className="text-sm border border-gray-300 rounded px-2 py-1 bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          >
+                            <option value="free">Free</option>
+                            <option value="annual">Annual Pro</option>
+                            <option value="lifetime">Lifetime Pro</option>
+                          </select>
                         </td>
                       </tr>
                     ))}

@@ -16,10 +16,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    // Verify admin access
-    const { data: { session } } = await supabase.auth.getSession();
+    // Verify admin access from request headers
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+      return res.status(403).json({ error: 'Authorization header required' });
+    }
+
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
     
-    if (!session || session.user.email !== 'luke.kirsten@gmail.com') {
+    if (authError || !user || user.email !== 'luke.kirsten@gmail.com') {
       return res.status(403).json({ error: 'Admin access required' });
     }
 
