@@ -391,7 +391,7 @@ export default function RiverWalksPage() {
 
         {/* Pending Invites Notification */}
         {collaborationEnabled && pendingInvites && pendingInvites.length > 0 && (
-          <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
+          <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-8">
             <div className="flex items-start gap-3">
               <div className="bg-blue-100 rounded-full p-2 flex-shrink-0">
                 <Users className="w-5 h-5 text-blue-600" />
@@ -444,7 +444,7 @@ export default function RiverWalksPage() {
 
         {/* Error display */}
         {error && (
-          <div className="bg-destructive/10 border border-destructive/20 text-destructive px-6 py-4 rounded-xl mb-6 flex items-center justify-between">
+          <div className="bg-destructive/10 border border-destructive/20 text-destructive px-6 py-4 rounded-xl mb-8 flex items-center justify-between">
             <span className="font-medium">{error}</span>
             <button 
               className="text-destructive hover:text-destructive/80 text-xl font-bold"
