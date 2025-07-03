@@ -7,6 +7,9 @@
     "pages/api/generate-pdf-puppeteer-remote.ts": {
       "memory": 1536,
       "maxDuration": 60
+    },
+    "pages/api/stripe/webhook.ts": {
+      "maxDuration": 10
     }
   },
   "env": {

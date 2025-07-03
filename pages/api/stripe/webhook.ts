@@ -16,7 +16,15 @@ export const config = {
 };
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  console.log('🔗 Webhook called:', {
+    method: req.method,
+    url: req.url,
+    headers: Object.keys(req.headers),
+    timestamp: new Date().toISOString()
+  });
+
   if (req.method !== 'POST') {
+    console.log('❌ Wrong method:', req.method);
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
@@ -31,11 +39,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   try {
     const buf = await buffer(req);
+    console.log('📦 Buffer received, length:', buf.length);
     event = stripe.webhooks.constructEvent(buf, sig, endpointSecret);
-    console.log('✅ Webhook signature verified:', event.type);
+    console.log('✅ Webhook signature verified:', event.type, 'ID:', event.id);
   } catch (err) {
     console.error('❌ Webhook signature verification failed:', err);
-    return res.status(400).json({ error: 'Webhook signature verification failed' });
+    return res.status(400).json({ 
+      error: 'Webhook signature verification failed',
+      details: err instanceof Error ? err.message : 'Unknown error'
+    });
   }
 
   try {
@@ -59,10 +71,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Log the event for debugging
     await logPaymentEvent(event);
 
-    res.status(200).json({ received: true });
+    console.log('✅ Webhook processed successfully:', event.type);
+    return res.status(200).json({ 
+      received: true, 
+      eventType: event.type,
+      eventId: event.id,
+      timestamp: new Date().toISOString()
+    });
   } catch (error) {
     console.error('❌ Webhook handler error:', error);
-    res.status(500).json({ error: 'Webhook handler failed' });
+    return res.status(500).json({ 
+      error: 'Webhook handler failed',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    });
   }
 }
 
