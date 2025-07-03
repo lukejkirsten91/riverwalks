@@ -15,6 +15,7 @@ import { useOfflineRiverWalks } from '../hooks/useOfflineData';
 import { useCollaboration, useCollaborationFeatureFlag } from '../hooks/useCollaboration';
 import { useToast } from '../components/ui/ToastProvider';
 import { offlineDataService } from '../lib/offlineDataService';
+// Force redeploy timestamp: 2025-07-03T04:21:00Z
 import { SubscriptionBadge } from '../components/ui/SubscriptionBadge';
 import { UpgradePrompt } from '../components/ui/UpgradePrompt';
 import { useSubscription, canAccessAdvancedFeatures } from '../hooks/useSubscription';
