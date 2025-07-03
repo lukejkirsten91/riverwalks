@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { createPortal } from 'react-dom';
 import { supabase } from '../lib/supabase';
-import { LogOut, MapPin, User as UserIcon, Users, UserCheck } from 'lucide-react';
+import { LogOut, MapPin, User as UserIcon, Users, UserCheck, Crown } from 'lucide-react';
 import {
   RiverWalkForm,
   RiverWalkList,
@@ -16,7 +16,8 @@ import { useCollaboration, useCollaborationFeatureFlag } from '../hooks/useColla
 import { useToast } from '../components/ui/ToastProvider';
 import { offlineDataService } from '../lib/offlineDataService';
 import { SubscriptionBadge } from '../components/ui/SubscriptionBadge';
-import { useSubscription } from '../hooks/useSubscription';
+import { UpgradePrompt } from '../components/ui/UpgradePrompt';
+import { useSubscription, canAccessAdvancedFeatures } from '../hooks/useSubscription';
 import type { RiverWalk, RiverWalkFormData, Site } from '../types';
 import { getSitesForRiverWalk } from '../lib/api/sites';
 import type { User } from '@supabase/supabase-js';
@@ -46,6 +47,7 @@ export default function RiverWalksPage() {
   const [showJoinCollaboration, setShowJoinCollaboration] = useState(false);
   const [joinCollabLink, setJoinCollabLink] = useState('');
   const [manageCollaboratorsRiverWalk, setManageCollaboratorsRiverWalk] = useState<RiverWalk | null>(null);
+  const [showUpgradePrompt, setShowUpgradePrompt] = useState<'reports' | 'export' | 'advanced' | null>(null);
 
   const {
     riverWalks,
@@ -500,19 +502,32 @@ export default function RiverWalksPage() {
                 + New River Walk
               </button>
               {collaborationEnabled && (
-                <button
-                  className="bg-green-500 hover:bg-green-600 text-white px-4 py-3 rounded-lg font-medium transition-colors touch-manipulation"
-                  onClick={() => {
-                    setShowJoinCollaboration(true);
-                    // Close add form if it's open
-                    if (showForm) {
-                      setShowForm(false);
-                      setCurrentRiverWalk(null);
-                    }
-                  }}
-                >
-                  Join a Walk
-                </button>
+                canAccessAdvancedFeatures(subscription) ? (
+                  <button
+                    className="bg-green-500 hover:bg-green-600 text-white px-4 py-3 rounded-lg font-medium transition-colors touch-manipulation"
+                    onClick={() => {
+                      setShowJoinCollaboration(true);
+                      // Close add form if it's open
+                      if (showForm) {
+                        setShowForm(false);
+                        setCurrentRiverWalk(null);
+                      }
+                    }}
+                  >
+                    Join a Walk
+                  </button>
+                ) : (
+                  <button
+                    className="bg-gradient-to-r from-blue-50 to-teal-50 hover:from-blue-100 hover:to-teal-100 text-blue-700 px-4 py-3 rounded-lg font-medium transition-all duration-200 border-2 border-blue-200 shadow-modern hover:shadow-modern-lg touch-manipulation relative"
+                    onClick={() => setShowUpgradePrompt('advanced')}
+                  >
+                    <Crown className="w-4 h-4 mr-2" />
+                    Join a Walk
+                    <div className="absolute -top-1 -right-1 bg-blue-600 text-white text-xs px-1.5 py-0.5 rounded-full">
+                      Pro
+                    </div>
+                  </button>
+                )
               )}
             </div>
           </div>
@@ -690,6 +705,14 @@ export default function RiverWalksPage() {
               <p className="text-gray-600">Loading site data and preparing visualizations...</p>
             </div>
           </div>
+        )}
+
+        {/* Upgrade Prompt Modal */}
+        {showUpgradePrompt && (
+          <UpgradePrompt
+            feature={showUpgradePrompt}
+            onClose={() => setShowUpgradePrompt(null)}
+          />
         )}
       </div>
       
