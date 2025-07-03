@@ -1,5 +1,13 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { supabase } from '../../lib/supabase';
+import { createClient } from '@supabase/supabase-js';
+
+// Create service role client for public metrics (bypass RLS)
+const supabaseAdmin = process.env.SUPABASE_SERVICE_ROLE_KEY 
+  ? createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY
+    )
+  : null;
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') {
@@ -7,8 +15,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
+    if (!supabaseAdmin) {
+      throw new Error('Service role key not configured');
+    }
+
     // Get total river walks (excluding archived)
-    const { count: riverWalkCount, error: riverWalkError } = await supabase
+    const { count: riverWalkCount, error: riverWalkError } = await supabaseAdmin
       .from('river_walks')
       .select('*', { count: 'exact', head: true })
       .eq('archived', false);
@@ -19,7 +31,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     // Get total sites
-    const { count: siteCount, error: siteError } = await supabase
+    const { count: siteCount, error: siteError } = await supabaseAdmin
       .from('sites')
       .select('*', { count: 'exact', head: true });
 
@@ -29,7 +41,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     // Get total measurement points
-    const { count: measurementCount, error: measurementError } = await supabase
+    const { count: measurementCount, error: measurementError } = await supabaseAdmin
       .from('measurement_points')
       .select('*', { count: 'exact', head: true });
 
@@ -39,7 +51,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     // Calculate total area studied (sum of cross-sectional areas)
-    const { data: sitesData, error: sitesDataError } = await supabase
+    const { data: sitesData, error: sitesDataError } = await supabaseAdmin
       .from('sites')
       .select('river_width')
       .not('river_width', 'is', null);
@@ -55,7 +67,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }, 0) || 0;
 
     // Get sites with coordinates for map
-    const { data: coordinatesData, error: coordinatesError } = await supabase
+    const { data: coordinatesData, error: coordinatesError } = await supabaseAdmin
       .from('sites')
       .select('latitude, longitude, site_name')
       .not('latitude', 'is', null)

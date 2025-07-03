@@ -115,22 +115,22 @@ export default function Home() {
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div className="glass rounded-xl p-6 text-center hover:scale-105 transition-transform">
+                <div className="glass rounded-xl p-6 text-center hover:scale-105 transition-transform bg-gray-900/80 backdrop-blur-md">
                   <MapPin className="w-10 h-10 text-blue-300 mx-auto mb-4" />
                   <h3 className="font-semibold text-white mb-3">GPS-Precise Mapping</h3>
-                  <p className="text-white/80">Drop pins exactly where you take measurements. Build a network of study sites across the UK.</p>
+                  <p className="text-gray-200">Drop pins exactly where you take measurements. Build a network of study sites across the UK.</p>
                 </div>
                 
-                <div className="glass rounded-xl p-6 text-center hover:scale-105 transition-transform">
+                <div className="glass rounded-xl p-6 text-center hover:scale-105 transition-transform bg-gray-900/80 backdrop-blur-md">
                   <BarChart3 className="w-10 h-10 text-green-300 mx-auto mb-4" />
                   <h3 className="font-semibold text-white mb-3">Charts That Wow</h3>
-                  <p className="text-white/80">Transform depth readings into stunning cross-sections and 3D river profiles that tell stories.</p>
+                  <p className="text-gray-200">Transform depth readings into stunning cross-sections and 3D river profiles that tell stories.</p>
                 </div>
                 
-                <div className="glass rounded-xl p-6 text-center hover:scale-105 transition-transform">
+                <div className="glass rounded-xl p-6 text-center hover:scale-105 transition-transform bg-gray-900/80 backdrop-blur-md">
                   <Users className="w-10 h-10 text-purple-300 mx-auto mb-4" />
                   <h3 className="font-semibold text-white mb-3">Built for Learning</h3>
-                  <p className="text-white/80">Perfect for GCSE coursework, but designed for anyone curious about understanding rivers.</p>
+                  <p className="text-gray-200">Perfect for GCSE coursework, but designed for anyone curious about understanding rivers.</p>
                 </div>
               </div>
             </div>
@@ -140,11 +140,11 @@ export default function Home() {
         {/* Final CTA */}
         {!user && (
           <div className="py-16 px-4 sm:px-6 lg:px-8 text-center">
-            <div className="glass rounded-2xl p-8 max-w-2xl mx-auto">
+            <div className="glass rounded-2xl p-8 max-w-2xl mx-auto bg-gray-900/80 backdrop-blur-md">
               <h2 className="text-2xl sm:text-3xl font-bold text-white mb-4">
                 Ready to explore rivers like never before?
               </h2>
-              <p className="text-white/80 mb-6">
+              <p className="text-gray-200 mb-6">
                 Start your first river study in less than 2 minutes. No credit card required.
               </p>
               <AuthCard />

@@ -356,15 +356,9 @@ export function InteractivePreview() {
             ticktext: ROUNDNESS_LABELS.map(l => l.label)
           }
         },
-        showlegend: true,
-        legend: {
-          orientation: 'h' as any,
-          x: 0.5,
-          xanchor: 'center' as any,
-          y: -0.1
-        },
+        showlegend: false,
         height: 400,
-        margin: { t: 50, r: 50, b: 80, l: 50 }
+        margin: { t: 50, r: 50, b: 50, l: 50 }
       }
     };
   };
@@ -793,8 +787,7 @@ export function InteractivePreview() {
             <p className="text-white/60 text-sm">Devon, United Kingdom • June 2024</p>
             <div className="bg-blue-500/20 border border-blue-400/30 rounded-lg p-3 mt-4">
               <p className="text-blue-200 text-sm">
-                ⚡ <strong>Demo Report:</strong> This is a simplified preview. Real reports are much more detailed with GPS maps, 
-                statistical analysis, individual site charts, and comprehensive methodology sections.
+                ⚡ <strong>Demo Report:</strong> This is a simplified preview. Real reports include much more detail.
               </p>
             </div>
           </div>
@@ -959,13 +952,6 @@ export function InteractivePreview() {
           </div>
           
           <div className="text-center space-y-4">
-            <div className="bg-yellow-500/20 border border-yellow-400/30 rounded-lg p-4 mb-4">
-              <p className="text-yellow-200 text-sm">
-                📝 <strong>Real Reports Include:</strong> GPS-precise site locations, detailed methodology, 
-                individual cross-section charts for each site, statistical correlations, photo documentation, 
-                and much more comprehensive analysis than shown in this demo.
-              </p>
-            </div>
             <p className="text-white/90 text-lg">
               This professional report combines all 6 sites into a comprehensive analysis perfect for 
               GCSE Geography coursework. The real app generates this as a downloadable PDF.
