@@ -57,60 +57,41 @@ const SubscriptionPage: React.FC = () => {
       }
       console.log('✅ Stripe loaded successfully');
 
-      // Calculate the final price with discount
-      const basePrice = plans[planType].price;
-      let finalPrice = basePrice;
-      
-      console.log('💰 Base price:', basePrice, 'pence');
-      
-      if (discount) {
-        const discountAmount = Math.round((basePrice * discount.percentage) / 100);
-        finalPrice = Math.max(0, basePrice - discountAmount);
-        console.log('🎯 Discount applied:', {
-          code: discount.code,
-          percentage: discount.percentage,
-          discountAmount,
-          finalPrice
-        });
-      } else {
-        console.log('💸 No discount applied');
-      }
+      console.log('💰 Plan:', planType);
+      console.log('🎫 Voucher:', voucherCode || 'None');
 
-      // For now, use predefined prices (no dynamic discounts in redirectToCheckout)
-      // Note: Actual discount implementation requires backend checkout session API
-      if (discount && finalPrice !== basePrice) {
-        const proceed = confirm(`Note: The discount will be shown in the UI, but you'll be charged the full price (£${(basePrice/100).toFixed(2)}) at checkout. The discount feature requires additional backend setup. Proceed anyway?`);
-        if (!proceed) {
-          setLoading(null);
-          return;
-        }
-      }
-      
-      const lineItems = [{
-        price: plans[planType].priceId,
-        quantity: 1,
-      }];
-      
-      console.log('💡 Using predefined price ID:', plans[planType].priceId);
-      console.log('🔄 Build timestamp:', new Date().toISOString());
-
-      console.log('📦 Line items:', JSON.stringify(lineItems, null, 2));
-
-      const successUrl = `${window.location.origin}/subscription/success?session_id={CHECKOUT_SESSION_ID}&plan=${planType}${discount ? `&voucher=${encodeURIComponent(discount.code)}&discount=${basePrice - finalPrice}` : ''}`;
+      // Create checkout session with backend API (supports vouchers)
+      const successUrl = `${window.location.origin}/subscription/success?session_id={CHECKOUT_SESSION_ID}&plan=${planType}${voucherCode ? `&voucher=${encodeURIComponent(voucherCode)}` : ''}`;
       const cancelUrl = `${window.location.origin}/subscription`;
-      
+
       console.log('🔗 URLs:', { successUrl, cancelUrl });
 
-      const checkoutOptions = {
-        lineItems: lineItems,
-        mode: 'payment' as const,
-        successUrl: successUrl,
-        cancelUrl: cancelUrl,
-      };
+      const response = await fetch('/api/stripe/create-checkout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          planType,
+          voucherCode: voucherCode || null,
+          successUrl,
+          cancelUrl,
+        }),
+      });
 
-      console.log('⚙️ Checkout options:', JSON.stringify(checkoutOptions, null, 2));
+      const data = await response.json();
 
-      const { error } = await stripe.redirectToCheckout(checkoutOptions);
+      if (!response.ok) {
+        console.error('❌ Checkout creation failed:', data);
+        throw new Error(data.error || 'Failed to create checkout session');
+      }
+
+      console.log('✅ Checkout session created:', data.sessionId);
+
+      // Redirect to Stripe checkout
+      const { error } = await stripe.redirectToCheckout({
+        sessionId: data.sessionId,
+      });
 
       if (error) {
         console.error('❌ Stripe checkout error:', error);
@@ -128,22 +109,55 @@ const SubscriptionPage: React.FC = () => {
   };
 
   const validateVoucher = async () => {
-    // Placeholder for voucher validation
-    // Will implement when API routes are added back
-    if (voucherCode === 'LAUNCH50') {
-      setDiscount({ code: 'LAUNCH50', percentage: 50 });
-    } else if (voucherCode === 'TEACHER100') {
-      setDiscount({ code: 'TEACHER100', percentage: 100 });
-    } else {
-      alert('Invalid voucher code');
+    if (!voucherCode.trim()) {
+      alert('Please enter a voucher code');
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/vouchers/validate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          code: voucherCode.toUpperCase(),
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.valid) {
+        setDiscount({
+          code: data.voucher.code,
+          percentage: data.voucher.discount_type === 'percentage' ? data.voucher.discount_value : 0,
+          fixedAmount: data.voucher.discount_type === 'fixed_amount' ? data.voucher.discount_value : 0,
+          type: data.voucher.discount_type,
+        });
+        alert(`Voucher applied! ${data.voucher.discount_type === 'percentage' ? `${data.voucher.discount_value}% off` : `£${(data.voucher.discount_value / 100).toFixed(2)} off`}`);
+      } else {
+        alert(data.error || 'Invalid voucher code');
+        setDiscount(null);
+      }
+    } catch (error) {
+      console.error('Error validating voucher:', error);
+      alert('Failed to validate voucher. Please try again.');
       setDiscount(null);
     }
   };
 
-  const formatPrice = (pence: number, discountPercentage?: number) => {
+  const formatPrice = (pence: number, discount?: any) => {
     const originalPrice = pence / 100;
-    if (discountPercentage) {
-      const discountedPrice = originalPrice * (1 - discountPercentage / 100);
+    
+    if (discount) {
+      let discountedPrice = originalPrice;
+      
+      if (discount.type === 'percentage') {
+        discountedPrice = originalPrice * (1 - discount.percentage / 100);
+      } else if (discount.type === 'fixed_amount') {
+        discountedPrice = Math.max(0, originalPrice - (discount.fixedAmount / 100));
+      }
+      
       return (
         <span>
           <span className="line-through text-gray-500">£{originalPrice.toFixed(2)}</span>
@@ -202,7 +216,7 @@ const SubscriptionPage: React.FC = () => {
             <div className="text-center mb-4 sm:mb-6">
               <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">Annual Access</h3>
               <div className="text-3xl sm:text-4xl font-bold text-blue-600 mb-2">
-                {formatPrice(plans.yearly.price, discount?.percentage)}
+                {formatPrice(plans.yearly.price, discount)}
               </div>
               <p className="text-sm sm:text-base text-gray-600">Perfect for current GCSE students</p>
             </div>
@@ -250,7 +264,7 @@ const SubscriptionPage: React.FC = () => {
             <div className="text-center mb-4 sm:mb-6 pt-2">
               <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">Lifetime Access</h3>
               <div className="text-3xl sm:text-4xl font-bold text-teal-600 mb-2">
-                {formatPrice(plans.lifetime.price, discount?.percentage)}
+                {formatPrice(plans.lifetime.price, discount)}
               </div>
               <p className="text-sm sm:text-base text-gray-600">For students and future reference</p>
             </div>
