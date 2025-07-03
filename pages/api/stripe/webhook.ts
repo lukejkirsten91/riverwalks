@@ -97,23 +97,50 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     }
 
     // Get user by email
+    console.log('🔍 Looking for user with email:', customerEmail);
     const { data: user, error: userError } = await supabase.auth.admin.listUsers();
+    
+    if (userError) {
+      console.error('❌ Error listing users:', userError);
+      throw new Error(`Error listing users: ${userError.message}`);
+    }
+    
+    console.log('👥 Found users:', user?.users?.map(u => ({
+      id: u.id,
+      email: u.email,
+      created_at: u.created_at
+    })));
+    
     const foundUser = user?.users.find(u => u.email === customerEmail);
     
     if (!foundUser) {
-      throw new Error(`User not found for email: ${customerEmail}`);
+      console.error('❌ User not found. Available users:', user?.users?.map(u => u.email));
+      throw new Error(`User not found for email: ${customerEmail}. Available users: ${user?.users?.map(u => u.email).join(', ')}`);
     }
+    
+    console.log('✅ Found user:', { id: foundUser.id, email: foundUser.email });
 
     // Determine subscription type from price ID
+    console.log('💰 Getting line items for session:', session.id);
     const lineItems = await stripe.checkout.sessions.listLineItems(session.id);
     const priceId = lineItems.data[0]?.price?.id;
+    
+    console.log('🏷️ Price ID from session:', priceId);
+    console.log('📋 Line items:', lineItems.data.map(item => ({
+      price_id: item.price?.id,
+      description: item.description,
+      amount_total: item.amount_total
+    })));
     
     let subscriptionType: 'annual' | 'lifetime';
     if (priceId === 'price_1RgTO54CotGwBUxNPQl3SLAP') {
       subscriptionType = 'annual';
+      console.log('✅ Detected annual subscription');
     } else if (priceId === 'price_1RgTPF4CotGwBUxNiayDAzep') {
       subscriptionType = 'lifetime';
+      console.log('✅ Detected lifetime subscription');
     } else {
+      console.error('❌ Unknown price ID:', priceId);
       throw new Error(`Unknown price ID: ${priceId}`);
     }
 
