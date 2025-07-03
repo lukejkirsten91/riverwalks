@@ -147,7 +147,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     })));
     
     let subscriptionType: 'annual' | 'lifetime';
-    if (priceId === 'price_1RgTO54CotGwBUxNPQl3SLAP') {
+    if (priceId === 'price_1RgTO54CotGwBUxNPQl3SLAP' || priceId === 'price_1RgTPb4CotGwBUxN4LVbW9vO') {
       subscriptionType = 'annual';
       console.log('✅ Detected annual subscription');
     } else if (priceId === 'price_1RgTPF4CotGwBUxNiayDAzep') {

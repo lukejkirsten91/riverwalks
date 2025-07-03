@@ -55,6 +55,7 @@ https://your-domain.com/api/stripe/webhook
 
 ```typescript
 'price_1RgTO54CotGwBUxNPQl3SLAP' → 'annual' subscription
+'price_1RgTPb4CotGwBUxN4LVbW9vO' → 'annual' subscription (new)
 'price_1RgTPF4CotGwBUxNiayDAzep' → 'lifetime' subscription
 ```
 
