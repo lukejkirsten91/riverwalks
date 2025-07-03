@@ -21,15 +21,27 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
+    // Map frontend plan types to database plan types
+    const planTypeMapping: { [key: string]: string } = {
+      'yearly': 'annual',
+      'annual': 'annual',
+      'lifetime': 'lifetime'
+    };
+
+    const dbPlanType = planTypeMapping[planType];
+    if (!dbPlanType) {
+      return res.status(400).json({ error: 'Invalid plan type' });
+    }
+
     // Get current prices
     const currentPrices = getCurrentPrices();
-    const priceId = planType === 'lifetime' ? currentPrices.lifetime : currentPrices.annual;
+    const priceId = dbPlanType === 'lifetime' ? currentPrices.lifetime : currentPrices.annual;
 
     if (!priceId) {
       return res.status(400).json({ error: 'Invalid plan type' });
     }
 
-    console.log('💰 Plan type:', planType, 'Price ID:', priceId);
+    console.log('💰 Plan type:', planType, '→', dbPlanType, 'Price ID:', priceId);
 
     // Base checkout session parameters
     const sessionParams: Stripe.Checkout.SessionCreateParams = {
@@ -44,7 +56,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       success_url: successUrl,
       cancel_url: cancelUrl || `${new URL(successUrl).origin}/subscription`,
       metadata: {
-        plan_type: planType,
+        plan_type: dbPlanType,
         stripe_mode: getStripeMode(),
       },
     };
@@ -78,9 +90,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return res.status(400).json({ error: 'Voucher usage limit reached' });
       }
 
-      // Check if voucher applies to this plan
-      if (!voucher.plan_types.includes(planType)) {
-        console.log('❌ Voucher not valid for plan:', voucherCode, planType);
+      // Check if voucher applies to this plan (use mapped plan type)
+      if (!voucher.plan_types.includes(dbPlanType)) {
+        console.log('❌ Voucher not valid for plan:', voucherCode, planType, '→', dbPlanType, 'Valid for:', voucher.plan_types);
         return res.status(400).json({ error: `Voucher not valid for ${planType} plan` });
       }
 
@@ -166,9 +178,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   } catch (error) {
     console.error('❌ Checkout session creation failed:', error);
+    
+    // Log more details for debugging
+    if (error instanceof Error) {
+      console.error('Error name:', error.name);
+      console.error('Error message:', error.message);
+      console.error('Error stack:', error.stack);
+    }
+    
     return res.status(500).json({
       error: 'Failed to create checkout session',
       details: error instanceof Error ? error.message : 'Unknown error',
+      name: error instanceof Error ? error.name : 'Unknown',
     });
   }
 }

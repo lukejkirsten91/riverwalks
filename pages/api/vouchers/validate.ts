@@ -53,6 +53,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       code: voucher.code,
       discount_type: voucher.discount_type,
       discount_value: voucher.discount_value,
+      plan_types: voucher.plan_types,
       uses_remaining: voucher.max_uses - voucher.uses_count
     });
 
