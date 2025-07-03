@@ -58,7 +58,10 @@ export function TermsAcceptance({ onAcceptance, loading = false, required = true
       {/* Required Agreements */}
       <div className="space-y-4 mb-6">
         {/* Terms of Service */}
-        <div className="flex items-start gap-3 p-4 border border-gray-200 rounded-lg">
+        <div 
+          className="flex items-start gap-3 p-4 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"
+          onClick={() => !loading && setTermsAccepted(!termsAccepted)}
+        >
           <label className="flex items-center cursor-pointer">
             <input
               type="checkbox"
@@ -85,6 +88,7 @@ export function TermsAcceptance({ onAcceptance, loading = false, required = true
               href="/terms" 
               target="_blank"
               className="text-sm text-primary hover:text-primary/80 hover:underline"
+              onClick={(e) => e.stopPropagation()}
             >
               Read Terms of Service →
             </Link>
@@ -92,7 +96,10 @@ export function TermsAcceptance({ onAcceptance, loading = false, required = true
         </div>
 
         {/* Privacy Policy */}
-        <div className="flex items-start gap-3 p-4 border border-gray-200 rounded-lg">
+        <div 
+          className="flex items-start gap-3 p-4 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"
+          onClick={() => !loading && setPrivacyAccepted(!privacyAccepted)}
+        >
           <label className="flex items-center cursor-pointer">
             <input
               type="checkbox"
@@ -119,6 +126,7 @@ export function TermsAcceptance({ onAcceptance, loading = false, required = true
               href="/privacy" 
               target="_blank"
               className="text-sm text-primary hover:text-primary/80 hover:underline"
+              onClick={(e) => e.stopPropagation()}
             >
               Read Privacy Policy →
             </Link>
@@ -126,7 +134,10 @@ export function TermsAcceptance({ onAcceptance, loading = false, required = true
         </div>
 
         {/* Optional Marketing Consent */}
-        <div className="flex items-start gap-3 p-4 border border-gray-200 rounded-lg bg-gray-50">
+        <div 
+          className="flex items-start gap-3 p-4 border border-gray-200 rounded-lg bg-gray-50 cursor-pointer hover:bg-gray-100 transition-colors"
+          onClick={() => !loading && setMarketingConsent(!marketingConsent)}
+        >
           <label className="flex items-center cursor-pointer">
             <input
               type="checkbox"
@@ -154,7 +165,7 @@ export function TermsAcceptance({ onAcceptance, loading = false, required = true
         <button
           onClick={handleSubmit}
           disabled={!canProceed || loading}
-          className={`flex-1 py-3 px-4 rounded-lg font-medium transition-all duration-200 ${
+          className={`flex-1 py-4 px-6 rounded-lg font-medium transition-all duration-200 min-h-[52px] touch-manipulation text-base ${
             canProceed && !loading
               ? 'bg-primary hover:bg-primary/90 text-white shadow-md hover:shadow-lg'
               : 'bg-gray-100 text-gray-400 cursor-not-allowed'
