@@ -255,26 +255,55 @@ export function InteractivePreview() {
   const getCrossSectionChartData = () => {
     if (userSite.measurementPoints.length < 2) return null;
 
+    const maxDepth = Math.max(...userSite.measurementPoints.map(p => p.depth));
+    const bankExtension = maxDepth + 0.5; // Extend banks below deepest point
+
     return {
       data: [
+        // Brown underground area
+        {
+          x: [0, ...userSite.measurementPoints.map(p => p.distance), userSite.riverWidth, userSite.riverWidth, 0, 0],
+          y: [0, ...userSite.measurementPoints.map(p => -p.depth), 0, -bankExtension, -bankExtension, 0],
+          fill: 'toself' as any,
+          type: 'scatter' as any,
+          mode: 'none' as any,
+          name: 'Underground',
+          fillcolor: 'peru',
+          line: { width: 0 },
+          showlegend: false
+        },
+        // Water area
+        {
+          x: [0, ...userSite.measurementPoints.map(p => p.distance), userSite.riverWidth],
+          y: [0, ...userSite.measurementPoints.map(p => -p.depth), 0],
+          fill: 'tozeroy' as any,
+          type: 'scatter' as any,
+          mode: 'none' as any,
+          name: 'Water',
+          fillcolor: 'lightblue',
+          line: { width: 0 },
+          showlegend: false
+        },
+        // River bed line
         {
           x: userSite.measurementPoints.map(p => p.distance),
-          y: userSite.measurementPoints.map(p => -p.depth), // Negative for depth below surface
-          fill: 'tonexty' as any,
+          y: userSite.measurementPoints.map(p => -p.depth),
           type: 'scatter' as any,
           mode: 'lines+markers' as any,
           name: 'River Bed',
           line: { color: 'royalblue', width: 2 },
           marker: { color: 'darkblue', size: 8 },
-          fillcolor: 'lightblue'
+          showlegend: false
         },
+        // Water surface line
         {
           x: [0, userSite.riverWidth],
           y: [0, 0],
           type: 'scatter' as any,
           mode: 'lines' as any,
           name: 'Water Surface',
-          line: { color: 'lightblue', width: 2 }
+          line: { color: 'lightblue', width: 2 },
+          showlegend: false
         }
       ],
       layout: {
@@ -319,15 +348,23 @@ export function InteractivePreview() {
         polar: {
           radialaxis: { 
             visible: true,
-            range: [0, Math.max(...roundnessCounts) + 1]
+            range: [0, Math.max(...roundnessCounts) + 1],
+            title: { text: 'Count of Measurements' }
           },
           angularaxis: {
             tickvals: angles,
             ticktext: ROUNDNESS_LABELS.map(l => l.label)
           }
         },
+        showlegend: true,
+        legend: {
+          orientation: 'h' as any,
+          x: 0.5,
+          xanchor: 'center' as any,
+          y: -0.1
+        },
         height: 400,
-        margin: { t: 50, r: 50, b: 50, l: 50 }
+        margin: { t: 50, r: 50, b: 80, l: 50 }
       }
     };
   };
@@ -336,19 +373,19 @@ export function InteractivePreview() {
   if (currentStep === 'intro') {
     return (
       <div className="max-w-4xl mx-auto text-center">
-        <div className="glass rounded-2xl p-8 mb-8">
+        <div className="glass rounded-2xl p-8 mb-8 bg-gray-900/80 backdrop-blur-md">
           <h2 className="text-3xl font-bold text-white mb-4">
             Try It Yourself! 🎯
           </h2>
-          <p className="text-white/90 text-lg mb-6 max-w-2xl mx-auto">
+          <p className="text-gray-100 text-lg mb-6 max-w-2xl mx-auto">
             Experience the full Riverwalks workflow! You'll complete Site 6 of our River Dart study 
             using the exact same 4-step process as the main app, with live charts updating as you enter data.
           </p>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-            <div className="bg-white/10 rounded-xl p-6">
+            <div className="bg-gray-800/60 rounded-xl p-6 border border-gray-700/50">
               <h3 className="text-white font-semibold mb-3">📊 4-Step Process</h3>
-              <ul className="text-white/80 text-left space-y-2">
+              <ul className="text-gray-200 text-left space-y-2">
                 <li>• Cross-sectional measurements with live chart</li>
                 <li>• Velocity timing with instant calculations</li>
                 <li>• Sediment analysis with wind rose visualization</li>
@@ -356,9 +393,9 @@ export function InteractivePreview() {
               </ul>
             </div>
             
-            <div className="bg-white/10 rounded-xl p-6">
+            <div className="bg-gray-800/60 rounded-xl p-6 border border-gray-700/50">
               <h3 className="text-white font-semibold mb-3">🌊 River Dart Study</h3>
-              <ul className="text-white/80 text-left space-y-2">
+              <ul className="text-gray-200 text-left space-y-2">
                 <li>• 5 sites already completed with real data</li>
                 <li>• From Devon moorland to village outflow</li>
                 <li>• You'll complete the final downstream site</li>
@@ -389,7 +426,7 @@ export function InteractivePreview() {
       <div className="max-w-6xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Data Entry Side */}
-          <div className="glass rounded-2xl p-6">
+          <div className="glass rounded-2xl p-6 bg-gray-900/80 backdrop-blur-md">
             <h3 className="text-2xl font-bold text-white mb-4">
               Step 1: Cross-Sectional Area
             </h3>
@@ -464,7 +501,7 @@ export function InteractivePreview() {
           </div>
           
           {/* Live Chart Side */}
-          <div className="glass rounded-2xl p-6">
+          <div className="glass rounded-2xl p-6 bg-gray-900/80 backdrop-blur-md">
             <h3 className="text-2xl font-bold text-white mb-4">
               Live Cross-Section Chart
             </h3>
@@ -495,7 +532,7 @@ export function InteractivePreview() {
       <div className="max-w-6xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Data Entry Side */}
-          <div className="glass rounded-2xl p-6">
+          <div className="glass rounded-2xl p-6 bg-gray-900/80 backdrop-blur-md">
             <h3 className="text-2xl font-bold text-white mb-4">
               Step 2: Velocity Measurements
             </h3>
@@ -566,7 +603,7 @@ export function InteractivePreview() {
           </div>
           
           {/* Live Metrics Side */}
-          <div className="glass rounded-2xl p-6">
+          <div className="glass rounded-2xl p-6 bg-gray-900/80 backdrop-blur-md">
             <h3 className="text-2xl font-bold text-white mb-4">
               Live Velocity Analysis
             </h3>
@@ -614,7 +651,7 @@ export function InteractivePreview() {
       <div className="max-w-6xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Data Entry Side */}
-          <div className="glass rounded-2xl p-6">
+          <div className="glass rounded-2xl p-6 bg-gray-900/80 backdrop-blur-md">
             <h3 className="text-2xl font-bold text-white mb-4">
               Step 3: Sediment Analysis
             </h3>
@@ -693,7 +730,7 @@ export function InteractivePreview() {
           </div>
           
           {/* Live Wind Rose Chart Side */}
-          <div className="glass rounded-2xl p-6">
+          <div className="glass rounded-2xl p-6 bg-gray-900/80 backdrop-blur-md">
             <h3 className="text-2xl font-bold text-white mb-4">
               Live Sediment Analysis
             </h3>
@@ -746,14 +783,20 @@ export function InteractivePreview() {
 
     return (
       <div className="max-w-7xl mx-auto">
-        <div className="glass rounded-2xl p-8">
+        <div className="glass rounded-2xl p-8 bg-gray-900/80 backdrop-blur-md">
           {/* Report Header */}
           <div className="text-center mb-8">
             <h3 className="text-3xl font-bold text-white mb-2">
-              River Dart Study Report
+              📋 Example Report Preview
             </h3>
             <p className="text-white/80 text-lg">Complete 6-Site Longitudinal Analysis</p>
             <p className="text-white/60 text-sm">Devon, United Kingdom • June 2024</p>
+            <div className="bg-blue-500/20 border border-blue-400/30 rounded-lg p-3 mt-4">
+              <p className="text-blue-200 text-sm">
+                ⚡ <strong>Demo Report:</strong> This is a simplified preview. Real reports are much more detailed with GPS maps, 
+                statistical analysis, individual site charts, and comprehensive methodology sections.
+              </p>
+            </div>
           </div>
 
           {/* Study KPIs */}
@@ -784,12 +827,12 @@ export function InteractivePreview() {
                 <thead>
                   <tr className="border-b border-white/20">
                     <th className="text-left py-2 px-3">Site</th>
-                    <th className="text-left py-2 px-3">Name</th>
                     <th className="text-right py-2 px-3">Width (m)</th>
                     <th className="text-right py-2 px-3">Area (m²)</th>
                     <th className="text-right py-2 px-3">Velocity (m/s)</th>
                     <th className="text-right py-2 px-3">Discharge (m³/s)</th>
-                    <th className="text-right py-2 px-3">Sediment</th>
+                    <th className="text-right py-2 px-3">Sediment (mm)</th>
+                    <th className="text-left py-2 px-3">Location</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -799,15 +842,17 @@ export function InteractivePreview() {
                     const avgSedSize = site.sedimentMeasurements.length > 0 ? 
                       site.sedimentMeasurements.reduce((sum, s) => sum + s.size_mm, 0) / site.sedimentMeasurements.length : 0;
                     
+                    const locationTypes = ['Meadow', 'Bridge', 'Bend', 'Rapids', 'Outflow', 'Your Site'];
+                    
                     return (
                       <tr key={index} className={`border-b border-white/10 ${index === 5 ? 'bg-blue-500/10' : ''}`}>
                         <td className="py-2 px-3 font-medium">{site.siteNumber}</td>
-                        <td className="py-2 px-3">{site.siteName}</td>
                         <td className="py-2 px-3 text-right">{site.riverWidth.toFixed(1)}</td>
                         <td className="py-2 px-3 text-right">{area.toFixed(2)}</td>
                         <td className="py-2 px-3 text-right">{site.averageVelocity.toFixed(2)}</td>
                         <td className="py-2 px-3 text-right">{discharge.toFixed(3)}</td>
-                        <td className="py-2 px-3 text-right">{avgSedSize.toFixed(1)}mm</td>
+                        <td className="py-2 px-3 text-right">{avgSedSize.toFixed(1)}</td>
+                        <td className="py-2 px-3">{locationTypes[index]}</td>
                       </tr>
                     );
                   })}
@@ -815,7 +860,7 @@ export function InteractivePreview() {
               </table>
             </div>
             {hasValidData && (
-              <p className="text-blue-300 text-xs mt-2">✨ Site 6 highlighted - your contribution to the study!</p>
+              <p className="text-blue-300 text-xs mt-2">✨ "Your Site" highlighted - this shows your data integrated into the complete study!</p>
             )}
           </div>
 
@@ -826,7 +871,7 @@ export function InteractivePreview() {
               <div className="space-y-3 text-white/80 text-sm">
                 <div className="flex justify-between">
                   <span>Fastest flow:</span>
-                  <span className="text-white font-medium">Site 4 (Rocky Rapids) - 0.84 m/s</span>
+                  <span className="text-white font-medium">Site 4 (Rapids) - 0.84 m/s</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Deepest point:</span>
@@ -914,6 +959,13 @@ export function InteractivePreview() {
           </div>
           
           <div className="text-center space-y-4">
+            <div className="bg-yellow-500/20 border border-yellow-400/30 rounded-lg p-4 mb-4">
+              <p className="text-yellow-200 text-sm">
+                📝 <strong>Real Reports Include:</strong> GPS-precise site locations, detailed methodology, 
+                individual cross-section charts for each site, statistical correlations, photo documentation, 
+                and much more comprehensive analysis than shown in this demo.
+              </p>
+            </div>
             <p className="text-white/90 text-lg">
               This professional report combines all 6 sites into a comprehensive analysis perfect for 
               GCSE Geography coursework. The real app generates this as a downloadable PDF.
