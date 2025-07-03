@@ -20,6 +20,8 @@ import { SubscriptionBadge } from '../components/ui/SubscriptionBadge';
 import { UpgradePrompt } from '../components/ui/UpgradePrompt';
 import { useSubscription, canAccessAdvancedFeatures } from '../hooks/useSubscription';
 import { TermsGate } from '../components/auth/TermsGate';
+import { WelcomeFlow } from '../components/onboarding/WelcomeFlow';
+import { useOnboarding } from '../hooks/useOnboarding';
 import type { RiverWalk, RiverWalkFormData, Site } from '../types';
 import { getSitesForRiverWalk } from '../lib/api/sites';
 import type { User } from '@supabase/supabase-js';
@@ -30,6 +32,7 @@ export default function RiverWalksPage() {
   const { collaborationEnabled } = useCollaborationFeatureFlag();
   const { pendingInvites, acceptInvite } = useCollaboration();
   const subscription = useSubscription();
+  const { shouldShowWelcome, markWelcomeComplete, markFirstRiverWalkCreated } = useOnboarding();
   
   const [user, setUser] = useState<User | null>(null);
   const [showForm, setShowForm] = useState(false);
@@ -150,6 +153,8 @@ export default function RiverWalksPage() {
         await updateRiverWalk(currentRiverWalk.id, formData);
       } else {
         await createRiverWalk(formData);
+        // Mark first river walk creation for onboarding
+        await markFirstRiverWalkCreated();
       }
 
       // Reset form state
@@ -679,6 +684,14 @@ export default function RiverWalksPage() {
           <UpgradePrompt
             feature={showUpgradePrompt}
             onClose={() => setShowUpgradePrompt(null)}
+          />
+        )}
+
+        {/* Welcome Flow Modal */}
+        {shouldShowWelcome && user && (
+          <WelcomeFlow
+            onComplete={markWelcomeComplete}
+            userEmail={user.email}
           />
         )}
       </div>
