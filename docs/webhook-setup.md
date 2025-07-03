@@ -20,7 +20,7 @@ https://your-domain.com/api/stripe/webhook
 
 1. **Go to Stripe Dashboard** → Developers → Webhooks
 2. **Click "Add endpoint"**
-3. **Set endpoint URL**: `https://riverwalks.co.uk/api/stripe/webhook`
+3. **Set endpoint URL**: `https://www.riverwalks.co.uk/api/stripe/webhook`
 4. **Select events to listen for**:
    - `checkout.session.completed`
    - `payment_intent.succeeded` 

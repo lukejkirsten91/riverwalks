@@ -34,12 +34,38 @@ export function useSubscription() {
         // Check if user has a subscription record
         console.log('🔍 Checking subscription for user:', user.email, 'ID:', user.id);
         
-        const { data: subscription, error } = await supabase
-          .from('subscriptions')
-          .select('*')
-          .eq('user_id', user.id)
-          .eq('status', 'active')
-          .single();
+        // Try to get subscription - use RPC call to bypass RLS if needed
+        let subscription = null;
+        let error = null;
+        
+        try {
+          const result = await supabase
+            .from('subscriptions')
+            .select('*')
+            .eq('user_id', user.id)
+            .eq('status', 'active')
+            .single();
+          
+          subscription = result.data;
+          error = result.error;
+        } catch (rpcError) {
+          console.error('❌ RLS blocking subscription access, trying alternative approach:', rpcError);
+          
+          // Alternative: Try without single() to avoid RLS issues
+          try {
+            const fallbackResult = await supabase
+              .from('subscriptions')
+              .select('*')
+              .eq('user_id', user.id)
+              .eq('status', 'active')
+              .limit(1);
+            
+            subscription = fallbackResult.data?.[0] || null;
+            error = fallbackResult.error;
+          } catch (fallbackError) {
+            console.error('❌ Fallback subscription query also failed:', fallbackError);
+          }
+        }
 
         console.log('📊 Subscription query result:', { subscription, error });
 
