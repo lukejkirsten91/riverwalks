@@ -150,7 +150,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
       created_at: u.created_at
     })));
     
-    const foundUser = user?.users.find(u => u.email === customerEmail);
+    const foundUser = user?.users.find(u => u.email?.toLowerCase() === customerEmail.toLowerCase());
     
     if (!foundUser) {
       console.error('❌ User not found. Available users:', user?.users?.map(u => u.email));
@@ -263,7 +263,7 @@ async function logPaymentEvent(event: Stripe.Event) {
       
       if (customerEmail && supabaseAdmin) {
         const { data: user } = await supabaseAdmin.auth.admin.listUsers();
-        const foundUser = user?.users.find(u => u.email === customerEmail);
+        const foundUser = user?.users.find(u => u.email?.toLowerCase() === customerEmail.toLowerCase());
         userId = foundUser?.id || null;
       }
     }
