@@ -123,21 +123,42 @@ export default function PrivacyPolicy() {
                 </div>
               </div>
 
-              <h3>2.4 Payment Information</h3>
-              <p>
-                Payment processing is handled by Stripe. We store only the minimum necessary information 
-                (subscription status, customer ID). Full payment details are securely processed by Stripe and not stored on our servers.
-              </p>
+              <h3>2.4 Subscription and Payment Information</h3>
+              <div className="bg-blue-50 border-l-4 border-blue-400 p-4 mb-4 not-prose">
+                <div className="flex items-start gap-3">
+                  <Lock className="w-5 h-5 text-blue-600 mt-0.5" />
+                  <div>
+                    <p className="text-sm text-blue-800">
+                      <strong>What we collect:</strong> Subscription status, billing email, customer reference ID (from Stripe)
+                    </p>
+                    <p className="text-sm text-blue-800 mt-1">
+                      <strong>Payment data:</strong> Credit/debit card details are processed and stored securely by Stripe (PCI DSS Level 1 compliant). We never see or store your full payment details.
+                    </p>
+                    <p className="text-sm text-blue-800 mt-1">
+                      <strong>Why:</strong> To manage your subscription, process payments, provide customer support, and comply with financial regulations
+                    </p>
+                  </div>
+                </div>
+              </div>
+              
+              <h4>Payment Data Processing:</h4>
+              <ul>
+                <li><strong>Stripe (Payment Processor):</strong> Handles all payment card data with bank-level security</li>
+                <li><strong>Subscription Records:</strong> We store subscription status, type (annual/lifetime), and billing dates</li>
+                <li><strong>Billing History:</strong> Transaction records for invoicing and customer support</li>
+                <li><strong>Refund Processing:</strong> Limited data retention for refund and dispute resolution</li>
+              </ul>
 
               <h2>3. How We Use Your Information</h2>
               
               <h3>3.1 Core Service Provision</h3>
               <ul>
-                <li>Creating and managing your account</li>
+                <li>Creating and managing your account (free for all users)</li>
                 <li>Storing and organizing your educational data</li>
-                <li>Generating professional reports and analyses</li>
-                <li>Providing data export and backup capabilities</li>
-                <li>Enabling collaboration features (when available)</li>
+                <li>Basic river walk and site management tools</li>
+                <li>Premium features for subscribers: professional reports, data export, collaboration</li>
+                <li>Processing subscription payments and managing billing</li>
+                <li>Providing customer support for both free and premium users</li>
               </ul>
 
               <h3>3.2 Communication</h3>
@@ -229,10 +250,12 @@ export default function PrivacyPolicy() {
 
               <h3>6.3 Data Retention</h3>
               <ul>
-                <li><strong>Active accounts:</strong> Data retained while account is active</li>
-                <li><strong>Cancelled accounts:</strong> Data retained for 30 days then deleted</li>
-                <li><strong>Legal requirements:</strong> Some data may be retained longer for tax/legal purposes</li>
-                <li><strong>Backups:</strong> Automated deletion from backups within 90 days</li>
+                <li><strong>Active accounts:</strong> Personal and educational data retained while account is active</li>
+                <li><strong>Cancelled accounts:</strong> Account data retained for 30 days then deleted (allows account recovery)</li>
+                <li><strong>Payment records:</strong> Billing and subscription data retained for 7 years (UK tax law requirement)</li>
+                <li><strong>Legal compliance:</strong> Some data may be retained longer to comply with financial regulations</li>
+                <li><strong>System backups:</strong> Automated deletion from backups within 90 days</li>
+                <li><strong>Fraud prevention:</strong> Minimal data may be retained longer to prevent payment fraud</li>
               </ul>
 
               <h2>7. Your Rights (GDPR)</h2>
@@ -280,6 +303,20 @@ export default function PrivacyPolicy() {
               <p>
                 To exercise any of these rights, please contact us at privacy@riverwalks.co.uk. 
                 We will respond within 30 days of receiving your request.
+              </p>
+
+              <h3>7.1 Payment Data Rights</h3>
+              <p>
+                <strong>Important:</strong> Some payment-related data may have limited deletion rights due to:
+              </p>
+              <ul>
+                <li>UK tax law requirements (7-year retention for financial records)</li>
+                <li>Anti-fraud and anti-money laundering regulations</li>
+                <li>Stripe's own data retention policies for payment processing</li>
+                <li>Legitimate business interests in maintaining billing history</li>
+              </ul>
+              <p>
+                We will always delete the maximum amount of data legally permissible when you exercise your rights.
               </p>
 
               <h2>8. Children&apos;s Privacy (Under 18)</h2>
