@@ -2,8 +2,10 @@
 // This file centralizes all Stripe-related configuration
 
 export const STRIPE_CONFIG = {
-  // Environment detection - Allow live mode in development if explicitly set
-  isLiveMode: process.env.STRIPE_LIVE_MODE === 'true',
+  // Environment detection - Default to live mode in production, explicit setting in development
+  isLiveMode: process.env.NODE_ENV === 'production' ? 
+    (process.env.STRIPE_LIVE_MODE !== 'false') : // Default to true in production unless explicitly false
+    (process.env.STRIPE_LIVE_MODE === 'true'),   // Explicit true required in development
   
   // Price IDs - Update these when switching to live mode
   prices: {
