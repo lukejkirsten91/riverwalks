@@ -339,7 +339,7 @@ export default function RiverWalksPage() {
     <div className="min-h-screen bg-gradient-to-br from-muted/50 to-slate-100">
       <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
         {/* Compact header with logo and profile */}
-        <div className="glass rounded-2xl p-4 sm:p-6 mb-6 border border-white/20">
+        <div className="glass rounded-2xl p-4 sm:p-6 mb-8 border border-white/20">
           <div className="flex items-center justify-between gap-4">
             {/* Left side: Logo and title */}
             <div className="flex items-center gap-4 flex-1 min-w-0">
@@ -456,10 +456,10 @@ export default function RiverWalksPage() {
         )}
 
         {/* Action Buttons / Form */}
-        <div className={`morph-container ${showForm || showJoinCollaboration ? 'morph-form-state' : 'morph-button-state'} mb-6`}>
+        <div className={`morph-container ${showForm || showJoinCollaboration ? 'morph-form-state' : 'morph-button-state'} mb-8`}>
           {/* Button State */}
           <div className={`add-button-morph ${showForm || showJoinCollaboration ? 'add-button-hidden' : 'add-button-visible'}`}>
-            <div className="flex gap-3">
+            <div className="flex gap-4">
               <button
                 className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-200 transform hover:scale-105 shadow-lg touch-manipulation flex-1"
                 onClick={handleAddNewRiverWalk}
