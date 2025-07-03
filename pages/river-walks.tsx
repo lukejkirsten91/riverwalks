@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { createPortal } from 'react-dom';
 import { supabase } from '../lib/supabase';
-import { LogOut, MapPin, User as UserIcon, Users, UserCheck, Crown } from 'lucide-react';
+import { LogOut, MapPin, User as UserIcon, Users, UserCheck, Crown, Settings } from 'lucide-react';
 import {
   RiverWalkForm,
   RiverWalkList,
@@ -713,6 +713,21 @@ export default function RiverWalksPage() {
           <div className="px-4 py-2 text-sm font-medium text-foreground border-b border-border">
             {user?.email}
           </div>
+          {/* Admin button - only visible to luke.kirsten@gmail.com */}
+          {user?.email === 'luke.kirsten@gmail.com' && (
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setShowProfileDropdown(false);
+                router.push('/admin');
+              }}
+              className="w-full text-left px-4 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all duration-200 hover:scale-[1.02] flex items-center gap-2 border-b border-border"
+            >
+              <Settings className="w-4 h-4" />
+              Admin Dashboard
+            </button>
+          )}
           <button
             onClick={(e) => {
               e.preventDefault();

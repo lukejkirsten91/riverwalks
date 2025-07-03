@@ -83,44 +83,44 @@ export default function AdminDashboard() {
 
   const loadDashboardData = async () => {
     try {
-      // Load stats
-      const { data: usersData } = await supabase.auth.admin.listUsers();
-      const { data: subscriptionsData } = await supabase
-        .from('subscriptions')
-        .select('*')
-        .eq('status', 'active');
+      // Load stats - we'll need to create an API endpoint for this since admin functions require service role
+      const response = await fetch('/api/admin/stats');
+      if (response.ok) {
+        const data = await response.json();
+        setStats(data.stats);
+        setUsers(data.users);
+      } else {
+        // Fallback: Load what we can from client side
+        const { data: subscriptionsData } = await supabase
+          .from('subscriptions')
+          .select('*')
+          .eq('status', 'active');
 
-      const totalUsers = usersData.users.length;
-      const activeSubscriptions = subscriptionsData?.length || 0;
-      
-      setStats({
-        totalUsers,
-        activeSubscriptions,
-        totalRevenue: activeSubscriptions * 1.99, // Rough estimate
-        conversionRate: totalUsers > 0 ? (activeSubscriptions / totalUsers) * 100 : 0
-      });
+        const activeSubscriptions = subscriptionsData?.length || 0;
+        
+        setStats({
+          totalUsers: 0, // Will need API endpoint for this
+          activeSubscriptions,
+          totalRevenue: activeSubscriptions * 1.99,
+          conversionRate: 0
+        });
 
-      // Load users with subscription data
-      const usersWithSubs = await Promise.all(
-        usersData.users.map(async (user) => {
-          const { data: subscription } = await supabase
-            .from('subscriptions')
-            .select('*')
-            .eq('user_id', user.id)
-            .single();
+        // Load basic subscription data
+        const { data: subscriptions } = await supabase
+          .from('subscriptions')
+          .select('user_id, subscription_type, status, created_at, current_period_end');
 
-          return {
-            id: user.id,
-            email: user.email || 'No email',
-            subscription_type: subscription?.subscription_type || null,
-            status: subscription?.status || null,
-            created_at: user.created_at,
-            current_period_end: subscription?.current_period_end || null
-          };
-        })
-      );
+        const usersFromSubscriptions = subscriptions?.map(sub => ({
+          id: sub.user_id,
+          email: 'Loading...', // Will need API endpoint for emails
+          subscription_type: sub.subscription_type,
+          status: sub.status,
+          created_at: sub.created_at,
+          current_period_end: sub.current_period_end
+        })) || [];
 
-      setUsers(usersWithSubs);
+        setUsers(usersFromSubscriptions);
+      }
 
       // Load vouchers
       const { data: vouchersData } = await supabase
