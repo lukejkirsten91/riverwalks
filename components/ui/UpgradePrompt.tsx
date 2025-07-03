@@ -1,6 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { Crown, Zap, FileText, Download } from 'lucide-react';
+import { trackUserAction } from '../../hooks/usePerformanceMonitoring';
 
 interface UpgradePromptProps {
   feature: 'reports' | 'export' | 'advanced';
@@ -119,13 +120,19 @@ export function UpgradePrompt({ feature, inline = false, onClose }: UpgradePromp
           {/* Actions */}
           <div className="flex gap-3">
             <Link href="/subscription" className="flex-1">
-              <button className="w-full bg-gradient-to-r from-blue-600 to-teal-600 hover:from-blue-700 hover:to-teal-700 text-white px-4 py-3 rounded-lg font-semibold transition-all">
+              <button 
+                onClick={() => trackUserAction('premium_feature_attempted', { feature, source: 'upgrade_prompt' })}
+                className="w-full bg-gradient-to-r from-blue-600 to-teal-600 hover:from-blue-700 hover:to-teal-700 text-white px-4 py-3 rounded-lg font-semibold transition-all"
+              >
                 Upgrade Now
               </button>
             </Link>
             {onClose && (
               <button 
-                onClick={onClose}
+                onClick={() => {
+                  trackUserAction('premium_feature_dismissed', { feature, source: 'upgrade_prompt' });
+                  onClose();
+                }}
                 className="px-4 py-3 text-gray-600 hover:text-gray-800 font-medium transition-colors"
               >
                 Maybe Later
