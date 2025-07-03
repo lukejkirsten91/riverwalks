@@ -74,7 +74,7 @@ export function useSubscription() {
 
         console.log('📊 Subscription query result:', { subscription, error });
 
-        if (error && error.code !== 'PGRST116') {
+        if (error && 'code' in error && error.code !== 'PGRST116') {
           console.error('❌ Error checking subscription:', error);
         }
 
