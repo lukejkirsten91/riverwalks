@@ -32,7 +32,7 @@ export function useSubscription() {
         }
 
         // Check if user has a subscription record
-        console.log('🔍 Checking subscription for user:', user.email, 'ID:', user.id);
+        console.log('🔍 Checking subscription for authenticated user');
         
         // Try to get subscription using the database function to bypass RLS
         let subscription = null;
@@ -85,8 +85,7 @@ export function useSubscription() {
         console.log('✅ Final subscription status:', {
           isSubscribed,
           hasLifetimeAccess,
-          subscriptionType,
-          subscriptionData: subscription
+          subscriptionType
         });
 
         setStatus({

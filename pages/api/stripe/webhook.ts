@@ -131,7 +131,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     }
 
     // Get user by email using service role client
-    console.log('🔍 Looking for user with email:', customerEmail);
+    console.log('🔍 Looking for user with checkout email');
     
     if (!supabaseAdmin) {
       throw new Error('Supabase service role client not configured - missing SUPABASE_SERVICE_ROLE_KEY');
@@ -144,20 +144,16 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
       throw new Error(`Error listing users: ${userError.message}`);
     }
     
-    console.log('👥 Found users:', user?.users?.map(u => ({
-      id: u.id,
-      email: u.email,
-      created_at: u.created_at
-    })));
+    console.log('👥 Found users count:', user?.users?.length);
     
     const foundUser = user?.users.find(u => u.email?.toLowerCase() === customerEmail.toLowerCase());
     
     if (!foundUser) {
-      console.error('❌ User not found. Available users:', user?.users?.map(u => u.email));
-      throw new Error(`User not found for email: ${customerEmail}. Available users: ${user?.users?.map(u => u.email).join(', ')}`);
+      console.error('❌ User not found for checkout email');
+      throw new Error(`User not found for checkout email`);
     }
     
-    console.log('✅ Found user:', { id: foundUser.id, email: foundUser.email });
+    console.log('✅ Found user for subscription creation');
 
     // Determine subscription type from price ID
     console.log('💰 Getting line items for session:', session.id);
@@ -236,7 +232,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
       throw subError;
     }
 
-    console.log(`✅ Subscription created for ${customerEmail}: ${subscriptionType}`);
+    console.log(`✅ Subscription created: ${subscriptionType}`);
   } catch (error) {
     console.error('❌ Error handling checkout completion:', error);
     throw error;
