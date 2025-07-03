@@ -2,6 +2,13 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import { buffer } from 'micro';
 import Stripe from 'stripe';
 import { supabase } from '../../../lib/supabase';
+import { createClient } from '@supabase/supabase-js';
+
+// Create service role client for admin operations
+const supabaseAdmin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-06-30.basil',
@@ -96,9 +103,9 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
       throw new Error('No customer email found in session');
     }
 
-    // Get user by email
+    // Get user by email using service role client
     console.log('🔍 Looking for user with email:', customerEmail);
-    const { data: user, error: userError } = await supabase.auth.admin.listUsers();
+    const { data: user, error: userError } = await supabaseAdmin.auth.admin.listUsers();
     
     if (userError) {
       console.error('❌ Error listing users:', userError);
@@ -144,8 +151,9 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
       throw new Error(`Unknown price ID: ${priceId}`);
     }
 
-    // Create subscription record
-    const { error: subError } = await supabase
+    // Create subscription record using service role client
+    console.log('💾 Creating subscription record for user:', foundUser.id);
+    const { error: subError } = await supabaseAdmin
       .from('subscriptions')
       .upsert({
         user_id: foundUser.id,
@@ -193,13 +201,13 @@ async function logPaymentEvent(event: Stripe.Event) {
       const customerEmail = session.customer_details?.email;
       
       if (customerEmail) {
-        const { data: user } = await supabase.auth.admin.listUsers();
+        const { data: user } = await supabaseAdmin.auth.admin.listUsers();
         const foundUser = user?.users.find(u => u.email === customerEmail);
         userId = foundUser?.id || null;
       }
     }
 
-    await supabase
+    await supabaseAdmin
       .from('payment_events')
       .insert({
         stripe_event_id: event.id,

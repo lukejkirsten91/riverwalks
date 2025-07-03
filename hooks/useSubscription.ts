@@ -34,24 +34,27 @@ export function useSubscription() {
         // Check if user has a subscription record
         console.log('🔍 Checking subscription for user:', user.email, 'ID:', user.id);
         
-        // Try to get subscription - use RPC call to bypass RLS if needed
+        // Try to get subscription using the database function to bypass RLS
         let subscription = null;
         let error = null;
         
         try {
-          const result = await supabase
-            .from('subscriptions')
-            .select('*')
-            .eq('user_id', user.id)
-            .eq('status', 'active')
-            .single();
+          console.log('🔍 Trying database function approach');
+          const functionResult = await supabase.rpc('get_user_subscription', { 
+            user_uuid: user.id 
+          });
           
-          subscription = result.data;
-          error = result.error;
+          if (functionResult.error) {
+            console.error('❌ Database function failed:', functionResult.error);
+            throw functionResult.error;
+          }
+          
+          subscription = functionResult.data?.[0] || null;
+          console.log('✅ Database function success:', subscription);
         } catch (rpcError) {
-          console.error('❌ RLS blocking subscription access, trying alternative approach:', rpcError);
+          console.error('❌ Database function not available, trying direct query:', rpcError);
           
-          // Alternative: Try without single() to avoid RLS issues
+          // Fallback: Direct query
           try {
             const fallbackResult = await supabase
               .from('subscriptions')
@@ -62,8 +65,10 @@ export function useSubscription() {
             
             subscription = fallbackResult.data?.[0] || null;
             error = fallbackResult.error;
+            console.log('📋 Direct query result:', { subscription, error });
           } catch (fallbackError) {
-            console.error('❌ Fallback subscription query also failed:', fallbackError);
+            console.error('❌ All subscription queries failed:', fallbackError);
+            error = fallbackError;
           }
         }
 
