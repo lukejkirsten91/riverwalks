@@ -337,7 +337,8 @@ export default function RiverWalksPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-muted/50 to-slate-100">
+    <TermsGate user={user!}>
+      <div className="min-h-screen bg-gradient-to-br from-muted/50 to-slate-100">
       <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
         {/* Compact header with logo and profile */}
         <div className="glass rounded-2xl p-4 sm:p-6 mb-8 border border-white/20">
@@ -726,6 +727,7 @@ export default function RiverWalksPage() {
         </div>,
         document.body
       )}
-    </div>
+      </div>
+    </TermsGate>
   );
 }
