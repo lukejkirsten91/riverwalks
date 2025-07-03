@@ -189,26 +189,50 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     if (!supabaseAdmin) {
       throw new Error('Supabase service role client not configured');
     }
-    
-    const { error: subError } = await supabaseAdmin
+
+    // First check if user already has a subscription
+    const { data: existingSubscription } = await supabaseAdmin
       .from('subscriptions')
-      .upsert({
-        user_id: foundUser.id,
-        subscription_type: subscriptionType,
-        status: 'active',
-        stripe_customer_id: session.customer as string,
-        stripe_price_id: priceId,
-        current_period_start: new Date(),
-        current_period_end: subscriptionType === 'lifetime' 
-          ? new Date(Date.now() + 100 * 365 * 24 * 60 * 60 * 1000) // 100 years
-          : new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 year
-        created_at: new Date(),
-        updated_at: new Date(),
-      }, {
-        onConflict: 'user_id'
-      });
+      .select('id')
+      .eq('user_id', foundUser.id)
+      .single();
+
+    const subscriptionData = {
+      user_id: foundUser.id,
+      subscription_type: subscriptionType,
+      status: 'active',
+      stripe_customer_id: session.customer as string,
+      stripe_price_id: priceId,
+      current_period_start: new Date(),
+      current_period_end: subscriptionType === 'lifetime' 
+        ? new Date(Date.now() + 100 * 365 * 24 * 60 * 60 * 1000) // 100 years
+        : new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 year
+      updated_at: new Date(),
+    };
+
+    let subError;
+    if (existingSubscription) {
+      // Update existing subscription
+      console.log('📝 Updating existing subscription');
+      const result = await supabaseAdmin
+        .from('subscriptions')
+        .update(subscriptionData)
+        .eq('user_id', foundUser.id);
+      subError = result.error;
+    } else {
+      // Create new subscription
+      console.log('➕ Creating new subscription');
+      const result = await supabaseAdmin
+        .from('subscriptions')
+        .insert({
+          ...subscriptionData,
+          created_at: new Date(),
+        });
+      subError = result.error;
+    }
 
     if (subError) {
+      console.error('❌ Subscription operation failed:', subError);
       throw subError;
     }
 
