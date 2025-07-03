@@ -339,18 +339,17 @@ export default function RiverWalksPage() {
       <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
         {/* Compact header with logo and profile */}
         <div className="glass rounded-2xl p-4 sm:p-6 mb-6 border border-white/20">
-          {/* Mobile Header - Single Row */}
-          <div className="flex sm:hidden items-center justify-between gap-2">
-            <div className="flex items-center gap-3 flex-1 min-w-0">
-              <img 
-                src="/logo.png" 
-                alt="Riverwalks Logo" 
-                className="h-10 w-10 rounded-xl object-contain shadow-lg flex-shrink-0"
-              />
-              <h1 className="text-lg font-bold text-foreground truncate">River Walks</h1>
-            </div>
-            <div className="flex items-center gap-2">
-              <SubscriptionBadge subscription={subscription} userEmail={user?.email} compact />
+          {/* Mobile Header - Two Row Layout */}
+          <div className="flex sm:hidden flex-col gap-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <img 
+                  src="/logo.png" 
+                  alt="Riverwalks Logo" 
+                  className="h-10 w-10 rounded-xl object-contain shadow-lg flex-shrink-0"
+                />
+                <h1 className="text-lg font-bold text-foreground">River Walks</h1>
+              </div>
               {user && (
                 <div className="relative flex-shrink-0" data-profile-dropdown>
                   <button
@@ -371,6 +370,9 @@ export default function RiverWalksPage() {
                   </button>
                 </div>
               )}
+            </div>
+            <div className="flex justify-center">
+              <SubscriptionBadge subscription={subscription} userEmail={user?.email} compact />
             </div>
           </div>
 
@@ -494,9 +496,9 @@ export default function RiverWalksPage() {
         <div className={`morph-container ${showForm || showJoinCollaboration ? 'morph-form-state' : 'morph-button-state'} mb-6`}>
           {/* Button State */}
           <div className={`add-button-morph ${showForm || showJoinCollaboration ? 'add-button-hidden' : 'add-button-visible'}`}>
-            <div className="flex flex-col sm:flex-row gap-3">
+            <div className="flex gap-3">
               <button
-                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-200 transform hover:scale-105 shadow-lg touch-manipulation w-full sm:flex-1"
+                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-200 transform hover:scale-105 shadow-lg touch-manipulation flex-1"
                 onClick={handleAddNewRiverWalk}
               >
                 + New River Walk
@@ -504,7 +506,7 @@ export default function RiverWalksPage() {
               {collaborationEnabled && (
                 canAccessAdvancedFeatures(subscription) ? (
                   <button
-                    className="bg-green-500 hover:bg-green-600 text-white px-4 py-3 rounded-lg font-medium transition-colors touch-manipulation w-full sm:w-auto"
+                    className="bg-green-500 hover:bg-green-600 text-white px-4 py-3 rounded-lg font-medium transition-colors touch-manipulation"
                     onClick={() => {
                       setShowJoinCollaboration(true);
                       // Close add form if it's open
@@ -518,7 +520,7 @@ export default function RiverWalksPage() {
                   </button>
                 ) : (
                   <button
-                    className="bg-gradient-to-r from-blue-50 to-teal-50 hover:from-blue-100 hover:to-teal-100 text-blue-700 px-4 py-3 rounded-lg font-medium transition-all duration-200 border-2 border-blue-200 shadow-modern hover:shadow-modern-lg touch-manipulation relative w-full sm:w-auto"
+                    className="bg-gradient-to-r from-blue-50 to-teal-50 hover:from-blue-100 hover:to-teal-100 text-blue-700 px-4 py-3 rounded-lg font-medium transition-all duration-200 border-2 border-blue-200 shadow-modern hover:shadow-modern-lg touch-manipulation relative"
                     onClick={() => setShowUpgradePrompt('advanced')}
                   >
                     <Crown className="w-4 h-4 mr-2" />
@@ -575,11 +577,11 @@ export default function RiverWalksPage() {
                     />
                   </div>
                   
-                  <div className="flex flex-col sm:flex-row gap-3">
+                  <div className="flex gap-3">
                     <button
                       onClick={handleJoinCollaboration}
                       disabled={!joinCollabLink.trim()}
-                      className="w-full sm:flex-1 bg-green-600 hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white px-4 py-2 rounded-lg font-medium transition-colors"
+                      className="flex-1 bg-green-600 hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white px-4 py-2 rounded-lg font-medium transition-colors"
                     >
                       Join Walk
                     </button>
@@ -588,7 +590,7 @@ export default function RiverWalksPage() {
                         setShowJoinCollaboration(false);
                         setJoinCollabLink('');
                       }}
-                      className="btn-secondary w-full sm:w-auto"
+                      className="btn-secondary"
                     >
                       Cancel
                     </button>
