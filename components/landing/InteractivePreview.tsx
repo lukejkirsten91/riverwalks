@@ -42,6 +42,105 @@ const ROUNDNESS_LABELS = [
   { value: 6, label: "Well-rounded" }
 ];
 
+// Demo data for the 5 existing River Dart sites
+const DEMO_SITES = [
+  {
+    siteNumber: 1,
+    siteName: "Upstream Meadow",
+    riverWidth: 3.2,
+    measurementPoints: [
+      { distance: 0, depth: 0 },
+      { distance: 0.8, depth: 0.4 },
+      { distance: 1.6, depth: 0.8 },
+      { distance: 2.4, depth: 0.6 },
+      { distance: 3.2, depth: 0 }
+    ],
+    averageVelocity: 0.35,
+    sedimentMeasurements: [
+      { size_mm: 45, roundness: 3 },
+      { size_mm: 52, roundness: 4 },
+      { size_mm: 38, roundness: 3 }
+    ],
+    notes: "Shallow section with gravel bed, moderate flow through open meadowland"
+  },
+  {
+    siteNumber: 2,
+    siteName: "Bridge Crossing",
+    riverWidth: 2.8,
+    measurementPoints: [
+      { distance: 0, depth: 0 },
+      { distance: 0.7, depth: 0.6 },
+      { distance: 1.4, depth: 1.2 },
+      { distance: 2.1, depth: 0.8 },
+      { distance: 2.8, depth: 0 }
+    ],
+    averageVelocity: 0.58,
+    sedimentMeasurements: [
+      { size_mm: 128, roundness: 2 },
+      { size_mm: 156, roundness: 2 },
+      { size_mm: 142, roundness: 3 }
+    ],
+    notes: "Narrower channel under stone bridge, deeper water with faster flow"
+  },
+  {
+    siteNumber: 3,
+    siteName: "Wooded Bend",
+    riverWidth: 4.1,
+    measurementPoints: [
+      { distance: 0, depth: 0 },
+      { distance: 1.0, depth: 0.3 },
+      { distance: 2.0, depth: 0.7 },
+      { distance: 3.1, depth: 0.5 },
+      { distance: 4.1, depth: 0 }
+    ],
+    averageVelocity: 0.22,
+    sedimentMeasurements: [
+      { size_mm: 8, roundness: 4 },
+      { size_mm: 12, roundness: 5 },
+      { size_mm: 6, roundness: 4 }
+    ],
+    notes: "Wide meander through woodland, shallower with leaf litter on banks"
+  },
+  {
+    siteNumber: 4,
+    siteName: "Rocky Rapids",
+    riverWidth: 2.5,
+    measurementPoints: [
+      { distance: 0, depth: 0 },
+      { distance: 0.6, depth: 0.5 },
+      { distance: 1.25, depth: 0.9 },
+      { distance: 1.9, depth: 0.4 },
+      { distance: 2.5, depth: 0 }
+    ],
+    averageVelocity: 0.84,
+    sedimentMeasurements: [
+      { size_mm: 380, roundness: 1 },
+      { size_mm: 425, roundness: 2 },
+      { size_mm: 356, roundness: 1 }
+    ],
+    notes: "Steep rocky section with turbulent flow over granite boulders"
+  },
+  {
+    siteNumber: 5,
+    siteName: "Village Outflow",
+    riverWidth: 3.8,
+    measurementPoints: [
+      { distance: 0, depth: 0 },
+      { distance: 0.95, depth: 0.4 },
+      { distance: 1.9, depth: 0.8 },
+      { distance: 2.85, depth: 0.6 },
+      { distance: 3.8, depth: 0 }
+    ],
+    averageVelocity: 0.41,
+    sedimentMeasurements: [
+      { size_mm: 1.2, roundness: 5 },
+      { size_mm: 0.8, roundness: 6 },
+      { size_mm: 1.5, roundness: 5 }
+    ],
+    notes: "Wider section downstream of village, silty bed with slower flow"
+  }
+];
+
 export function InteractivePreview() {
   const [currentStep, setCurrentStep] = useState<DemoStep>('intro');
   const [userSite, setUserSite] = useState<DemoSiteData>({
@@ -165,8 +264,9 @@ export function InteractivePreview() {
           type: 'scatter' as any,
           mode: 'lines+markers' as any,
           name: 'River Bed',
-          line: { color: '#8B4513', width: 2 },
-          fillcolor: '#D2691E'
+          line: { color: 'royalblue', width: 2 },
+          marker: { color: 'darkblue', size: 8 },
+          fillcolor: 'lightblue'
         },
         {
           x: [0, userSite.riverWidth],
@@ -174,13 +274,15 @@ export function InteractivePreview() {
           type: 'scatter' as any,
           mode: 'lines' as any,
           name: 'Water Surface',
-          line: { color: '#4A90E2', width: 3 }
+          line: { color: 'lightblue', width: 2 }
         }
       ],
       layout: {
         title: { text: 'Live Cross-Section' },
         xaxis: { title: { text: 'Distance from bank (m)' } },
         yaxis: { title: { text: 'Depth (m)' } },
+        plot_bgcolor: 'lightcyan',
+        paper_bgcolor: 'lightcyan',
         showlegend: false,
         height: 300,
         margin: { t: 50, r: 50, b: 50, l: 50 }
@@ -535,31 +637,34 @@ export function InteractivePreview() {
                 <h4 className="text-white/90 font-medium mb-3">Sediment Measurements</h4>
                 <div className="space-y-3">
                   {userSite.sedimentMeasurements.map((measurement, index) => (
-                    <div key={index} className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="block text-white/80 text-sm mb-1">Size (mm)</label>
-                        <input
-                          type="number"
-                          step="0.1"
-                          value={measurement.size_mm || ''}
-                          onChange={(e) => updateSedimentMeasurement(index, 'size_mm', parseFloat(e.target.value) || 0)}
-                          className="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white placeholder-white/50"
-                          placeholder="25.5"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-white/80 text-sm mb-1">Roundness (1-6)</label>
-                        <select
-                          value={measurement.roundness}
-                          onChange={(e) => updateSedimentMeasurement(index, 'roundness', parseInt(e.target.value))}
-                          className="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white"
-                        >
-                          {ROUNDNESS_LABELS.map(item => (
-                            <option key={item.value} value={item.value}>
-                              {item.value} - {item.label}
-                            </option>
-                          ))}
-                        </select>
+                    <div key={index} className="bg-white/5 rounded-lg p-3">
+                      <h5 className="text-white/90 text-sm font-medium mb-2">Measurement {index + 1}</h5>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-white/80 text-sm mb-1">Size (mm)</label>
+                          <input
+                            type="number"
+                            step="0.1"
+                            value={measurement.size_mm || ''}
+                            onChange={(e) => updateSedimentMeasurement(index, 'size_mm', parseFloat(e.target.value) || 0)}
+                            className="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white placeholder-white/50"
+                            placeholder="25.5"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-white/80 text-sm mb-1">Roundness (1-6)</label>
+                          <select
+                            value={measurement.roundness}
+                            onChange={(e) => updateSedimentMeasurement(index, 'roundness', parseInt(e.target.value))}
+                            className="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white"
+                          >
+                            {ROUNDNESS_LABELS.map(item => (
+                              <option key={item.value} value={item.value}>
+                                {item.value} - {item.label}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -620,55 +725,155 @@ export function InteractivePreview() {
                         userSite.averageVelocity > 0 &&
                         userSite.sedimentMeasurements.length > 0;
 
+    // Calculate all sites data including user's site
+    const allSites = [...DEMO_SITES, {
+      siteNumber: 6,
+      siteName: userSite.siteName,
+      riverWidth: userSite.riverWidth,
+      measurementPoints: userSite.measurementPoints,
+      averageVelocity: userSite.averageVelocity,
+      sedimentMeasurements: userSite.sedimentMeasurements,
+      notes: "Final downstream measurement point"
+    }];
+
+    const studyStats = {
+      totalSites: allSites.length,
+      totalArea: allSites.reduce((sum, site) => sum + calculateCrossSection(site.measurementPoints), 0),
+      avgVelocity: allSites.reduce((sum, site) => sum + site.averageVelocity, 0) / allSites.length,
+      totalDischarge: allSites.reduce((sum, site) => sum + (calculateCrossSection(site.measurementPoints) * site.averageVelocity), 0),
+      avgSedimentSize: allSites.flatMap(s => s.sedimentMeasurements).reduce((sum, sed) => sum + sed.size_mm, 0) / allSites.flatMap(s => s.sedimentMeasurements).length
+    };
+
     return (
-      <div className="max-w-6xl mx-auto">
+      <div className="max-w-7xl mx-auto">
         <div className="glass rounded-2xl p-8">
-          <h3 className="text-3xl font-bold text-white mb-6 text-center">
-            🎉 Complete River Study Report
-          </h3>
-          
-          {/* Report Preview Cards */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-            {/* Your Data Summary */}
+          {/* Report Header */}
+          <div className="text-center mb-8">
+            <h3 className="text-3xl font-bold text-white mb-2">
+              River Dart Study Report
+            </h3>
+            <p className="text-white/80 text-lg">Complete 6-Site Longitudinal Analysis</p>
+            <p className="text-white/60 text-sm">Devon, United Kingdom • June 2024</p>
+          </div>
+
+          {/* Study KPIs */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            <div className="bg-blue-500/20 rounded-xl p-4 text-center">
+              <div className="text-2xl font-bold text-white">{studyStats.totalSites}</div>
+              <div className="text-white/80 text-sm">Study Sites</div>
+            </div>
+            <div className="bg-green-500/20 rounded-xl p-4 text-center">
+              <div className="text-2xl font-bold text-white">{studyStats.totalArea.toFixed(1)}m²</div>
+              <div className="text-white/80 text-sm">Total Area</div>
+            </div>
+            <div className="bg-purple-500/20 rounded-xl p-4 text-center">
+              <div className="text-2xl font-bold text-white">{studyStats.avgVelocity.toFixed(2)}m/s</div>
+              <div className="text-white/80 text-sm">Avg Velocity</div>
+            </div>
+            <div className="bg-orange-500/20 rounded-xl p-4 text-center">
+              <div className="text-2xl font-bold text-white">{studyStats.totalDischarge.toFixed(3)}m³/s</div>
+              <div className="text-white/80 text-sm">Total Discharge</div>
+            </div>
+          </div>
+
+          {/* Sites Summary Table */}
+          <div className="bg-white/5 rounded-xl p-6 mb-6">
+            <h4 className="text-white font-semibold mb-4">📊 Site Summary Analysis</h4>
+            <div className="overflow-x-auto">
+              <table className="w-full text-white/90 text-sm">
+                <thead>
+                  <tr className="border-b border-white/20">
+                    <th className="text-left py-2 px-3">Site</th>
+                    <th className="text-left py-2 px-3">Name</th>
+                    <th className="text-right py-2 px-3">Width (m)</th>
+                    <th className="text-right py-2 px-3">Area (m²)</th>
+                    <th className="text-right py-2 px-3">Velocity (m/s)</th>
+                    <th className="text-right py-2 px-3">Discharge (m³/s)</th>
+                    <th className="text-right py-2 px-3">Sediment</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {allSites.map((site, index) => {
+                    const area = calculateCrossSection(site.measurementPoints);
+                    const discharge = area * site.averageVelocity;
+                    const avgSedSize = site.sedimentMeasurements.length > 0 ? 
+                      site.sedimentMeasurements.reduce((sum, s) => sum + s.size_mm, 0) / site.sedimentMeasurements.length : 0;
+                    
+                    return (
+                      <tr key={index} className={`border-b border-white/10 ${index === 5 ? 'bg-blue-500/10' : ''}`}>
+                        <td className="py-2 px-3 font-medium">{site.siteNumber}</td>
+                        <td className="py-2 px-3">{site.siteName}</td>
+                        <td className="py-2 px-3 text-right">{site.riverWidth.toFixed(1)}</td>
+                        <td className="py-2 px-3 text-right">{area.toFixed(2)}</td>
+                        <td className="py-2 px-3 text-right">{site.averageVelocity.toFixed(2)}</td>
+                        <td className="py-2 px-3 text-right">{discharge.toFixed(3)}</td>
+                        <td className="py-2 px-3 text-right">{avgSedSize.toFixed(1)}mm</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+            {hasValidData && (
+              <p className="text-blue-300 text-xs mt-2">✨ Site 6 highlighted - your contribution to the study!</p>
+            )}
+          </div>
+
+          {/* Key Findings */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
             <div className="bg-white/5 rounded-xl p-6">
-              <h4 className="text-white font-semibold mb-4 flex items-center gap-2">
-                📊 Your Site 6 Contribution
-              </h4>
-              {hasValidData ? (
-                <div className="space-y-3">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="bg-white/10 rounded-lg p-3">
-                      <p className="text-white/70 text-sm">River Width</p>
-                      <p className="text-white font-semibold">{userSite.riverWidth}m</p>
-                    </div>
-                    <div className="bg-white/10 rounded-lg p-3">
-                      <p className="text-white/70 text-sm">Cross-section</p>
-                      <p className="text-white font-semibold">{calculateCrossSection(userSite.measurementPoints).toFixed(2)}m²</p>
-                    </div>
-                    <div className="bg-white/10 rounded-lg p-3">
-                      <p className="text-white/70 text-sm">Avg Velocity</p>
-                      <p className="text-white font-semibold">{userSite.averageVelocity.toFixed(2)}m/s</p>
-                    </div>
-                    <div className="bg-white/10 rounded-lg p-3">
-                      <p className="text-white/70 text-sm">Discharge</p>
-                      <p className="text-white font-semibold">{(calculateCrossSection(userSite.measurementPoints) * userSite.averageVelocity).toFixed(3)}m³/s</p>
-                    </div>
-                  </div>
-                  <div className="bg-white/10 rounded-lg p-3">
-                    <p className="text-white/70 text-sm">Sediment Samples</p>
-                    <p className="text-white font-semibold">{userSite.sedimentMeasurements.length} measurements collected</p>
-                  </div>
+              <h4 className="text-white font-semibold mb-4">🔍 Key Findings</h4>
+              <div className="space-y-3 text-white/80 text-sm">
+                <div className="flex justify-between">
+                  <span>Fastest flow:</span>
+                  <span className="text-white font-medium">Site 4 (Rocky Rapids) - 0.84 m/s</span>
                 </div>
-              ) : (
-                <p className="text-white/70">Complete all measurements to see your data summary</p>
-              )}
+                <div className="flex justify-between">
+                  <span>Deepest point:</span>
+                  <span className="text-white font-medium">Site 2 (Bridge) - 1.2m depth</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Largest sediment:</span>
+                  <span className="text-white font-medium">Site 4 - Boulders (425mm avg)</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Finest sediment:</span>
+                  <span className="text-white font-medium">Site 5 - Sand/Silt (1.2mm avg)</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Total river length studied:</span>
+                  <span className="text-white font-medium">~2.1km downstream</span>
+                </div>
+              </div>
             </div>
 
-            {/* Report Contents */}
             <div className="bg-white/5 rounded-xl p-6">
-              <h4 className="text-white font-semibold mb-4 flex items-center gap-2">
-                📑 Professional PDF Report
-              </h4>
+              <h4 className="text-white font-semibold mb-4">📈 Downstream Trends</h4>
+              <div className="space-y-3 text-white/80 text-sm">
+                <div>
+                  <span className="text-white font-medium">Velocity Pattern:</span>
+                  <p>Increases through constricted areas (Sites 2,4) then decreases in wide sections</p>
+                </div>
+                <div>
+                  <span className="text-white font-medium">Sediment Size:</span>
+                  <p>Clear downstream fining from boulders to sand/silt - classic river profile</p>
+                </div>
+                <div>
+                  <span className="text-white font-medium">Channel Width:</span>
+                  <p>Varies with topography: narrow at bridge/rapids, wide in bends/meadows</p>
+                </div>
+                <div>
+                  <span className="text-white font-medium">Discharge:</span>
+                  <p>Relatively consistent despite width variations due to velocity compensation</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Report Sections Preview */}
+          <div className="bg-white/5 rounded-xl p-6 mb-6">
+            <h4 className="text-white font-semibold mb-4">📑 Full Report Includes</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <div className="flex items-center gap-2 text-white/80 text-sm">
                   <div className="w-2 h-2 bg-green-400 rounded-full"></div>
@@ -676,23 +881,29 @@ export function InteractivePreview() {
                 </div>
                 <div className="flex items-center gap-2 text-white/80 text-sm">
                   <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-                  <span>Site Location Maps (GPS coordinates)</span>
+                  <span>GPS Site Location Maps</span>
                 </div>
                 <div className="flex items-center gap-2 text-white/80 text-sm">
                   <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-                  <span>Cross-section Charts (all 6 sites)</span>
+                  <span>Individual Cross-Section Charts</span>
                 </div>
                 <div className="flex items-center gap-2 text-white/80 text-sm">
                   <div className="w-2 h-2 bg-green-400 rounded-full"></div>
                   <span>Velocity & Discharge Analysis</span>
                 </div>
+              </div>
+              <div className="space-y-2">
                 <div className="flex items-center gap-2 text-white/80 text-sm">
                   <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-                  <span>Sediment Distribution Patterns</span>
+                  <span>Sediment Wind Rose Charts</span>
                 </div>
                 <div className="flex items-center gap-2 text-white/80 text-sm">
                   <div className="w-2 h-2 bg-green-400 rounded-full"></div>
                   <span>Statistical Correlations</span>
+                </div>
+                <div className="flex items-center gap-2 text-white/80 text-sm">
+                  <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+                  <span>Longitudinal Profile Analysis</span>
                 </div>
                 <div className="flex items-center gap-2 text-white/80 text-sm">
                   <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
@@ -701,42 +912,11 @@ export function InteractivePreview() {
               </div>
             </div>
           </div>
-
-          {/* River Dart Study Context */}
-          <div className="bg-white/5 rounded-xl p-6 mb-6">
-            <h4 className="text-white font-semibold mb-4">Complete River Dart Study</h4>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="bg-white/10 rounded-lg p-4">
-                <h5 className="text-white font-medium mb-2">5 Existing Sites</h5>
-                <ul className="text-white/80 text-sm space-y-1">
-                  <li>• Upstream Meadow</li>
-                  <li>• Bridge Crossing</li>
-                  <li>• Wooded Bend</li>
-                  <li>• Rocky Rapids</li>
-                  <li>• Village Outflow</li>
-                </ul>
-              </div>
-              <div className="bg-white/10 rounded-lg p-4">
-                <h5 className="text-white font-medium mb-2">Your Site 6</h5>
-                <p className="text-white/80 text-sm">
-                  The final downstream measurement point, completing the comprehensive study 
-                  of the River Dart from Devon moorland to village outflow.
-                </p>
-              </div>
-              <div className="bg-white/10 rounded-lg p-4">
-                <h5 className="text-white font-medium mb-2">Study Impact</h5>
-                <p className="text-white/80 text-sm">
-                  Your measurements complete a longitudinal profile showing how river 
-                  characteristics change downstream - perfect for coursework analysis.
-                </p>
-              </div>
-            </div>
-          </div>
           
           <div className="text-center space-y-4">
             <p className="text-white/90 text-lg">
-              Ready to create your own professional river studies? The real app includes 
-              GPS mapping, offline data collection, and instant PDF generation.
+              This professional report combines all 6 sites into a comprehensive analysis perfect for 
+              GCSE Geography coursework. The real app generates this as a downloadable PDF.
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
