@@ -340,7 +340,7 @@ export default function RiverWalksPage() {
         {/* Compact header with logo and profile */}
         <div className="glass rounded-2xl p-4 sm:p-6 mb-6 border border-white/20">
           {/* Mobile Header - Single Row */}
-          <div className="flex sm:hidden items-center justify-between gap-2 mb-3">
+          <div className="flex sm:hidden items-center justify-between gap-2">
             <div className="flex items-center gap-3 flex-1 min-w-0">
               <img 
                 src="/logo.png" 
@@ -494,9 +494,9 @@ export default function RiverWalksPage() {
         <div className={`morph-container ${showForm || showJoinCollaboration ? 'morph-form-state' : 'morph-button-state'} mb-6`}>
           {/* Button State */}
           <div className={`add-button-morph ${showForm || showJoinCollaboration ? 'add-button-hidden' : 'add-button-visible'}`}>
-            <div className="flex gap-3">
+            <div className="flex flex-col sm:flex-row gap-3">
               <button
-                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-200 transform hover:scale-105 shadow-lg touch-manipulation flex-1"
+                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-200 transform hover:scale-105 shadow-lg touch-manipulation w-full sm:flex-1"
                 onClick={handleAddNewRiverWalk}
               >
                 + New River Walk
@@ -504,7 +504,7 @@ export default function RiverWalksPage() {
               {collaborationEnabled && (
                 canAccessAdvancedFeatures(subscription) ? (
                   <button
-                    className="bg-green-500 hover:bg-green-600 text-white px-4 py-3 rounded-lg font-medium transition-colors touch-manipulation"
+                    className="bg-green-500 hover:bg-green-600 text-white px-4 py-3 rounded-lg font-medium transition-colors touch-manipulation w-full sm:w-auto"
                     onClick={() => {
                       setShowJoinCollaboration(true);
                       // Close add form if it's open
@@ -518,7 +518,7 @@ export default function RiverWalksPage() {
                   </button>
                 ) : (
                   <button
-                    className="bg-gradient-to-r from-blue-50 to-teal-50 hover:from-blue-100 hover:to-teal-100 text-blue-700 px-4 py-3 rounded-lg font-medium transition-all duration-200 border-2 border-blue-200 shadow-modern hover:shadow-modern-lg touch-manipulation relative"
+                    className="bg-gradient-to-r from-blue-50 to-teal-50 hover:from-blue-100 hover:to-teal-100 text-blue-700 px-4 py-3 rounded-lg font-medium transition-all duration-200 border-2 border-blue-200 shadow-modern hover:shadow-modern-lg touch-manipulation relative w-full sm:w-auto"
                     onClick={() => setShowUpgradePrompt('advanced')}
                   >
                     <Crown className="w-4 h-4 mr-2" />
@@ -575,11 +575,11 @@ export default function RiverWalksPage() {
                     />
                   </div>
                   
-                  <div className="flex gap-3">
+                  <div className="flex flex-col sm:flex-row gap-3">
                     <button
                       onClick={handleJoinCollaboration}
                       disabled={!joinCollabLink.trim()}
-                      className="flex-1 bg-green-600 hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white px-4 py-2 rounded-lg font-medium transition-colors"
+                      className="w-full sm:flex-1 bg-green-600 hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white px-4 py-2 rounded-lg font-medium transition-colors"
                     >
                       Join Walk
                     </button>
@@ -588,7 +588,7 @@ export default function RiverWalksPage() {
                         setShowJoinCollaboration(false);
                         setJoinCollabLink('');
                       }}
-                      className="btn-secondary"
+                      className="btn-secondary w-full sm:w-auto"
                     >
                       Cancel
                     </button>
