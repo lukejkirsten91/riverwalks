@@ -19,6 +19,7 @@ import { offlineDataService } from '../lib/offlineDataService';
 import { SubscriptionBadge } from '../components/ui/SubscriptionBadge';
 import { UpgradePrompt } from '../components/ui/UpgradePrompt';
 import { useSubscription, canAccessAdvancedFeatures } from '../hooks/useSubscription';
+import { TermsGate } from '../components/auth/TermsGate';
 import type { RiverWalk, RiverWalkFormData, Site } from '../types';
 import { getSitesForRiverWalk } from '../lib/api/sites';
 import type { User } from '@supabase/supabase-js';
