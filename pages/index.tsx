@@ -106,7 +106,7 @@ export default function Home() {
             <div className="mb-6">
               <span className="inline-flex items-center px-4 py-2 rounded-full bg-white/20 backdrop-blur-sm border border-white/30 text-white text-sm font-medium mb-4">
                 <Waves className="w-4 h-4 mr-2" />
-                Track. Visualize. Understand.
+                Walk. Track. Learn.
               </span>
             </div>
             
@@ -140,9 +140,9 @@ export default function Home() {
             </div>
 
             {/* Transparent pricing messaging */}
-            <div className="bg-green-500/20 border border-green-400/30 rounded-xl p-4 mb-8 max-w-2xl mx-auto">
-              <p className="text-green-100 text-sm font-medium mb-2">💡 Transparent Pricing - No Surprises</p>
-              <p className="text-green-200 text-sm">
+            <div className="bg-green-600/40 border border-green-400/60 rounded-xl p-4 mb-8 max-w-2xl mx-auto backdrop-blur-sm">
+              <p className="text-green-50 text-sm font-medium mb-2">💡 Transparent Pricing - No Surprises</p>
+              <p className="text-green-100 text-sm">
                 Create your account and test all features for free. Reports and data export require a small subscription (£1.99/year or £3.49 lifetime) to support development.
               </p>
             </div>

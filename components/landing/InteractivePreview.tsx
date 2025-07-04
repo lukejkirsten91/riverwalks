@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Play, ChevronRight, FileText, ArrowRight, ArrowLeft, MapPin, BarChart3 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 
@@ -152,9 +152,15 @@ export function InteractivePreview() {
     sedimentMeasurements: []
   });
   const [numMeasurementPoints, setNumMeasurementPoints] = useState(3);
+  const demoRef = useRef<HTMLDivElement>(null);
+
+  const scrollToDemo = () => {
+    demoRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
 
   const startDemo = () => {
     setCurrentStep('cross-section');
+    setTimeout(scrollToDemo, 100);
   };
 
   // Initialize measurement points when river width or number of points changes
@@ -366,7 +372,7 @@ export function InteractivePreview() {
   // Intro step
   if (currentStep === 'intro') {
     return (
-      <div className="max-w-4xl mx-auto text-center">
+      <div ref={demoRef} className="max-w-4xl mx-auto text-center">
         <div className="glass rounded-2xl p-8 mb-8 bg-gray-900/80 backdrop-blur-md">
           <h2 className="text-3xl font-bold text-white mb-4">
             Try It Yourself! 🎯
@@ -376,24 +382,14 @@ export function InteractivePreview() {
             using the exact same 4-step process as the main app, with live charts updating as you enter data.
           </p>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-            <div className="bg-gray-800/60 rounded-xl p-6 border border-gray-700/50">
-              <h3 className="text-white font-semibold mb-3">📊 4-Step Process</h3>
+          <div className="flex justify-center mb-8">
+            <div className="bg-gray-800/60 rounded-xl p-6 border border-gray-700/50 max-w-md">
+              <h3 className="text-white font-semibold mb-3 text-center">📊 4-Step Process</h3>
               <ul className="text-gray-200 text-left space-y-2">
                 <li>• Cross-sectional measurements with live chart</li>
                 <li>• Velocity timing with instant calculations</li>
                 <li>• Sediment analysis with wind rose visualization</li>
                 <li>• Full report generation with all 6 sites</li>
-              </ul>
-            </div>
-            
-            <div className="bg-gray-800/60 rounded-xl p-6 border border-gray-700/50">
-              <h3 className="text-white font-semibold mb-3">🌊 River Dart Study</h3>
-              <ul className="text-gray-200 text-left space-y-2">
-                <li>• 5 sites already completed with real data</li>
-                <li>• From Devon moorland to village outflow</li>
-                <li>• You'll complete the final downstream site</li>
-                <li>• Same tools and charts as the main app</li>
               </ul>
             </div>
           </div>
@@ -404,7 +400,6 @@ export function InteractivePreview() {
           >
             <Play className="w-5 h-5" />
             Start Site 6 Measurements
-            <ChevronRight className="w-5 h-5" />
           </button>
         </div>
       </div>
@@ -417,7 +412,7 @@ export function InteractivePreview() {
     const crossSectionArea = calculateCrossSection(userSite.measurementPoints);
     
     return (
-      <div className="max-w-6xl mx-auto">
+      <div ref={demoRef} className="max-w-6xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Data Entry Side */}
           <div className="glass rounded-2xl p-6 bg-gray-900/80 backdrop-blur-md">
@@ -494,7 +489,10 @@ export function InteractivePreview() {
               
               {userSite.measurementPoints.length > 0 && userSite.measurementPoints.some(p => p.depth > 0) && (
                 <button
-                  onClick={() => setCurrentStep('velocity')}
+                  onClick={() => {
+                    setCurrentStep('velocity');
+                    setTimeout(scrollToDemo, 100);
+                  }}
                   className="w-full btn-primary py-3 rounded-xl font-semibold flex items-center justify-center gap-2"
                 >
                   Continue to Velocity Measurements
@@ -533,7 +531,7 @@ export function InteractivePreview() {
   // Velocity step
   if (currentStep === 'velocity') {
     return (
-      <div className="max-w-6xl mx-auto">
+      <div ref={demoRef} className="max-w-6xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Data Entry Side */}
           <div className="glass rounded-2xl p-6 bg-gray-900/80 backdrop-blur-md">
@@ -598,7 +596,10 @@ export function InteractivePreview() {
               
               {userSite.velocityMeasurements.length > 0 && userSite.averageVelocity > 0 && (
                 <button
-                  onClick={() => setCurrentStep('sedimentation')}
+                  onClick={() => {
+                    setCurrentStep('sedimentation');
+                    setTimeout(scrollToDemo, 100);
+                  }}
                   className="w-full btn-primary py-3 rounded-xl font-semibold flex items-center justify-center gap-2"
                 >
                   Continue to Sediment Analysis
@@ -654,7 +655,7 @@ export function InteractivePreview() {
     const windRoseData = getWindRoseChartData();
     
     return (
-      <div className="max-w-6xl mx-auto">
+      <div ref={demoRef} className="max-w-6xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Data Entry Side */}
           <div className="glass rounded-2xl p-6 bg-gray-900/80 backdrop-blur-md">
@@ -726,7 +727,10 @@ export function InteractivePreview() {
               
               {userSite.sedimentMeasurements.length > 0 && userSite.sedimentMeasurements.some(m => m.size_mm > 0) && (
                 <button
-                  onClick={() => setCurrentStep('report-preview')}
+                  onClick={() => {
+                    setCurrentStep('report-preview');
+                    setTimeout(scrollToDemo, 100);
+                  }}
                   className="w-full btn-primary py-3 rounded-xl font-semibold flex items-center justify-center gap-2"
                 >
                   Generate Complete Report
@@ -789,7 +793,7 @@ export function InteractivePreview() {
     };
 
     return (
-      <div className="max-w-7xl mx-auto">
+      <div ref={demoRef} className="max-w-7xl mx-auto">
         <div className="glass rounded-2xl p-8 bg-gray-900/80 backdrop-blur-md">
           {/* Report Header */}
           <div className="text-center mb-8">

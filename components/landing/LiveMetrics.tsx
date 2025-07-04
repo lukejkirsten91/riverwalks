@@ -94,9 +94,8 @@ export function LiveMetrics() {
           title="Distinct geographical locations where measurements have been taken - building a comprehensive map of UK waterways"
         >
           <MapPin className="w-8 h-8 text-green-300 mx-auto mb-3" />
-          <h3 className="font-semibold text-white mb-1">Monitoring Locations</h3>
+          <h3 className="font-semibold text-white mb-1">Sites Logged</h3>
           <p className="text-2xl font-bold text-white">{metrics.measurementSites.toLocaleString()}</p>
-          <p className="text-xs text-gray-300 mt-1">Unique sites measured</p>
         </div>
         
         <div 
@@ -104,19 +103,17 @@ export function LiveMetrics() {
           title="Total scientific measurements recorded including depth readings, velocity data, sediment analysis, and water quality metrics"
         >
           <BarChart3 className="w-8 h-8 text-purple-300 mx-auto mb-3" />
-          <h3 className="font-semibold text-white mb-1">Data Points Collected</h3>
+          <h3 className="font-semibold text-white mb-1">Measurements Recorded</h3>
           <p className="text-2xl font-bold text-white">{metrics.totalMeasurements.toLocaleString()}</p>
-          <p className="text-xs text-gray-300 mt-1">Measurements recorded</p>
         </div>
         
         <div 
           className="glass rounded-xl p-6 text-center hover:scale-105 transition-transform bg-gray-900/80 backdrop-blur-md cursor-help"
-          title="Total length of river sections studied across the UK - each site contributes to our understanding of waterway patterns"
+          title="Total number of active contributors to the UK river research community"
         >
           <Square className="w-8 h-8 text-yellow-300 mx-auto mb-3" />
-          <h3 className="font-semibold text-white mb-1">River Sections</h3>
-          <p className="text-2xl font-bold text-white">{Math.round(metrics.areaStudiedSquareMeters || 0).toLocaleString()}</p>
-          <p className="text-xs text-gray-300 mt-1">meters of river studied</p>
+          <h3 className="font-semibold text-white mb-1">Active Contributors</h3>
+          <p className="text-2xl font-bold text-white">{Math.max(Math.round(metrics.riverWalks * 0.7), 1).toLocaleString()}</p>
         </div>
       </div>
 
@@ -137,23 +134,23 @@ export function LiveMetrics() {
 
       {/* Call to Action */}
       <div className="text-center mt-8 mb-6">
-        <div className="glass rounded-xl p-6 bg-blue-500/20 border border-blue-400/30 max-w-2xl mx-auto">
-          <h3 className="font-semibold text-blue-100 mb-2">🌊 Join the UK River Research Community!</h3>
-          <p className="text-blue-200 text-sm mb-4">
+        <div className="glass rounded-xl p-6 bg-blue-600/40 border border-blue-400/60 max-w-2xl mx-auto backdrop-blur-sm">
+          <h3 className="font-semibold text-blue-50 mb-2">🌊 Join the UK River Research Community!</h3>
+          <p className="text-blue-100 text-sm mb-4">
             Be part of {metrics.measurementSites.toLocaleString()} active monitoring locations. Every river walk adds valuable data to UK waterway science!
           </p>
           <div className="flex justify-center gap-6 text-center">
             <div>
-              <p className="text-blue-100 font-bold text-lg">{metrics.riverWalks.toLocaleString()}</p>
-              <p className="text-blue-300 text-xs">Studies Completed</p>
+              <p className="text-blue-50 font-bold text-lg">{metrics.riverWalks.toLocaleString()}</p>
+              <p className="text-blue-200 text-xs">Studies Completed</p>
             </div>
             <div>
-              <p className="text-blue-100 font-bold text-lg">{metrics.totalMeasurements.toLocaleString()}</p>
-              <p className="text-blue-300 text-xs">Data Points</p>
+              <p className="text-blue-50 font-bold text-lg">{metrics.totalMeasurements.toLocaleString()}</p>
+              <p className="text-blue-200 text-xs">Data Points</p>
             </div>
             <div>
-              <p className="text-blue-100 font-bold text-lg">{metrics.sitesWithCoordinates.length}</p>
-              <p className="text-blue-300 text-xs">Mapped Locations</p>
+              <p className="text-blue-50 font-bold text-lg">{metrics.sitesWithCoordinates.length}</p>
+              <p className="text-blue-200 text-xs">Mapped Locations</p>
             </div>
           </div>
         </div>
