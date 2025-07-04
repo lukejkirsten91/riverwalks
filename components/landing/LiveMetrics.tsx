@@ -78,29 +78,44 @@ export function LiveMetrics() {
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <div className="glass rounded-xl p-6 text-center hover:scale-105 transition-transform bg-gray-900/80 backdrop-blur-md">
+        <div 
+          className="glass rounded-xl p-6 text-center hover:scale-105 transition-transform bg-gray-900/80 backdrop-blur-md cursor-help"
+          title="Individual field studies completed by users - each adds valuable data to our river research database"
+        >
           <Droplets className="w-8 h-8 text-blue-300 mx-auto mb-3" />
-          <h3 className="font-semibold text-white mb-1">River Studies</h3>
+          <h3 className="font-semibold text-white mb-1">River Walks Completed</h3>
           <p className="text-2xl font-bold text-white">{metrics.riverWalks.toLocaleString()}</p>
+          <p className="text-xs text-gray-300 mt-1">Each walk contributes data</p>
         </div>
         
-        <div className="glass rounded-xl p-6 text-center hover:scale-105 transition-transform bg-gray-900/80 backdrop-blur-md">
+        <div 
+          className="glass rounded-xl p-6 text-center hover:scale-105 transition-transform bg-gray-900/80 backdrop-blur-md cursor-help"
+          title="Distinct geographical locations where measurements have been taken - building a comprehensive map of UK waterways"
+        >
           <MapPin className="w-8 h-8 text-green-300 mx-auto mb-3" />
-          <h3 className="font-semibold text-white mb-1">Study Sites</h3>
+          <h3 className="font-semibold text-white mb-1">Monitoring Locations</h3>
           <p className="text-2xl font-bold text-white">{metrics.measurementSites.toLocaleString()}</p>
+          <p className="text-xs text-gray-300 mt-1">Unique sites measured</p>
         </div>
         
-        <div className="glass rounded-xl p-6 text-center hover:scale-105 transition-transform bg-gray-900/80 backdrop-blur-md">
+        <div 
+          className="glass rounded-xl p-6 text-center hover:scale-105 transition-transform bg-gray-900/80 backdrop-blur-md cursor-help"
+          title="Total scientific measurements recorded including depth readings, velocity data, sediment analysis, and water quality metrics"
+        >
           <BarChart3 className="w-8 h-8 text-purple-300 mx-auto mb-3" />
-          <h3 className="font-semibold text-white mb-1">Measurements</h3>
+          <h3 className="font-semibold text-white mb-1">Data Points Collected</h3>
           <p className="text-2xl font-bold text-white">{metrics.totalMeasurements.toLocaleString()}</p>
+          <p className="text-xs text-gray-300 mt-1">Measurements recorded</p>
         </div>
         
-        <div className="glass rounded-xl p-6 text-center hover:scale-105 transition-transform bg-gray-900/80 backdrop-blur-md">
+        <div 
+          className="glass rounded-xl p-6 text-center hover:scale-105 transition-transform bg-gray-900/80 backdrop-blur-md cursor-help"
+          title="Total area of UK waterways studied and documented by our community - approximately equivalent to football field size for easy comparison"
+        >
           <Square className="w-8 h-8 text-yellow-300 mx-auto mb-3" />
-          <h3 className="font-semibold text-white mb-1">Area Studied</h3>
-          <p className="text-2xl font-bold text-white">{metrics.areaStudiedSquareMeters.toLocaleString()}</p>
-          <p className="text-xs text-gray-300 mt-1">square meters</p>
+          <h3 className="font-semibold text-white mb-1">River Coverage</h3>
+          <p className="text-2xl font-bold text-white">{Math.round(metrics.areaStudiedSquareMeters / 7140).toLocaleString()}</p>
+          <p className="text-xs text-gray-300 mt-1">≈ football fields studied</p>
         </div>
       </div>
 
@@ -111,26 +126,15 @@ export function LiveMetrics() {
           <div className="bg-gray-800/50 rounded-lg p-4 relative h-80">
             {/* Simple UK SVG outline */}
             <svg 
-              viewBox="0 0 500 600" 
+              viewBox="0 0 300 400" 
               className="w-full h-full"
               style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))' }}
             >
-              {/* More accurate UK outline */}
+              {/* Simplified but recognizable UK outline */}
               <path
-                d="M 380 80
-                   L 390 85 L 400 90 L 410 100 L 420 110 L 430 125 L 435 140 L 440 160 L 445 180 L 450 200
-                   L 455 220 L 460 240 L 465 260 L 470 280 L 475 300 L 480 320 L 485 340 L 490 360 L 495 380
-                   L 500 400 L 505 420 L 510 440 L 515 460 L 520 480 L 525 500 L 530 520 L 535 540 L 540 560
-                   L 535 580 L 525 590 L 510 595 L 490 598 L 470 600 L 450 595 L 430 590 L 410 585 L 390 580
-                   L 370 575 L 350 570 L 330 565 L 310 560 L 290 555 L 270 550 L 250 545 L 230 540 L 210 535
-                   L 190 530 L 170 525 L 150 520 L 130 515 L 110 510 L 90 505 L 70 500 L 50 495 L 30 490
-                   L 20 480 L 15 460 L 12 440 L 10 420 L 8 400 L 6 380 L 5 360 L 4 340 L 3 320 L 2 300
-                   L 1 280 L 0 260 L 1 240 L 2 220 L 3 200 L 4 180 L 5 160 L 10 140 L 15 120 L 25 100
-                   L 40 85 L 60 75 L 80 70 L 100 68 L 120 67 L 140 66 L 160 65 L 180 64 L 200 63 L 220 62
-                   L 240 61 L 260 60 L 280 59 L 300 58 L 320 57 L 340 56 L 360 55 L 380 80 Z
+                d="M 140 20 L 150 15 L 160 10 L 175 8 L 190 7 L 205 6 L 220 5 L 235 4 L 250 3 L 260 5 L 270 8 L 275 15 L 278 25 L 280 35 L 282 45 L 285 55 L 288 65 L 290 75 L 292 85 L 294 95 L 296 105 L 298 115 L 300 125 L 299 135 L 298 145 L 297 155 L 296 165 L 295 175 L 294 185 L 293 195 L 292 205 L 291 215 L 290 225 L 289 235 L 288 245 L 287 255 L 286 265 L 285 275 L 284 285 L 283 295 L 282 305 L 281 315 L 280 325 L 279 335 L 278 345 L 277 355 L 276 365 L 275 375 L 270 380 L 260 385 L 245 390 L 230 395 L 215 398 L 200 400 L 185 398 L 170 395 L 155 390 L 140 385 L 125 380 L 110 375 L 95 370 L 80 365 L 65 360 L 50 355 L 35 350 L 25 340 L 20 325 L 18 310 L 16 295 L 14 280 L 12 265 L 10 250 L 8 235 L 6 220 L 4 205 L 2 190 L 0 175 L 2 160 L 4 145 L 6 130 L 8 115 L 10 100 L 12 85 L 14 70 L 16 55 L 18 40 L 25 30 L 35 25 L 50 22 L 65 20 L 80 18 L 95 16 L 110 14 L 125 12 L 140 20 Z
                    
-                   M 60 240
-                   L 70 235 L 80 238 L 85 245 L 88 255 L 85 265 L 80 275 L 70 280 L 60 275 L 55 265 L 58 255 L 60 240 Z"
+                   M 30 140 L 40 135 L 50 138 L 55 145 L 58 155 L 55 165 L 50 175 L 40 180 L 30 175 L 25 165 L 28 155 L 30 140 Z"
                 fill="#4B5563"
                 stroke="#6B7280"
                 strokeWidth="2"
@@ -140,15 +144,15 @@ export function LiveMetrics() {
               {metrics.sitesWithCoordinates.map((site, index) => {
                 // Simple coordinate conversion for UK (very approximate)
                 // UK bounds: roughly 49.9-60.8 lat, -7.6-1.8 lng
-                // Map to the viewBox dimensions 500x600
-                const x = ((site.longitude + 7.6) / 9.4) * 500;
-                const y = ((60.8 - site.latitude) / 10.9) * 600;
+                // Map to the viewBox dimensions 300x400
+                const x = ((site.longitude + 7.6) / 9.4) * 300;
+                const y = ((60.8 - site.latitude) / 10.9) * 400;
                 
                 return (
                   <circle
                     key={index}
-                    cx={Math.max(50, Math.min(450, x))}
-                    cy={Math.max(50, Math.min(550, y))}
+                    cx={Math.max(30, Math.min(270, x))}
+                    cy={Math.max(30, Math.min(370, y))}
                     r="6"
                     fill="#3B82F6"
                     stroke="#FFFFFF"
@@ -171,6 +175,25 @@ export function LiveMetrics() {
           </div>
         </div>
       )}
+
+      {/* Call to Action */}
+      <div className="text-center mt-8 mb-6">
+        <div className="glass rounded-xl p-6 bg-blue-500/20 border border-blue-400/30 max-w-2xl mx-auto">
+          <h3 className="font-semibold text-blue-100 mb-2">🎯 Help Us Reach 1,000 Sites!</h3>
+          <p className="text-blue-200 text-sm mb-4">
+            Join {metrics.measurementSites.toLocaleString()} locations already mapped. Your river walk could be the next breakthrough in UK waterway research!
+          </p>
+          <div className="w-full bg-blue-900/50 rounded-full h-2 mb-2">
+            <div 
+              className="bg-blue-400 h-2 rounded-full transition-all duration-1000" 
+              style={{ width: `${Math.min((metrics.measurementSites / 1000) * 100, 100)}%` }}
+            ></div>
+          </div>
+          <p className="text-blue-300 text-xs">
+            {metrics.measurementSites}/1000 sites mapped ({Math.round((metrics.measurementSites / 1000) * 100)}% complete)
+          </p>
+        </div>
+      </div>
 
       <div className="text-center mt-4">
         <p className="text-white/60 text-sm">
