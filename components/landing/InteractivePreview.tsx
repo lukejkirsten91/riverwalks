@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Play, ChevronRight, FileText, ArrowRight, ArrowLeft, MapPin } from 'lucide-react';
+import { Play, ChevronRight, FileText, ArrowRight, ArrowLeft, MapPin, BarChart3 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 
 // Dynamically import Plotly to avoid SSR issues
@@ -426,6 +426,14 @@ export function InteractivePreview() {
             </h3>
             
             <div className="space-y-6">
+              <div className="bg-blue-500/20 border border-blue-400/30 rounded-lg p-3 mb-4">
+                <p className="text-blue-200 text-sm flex items-center gap-2">
+                  <BarChart3 className="w-4 h-4" />
+                  <span className="hidden lg:inline">💡 Watch the live cross-section chart update as you enter measurements on the right →</span>
+                  <span className="lg:hidden">💡 Live chart updates below as you enter measurements ↓</span>
+                </p>
+              </div>
+              
               <div>
                 <label className="block text-white/90 font-medium mb-2">River Width (m)</label>
                 <input
@@ -433,7 +441,8 @@ export function InteractivePreview() {
                   step="0.1"
                   value={userSite.riverWidth || ''}
                   onChange={(e) => setUserSite(prev => ({ ...prev, riverWidth: parseFloat(e.target.value) || 0 }))}
-                  className="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white placeholder-white/50"
+                  onFocus={(e) => e.target.select()}
+                  className="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white placeholder-white/50 text-center"
                   placeholder="3.5"
                 />
               </div>
@@ -465,7 +474,8 @@ export function InteractivePreview() {
                           step="0.1"
                           value={point.depth || ''}
                           onChange={(e) => updateMeasurementPoint(index, parseFloat(e.target.value) || 0)}
-                          className="flex-1 px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white placeholder-white/50"
+                          onFocus={(e) => e.target.select()}
+                          className="flex-1 px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white placeholder-white/50 text-center"
                           placeholder="0.0"
                         />
                         <span className="text-white/60 text-sm">m deep</span>
@@ -551,7 +561,8 @@ export function InteractivePreview() {
                           step="0.1"
                           value={measurement.time || ''}
                           onChange={(e) => updateVelocityMeasurement(index, 'time', parseFloat(e.target.value) || 0)}
-                          className="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white placeholder-white/50"
+                          onFocus={(e) => e.target.select()}
+                          className="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white placeholder-white/50 text-center"
                           placeholder="12.5"
                         />
                       </div>
@@ -561,7 +572,8 @@ export function InteractivePreview() {
                           type="number"
                           value={measurement.distance}
                           onChange={(e) => updateVelocityMeasurement(index, 'distance', parseFloat(e.target.value) || 10)}
-                          className="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white"
+                          onFocus={(e) => e.target.select()}
+                          className="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white text-center"
                         />
                       </div>
                       <div>
@@ -678,7 +690,8 @@ export function InteractivePreview() {
                             step="0.1"
                             value={measurement.size_mm || ''}
                             onChange={(e) => updateSedimentMeasurement(index, 'size_mm', parseFloat(e.target.value) || 0)}
-                            className="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white placeholder-white/50"
+                            onFocus={(e) => e.target.select()}
+                            className="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white placeholder-white/50 text-center"
                             placeholder="25.5"
                           />
                         </div>
@@ -977,7 +990,10 @@ export function InteractivePreview() {
                 Try Again
               </button>
               
-              <button className="btn-primary px-6 py-3 rounded-xl font-semibold flex items-center gap-2">
+              <button 
+                onClick={() => window.location.href = '/river-walks'}
+                className="btn-primary px-6 py-3 rounded-xl font-semibold flex items-center gap-2 hover:scale-105 transition-transform"
+              >
                 <MapPin className="w-4 h-4" />
                 Start Your Real River Study
               </button>

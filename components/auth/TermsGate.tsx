@@ -116,10 +116,19 @@ export function TermsGate({ user, children }: TermsGateProps) {
               <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">
                 Welcome to Riverwalks!
               </h1>
-              <p className="text-muted-foreground">
+              <p className="text-muted-foreground mb-4">
                 Hi {user.user_metadata?.full_name || user.email?.split('@')[0]}! 
                 Before you can start using Riverwalks, please review and accept our legal agreements.
               </p>
+              
+              {/* Transparent pricing info */}
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4 max-w-lg mx-auto">
+                <h3 className="text-green-800 font-medium text-sm mb-2">💳 About Our Pricing</h3>
+                <p className="text-green-700 text-sm">
+                  You can create an account and test all features completely free. If you want to generate reports 
+                  or export your data for coursework, we charge a small fee (£1.99/year or £3.49 lifetime) to keep the platform running.
+                </p>
+              </div>
             </div>
 
             {/* Terms Acceptance Component */}

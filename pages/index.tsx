@@ -2,13 +2,20 @@ import AuthCard from '../components/auth/auth-card';
 import { LiveMetrics } from '../components/landing/LiveMetrics';
 import { InteractivePreview } from '../components/landing/InteractivePreview';
 import { MapPin, BarChart3, Users, Waves, ChevronDown } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import type { User } from '@supabase/supabase-js';
+import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/dist/ScrollTrigger';
 
 export default function Home() {
   const [user, setUser] = useState<User | null>(null);
   const [showInteractiveDemo, setShowInteractiveDemo] = useState(false);
+  const heroRef = useRef(null);
+  const metricsRef = useRef(null);
+  const previewRef = useRef(null);
+  const featuresRef = useRef(null);
+  const ctaRef = useRef(null);
 
   useEffect(() => {
     const { data: authListener } = supabase.auth.onAuthStateChange(
@@ -27,6 +34,65 @@ export default function Home() {
     };
   }, []);
 
+  useEffect(() => {
+    // Register ScrollTrigger plugin
+    gsap.registerPlugin(ScrollTrigger);
+
+    // Only run animations if user is not logged in (showing landing page)
+    if (!user) {
+      // Hero section animation
+      gsap.fromTo(heroRef.current, 
+        { opacity: 0, y: 30 },
+        { opacity: 1, y: 0, duration: 1, ease: "power2.out" }
+      );
+
+      // Staggered animations for sections
+      const sections = [metricsRef.current, previewRef.current, featuresRef.current, ctaRef.current];
+      sections.forEach((section, index) => {
+        if (section) {
+          gsap.fromTo(section,
+            { opacity: 0, y: 50 },
+            {
+              opacity: 1,
+              y: 0,
+              duration: 0.8,
+              ease: "power2.out",
+              scrollTrigger: {
+                trigger: section,
+                start: "top 80%",
+                end: "bottom 20%",
+                toggleActions: "play none none reverse"
+              }
+            }
+          );
+        }
+      });
+
+      // Feature cards animation
+      const featureCards = document.querySelectorAll('.feature-card');
+      gsap.fromTo(featureCards,
+        { opacity: 0, y: 30, scale: 0.9 },
+        {
+          opacity: 1,
+          y: 0,
+          scale: 1,
+          duration: 0.6,
+          stagger: 0.2,
+          ease: "power2.out",
+          scrollTrigger: {
+            trigger: featuresRef.current,
+            start: "top 70%",
+            toggleActions: "play none none reverse"
+          }
+        }
+      );
+    }
+
+    return () => {
+      ScrollTrigger.getAll().forEach(st => st.kill());
+    };
+  }, [user]);
+
   return (
     <div className="min-h-screen gradient-hero relative overflow-hidden">
       {/* Background decoration */}
@@ -35,7 +101,7 @@ export default function Home() {
       
       <div className="relative z-10">
         {/* Hero Section */}
-        <div className="flex flex-col items-center justify-center min-h-screen p-4 sm:p-6 lg:p-8">
+        <div ref={heroRef} className="flex flex-col items-center justify-center min-h-screen p-4 sm:p-6 lg:p-8">
           <div className={`text-center max-w-5xl mx-auto ${user ? 'mb-8' : 'mb-12'}`}>
             <div className="mb-6">
               <span className="inline-flex items-center px-4 py-2 rounded-full bg-white/20 backdrop-blur-sm border border-white/30 text-white text-sm font-medium mb-4">
@@ -59,10 +125,27 @@ export default function Home() {
               Turn your river adventures into beautiful data stories
             </p>
             
-            <p className="text-lg text-white/80 mb-8 max-w-3xl mx-auto">
+            <p className="text-lg text-white/80 mb-6 max-w-3xl mx-auto">
               Whether you're studying for GCSE Geography, researching waterways, or just curious about rivers, 
               Riverwalks makes field data collection and analysis surprisingly addictive.
             </p>
+
+            {/* Transparent pricing messaging */}
+            <div className="bg-green-500/20 border border-green-400/30 rounded-xl p-4 mb-8 max-w-2xl mx-auto">
+              <p className="text-green-100 text-sm font-medium mb-2">💡 Transparent Pricing - No Surprises</p>
+              <p className="text-green-200 text-sm">
+                Create your account and test all features for free. Reports and data export require a small subscription (£1.99/year or £3.49 lifetime) to support development.
+              </p>
+            </div>
+
+            {/* Feature illustration */}
+            <div className="mb-8 flex justify-center">
+              <img 
+                src="/riverwalks-feature.png" 
+                alt="Riverwalks features visualization" 
+                className="max-w-md w-full h-auto rounded-xl shadow-modern drop-shadow-lg"
+              />
+            </div>
 
             {/* Auth Card */}
             {!user && (
@@ -73,7 +156,7 @@ export default function Home() {
 
             {/* Scroll indicator */}
             {!user && (
-              <div className="flex flex-col items-center animate-bounce">
+              <div className="flex flex-col items-center animate-bounce mb-8">
                 <p className="text-white/70 text-sm mb-2">See what the community is discovering</p>
                 <ChevronDown className="w-6 h-6 text-white/70" />
               </div>
@@ -83,14 +166,14 @@ export default function Home() {
 
         {/* Live Metrics Section */}
         {!user && (
-          <div className="py-16 px-4 sm:px-6 lg:px-8">
+          <div ref={metricsRef} className="py-12 px-4 sm:px-6 lg:px-8">
             <LiveMetrics />
           </div>
         )}
 
         {/* Interactive Preview Section */}
         {!user && (
-          <div className="py-16 px-4 sm:px-6 lg:px-8">
+          <div ref={previewRef} className="py-12 px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
               <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
                 Experience it Yourself
@@ -106,7 +189,7 @@ export default function Home() {
 
         {/* Why Riverwalks Section */}
         {!user && (
-          <div className="py-16 px-4 sm:px-6 lg:px-8">
+          <div ref={featuresRef} className="py-12 px-4 sm:px-6 lg:px-8">
             <div className="max-w-4xl mx-auto">
               <div className="text-center mb-12">
                 <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
@@ -115,19 +198,19 @@ export default function Home() {
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div className="glass rounded-xl p-6 text-center hover:scale-105 transition-transform bg-gray-900/80 backdrop-blur-md">
+                <div className="feature-card glass rounded-xl p-6 text-center hover:scale-105 transition-transform bg-gray-900/80 backdrop-blur-md">
                   <MapPin className="w-10 h-10 text-blue-300 mx-auto mb-4" />
                   <h3 className="font-semibold text-white mb-3">GPS-Precise Mapping</h3>
                   <p className="text-gray-200">Drop pins exactly where you take measurements. Build a network of study sites across the UK.</p>
                 </div>
                 
-                <div className="glass rounded-xl p-6 text-center hover:scale-105 transition-transform bg-gray-900/80 backdrop-blur-md">
+                <div className="feature-card glass rounded-xl p-6 text-center hover:scale-105 transition-transform bg-gray-900/80 backdrop-blur-md">
                   <BarChart3 className="w-10 h-10 text-green-300 mx-auto mb-4" />
                   <h3 className="font-semibold text-white mb-3">Charts That Wow</h3>
                   <p className="text-gray-200">Transform depth readings into stunning cross-sections and 3D river profiles that tell stories.</p>
                 </div>
                 
-                <div className="glass rounded-xl p-6 text-center hover:scale-105 transition-transform bg-gray-900/80 backdrop-blur-md">
+                <div className="feature-card glass rounded-xl p-6 text-center hover:scale-105 transition-transform bg-gray-900/80 backdrop-blur-md">
                   <Users className="w-10 h-10 text-purple-300 mx-auto mb-4" />
                   <h3 className="font-semibold text-white mb-3">Built for Learning</h3>
                   <p className="text-gray-200">Perfect for GCSE coursework, but designed for anyone curious about understanding rivers.</p>
@@ -139,13 +222,16 @@ export default function Home() {
 
         {/* Final CTA */}
         {!user && (
-          <div className="py-16 px-4 sm:px-6 lg:px-8 text-center">
+          <div ref={ctaRef} className="py-12 px-4 sm:px-6 lg:px-8 text-center">
             <div className="glass rounded-2xl p-8 max-w-2xl mx-auto bg-gray-900/80 backdrop-blur-md">
               <h2 className="text-2xl sm:text-3xl font-bold text-white mb-4">
                 Ready to explore rivers like never before?
               </h2>
-              <p className="text-gray-200 mb-6">
-                Start your first river study in less than 2 minutes. No credit card required.
+              <p className="text-gray-200 mb-4">
+                Start your first river study in less than 2 minutes. No credit card required to get started.
+              </p>
+              <p className="text-gray-300 text-sm mb-6">
+                Test all features free, then pay just £1.99/year for reports and data export.
               </p>
               <AuthCard />
             </div>

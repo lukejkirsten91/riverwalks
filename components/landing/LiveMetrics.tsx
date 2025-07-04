@@ -111,13 +111,23 @@ export function LiveMetrics() {
           <div className="bg-gray-800/50 rounded-lg p-4 relative h-80">
             {/* Simple UK SVG outline */}
             <svg 
-              viewBox="0 0 400 500" 
+              viewBox="0 0 500 600" 
               className="w-full h-full"
               style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))' }}
             >
-              {/* Simplified UK outline */}
+              {/* Simplified but recognizable UK outline */}
               <path
-                d="M120 450 L100 420 L90 380 L85 340 L80 300 L75 260 L70 220 L75 180 L80 140 L90 100 L100 80 L120 60 L150 50 L180 55 L200 65 L220 80 L240 100 L250 120 L260 140 L270 160 L275 180 L280 200 L285 220 L290 240 L295 260 L300 280 L305 300 L310 320 L315 340 L320 360 L325 380 L330 400 L325 420 L315 440 L300 450 L280 455 L260 450 L240 445 L220 440 L200 445 L180 450 L160 452 L140 451 Z"
+                d="M 200 50
+                   L 220 55 L 240 65 L 250 80 L 260 100 L 270 120 L 275 140 L 280 160 L 285 180 L 290 200
+                   L 295 220 L 300 240 L 305 260 L 310 280 L 315 300 L 320 320 L 325 340 L 330 360 L 335 380
+                   L 340 400 L 345 420 L 350 440 L 355 460 L 360 480 L 365 500 L 360 520 L 350 535 L 335 545
+                   L 315 550 L 295 548 L 275 545 L 255 540 L 235 535 L 215 530 L 195 525 L 175 520 L 155 515
+                   L 135 510 L 115 505 L 100 495 L 90 480 L 85 460 L 82 440 L 80 420 L 78 400 L 76 380
+                   L 75 360 L 74 340 L 73 320 L 72 300 L 71 280 L 70 260 L 69 240 L 68 220 L 67 200
+                   L 66 180 L 70 160 L 75 140 L 85 120 L 100 105 L 120 95 L 140 90 L 160 88 L 180 87 L 200 50 Z
+                   
+                   M 50 160
+                   L 60 155 L 70 158 L 75 165 L 78 175 L 75 185 L 70 195 L 60 200 L 50 195 L 45 185 L 48 175 L 50 160 Z"
                 fill="#4B5563"
                 stroke="#6B7280"
                 strokeWidth="2"
@@ -127,18 +137,19 @@ export function LiveMetrics() {
               {metrics.sitesWithCoordinates.map((site, index) => {
                 // Simple coordinate conversion for UK (very approximate)
                 // UK bounds: roughly 49.9-60.8 lat, -7.6-1.8 lng
-                const x = ((site.longitude + 7.6) / 9.4) * 400;
-                const y = ((60.8 - site.latitude) / 10.9) * 500;
+                // Map to the viewBox dimensions 500x600
+                const x = ((site.longitude + 7.6) / 9.4) * 500;
+                const y = ((60.8 - site.latitude) / 10.9) * 600;
                 
                 return (
                   <circle
                     key={index}
-                    cx={Math.max(50, Math.min(350, x))}
-                    cy={Math.max(50, Math.min(450, y))}
-                    r="4"
+                    cx={Math.max(50, Math.min(450, x))}
+                    cy={Math.max(50, Math.min(550, y))}
+                    r="6"
                     fill="#3B82F6"
                     stroke="#FFFFFF"
-                    strokeWidth="1"
+                    strokeWidth="2"
                     className="animate-pulse"
                   >
                     <title>{site.site_name} ({site.latitude.toFixed(4)}, {site.longitude.toFixed(4)})</title>
