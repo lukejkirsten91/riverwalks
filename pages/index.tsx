@@ -130,21 +130,21 @@ export default function Home() {
               Riverwalks makes field data collection and analysis surprisingly addictive.
             </p>
 
+            {/* Feature illustration */}
+            <div className="mb-6 flex justify-center">
+              <img 
+                src="/riverwalks-feature.png" 
+                alt="Riverwalks features visualization" 
+                className="max-w-md w-full h-auto rounded-xl shadow-modern drop-shadow-lg"
+              />
+            </div>
+
             {/* Transparent pricing messaging */}
             <div className="bg-green-500/20 border border-green-400/30 rounded-xl p-4 mb-8 max-w-2xl mx-auto">
               <p className="text-green-100 text-sm font-medium mb-2">💡 Transparent Pricing - No Surprises</p>
               <p className="text-green-200 text-sm">
                 Create your account and test all features for free. Reports and data export require a small subscription (£1.99/year or £3.49 lifetime) to support development.
               </p>
-            </div>
-
-            {/* Feature illustration */}
-            <div className="mb-8 flex justify-center">
-              <img 
-                src="/riverwalks-feature.png" 
-                alt="Riverwalks features visualization" 
-                className="max-w-md w-full h-auto rounded-xl shadow-modern drop-shadow-lg"
-              />
             </div>
 
             {/* Auth Card */}
@@ -156,7 +156,7 @@ export default function Home() {
 
             {/* Scroll indicator */}
             {!user && (
-              <div className="flex flex-col items-center animate-bounce mb-8">
+              <div className="flex flex-col items-center animate-bounce">
                 <p className="text-white/70 text-sm mb-2">See what the community is discovering</p>
                 <ChevronDown className="w-6 h-6 text-white/70" />
               </div>
@@ -166,14 +166,14 @@ export default function Home() {
 
         {/* Live Metrics Section */}
         {!user && (
-          <div ref={metricsRef} className="py-12 px-4 sm:px-6 lg:px-8">
+          <div ref={metricsRef} className="pt-4 pb-12 px-4 sm:px-6 lg:px-8">
             <LiveMetrics />
           </div>
         )}
 
         {/* Interactive Preview Section */}
         {!user && (
-          <div ref={previewRef} className="py-12 px-4 sm:px-6 lg:px-8">
+          <div ref={previewRef} className="pt-12 pb-8 px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
               <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
                 Experience it Yourself
@@ -189,7 +189,7 @@ export default function Home() {
 
         {/* Why Riverwalks Section */}
         {!user && (
-          <div ref={featuresRef} className="py-12 px-4 sm:px-6 lg:px-8">
+          <div ref={featuresRef} className="pt-8 pb-12 px-4 sm:px-6 lg:px-8">
             <div className="max-w-4xl mx-auto">
               <div className="text-center mb-12">
                 <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">

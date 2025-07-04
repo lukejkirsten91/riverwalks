@@ -115,19 +115,22 @@ export function LiveMetrics() {
               className="w-full h-full"
               style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))' }}
             >
-              {/* Simplified but recognizable UK outline */}
+              {/* More accurate UK outline */}
               <path
-                d="M 200 50
-                   L 220 55 L 240 65 L 250 80 L 260 100 L 270 120 L 275 140 L 280 160 L 285 180 L 290 200
-                   L 295 220 L 300 240 L 305 260 L 310 280 L 315 300 L 320 320 L 325 340 L 330 360 L 335 380
-                   L 340 400 L 345 420 L 350 440 L 355 460 L 360 480 L 365 500 L 360 520 L 350 535 L 335 545
-                   L 315 550 L 295 548 L 275 545 L 255 540 L 235 535 L 215 530 L 195 525 L 175 520 L 155 515
-                   L 135 510 L 115 505 L 100 495 L 90 480 L 85 460 L 82 440 L 80 420 L 78 400 L 76 380
-                   L 75 360 L 74 340 L 73 320 L 72 300 L 71 280 L 70 260 L 69 240 L 68 220 L 67 200
-                   L 66 180 L 70 160 L 75 140 L 85 120 L 100 105 L 120 95 L 140 90 L 160 88 L 180 87 L 200 50 Z
+                d="M 380 80
+                   L 390 85 L 400 90 L 410 100 L 420 110 L 430 125 L 435 140 L 440 160 L 445 180 L 450 200
+                   L 455 220 L 460 240 L 465 260 L 470 280 L 475 300 L 480 320 L 485 340 L 490 360 L 495 380
+                   L 500 400 L 505 420 L 510 440 L 515 460 L 520 480 L 525 500 L 530 520 L 535 540 L 540 560
+                   L 535 580 L 525 590 L 510 595 L 490 598 L 470 600 L 450 595 L 430 590 L 410 585 L 390 580
+                   L 370 575 L 350 570 L 330 565 L 310 560 L 290 555 L 270 550 L 250 545 L 230 540 L 210 535
+                   L 190 530 L 170 525 L 150 520 L 130 515 L 110 510 L 90 505 L 70 500 L 50 495 L 30 490
+                   L 20 480 L 15 460 L 12 440 L 10 420 L 8 400 L 6 380 L 5 360 L 4 340 L 3 320 L 2 300
+                   L 1 280 L 0 260 L 1 240 L 2 220 L 3 200 L 4 180 L 5 160 L 10 140 L 15 120 L 25 100
+                   L 40 85 L 60 75 L 80 70 L 100 68 L 120 67 L 140 66 L 160 65 L 180 64 L 200 63 L 220 62
+                   L 240 61 L 260 60 L 280 59 L 300 58 L 320 57 L 340 56 L 360 55 L 380 80 Z
                    
-                   M 50 160
-                   L 60 155 L 70 158 L 75 165 L 78 175 L 75 185 L 70 195 L 60 200 L 50 195 L 45 185 L 48 175 L 50 160 Z"
+                   M 60 240
+                   L 70 235 L 80 238 L 85 245 L 88 255 L 85 265 L 80 275 L 70 280 L 60 275 L 55 265 L 58 255 L 60 240 Z"
                 fill="#4B5563"
                 stroke="#6B7280"
                 strokeWidth="2"
@@ -169,7 +172,7 @@ export function LiveMetrics() {
         </div>
       )}
 
-      <div className="text-center mt-6">
+      <div className="text-center mt-4">
         <p className="text-white/60 text-sm">
           Last updated: {new Date(metrics.lastUpdated).toLocaleTimeString()}
         </p>
