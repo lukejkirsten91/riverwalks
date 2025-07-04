@@ -86,7 +86,6 @@ export function LiveMetrics() {
           <Droplets className="w-8 h-8 text-blue-300 mx-auto mb-3" />
           <h3 className="font-semibold text-white mb-1">River Walks Completed</h3>
           <p className="text-2xl font-bold text-white">{metrics.riverWalks.toLocaleString()}</p>
-          <p className="text-xs text-gray-300 mt-1">Each walk contributes data</p>
         </div>
         
         <div 

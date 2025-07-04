@@ -45,6 +45,24 @@ const SubscriptionPage: React.FC = () => {
     try {
       console.log('🚀 Starting checkout for plan:', planType);
       
+      // Check if discount makes this free (100% discount)
+      if (discount) {
+        const originalPrice = plans[planType].price / 100;
+        let discountedPrice = originalPrice;
+        
+        if (discount.type === 'percentage') {
+          discountedPrice = originalPrice * (1 - discount.percentage / 100);
+        } else if (discount.type === 'fixed_amount') {
+          discountedPrice = Math.max(0, originalPrice - (discount.fixedAmount / 100));
+        }
+        
+        // If fully discounted, skip Stripe and go direct to success
+        if (discountedPrice === 0) {
+          router.push(`/subscription/success?plan=${planType}&voucher=${encodeURIComponent(voucherCode)}&free=true`);
+          return;
+        }
+      }
+      
       if (!stripePromise) {
         console.error('❌ Stripe not initialized - missing publishable key');
         throw new Error('Stripe configuration error - missing publishable key');
@@ -134,7 +152,6 @@ const SubscriptionPage: React.FC = () => {
           fixedAmount: data.voucher.discount_type === 'fixed_amount' ? data.voucher.discount_value : 0,
           type: data.voucher.discount_type,
         });
-        alert(`Voucher applied! ${data.voucher.discount_type === 'percentage' ? `${data.voucher.discount_value}% off` : `£${(data.voucher.discount_value / 100).toFixed(2)} off`}`);
       } else {
         alert(data.error || 'Invalid voucher code');
         setDiscount(null);

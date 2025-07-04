@@ -231,7 +231,7 @@ export default function Home() {
                 Start your first river study in less than 2 minutes. No credit card required to get started.
               </p>
               <p className="text-gray-300 text-sm mb-6">
-                Test all features free, then pay just £1.99/year for reports and data export.
+                Test all features free, then pay just £1.99/year or £3.49 lifetime for reports and data export.
               </p>
               <AuthCard />
             </div>

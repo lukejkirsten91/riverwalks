@@ -158,6 +158,10 @@ export function InteractivePreview() {
     demoRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
+  const scrollToAuth = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   const startDemo = () => {
     setCurrentStep('cross-section');
     setTimeout(scrollToDemo, 100);
@@ -354,8 +358,7 @@ export function InteractivePreview() {
         polar: {
           radialaxis: { 
             visible: true,
-            range: [0, Math.max(...roundnessCounts) + 1],
-            title: { text: 'Count of Measurements' }
+            range: [0, Math.max(...roundnessCounts) + 1]
           },
           angularaxis: {
             tickvals: angles,
@@ -667,13 +670,12 @@ export function InteractivePreview() {
               {/* Powers Roundness Scale */}
               <div className="bg-white/10 rounded-lg p-4">
                 <h4 className="text-white/90 font-medium mb-3">Powers Roundness Scale</h4>
-                <div className="grid grid-cols-3 gap-2 text-xs text-white/80">
-                  {ROUNDNESS_LABELS.map(item => (
-                    <div key={item.value} className="text-center">
-                      <div className="font-medium">{item.value}</div>
-                      <div>{item.label}</div>
-                    </div>
-                  ))}
+                <div className="flex justify-center">
+                  <img 
+                    src="/powers_roundness_scale.png" 
+                    alt="Powers Roundness Scale - Visual guide for sediment roundness classification from 1 (Very Angular) to 6 (Well-rounded)" 
+                    className="max-w-full h-auto rounded-lg bg-white/10 p-2"
+                  />
                 </div>
               </div>
               
@@ -995,7 +997,7 @@ export function InteractivePreview() {
               </button>
               
               <button 
-                onClick={() => window.location.href = '/river-walks'}
+                onClick={scrollToAuth}
                 className="btn-primary px-6 py-3 rounded-xl font-semibold flex items-center gap-2 hover:scale-105 transition-transform"
               >
                 <MapPin className="w-4 h-4" />
