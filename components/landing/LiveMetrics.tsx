@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { MapPin, BarChart3, Droplets, Square } from 'lucide-react';
+import { LiveMap } from './LiveMap';
 
 interface PublicMetrics {
   riverWalks: number;
@@ -119,58 +120,16 @@ export function LiveMetrics() {
         </div>
       </div>
 
-      {/* UK Map with site dots */}
+      {/* Interactive UK Map */}
       {metrics.sitesWithCoordinates.length > 0 && (
-        <div className="glass rounded-xl p-6 text-center bg-gray-900/80 backdrop-blur-md">
-          <h3 className="font-semibold text-white mb-3">Study Sites Across the UK</h3>
-          <div className="bg-gray-800/50 rounded-lg p-4 relative h-80">
-            {/* Simple UK SVG outline */}
-            {/* Simple UK outline using a background image and overlay approach */}
-            <div className="relative w-full h-full bg-gradient-to-br from-slate-700 to-slate-800 rounded-lg overflow-hidden">
-              {/* UK Outline using CSS shape */}
-              <div className="absolute inset-4">
-                <svg viewBox="0 0 100 120" className="w-full h-full">
-                  {/* Simplified recognizable UK outline */}
-                  <path
-                    d="M20 10 L30 8 L45 5 L60 7 L70 12 L75 20 L78 30 L80 40 L82 50 L85 60 L87 70 L89 80 L90 90 L88 100 L85 108 L80 112 L70 115 L55 118 L40 115 L25 110 L15 100 L10 85 L8 70 L5 55 L3 40 L5 25 L10 15 L20 10 Z M12 35 L18 33 L22 36 L20 42 L15 44 L12 40 L12 35 Z"
-                    fill="#475569"
-                    stroke="#64748b"
-                    strokeWidth="1"
-                    className="drop-shadow-sm"
-                  />
-                  
-                  {/* Plot site dots */}
-                  {metrics.sitesWithCoordinates.map((site, index) => {
-                    // Simple coordinate conversion for UK bounds
-                    const x = ((site.longitude + 8) / 10) * 100;
-                    const y = ((61 - site.latitude) / 12) * 120;
-                    
-                    return (
-                      <circle
-                        key={index}
-                        cx={Math.max(10, Math.min(90, x))}
-                        cy={Math.max(10, Math.min(110, y))}
-                        r="2"
-                        fill="#3b82f6"
-                        stroke="#ffffff"
-                        strokeWidth="0.5"
-                        className="animate-pulse"
-                      >
-                        <title>{site.site_name}</title>
-                      </circle>
-                    );
-                  })}
-                </svg>
-              </div>
-              
-              {/* Overlay text */}
-              <div className="absolute bottom-2 left-2 text-xs text-gray-400">
-                <p>{metrics.sitesWithCoordinates.length} locations</p>
-              </div>
-              <div className="absolute bottom-2 right-2 flex items-center gap-1 text-xs text-gray-400">
-                <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
-                <span>Active Sites</span>
-              </div>
+        <div className="glass rounded-xl p-6 bg-gray-900/80 backdrop-blur-md">
+          <h3 className="font-semibold text-white mb-3 text-center">Study Sites Across the UK</h3>
+          <div className="h-80 rounded-lg overflow-hidden relative">
+            <LiveMap sites={metrics.sitesWithCoordinates} />
+            
+            {/* Overlay stats */}
+            <div className="absolute bottom-2 left-2 bg-black/70 rounded px-2 py-1 text-xs text-white z-[1000]">
+              {metrics.sitesWithCoordinates.length} active locations
             </div>
           </div>
         </div>
