@@ -1,5 +1,13 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { supabase } from '../../../lib/supabase';
+import { createClient } from '@supabase/supabase-js';
+
+// Create service role client for voucher operations (bypass RLS)
+const supabaseAdmin = process.env.SUPABASE_SERVICE_ROLE_KEY 
+  ? createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY
+    )
+  : null;
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
@@ -7,6 +15,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
+    if (!supabaseAdmin) {
+      return res.status(500).json({ error: 'Service role not configured' });
+    }
+
     const { code } = req.body;
 
     if (!code) {
@@ -16,7 +28,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     console.log('🎫 Validating voucher:', code);
 
     // Get voucher from database
-    const { data: voucher, error } = await supabase
+    const { data: voucher, error } = await supabaseAdmin
       .from('vouchers')
       .select('*')
       .eq('code', code.toUpperCase())

@@ -1,5 +1,13 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { supabase } from '../../../lib/supabase';
+import { createClient } from '@supabase/supabase-js';
+
+// Create service role client for voucher operations (bypass RLS)
+const supabaseAdmin = process.env.SUPABASE_SERVICE_ROLE_KEY 
+  ? createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY
+    )
+  : null;
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
@@ -7,6 +15,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
+    if (!supabaseAdmin) {
+      return res.status(500).json({ error: 'Service role not configured' });
+    }
+
     const { code, email, planType } = req.body;
 
     if (!code || !email || !planType) {
@@ -16,7 +28,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     console.log('🎫 Redeeming voucher:', { code, email, planType });
 
     // Get voucher from database and validate
-    const { data: voucher, error: voucherError } = await supabase
+    const { data: voucher, error: voucherError } = await supabaseAdmin
       .from('vouchers')
       .select('*')
       .eq('code', code.toUpperCase())
@@ -55,7 +67,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     // Increment usage count
-    const { error: updateError } = await supabase
+    const { error: updateError } = await supabaseAdmin
       .from('vouchers')
       .update({ 
         uses_count: voucher.uses_count + 1,
@@ -69,7 +81,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     // Log voucher usage
-    const { error: logError } = await supabase
+    const { error: logError } = await supabaseAdmin
       .from('voucher_usage')
       .insert({
         voucher_id: voucher.id,
