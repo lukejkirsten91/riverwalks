@@ -38,15 +38,15 @@ const createCustomIcon = () => {
   });
 };
 
-const ukCenter: [number, number] = [54.5, -2]; // Centre of UK
-const zoomLevel = 6;
+const londonCenter: [number, number] = [51.5074, -0.1278]; // Centre of London
+const zoomLevel = 9; // Higher zoom to show London area detail
 
 export default function MapComponent({ sites }: MapComponentProps) {
   const customIcon = createCustomIcon();
 
   return (
     <MapContainer 
-      center={ukCenter} 
+      center={londonCenter} 
       zoom={zoomLevel} 
       style={{ height: '100%', width: '100%', borderRadius: '0.5rem' }}
       className="z-0"
