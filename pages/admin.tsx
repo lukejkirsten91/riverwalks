@@ -57,6 +57,8 @@ export default function AdminDashboard() {
   const [paymentEvents, setPaymentEvents] = useState<PaymentEvent[]>([]);
   const [voucherUsage, setVoucherUsage] = useState<any[]>([]);
   const [showVoucherModal, setShowVoucherModal] = useState(false);
+  const [editingVoucher, setEditingVoucher] = useState<string | null>(null);
+  const [editMaxUses, setEditMaxUses] = useState<number>(0);
 
   // Check admin access
   useEffect(() => {
@@ -230,6 +232,30 @@ export default function AdminDashboard() {
     } catch (error) {
       console.error('Error updating voucher max uses:', error);
     }
+  };
+
+  const saveEditedMaxUses = async (id: string) => {
+    try {
+      const newMaxUses = Math.max(1, editMaxUses); // Minimum 1 use
+      const { error } = await supabase
+        .from('vouchers')
+        .update({ max_uses: newMaxUses })
+        .eq('id', id);
+
+      if (!error) {
+        setEditingVoucher(null);
+        await loadDashboardData();
+      } else {
+        console.error('Error updating voucher max uses:', error);
+      }
+    } catch (error) {
+      console.error('Error updating voucher max uses:', error);
+    }
+  };
+
+  const startEditingMaxUses = (id: string, currentMaxUses: number) => {
+    setEditingVoucher(id);
+    setEditMaxUses(currentMaxUses);
   };
 
   const updateUserSubscription = async (userId: string, subscriptionType: string | null) => {
@@ -476,13 +502,42 @@ export default function AdminDashboard() {
                               -
                             </button>
                             <span className="min-w-[50px] sm:min-w-[60px] text-center font-mono text-xs sm:text-sm">
-                              {voucher.uses_count} / {voucher.max_uses}
+                              {voucher.uses_count} / 
+                              {editingVoucher === voucher.id ? (
+                                <input
+                                  type="number"
+                                  min="1"
+                                  value={editMaxUses}
+                                  onChange={(e) => setEditMaxUses(parseInt(e.target.value) || 1)}
+                                  className="w-12 text-center border border-gray-300 rounded px-1 mx-1"
+                                  onBlur={() => saveEditedMaxUses(voucher.id)}
+                                  onKeyDown={(e) => {
+                                    if (e.key === 'Enter') saveEditedMaxUses(voucher.id);
+                                    if (e.key === 'Escape') setEditingVoucher(null);
+                                  }}
+                                  autoFocus
+                                />
+                              ) : (
+                                <span 
+                                  className="cursor-pointer hover:bg-gray-100 px-1 rounded"
+                                  onClick={() => startEditingMaxUses(voucher.id, voucher.max_uses)}
+                                >
+                                  {voucher.max_uses}
+                                </span>
+                              )}
                             </span>
                             <button
                               onClick={() => updateVoucherMaxUses(voucher.id, voucher.max_uses, 1)}
                               className="w-5 h-5 sm:w-6 sm:h-6 bg-green-100 hover:bg-green-200 disabled:bg-gray-100 disabled:text-gray-400 text-green-600 rounded text-xs font-bold flex items-center justify-center"
                             >
                               +
+                            </button>
+                            <button
+                              onClick={() => startEditingMaxUses(voucher.id, voucher.max_uses)}
+                              className="w-5 h-5 sm:w-6 sm:h-6 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded text-xs font-bold flex items-center justify-center ml-1"
+                              title="Edit max uses"
+                            >
+                              <Edit className="w-3 h-3" />
                             </button>
                           </div>
                         </td>

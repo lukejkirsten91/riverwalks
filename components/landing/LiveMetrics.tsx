@@ -74,7 +74,7 @@ export function LiveMetrics() {
           Real Rivers, Real Data 🌊
         </h2>
         <p className="text-white/80 text-lg">
-          Join the community exploring UK waterways
+          Add to the community exploring UK waterways
         </p>
       </div>
 
@@ -90,11 +90,11 @@ export function LiveMetrics() {
         
         <div 
           className="glass rounded-xl p-6 text-center hover:scale-105 transition-transform bg-gray-900/80 backdrop-blur-md cursor-help"
-          title="Distinct geographical locations where measurements have been taken - building a comprehensive map of UK waterways"
+          title="Locations with GPS coordinates mapped on our interactive UK map"
         >
           <MapPin className="w-8 h-8 text-green-300 mx-auto mb-3" />
-          <h3 className="font-semibold text-white mb-1">Sites Logged</h3>
-          <p className="text-2xl font-bold text-white">{metrics.measurementSites.toLocaleString()}</p>
+          <h3 className="font-semibold text-white mb-1">Mapped Locations</h3>
+          <p className="text-2xl font-bold text-white">{metrics.sitesWithCoordinates.length.toLocaleString()}</p>
         </div>
         
         <div 

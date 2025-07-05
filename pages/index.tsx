@@ -100,7 +100,13 @@ export default function Home() {
         <div ref={heroRef} className="flex flex-col items-center justify-center py-16 p-4 sm:p-6 lg:p-8">
           <div className={`text-center max-w-5xl mx-auto ${user ? 'mb-8' : 'mb-12'}`}>
             <div className="mb-6">
-              <span className="inline-flex items-center px-4 py-2 rounded-full bg-white/20 backdrop-blur-sm border border-white/30 text-white text-sm font-medium mb-4">
+              <div className="bg-blue-600/90 backdrop-blur-sm border border-blue-400/60 rounded-xl p-4 mb-4 max-w-2xl mx-auto">
+                <p className="text-blue-50 text-lg font-bold mb-1">🎓 #1 Tool for GCSE Geography Coursework</p>
+                <p className="text-blue-100 text-sm">
+                  The complete river study platform trusted by students and teachers across the UK
+                </p>
+              </div>
+              <span className="inline-flex items-center px-4 py-2 rounded-full bg-white/20 backdrop-blur-sm border border-white/30 text-white text-sm font-medium">
                 <Waves className="w-4 h-4 mr-2" />
                 Walk. Track. Learn.
               </span>
