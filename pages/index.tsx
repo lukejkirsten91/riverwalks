@@ -94,7 +94,7 @@ export default function Home() {
   }, [user]);
 
   return (
-    <div className="min-h-screen gradient-hero relative overflow-hidden">
+    <div className="min-h-screen gradient-hero relative">
       {/* Background decoration */}
       <div className="absolute inset-0 bg-grid-white/[0.02] bg-grid" />
       <div className="absolute h-full w-full bg-gradient-to-br from-transparent via-white/5 to-white/10" />
@@ -127,7 +127,7 @@ export default function Home() {
             
             <p className="text-lg text-white/80 mb-6 max-w-3xl mx-auto">
               Whether you're studying for GCSE Geography, researching waterways, or just curious about rivers, 
-              Riverwalks makes field data collection and analysis surprisingly addictive.
+              Riverwalks makes field data collection and analysis surprisingly engaging.
             </p>
 
             {/* Feature illustration */}

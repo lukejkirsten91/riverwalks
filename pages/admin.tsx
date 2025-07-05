@@ -214,6 +214,24 @@ export default function AdminDashboard() {
     }
   };
 
+  const updateVoucherMaxUses = async (id: string, currentMaxUses: number, change: number) => {
+    try {
+      const newMaxUses = Math.max(1, currentMaxUses + change); // Minimum 1 use
+      const { error } = await supabase
+        .from('vouchers')
+        .update({ max_uses: newMaxUses })
+        .eq('id', id);
+
+      if (!error) {
+        await loadDashboardData();
+      } else {
+        console.error('Error updating voucher max uses:', error);
+      }
+    } catch (error) {
+      console.error('Error updating voucher max uses:', error);
+    }
+  };
+
   const updateUserSubscription = async (userId: string, subscriptionType: string | null) => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
@@ -451,8 +469,8 @@ export default function AdminDashboard() {
                         <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                           <div className="flex items-center gap-1 sm:gap-2">
                             <button
-                              onClick={() => updateVoucherUsage(voucher.id, voucher.uses_count, -1)}
-                              disabled={voucher.uses_count === 0}
+                              onClick={() => updateVoucherMaxUses(voucher.id, voucher.max_uses, -1)}
+                              disabled={voucher.max_uses <= 1}
                               className="w-5 h-5 sm:w-6 sm:h-6 bg-red-100 hover:bg-red-200 disabled:bg-gray-100 disabled:text-gray-400 text-red-600 rounded text-xs font-bold flex items-center justify-center"
                             >
                               -
@@ -461,8 +479,7 @@ export default function AdminDashboard() {
                               {voucher.uses_count} / {voucher.max_uses}
                             </span>
                             <button
-                              onClick={() => updateVoucherUsage(voucher.id, voucher.uses_count, 1)}
-                              disabled={voucher.uses_count >= voucher.max_uses}
+                              onClick={() => updateVoucherMaxUses(voucher.id, voucher.max_uses, 1)}
                               className="w-5 h-5 sm:w-6 sm:h-6 bg-green-100 hover:bg-green-200 disabled:bg-gray-100 disabled:text-gray-400 text-green-600 rounded text-xs font-bold flex items-center justify-center"
                             >
                               +
