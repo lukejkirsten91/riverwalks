@@ -55,6 +55,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       mode: 'payment',
       success_url: successUrl,
       cancel_url: cancelUrl || `${new URL(successUrl).origin}/subscription`,
+      invoice_creation: {
+        enabled: true,
+        invoice_data: {
+          description: `Riverwalks ${dbPlanType === 'lifetime' ? 'Lifetime' : 'Annual'} Subscription`,
+        },
+      },
       metadata: {
         plan_type: dbPlanType,
         stripe_mode: getStripeMode(),
