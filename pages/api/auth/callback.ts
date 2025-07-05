@@ -40,12 +40,20 @@ export default async function handler(
           const user = data.user;
           const userEmail = user.email;
           
-          // Check if user was created recently (within last 5 minutes)
+          // Check if user was created recently (within last 10 minutes to account for OAuth delays)
           // This helps identify if this is a new signup vs returning login
           const userCreatedAt = new Date(user.created_at);
-          const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+          const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000);
           
-          const isNewUser = userCreatedAt > fiveMinutesAgo;
+          const isNewUser = userCreatedAt > tenMinutesAgo;
+          
+          console.log('🔍 User auth details:', {
+            email: userEmail,
+            createdAt: userCreatedAt.toISOString(),
+            tenMinutesAgo: tenMinutesAgo.toISOString(),
+            isNewUser,
+            timeDiffMinutes: (Date.now() - userCreatedAt.getTime()) / (1000 * 60)
+          });
           
           if (isNewUser && userEmail) {
             console.log('🎉 New user detected, sending welcome email to:', userEmail);
@@ -61,7 +69,7 @@ export default async function handler(
               console.error('❌ Welcome email error:', emailError);
             });
           } else {
-            console.log('👋 Returning user login:', userEmail || 'unknown email');
+            console.log('👋 Returning user login or old account:', userEmail || 'unknown email');
           }
         }
       }

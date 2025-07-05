@@ -38,7 +38,7 @@ const getWelcomeEmailHtml = (userEmail: string) => `
         .button { display: inline-block; background: #3b82f6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: 600; margin: 20px 0; }
         .footer { background: #f8f9fa; padding: 20px 30px; text-align: center; color: #6b7280; font-size: 14px; }
         .step { background: #f1f5f9; padding: 20px; border-radius: 8px; margin: 16px 0; border-left: 4px solid #3b82f6; }
-        .step-number { background: #3b82f6; color: white; width: 24px; height: 24px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; margin-right: 12px; }
+        .step-number { background: #3b82f6; color: white; width: 24px; height: 24px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; margin-right: 12px; line-height: 1; vertical-align: top; }
     </style>
 </head>
 <body>
