@@ -6,12 +6,15 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  console.log('Auth callback received:', {
+  console.log('🔍 Auth callback received:', {
     query: req.query,
+    hasCode: !!req.query.code,
+    codeLength: req.query.code ? (Array.isArray(req.query.code) ? req.query.code[0]?.length : req.query.code.length) : 0,
     headers: {
       referer: req.headers.referer,
       referrer: req.headers.referrer
-    }
+    },
+    timestamp: new Date().toISOString()
   });
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -27,13 +30,14 @@ export default async function handler(
   const codeString = Array.isArray(code) ? code[0] : code;
 
   if (codeString) {
+    console.log('🔄 Processing OAuth code:', codeString.substring(0, 20) + '...');
     try {
       const { data, error } =
         await supabase.auth.exchangeCodeForSession(codeString);
       if (error) {
-        console.error('Error exchanging code for session:', error);
+        console.error('❌ Error exchanging code for session:', error);
       } else {
-        console.log('Session established successfully');
+        console.log('✅ Session established successfully');
         
         // Check if this is a new user and send welcome email
         if (data?.user && data?.session) {
@@ -74,8 +78,10 @@ export default async function handler(
         }
       }
     } catch (error) {
-      console.error('Exception during code exchange:', error);
+      console.error('❌ Exception during code exchange:', error);
     }
+  } else {
+    console.log('⚠️ No OAuth code found in callback - this might be a redirect without code or a different OAuth flow');
   }
 
   // Check for redirect_to parameter, default to river-walks
