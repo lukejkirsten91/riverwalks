@@ -73,8 +73,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const { error: updateError } = await supabaseAdmin
       .from('vouchers')
       .update({ 
-        uses_count: voucher.uses_count + 1,
-        updated_at: new Date()
+        uses_count: voucher.uses_count + 1
       })
       .eq('id', voucher.id);
 
