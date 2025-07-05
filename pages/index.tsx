@@ -2,20 +2,13 @@ import AuthCard from '../components/auth/auth-card';
 import { LiveMetrics } from '../components/landing/LiveMetrics';
 import { InteractivePreview } from '../components/landing/InteractivePreview';
 import { MapPin, BarChart3, Users, Waves, ChevronDown } from 'lucide-react';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import type { User } from '@supabase/supabase-js';
-import { gsap } from 'gsap';
-import { ScrollTrigger } from 'gsap/dist/ScrollTrigger';
 
 export default function Home() {
   const [user, setUser] = useState<User | null>(null);
   const [showInteractiveDemo, setShowInteractiveDemo] = useState(false);
-  const heroRef = useRef(null);
-  const metricsRef = useRef(null);
-  const previewRef = useRef(null);
-  const featuresRef = useRef(null);
-  const ctaRef = useRef(null);
 
   useEffect(() => {
     const { data: authListener } = supabase.auth.onAuthStateChange(
@@ -34,64 +27,6 @@ export default function Home() {
     };
   }, []);
 
-  useEffect(() => {
-    // Register ScrollTrigger plugin
-    gsap.registerPlugin(ScrollTrigger);
-
-    // Only run animations if user is not logged in (showing landing page)
-    if (!user) {
-      // Hero section animation
-      gsap.fromTo(heroRef.current, 
-        { opacity: 0, y: 30 },
-        { opacity: 1, y: 0, duration: 1, ease: "power2.out" }
-      );
-
-      // Staggered animations for sections
-      const sections = [metricsRef.current, previewRef.current, featuresRef.current, ctaRef.current];
-      sections.forEach((section, index) => {
-        if (section) {
-          gsap.fromTo(section,
-            { opacity: 0, y: 50 },
-            {
-              opacity: 1,
-              y: 0,
-              duration: 0.8,
-              ease: "power2.out",
-              scrollTrigger: {
-                trigger: section,
-                start: "top 80%",
-                end: "bottom 20%",
-                toggleActions: "play none none reverse"
-              }
-            }
-          );
-        }
-      });
-
-      // Feature cards animation
-      const featureCards = document.querySelectorAll('.feature-card');
-      gsap.fromTo(featureCards,
-        { opacity: 0, y: 30, scale: 0.9 },
-        {
-          opacity: 1,
-          y: 0,
-          scale: 1,
-          duration: 0.6,
-          stagger: 0.2,
-          ease: "power2.out",
-          scrollTrigger: {
-            trigger: featuresRef.current,
-            start: "top 70%",
-            toggleActions: "play none none reverse"
-          }
-        }
-      );
-    }
-
-    return () => {
-      ScrollTrigger.getAll().forEach(st => st.kill());
-    };
-  }, [user]);
 
   return (
     <div className="gradient-hero relative">
@@ -100,7 +35,7 @@ export default function Home() {
       
       <div className="relative z-10">
         {/* Hero Section */}
-        <div ref={heroRef} className="flex flex-col items-center justify-center min-h-screen p-4 sm:p-6 lg:p-8">
+        <div className="flex flex-col items-center justify-center min-h-screen p-4 sm:p-6 lg:p-8">
           <div className={`text-center max-w-5xl mx-auto ${user ? 'mb-8' : 'mb-12'}`}>
             <div className="mb-6">
               <span className="inline-flex items-center px-4 py-2 rounded-full bg-white/20 backdrop-blur-sm border border-white/30 text-white text-sm font-medium mb-4">
@@ -165,14 +100,14 @@ export default function Home() {
 
         {/* Live Metrics Section */}
         {!user && (
-          <div ref={metricsRef} className="pt-4 pb-12 px-4 sm:px-6 lg:px-8">
+          <div className="pt-4 pb-12 px-4 sm:px-6 lg:px-8">
             <LiveMetrics />
           </div>
         )}
 
         {/* Interactive Preview Section */}
         {!user && (
-          <div ref={previewRef} className="pt-12 pb-8 px-4 sm:px-6 lg:px-8">
+          <div className="pt-12 pb-8 px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
               <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
                 Experience it Yourself
@@ -188,7 +123,7 @@ export default function Home() {
 
         {/* Why Riverwalks Section */}
         {!user && (
-          <div ref={featuresRef} className="pt-8 pb-12 px-4 sm:px-6 lg:px-8">
+          <div className="pt-8 pb-12 px-4 sm:px-6 lg:px-8">
             <div className="max-w-4xl mx-auto">
               <div className="text-center mb-12">
                 <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
@@ -221,7 +156,7 @@ export default function Home() {
 
         {/* Final CTA */}
         {!user && (
-          <div ref={ctaRef} className="py-12 px-4 sm:px-6 lg:px-8 text-center">
+          <div className="py-12 px-4 sm:px-6 lg:px-8 text-center">
             <div className="glass rounded-2xl p-8 max-w-2xl mx-auto bg-gray-900/80 backdrop-blur-md">
               <h2 className="text-2xl sm:text-3xl font-bold text-white mb-4">
                 Ready to explore rivers like never before?
