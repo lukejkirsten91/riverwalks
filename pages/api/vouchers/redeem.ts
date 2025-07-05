@@ -15,7 +15,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
+    console.log('🔧 Voucher redeem API called with:', req.body);
+    
     if (!supabaseAdmin) {
+      console.error('❌ Service role not configured');
       return res.status(500).json({ error: 'Service role not configured' });
     }
 
@@ -118,8 +121,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   } catch (error) {
     console.error('❌ Voucher redemption error:', error);
+    console.error('❌ Error details:', error.message, error.stack);
     return res.status(500).json({
-      error: 'Failed to redeem voucher'
+      error: 'Failed to redeem voucher',
+      details: error.message
     });
   }
 }
