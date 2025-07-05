@@ -94,10 +94,9 @@ export default function Home() {
   }, [user]);
 
   return (
-    <div className="min-h-screen gradient-hero relative">
+    <div className="gradient-hero relative">
       {/* Background decoration */}
-      <div className="absolute inset-0 bg-grid-white/[0.02] bg-grid" />
-      <div className="absolute h-full w-full bg-gradient-to-br from-transparent via-white/5 to-white/10" />
+      <div className="fixed inset-0 bg-grid-white/[0.02] bg-grid -z-10" />
       
       <div className="relative z-10">
         {/* Hero Section */}
