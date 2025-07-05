@@ -4,8 +4,9 @@ import Link from 'next/link';
 
 const SubscriptionSuccessPage: React.FC = () => {
   const router = useRouter();
-  const { session_id } = router.query;
+  const { session_id, free, plan, voucher } = router.query;
   const [sessionDetails, setSessionDetails] = useState<any>(null);
+  const isFreeAccess = free === 'true';
 
   useEffect(() => {
     if (session_id) {
@@ -31,21 +32,37 @@ const SubscriptionSuccessPage: React.FC = () => {
 
         {/* Success Message */}
         <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-3 sm:mb-4 px-2">
-          Payment Successful! 🎉
+          {isFreeAccess ? 'Access Granted! 🎉' : 'Payment Successful! 🎉'}
         </h1>
         
         <p className="text-base sm:text-lg lg:text-xl text-gray-600 mb-6 sm:mb-8 px-2">
-          Welcome to Riverwalks! Your subscription is now active.
+          {isFreeAccess 
+            ? 'Welcome to Riverwalks! Your free access is now active.'
+            : 'Welcome to Riverwalks! Your subscription is now active.'
+          }
         </p>
 
         {/* Payment Details */}
-        {sessionDetails && (
+        {!isFreeAccess && sessionDetails && (
           <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6 mb-6 sm:mb-8 text-left">
             <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4">Payment Details</h3>
             <div className="space-y-2 text-gray-600 text-sm sm:text-base">
               <p><strong>Session ID:</strong> <span className="break-all">{sessionDetails.id}</span></p>
               <p><strong>Amount:</strong> £{(sessionDetails.amount_total / 100).toFixed(2)}</p>
               <p><strong>Status:</strong> <span className="text-green-600 font-medium">Completed</span></p>
+            </div>
+          </div>
+        )}
+        
+        {/* Free Access Details */}
+        {isFreeAccess && (
+          <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6 mb-6 sm:mb-8 text-left">
+            <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4">Access Details</h3>
+            <div className="space-y-2 text-gray-600 text-sm sm:text-base">
+              <p><strong>Plan:</strong> {plan === 'yearly' ? 'Annual Access' : 'Lifetime Access'}</p>
+              <p><strong>Voucher:</strong> {voucher}</p>
+              <p><strong>Amount:</strong> £0.00 (100% discount applied)</p>
+              <p><strong>Status:</strong> <span className="text-green-600 font-medium">Active</span></p>
             </div>
           </div>
         )}
@@ -93,9 +110,11 @@ const SubscriptionSuccessPage: React.FC = () => {
           <p className="mb-2">
             Need help? Contact us at support@riverwalks.co.uk
           </p>
-          <p>
-            You'll receive a receipt email shortly with your payment details.
-          </p>
+          {!isFreeAccess && (
+            <p>
+              You'll receive a receipt email shortly with your payment details.
+            </p>
+          )}
         </div>
       </div>
     </div>

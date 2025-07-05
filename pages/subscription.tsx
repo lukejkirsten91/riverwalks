@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { loadStripe } from '@stripe/stripe-js';
 import { useRouter } from 'next/router';
 import { getCurrentPublishableKey, getCurrentPrices, logStripeConfig, validateStripeConfig } from '../lib/stripe-config';
+import { supabase } from '../lib/supabase';
 
 // Initialize Stripe with centralized configuration
 const stripeKey = getCurrentPublishableKey();
@@ -56,8 +57,52 @@ const SubscriptionPage: React.FC = () => {
           discountedPrice = Math.max(0, originalPrice - (discount.fixedAmount / 100));
         }
         
-        // If fully discounted, skip Stripe and go direct to success
+        // If fully discounted, redeem voucher and create manual subscription
         if (discountedPrice === 0) {
+          console.log('🎁 Creating free subscription with voucher:', voucherCode);
+          
+          // Get current user email
+          const { data: { session } } = await supabase.auth.getSession();
+          if (!session?.user?.email) {
+            throw new Error('User session not found');
+          }
+          
+          // Redeem voucher (tracks usage)
+          const redeemResponse = await fetch('/api/vouchers/redeem', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              code: voucherCode,
+              email: session.user.email,
+              planType: planType
+            }),
+          });
+          
+          if (!redeemResponse.ok) {
+            const errorData = await redeemResponse.json();
+            throw new Error(errorData.error || 'Failed to redeem voucher');
+          }
+          
+          // Create manual subscription
+          const manualSubResponse = await fetch('/api/create-manual-subscription', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              email: session.user.email,
+              subscriptionType: planType
+            }),
+          });
+          
+          if (!manualSubResponse.ok) {
+            const errorData = await manualSubResponse.json();
+            throw new Error(errorData.error || 'Failed to create subscription');
+          }
+          
+          console.log('✅ Free subscription created successfully');
           router.push(`/subscription/success?plan=${planType}&voucher=${encodeURIComponent(voucherCode)}&free=true`);
           return;
         }

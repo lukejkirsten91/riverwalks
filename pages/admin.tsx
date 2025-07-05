@@ -55,6 +55,7 @@ export default function AdminDashboard() {
   const [users, setUsers] = useState<UserSubscription[]>([]);
   const [vouchers, setVouchers] = useState<Voucher[]>([]);
   const [paymentEvents, setPaymentEvents] = useState<PaymentEvent[]>([]);
+  const [voucherUsage, setVoucherUsage] = useState<any[]>([]);
   const [showVoucherModal, setShowVoucherModal] = useState(false);
 
   // Check admin access
@@ -151,6 +152,15 @@ export default function AdminDashboard() {
 
       setPaymentEvents(eventsData || []);
 
+      // Load voucher usage logs
+      const { data: usageData } = await supabase
+        .from('voucher_usage')
+        .select('*')
+        .order('used_at', { ascending: false })
+        .limit(50);
+
+      setVoucherUsage(usageData || []);
+
     } catch (error) {
       console.error('Error loading dashboard data:', error);
     }
@@ -183,6 +193,22 @@ export default function AdminDashboard() {
       }
     } catch (error) {
       console.error('Error updating voucher:', error);
+    }
+  };
+
+  const updateVoucherUsage = async (id: string, currentUsage: number, change: number) => {
+    try {
+      const newUsage = Math.max(0, currentUsage + change);
+      const { error } = await supabase
+        .from('vouchers')
+        .update({ uses_count: newUsage, updated_at: new Date() })
+        .eq('id', id);
+
+      if (!error) {
+        await loadDashboardData();
+      }
+    } catch (error) {
+      console.error('Error updating voucher usage:', error);
     }
   };
 
@@ -230,19 +256,19 @@ export default function AdminDashboard() {
       {/* Header */}
       <header className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center py-4 gap-3 sm:gap-4">
             <div className="flex items-center">
-              <Crown className="w-8 h-8 text-blue-600 mr-3" />
+              <Crown className="w-6 h-6 sm:w-8 sm:h-8 text-blue-600 mr-2 sm:mr-3" />
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">Riverwalks Admin</h1>
-                <p className="text-sm text-gray-500">Platform Administration Dashboard</p>
+                <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Riverwalks Admin</h1>
+                <p className="text-xs sm:text-sm text-gray-500 hidden sm:block">Platform Administration Dashboard</p>
               </div>
             </div>
-            <div className="flex items-center gap-4">
-              <span className="text-sm text-gray-600">Welcome, {user?.email}</span>
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 w-full sm:w-auto">
+              <span className="text-xs sm:text-sm text-gray-600 truncate max-w-[200px] sm:max-w-none">Welcome, {user?.email}</span>
               <button
                 onClick={() => router.push('/river-walks')}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium"
+                className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg text-xs sm:text-sm font-medium w-full sm:w-auto"
               >
                 Back to App
               </button>
@@ -297,12 +323,13 @@ export default function AdminDashboard() {
 
         {/* Navigation Tabs */}
         <div className="bg-white rounded-lg shadow mb-6">
-          <nav className="flex space-x-8 px-6" aria-label="Tabs">
+          <nav className="flex flex-wrap sm:space-x-8 px-4 sm:px-6" aria-label="Tabs">
             {[
               { id: 'overview', name: 'Overview', icon: Activity },
               { id: 'users', name: 'Users', icon: Users },
               { id: 'vouchers', name: 'Vouchers', icon: Tag },
-              { id: 'events', name: 'Payment Events', icon: CreditCard }
+              { id: 'voucher-usage', name: 'Usage', icon: Activity },
+              { id: 'events', name: 'Events', icon: CreditCard }
             ].map((tab) => {
               const Icon = tab.icon;
               return (
@@ -313,10 +340,10 @@ export default function AdminDashboard() {
                     activeTab === tab.id
                       ? 'border-blue-500 text-blue-600'
                       : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2`}
+                  } whitespace-nowrap py-3 sm:py-4 px-1 sm:px-2 border-b-2 font-medium text-xs sm:text-sm flex items-center gap-1 sm:gap-2 flex-1 sm:flex-none justify-center sm:justify-start`}
                 >
-                  <Icon className="w-4 h-4" />
-                  {tab.name}
+                  <Icon className="w-3 h-3 sm:w-4 sm:h-4" />
+                  <span className="hidden xs:inline">{tab.name}</span>
                 </button>
               );
             })}
@@ -326,27 +353,27 @@ export default function AdminDashboard() {
         {/* Tab Content */}
         <div className="bg-white rounded-lg shadow">
           {activeTab === 'users' && (
-            <div className="p-6">
+            <div className="p-4 sm:p-6">
               <h3 className="text-lg font-medium text-gray-900 mb-4">User Management</h3>
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-50">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subscription</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Joined</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                      <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                      <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subscription</th>
+                      <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                      <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden sm:table-cell">Joined</th>
+                      <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
                     {users.map((user) => (
                       <tr key={user.id}>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 truncate max-w-[150px] sm:max-w-none">
                           {user.email}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        <td className="px-3 sm:px-6 py-4 whitespace-nowrap">
+                          <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
                             user.subscription_type === 'lifetime'
                               ? 'bg-amber-100 text-amber-800'
                               : user.subscription_type === 'annual'
@@ -356,8 +383,8 @@ export default function AdminDashboard() {
                             {user.subscription_type || 'Free'}
                           </span>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        <td className="px-3 sm:px-6 py-4 whitespace-nowrap">
+                          <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
                             user.status === 'active'
                               ? 'bg-green-100 text-green-800'
                               : 'bg-gray-100 text-gray-800'
@@ -365,18 +392,18 @@ export default function AdminDashboard() {
                             {user.status || 'Basic'}
                           </span>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500 hidden sm:table-cell">
                           {new Date(user.created_at).toLocaleDateString()}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-sm font-medium">
                           <select
                             value={user.subscription_type || 'free'}
                             onChange={(e) => updateUserSubscription(user.id, e.target.value === 'free' ? null : e.target.value)}
-                            className="text-sm border border-gray-300 rounded px-2 py-1 bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            className="text-xs sm:text-sm border border-gray-300 rounded px-1 sm:px-2 py-1 bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full max-w-[80px] sm:max-w-none"
                           >
                             <option value="free">Free</option>
-                            <option value="annual">Annual Pro</option>
-                            <option value="lifetime">Lifetime Pro</option>
+                            <option value="annual">Annual</option>
+                            <option value="lifetime">Lifetime</option>
                           </select>
                         </td>
                       </tr>
@@ -388,14 +415,14 @@ export default function AdminDashboard() {
           )}
 
           {activeTab === 'vouchers' && (
-            <div className="p-6">
-              <div className="flex justify-between items-center mb-4">
+            <div className="p-4 sm:p-6">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-3">
                 <h3 className="text-lg font-medium text-gray-900">Voucher Management</h3>
                 <button
                   onClick={() => setShowVoucherModal(true)}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2"
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium flex items-center gap-2 w-full sm:w-auto justify-center"
                 >
-                  <Plus className="w-4 h-4" />
+                  <Plus className="w-3 h-3 sm:w-4 sm:h-4" />
                   Create Voucher
                 </button>
               </div>
@@ -403,27 +430,45 @@ export default function AdminDashboard() {
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-50">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Code</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Discount</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Usage</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                      <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Code</th>
+                      <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Discount</th>
+                      <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Usage</th>
+                      <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                      <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
                     {vouchers.map((voucher) => (
                       <tr key={voucher.id}>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 font-mono">
                           {voucher.code}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                           {voucher.discount_type === 'percentage' ? `${voucher.discount_value}%` : `£${(voucher.discount_value / 100).toFixed(2)}`}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {voucher.uses_count} / {voucher.max_uses}
+                        <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          <div className="flex items-center gap-1 sm:gap-2">
+                            <button
+                              onClick={() => updateVoucherUsage(voucher.id, voucher.uses_count, -1)}
+                              disabled={voucher.uses_count === 0}
+                              className="w-5 h-5 sm:w-6 sm:h-6 bg-red-100 hover:bg-red-200 disabled:bg-gray-100 disabled:text-gray-400 text-red-600 rounded text-xs font-bold flex items-center justify-center"
+                            >
+                              -
+                            </button>
+                            <span className="min-w-[50px] sm:min-w-[60px] text-center font-mono text-xs sm:text-sm">
+                              {voucher.uses_count} / {voucher.max_uses}
+                            </span>
+                            <button
+                              onClick={() => updateVoucherUsage(voucher.id, voucher.uses_count, 1)}
+                              disabled={voucher.uses_count >= voucher.max_uses}
+                              className="w-5 h-5 sm:w-6 sm:h-6 bg-green-100 hover:bg-green-200 disabled:bg-gray-100 disabled:text-gray-400 text-green-600 rounded text-xs font-bold flex items-center justify-center"
+                            >
+                              +
+                            </button>
+                          </div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        <td className="px-3 sm:px-6 py-4 whitespace-nowrap">
+                          <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
                             voucher.is_active
                               ? 'bg-green-100 text-green-800'
                               : 'bg-red-100 text-red-800'
@@ -431,10 +476,10 @@ export default function AdminDashboard() {
                             {voucher.is_active ? 'Active' : 'Inactive'}
                           </span>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-sm font-medium">
                           <button
                             onClick={() => toggleVoucherStatus(voucher.id, voucher.is_active)}
-                            className="text-blue-600 hover:text-blue-900 mr-3"
+                            className="text-blue-600 hover:text-blue-900 text-xs sm:text-sm"
                           >
                             {voucher.is_active ? 'Disable' : 'Enable'}
                           </button>
@@ -447,32 +492,83 @@ export default function AdminDashboard() {
             </div>
           )}
 
+          {activeTab === 'voucher-usage' && (
+            <div className="p-4 sm:p-6">
+              <h3 className="text-lg font-medium text-gray-900 mb-4">Voucher Usage Tracking</h3>
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Code</th>
+                      <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
+                      <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Plan</th>
+                      <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Discount</th>
+                      <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Used At</th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {voucherUsage.map((usage) => (
+                      <tr key={usage.id}>
+                        <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 font-mono">
+                          {usage.voucher_code}
+                        </td>
+                        <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-900 truncate max-w-[120px] sm:max-w-none">
+                          {usage.user_email}
+                        </td>
+                        <td className="px-3 sm:px-6 py-4 whitespace-nowrap">
+                          <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                            usage.plan_type === 'lifetime'
+                              ? 'bg-amber-100 text-amber-800'
+                              : 'bg-green-100 text-green-800'
+                          }`}>
+                            {usage.plan_type}
+                          </span>
+                        </td>
+                        <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {usage.discount_type === 'percentage' ? `${usage.discount_value}%` : `£${(usage.discount_value / 100).toFixed(2)}`}
+                        </td>
+                        <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {new Date(usage.used_at).toLocaleString()}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                {voucherUsage.length === 0 && (
+                  <div className="text-center py-8 text-gray-500">
+                    No voucher usage data found
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
           {activeTab === 'events' && (
-            <div className="p-6">
+            <div className="p-4 sm:p-6">
               <h3 className="text-lg font-medium text-gray-900 mb-4">Recent Payment Events</h3>
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-50">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Event Type</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stripe Event ID</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Processed</th>
+                      <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Event Type</th>
+                      <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
+                      <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stripe Event ID</th>
+                      <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Processed</th>
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
                     {paymentEvents.map((event) => (
                       <tr key={event.id}>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                           {event.event_type}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-900 truncate max-w-[120px] sm:max-w-none">
                           {event.user_email || 'Unknown'}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-mono">
+                        <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-mono">
                           {event.stripe_event_id}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                           {new Date(event.processed_at).toLocaleString()}
                         </td>
                       </tr>
