@@ -121,10 +121,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   } catch (error) {
     console.error('❌ Voucher redemption error:', error);
-    console.error('❌ Error details:', error.message, error.stack);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error('❌ Error details:', errorMessage);
     return res.status(500).json({
       error: 'Failed to redeem voucher',
-      details: error.message
+      details: errorMessage
     });
   }
 }
