@@ -109,7 +109,7 @@ export default function AuthCard() {
 
   if (user) {
     return (
-      // <TermsGate user={user}>
+      <TermsGate user={user}>
         <div className="card-modern-xl backdrop-blur-sm bg-white/95 w-full">
           <CardHeader className="text-center pb-4">
             <div className="flex justify-center mb-3">
@@ -153,7 +153,7 @@ export default function AuthCard() {
             </button>
           </CardFooter>
         </div>
-      // </TermsGate>
+      </TermsGate>
     );
   }
 
