@@ -29,8 +29,8 @@ export default function Home() {
 
 
   return (
-    <div className="gradient-hero">
-      <div className="relative">
+    <div className="gradient-hero" style={{ minHeight: '100vh', overflow: 'visible' }}>
+      <div className="relative" style={{ overflow: 'visible' }}>
         {/* Hero Section */}
         <div className="flex flex-col items-center justify-center py-16 p-4 sm:p-6 lg:p-8">
           <div className={`text-center max-w-5xl mx-auto ${user ? 'mb-8' : 'mb-12'}`}>

@@ -90,6 +90,16 @@
   }
   body {
     @apply bg-background text-foreground;
+    /* Safari-specific fixes */
+    -webkit-overflow-scrolling: touch;
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+  
+  html {
+    /* Ensure Safari allows full scrolling */
+    height: auto;
+    min-height: 100%;
   }
 }
 
