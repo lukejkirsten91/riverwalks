@@ -48,6 +48,17 @@ const SubscriptionPage: React.FC = () => {
       
       // Check if discount makes this free (100% discount)
       if (discount) {
+        // Check if voucher is valid for this plan type
+        const planTypeMapping = { yearly: 'annual', lifetime: 'lifetime' };
+        const mappedPlanType = planTypeMapping[planType];
+        
+        if (discount.planTypes && discount.planTypes.length > 0 && !discount.planTypes.includes(mappedPlanType)) {
+          const validPlans = discount.planTypes.map((p: string) => p === 'annual' ? 'yearly' : p).join(' or ');
+          alert(`This voucher is only valid for ${validPlans} plans`);
+          setLoading(null);
+          return;
+        }
+        
         const originalPrice = plans[planType].price / 100;
         let discountedPrice = originalPrice;
         
@@ -196,6 +207,7 @@ const SubscriptionPage: React.FC = () => {
           percentage: data.voucher.discount_type === 'percentage' ? data.voucher.discount_value : 0,
           fixedAmount: data.voucher.discount_type === 'fixed_amount' ? data.voucher.discount_value : 0,
           type: data.voucher.discount_type,
+          planTypes: data.voucher.plan_types || [],
         });
       } else {
         alert(data.error || 'Invalid voucher code');

@@ -201,11 +201,13 @@ export default function AdminDashboard() {
       const newUsage = Math.max(0, currentUsage + change);
       const { error } = await supabase
         .from('vouchers')
-        .update({ uses_count: newUsage, updated_at: new Date() })
+        .update({ uses_count: newUsage })
         .eq('id', id);
 
       if (!error) {
         await loadDashboardData();
+      } else {
+        console.error('Error updating voucher usage:', error);
       }
     } catch (error) {
       console.error('Error updating voucher usage:', error);
