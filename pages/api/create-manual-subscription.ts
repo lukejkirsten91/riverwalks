@@ -1,5 +1,13 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { supabase } from '../../lib/supabase';
+import { createClient } from '@supabase/supabase-js';
+
+// Create service role client for admin operations (bypass RLS)
+const supabaseAdmin = process.env.SUPABASE_SERVICE_ROLE_KEY 
+  ? createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY
+    )
+  : null;
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
@@ -7,6 +15,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
+    if (!supabaseAdmin) {
+      return res.status(500).json({ error: 'Service role not configured' });
+    }
+
     const { email, subscriptionType = 'lifetime' } = req.body;
     
     if (!email) {
@@ -16,7 +28,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     console.log('🔍 Creating manual subscription for:', email);
 
     // Find the user
-    const { data: users, error: userError } = await supabase.auth.admin.listUsers();
+    const { data: users, error: userError } = await supabaseAdmin.auth.admin.listUsers();
     
     if (userError) {
       console.error('❌ Error listing users:', userError);
@@ -36,7 +48,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     console.log('✅ Found user:', { id: user.id, email: user.email });
 
     // Create subscription using service role (bypasses RLS)
-    const { data: subscription, error: subError } = await supabase
+    const { data: subscription, error: subError } = await supabaseAdmin
       .from('subscriptions')
       .upsert({
         user_id: user.id,
@@ -49,7 +61,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           ? new Date(Date.now() + 100 * 365 * 24 * 60 * 60 * 1000) // 100 years
           : new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 year
         created_at: new Date(),
-        updated_at: new Date(),
       }, {
         onConflict: 'user_id'
       });
