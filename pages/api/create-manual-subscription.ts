@@ -47,36 +47,71 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     console.log('✅ Found user:', { id: user.id, email: user.email });
 
-    // Create subscription using service role (bypasses RLS)
-    const { data: subscription, error: subError } = await supabaseAdmin
+    // Check if user already has a subscription
+    const { data: existingSub } = await supabaseAdmin
       .from('subscriptions')
-      .upsert({
-        user_id: user.id,
-        subscription_type: subscriptionType,
-        status: 'active',
-        stripe_customer_id: null,
-        stripe_price_id: subscriptionType === 'lifetime' ? 'price_1RgTPF4CotGwBUxNiayDAzep' : 'price_1RgTO54CotGwBUxNPQl3SLAP',
-        current_period_start: new Date(),
-        current_period_end: subscriptionType === 'lifetime' 
-          ? new Date(Date.now() + 100 * 365 * 24 * 60 * 60 * 1000) // 100 years
-          : new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 year
-        created_at: new Date(),
-      }, {
-        onConflict: 'user_id'
+      .select('*')
+      .eq('user_id', user.id)
+      .single();
+
+    if (existingSub) {
+      console.log('✅ User already has a subscription, updating it');
+      // Update existing subscription
+      const { data: subscription, error: subError } = await supabaseAdmin
+        .from('subscriptions')
+        .update({
+          subscription_type: subscriptionType,
+          status: 'active',
+          current_period_start: new Date(),
+          current_period_end: subscriptionType === 'lifetime' 
+            ? new Date(Date.now() + 100 * 365 * 24 * 60 * 60 * 1000) // 100 years
+            : new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 year
+        })
+        .eq('user_id', user.id)
+        .select();
+
+      if (subError) {
+        console.error('❌ Error updating subscription:', subError);
+        return res.status(500).json({ error: 'Failed to update subscription', details: subError.message });
+      }
+
+      console.log('✅ Subscription updated successfully');
+      return res.status(200).json({
+        success: true,
+        message: `${subscriptionType} subscription updated for ${email}`,
+        subscription: subscription
       });
+    } else {
+      console.log('✅ Creating new subscription');
+      // Create new subscription
+      const { data: subscription, error: subError } = await supabaseAdmin
+        .from('subscriptions')
+        .insert({
+          user_id: user.id,
+          subscription_type: subscriptionType,
+          status: 'active',
+          stripe_customer_id: null,
+          stripe_price_id: subscriptionType === 'lifetime' ? 'price_1RgTPF4CotGwBUxNiayDAzep' : 'price_1RgTO54CotGwBUxNPQl3SLAP',
+          current_period_start: new Date(),
+          current_period_end: subscriptionType === 'lifetime' 
+            ? new Date(Date.now() + 100 * 365 * 24 * 60 * 60 * 1000) // 100 years
+            : new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 year
+          created_at: new Date(),
+        })
+        .select();
 
-    if (subError) {
-      console.error('❌ Error creating subscription:', subError);
-      return res.status(500).json({ error: 'Failed to create subscription', details: subError.message });
+      if (subError) {
+        console.error('❌ Error creating subscription:', subError);
+        return res.status(500).json({ error: 'Failed to create subscription', details: subError.message });
+      }
+
+      console.log('✅ Subscription created successfully');
+      return res.status(200).json({
+        success: true,
+        message: `${subscriptionType} subscription created for ${email}`,
+        subscription: subscription
+      });
     }
-
-    console.log('✅ Subscription created successfully');
-
-    return res.status(200).json({
-      success: true,
-      message: `${subscriptionType} subscription created for ${email}`,
-      subscription: subscription
-    });
 
   } catch (error) {
     console.error('❌ API error:', error);
