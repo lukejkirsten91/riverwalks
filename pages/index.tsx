@@ -29,13 +29,10 @@ export default function Home() {
 
 
   return (
-    <div className="gradient-hero relative">
-      {/* Background decoration */}
-      <div className="fixed inset-0 bg-grid-white/[0.02] bg-grid -z-10" />
-      
-      <div className="relative z-10">
+    <div className="gradient-hero">
+      <div className="relative">
         {/* Hero Section */}
-        <div className="flex flex-col items-center justify-center min-h-screen p-4 sm:p-6 lg:p-8">
+        <div className="flex flex-col items-center justify-center py-16 p-4 sm:p-6 lg:p-8">
           <div className={`text-center max-w-5xl mx-auto ${user ? 'mb-8' : 'mb-12'}`}>
             <div className="mb-6">
               <span className="inline-flex items-center px-4 py-2 rounded-full bg-white/20 backdrop-blur-sm border border-white/30 text-white text-sm font-medium mb-4">
