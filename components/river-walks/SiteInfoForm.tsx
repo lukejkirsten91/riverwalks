@@ -192,7 +192,7 @@ export const SiteInfoForm = forwardRef<SiteInfoFormRef, SiteInfoFormProps>(({
         {/* Site Details Section */}
         <div className="space-y-6">
           {/* Site name header - not editable */}
-          <div className="mb-6 p-4 bg-blue-50/50 rounded-lg border border-blue-200">
+          <div className="mb-6">
             <h3 className="text-xl font-semibold text-foreground">Site {site.site_number}</h3>
           </div>
           

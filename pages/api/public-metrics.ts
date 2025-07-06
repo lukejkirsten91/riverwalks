@@ -19,31 +19,69 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       throw new Error('Service role key not configured');
     }
 
-    // Get total river walks (excluding archived)
-    const { count: riverWalkCount, error: riverWalkError } = await supabaseAdmin
+    // Exclude demo/test data from metrics (temporarily using your account until we create dedicated demo account)
+    const excludeTestEmails = ['luke.kirsten@gmail.com']; // Will change to demo@riverwalks.co.uk later
+    
+    // Get user IDs to exclude
+    let excludeUserIds: string[] = [];
+    try {
+      const { data: allUsers } = await supabaseAdmin.auth.admin.listUsers();
+      excludeUserIds = allUsers?.users
+        ?.filter(u => excludeTestEmails.includes(u.email || ''))
+        ?.map(u => u.id) || [];
+    } catch (error) {
+      console.log('Could not filter demo users, including all data');
+    }
+
+    // Get total river walks (excluding archived and demo/test data)
+    let riverWalkQuery = supabaseAdmin
       .from('river_walks')
       .select('*', { count: 'exact', head: true })
       .eq('archived', false);
+    
+    if (excludeUserIds.length > 0) {
+      riverWalkQuery = riverWalkQuery.not('user_id', 'in', `(${excludeUserIds.map(id => `'${id}'`).join(',')})`);
+    }
+    
+    const { count: riverWalkCount, error: riverWalkError } = await riverWalkQuery;
 
     if (riverWalkError) {
       console.error('Error fetching river walks:', riverWalkError);
       throw riverWalkError;
     }
 
-    // Get total sites
-    const { count: siteCount, error: siteError } = await supabaseAdmin
+    // Get total sites (excluding demo/test data)
+    let siteQuery = supabaseAdmin
       .from('sites')
       .select('*', { count: 'exact', head: true });
+    
+    if (excludeUserIds.length > 0) {
+      // Exclude sites from demo/test river walks
+      siteQuery = siteQuery
+        .not('river_walk_id', 'in', 
+          `(SELECT id FROM river_walks WHERE user_id IN (${excludeUserIds.map(id => `'${id}'`).join(',')}))`);
+    }
+    
+    const { count: siteCount, error: siteError } = await siteQuery;
 
     if (siteError) {
       console.error('Error fetching sites:', siteError);
       throw siteError;
     }
 
-    // Get total measurement points
-    const { count: measurementCount, error: measurementError } = await supabaseAdmin
+    // Get total measurement points (excluding demo/test data)
+    let measurementQuery = supabaseAdmin
       .from('measurement_points')
       .select('*', { count: 'exact', head: true });
+    
+    if (excludeUserIds.length > 0) {
+      // Exclude measurements from demo/test sites
+      measurementQuery = measurementQuery
+        .not('site_id', 'in', 
+          `(SELECT s.id FROM sites s JOIN river_walks rw ON s.river_walk_id = rw.id WHERE rw.user_id IN (${excludeUserIds.map(id => `'${id}'`).join(',')}))`);
+    }
+    
+    const { count: measurementCount, error: measurementError } = await measurementQuery;
 
     if (measurementError) {
       console.error('Error fetching measurements:', measurementError);
@@ -66,12 +104,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return total + (parseFloat(site.river_width) || 0);
     }, 0) || 0;
 
-    // Get sites with coordinates for map
-    const { data: coordinatesData, error: coordinatesError } = await supabaseAdmin
+    // Get sites with coordinates for map (excluding demo/test data)
+    let coordinatesQuery = supabaseAdmin
       .from('sites')
       .select('latitude, longitude, site_name')
       .not('latitude', 'is', null)
       .not('longitude', 'is', null);
+    
+    if (excludeUserIds.length > 0) {
+      // Exclude coordinates from demo/test river walks
+      coordinatesQuery = coordinatesQuery
+        .not('river_walk_id', 'in', 
+          `(SELECT id FROM river_walks WHERE user_id IN (${excludeUserIds.map(id => `'${id}'`).join(',')}))`);
+    }
+    
+    const { data: coordinatesData, error: coordinatesError } = await coordinatesQuery;
 
     if (coordinatesError) {
       console.error('Error fetching coordinates:', coordinatesError);
