@@ -114,7 +114,15 @@
   }
   
   .gradient-hero {
-    background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 50%, hsl(var(--primary)) 100%);
+    background: linear-gradient(135deg, #1e40af 0%, #3b82f6 25%, #60a5fa 50%, #2563eb 75%, #1d4ed8 100%);
+    background-size: 400% 400%;
+    animation: gradientShift 15s ease infinite;
+  }
+
+  @keyframes gradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
   }
 
   /* Glass morphism effect */

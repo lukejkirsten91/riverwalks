@@ -80,45 +80,45 @@ export function LiveMetrics() {
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <div 
-          className="glass rounded-xl p-6 text-center hover:scale-105 transition-transform bg-gray-900/80 backdrop-blur-md cursor-help"
+          className="glass rounded-xl p-6 text-center hover:scale-105 transition-transform bg-blue-900/90 backdrop-blur-md cursor-help border border-blue-400/30"
           title="Individual field studies completed by users - each adds valuable data to our river research database"
         >
-          <Droplets className="w-8 h-8 text-blue-300 mx-auto mb-3" />
-          <h3 className="font-semibold text-white mb-1">River Walks Completed</h3>
+          <Droplets className="w-8 h-8 text-blue-200 mx-auto mb-3" />
+          <h3 className="font-semibold text-blue-50 mb-1">River Walks Completed</h3>
           <p className="text-2xl font-bold text-white">{metrics.riverWalks.toLocaleString()}</p>
         </div>
         
         <div 
-          className="glass rounded-xl p-6 text-center hover:scale-105 transition-transform bg-gray-900/80 backdrop-blur-md cursor-help"
+          className="glass rounded-xl p-6 text-center hover:scale-105 transition-transform bg-sky-900/90 backdrop-blur-md cursor-help border border-sky-400/30"
           title="Locations with GPS coordinates mapped on our interactive UK map"
         >
-          <MapPin className="w-8 h-8 text-green-300 mx-auto mb-3" />
-          <h3 className="font-semibold text-white mb-1">Mapped Locations</h3>
+          <MapPin className="w-8 h-8 text-sky-200 mx-auto mb-3" />
+          <h3 className="font-semibold text-sky-50 mb-1">Mapped Locations</h3>
           <p className="text-2xl font-bold text-white">{metrics.sitesWithCoordinates.length.toLocaleString()}</p>
         </div>
         
         <div 
-          className="glass rounded-xl p-6 text-center hover:scale-105 transition-transform bg-gray-900/80 backdrop-blur-md cursor-help"
+          className="glass rounded-xl p-6 text-center hover:scale-105 transition-transform bg-indigo-900/90 backdrop-blur-md cursor-help border border-indigo-400/30"
           title="Total scientific measurements recorded including depth readings, velocity data, sediment analysis, and water quality metrics"
         >
-          <BarChart3 className="w-8 h-8 text-purple-300 mx-auto mb-3" />
-          <h3 className="font-semibold text-white mb-1">Measurements Recorded</h3>
+          <BarChart3 className="w-8 h-8 text-indigo-200 mx-auto mb-3" />
+          <h3 className="font-semibold text-indigo-50 mb-1">Measurements Recorded</h3>
           <p className="text-2xl font-bold text-white">{metrics.totalMeasurements.toLocaleString()}</p>
         </div>
         
         <div 
-          className="glass rounded-xl p-6 text-center hover:scale-105 transition-transform bg-gray-900/80 backdrop-blur-md cursor-help"
+          className="glass rounded-xl p-6 text-center hover:scale-105 transition-transform bg-cyan-900/90 backdrop-blur-md cursor-help border border-cyan-400/30"
           title="Total number of active contributors to the UK river research community"
         >
-          <Square className="w-8 h-8 text-yellow-300 mx-auto mb-3" />
-          <h3 className="font-semibold text-white mb-1">Active Contributors</h3>
+          <Square className="w-8 h-8 text-cyan-200 mx-auto mb-3" />
+          <h3 className="font-semibold text-cyan-50 mb-1">Active Contributors</h3>
           <p className="text-2xl font-bold text-white">{Math.max(Math.round(metrics.riverWalks * 0.7), 1).toLocaleString()}</p>
         </div>
       </div>
 
       {/* Interactive UK Map */}
       {metrics.sitesWithCoordinates.length > 0 && (
-        <div className="glass rounded-xl p-6 bg-gray-900/80 backdrop-blur-md">
+        <div className="glass rounded-xl p-6 bg-slate-900/90 backdrop-blur-md border border-slate-400/30">
           <h3 className="font-semibold text-white mb-3 text-center">Study Sites Across the UK</h3>
           <div className="h-80 rounded-lg overflow-hidden relative">
             <LiveMap sites={metrics.sitesWithCoordinates} />

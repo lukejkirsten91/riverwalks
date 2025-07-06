@@ -106,7 +106,7 @@ export function SyncStatusProvider({ children }: SyncStatusProviderProps) {
       setTimeout(() => {
         updateSyncStatus();
       }, 100);
-      showSuccess('Sync Complete', 'All your data has been successfully synced to the cloud.');
+      showSuccess('Synced to cloud');
     };
 
     const handleSyncFailed = (event: CustomEvent) => {

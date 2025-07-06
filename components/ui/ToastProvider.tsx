@@ -1,20 +1,19 @@
 import React, { createContext, useContext, useState, useCallback } from 'react';
-import { Toast } from './Toast';
+import { SimpleToast } from './SimpleToast';
 
 interface ToastData {
   id: string;
   type: 'success' | 'error' | 'warning' | 'info';
-  title: string;
-  message?: string;
+  message: string;
   duration?: number;
 }
 
 interface ToastContextType {
   showToast: (toast: Omit<ToastData, 'id'>) => void;
-  showSuccess: (title: string, message?: string) => void;
-  showError: (title: string, message?: string) => void;
-  showWarning: (title: string, message?: string) => void;
-  showInfo: (title: string, message?: string) => void;
+  showSuccess: (message: string) => void;
+  showError: (message: string) => void;
+  showWarning: (message: string) => void;
+  showInfo: (message: string) => void;
 }
 
 const ToastContext = createContext<ToastContextType | undefined>(undefined);
@@ -47,20 +46,20 @@ export function ToastProvider({ children }: ToastProviderProps) {
     setToasts(prev => [...prev, newToast]);
   }, []);
 
-  const showSuccess = useCallback((title: string, message?: string) => {
-    showToast({ type: 'success', title, message });
+  const showSuccess = useCallback((message: string) => {
+    showToast({ type: 'success', message });
   }, [showToast]);
 
-  const showError = useCallback((title: string, message?: string) => {
-    showToast({ type: 'error', title, message });
+  const showError = useCallback((message: string) => {
+    showToast({ type: 'error', message });
   }, [showToast]);
 
-  const showWarning = useCallback((title: string, message?: string) => {
-    showToast({ type: 'warning', title, message });
+  const showWarning = useCallback((message: string) => {
+    showToast({ type: 'warning', message });
   }, [showToast]);
 
-  const showInfo = useCallback((title: string, message?: string) => {
-    showToast({ type: 'info', title, message });
+  const showInfo = useCallback((message: string) => {
+    showToast({ type: 'info', message });
   }, [showToast]);
 
   const contextValue: ToastContextType = {
@@ -74,17 +73,14 @@ export function ToastProvider({ children }: ToastProviderProps) {
   return (
     <ToastContext.Provider value={contextValue}>
       {children}
-      {/* Toast Container - positioned at top right */}
-      <div className="fixed top-4 right-4 z-50 space-y-2 pointer-events-none">
-        {toasts.map((toast) => (
-          <div key={toast.id} className="pointer-events-auto">
-            <Toast
-              {...toast}
-              onClose={removeToast}
-            />
-          </div>
-        ))}
-      </div>
+      {/* Simple Toast Container - positioned at top center */}
+      {toasts.map((toast) => (
+        <SimpleToast
+          key={toast.id}
+          {...toast}
+          onClose={removeToast}
+        />
+      ))}
     </ToastContext.Provider>
   );
 }
