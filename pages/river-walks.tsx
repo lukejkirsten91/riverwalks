@@ -641,10 +641,13 @@ export default function RiverWalksPage() {
         {/* Share modal */}
         {shareRiverWalk && collaborationEnabled && (
           <div 
-            className="fixed inset-0 bg-black bg-opacity-50 flex items-start sm:items-center justify-center p-2 sm:p-4 z-50"
+            className="fixed inset-0 bg-white sm:bg-black sm:bg-opacity-50 flex items-stretch sm:items-center justify-center sm:p-4 z-50"
             onClick={handleCloseShare}
           >
-            <div onClick={(e) => e.stopPropagation()}>
+            <div 
+              className="w-full sm:w-auto sm:max-w-2xl sm:rounded-lg overflow-hidden"
+              onClick={(e) => e.stopPropagation()}
+            >
               <ShareModal
                 riverWalk={shareRiverWalk}
                 isOpen={true}
@@ -657,10 +660,13 @@ export default function RiverWalksPage() {
         {/* Manage Collaborators modal */}
         {manageCollaboratorsRiverWalk && collaborationEnabled && (
           <div 
-            className="fixed inset-0 bg-black bg-opacity-50 flex items-start sm:items-center justify-center p-2 sm:p-4 z-50"
+            className="fixed inset-0 bg-white sm:bg-black sm:bg-opacity-50 flex items-stretch sm:items-center justify-center sm:p-4 z-50"
             onClick={handleCloseManageCollaborators}
           >
-            <div onClick={(e) => e.stopPropagation()}>
+            <div 
+              className="w-full sm:w-auto sm:max-w-2xl sm:rounded-lg overflow-hidden"
+              onClick={(e) => e.stopPropagation()}
+            >
               <ShareModal
                 riverWalk={manageCollaboratorsRiverWalk}
                 isOpen={true}

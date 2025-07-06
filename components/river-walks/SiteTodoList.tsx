@@ -98,8 +98,19 @@ export function SiteTodoList({ site, onTodoClick }: SiteTodoListProps) {
           <MapPin className="w-5 h-5 text-primary" />
         </div>
         <div>
-          <h3 className="text-xl font-bold text-foreground">Site {site.site_number}</h3>
-          <p className="text-muted-foreground">Complete the following tasks for this site</p>
+          <h3 className="text-xl font-bold text-foreground">
+            {site.site_name || `Site ${site.site_number}`}
+          </h3>
+          <p className="text-muted-foreground">Click on any task below to start data collection</p>
+        </div>
+      </div>
+
+      {/* Task Section Header */}
+      <div className="flex items-center gap-2 mb-3 mt-2">
+        <div className="w-1 h-6 bg-primary rounded-full"></div>
+        <h4 className="text-lg font-semibold text-foreground">Data Collection Tasks</h4>
+        <div className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded-full">
+          Tap to begin
         </div>
       </div>
 
