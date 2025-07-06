@@ -31,7 +31,7 @@ export const SiteInfoForm = forwardRef<SiteInfoFormRef, SiteInfoFormProps>(({
   loading,
 }, ref) => {
   const [formData, setFormData] = useState<SiteFormData>({
-    site_name: `Site ${site.site_number}`, // Auto-generated, not editable
+    site_name: site.site_name || `Site ${site.site_number}`,
     latitude: site.latitude?.toString() || '',
     longitude: site.longitude?.toString() || '',
     notes: site.notes || '',
@@ -191,12 +191,27 @@ export const SiteInfoForm = forwardRef<SiteInfoFormRef, SiteInfoFormProps>(({
       <form onSubmit={(e) => handleSubmit(e, false)} className="space-y-8">
         {/* Site Details Section */}
         <div className="space-y-6">
-          {/* Site name header - not editable */}
-          <div className="mb-6">
-            <h3 className="text-xl font-semibold text-foreground">Site {site.site_number}</h3>
-          </div>
-          
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-foreground mb-3 font-medium">
+                <span className="flex items-center gap-2">
+                  <MapPin className="w-4 h-4" />
+                  Site Name
+                </span>
+              </label>
+              <input
+                type="text"
+                name="site_name"
+                value={formData.site_name}
+                onChange={handleInputChange}
+                className="input-modern"
+                placeholder={`Site ${site.site_number}`}
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                Give your site a descriptive name (e.g., "Upstream Riffle", "Meander Pool")
+              </p>
+            </div>
+
             <div>
               <label className="block text-foreground mb-3 font-medium">
                 <span className="flex items-center gap-2">
