@@ -17,6 +17,12 @@ export function useScrollLock(isOpen: boolean) {
       document.body.style.top = `-${scrollY}px`;
       document.body.style.width = '100%';
       document.body.style.overflow = 'hidden';
+      document.body.style.overscrollBehavior = 'none';
+      document.body.style.touchAction = 'none';
+      
+      // Also apply to html element for extra protection
+      document.documentElement.style.overflow = 'hidden';
+      document.documentElement.style.overscrollBehavior = 'none';
       
       // Store scroll position for restoration
       document.body.setAttribute('data-scroll-y', scrollY.toString());
@@ -29,7 +35,13 @@ export function useScrollLock(isOpen: boolean) {
         document.body.style.top = '';
         document.body.style.width = '';
         document.body.style.overflow = '';
+        document.body.style.overscrollBehavior = '';
+        document.body.style.touchAction = '';
         document.body.removeAttribute('data-scroll-y');
+        
+        // Restore html element
+        document.documentElement.style.overflow = '';
+        document.documentElement.style.overscrollBehavior = '';
         
         // Restore scroll position
         if (storedScrollY) {

@@ -57,7 +57,8 @@ export default function RiverWalksPage() {
   const [showUpgradePrompt, setShowUpgradePrompt] = useState<'reports' | 'export' | 'advanced' | null>(null);
   const [showFeedbackForm, setShowFeedbackForm] = useState(false);
 
-  // Scroll lock is handled by individual modal components
+  // Apply scroll lock when any modal is open
+  useScrollLock(!!selectedRiverWalk || !!reportRiverWalk || !!shareRiverWalk || !!manageCollaboratorsRiverWalk || !!showUpgradePrompt || loadingReport);
 
   const {
     riverWalks,
@@ -334,7 +335,7 @@ export default function RiverWalksPage() {
   // Loading state
   if (loading && !riverWalks.length) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-muted/50 to-slate-100 flex items-center justify-center p-8">
+      <div className="min-h-screen gradient-muted flex items-center justify-center p-8">
         <div className="glass rounded-2xl p-8 max-w-md mx-auto text-center">
           <div className="w-16 h-16 rounded-xl gradient-primary flex items-center justify-center mx-auto mb-4 animate-pulse">
             <MapPin className="w-8 h-8 text-white" />
@@ -348,7 +349,7 @@ export default function RiverWalksPage() {
 
   return (
     <TermsGate user={user!}>
-      <div className="min-h-screen bg-gradient-to-br from-muted/50 to-slate-100">
+      <div className="min-h-screen gradient-muted">
       <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
         {/* Compact header with logo and profile */}
         <div className="glass rounded-2xl p-4 sm:p-6 mb-8 border border-white/20">

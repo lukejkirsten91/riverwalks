@@ -92,12 +92,12 @@ export function RiverWalkList({
           <div className="flex-shrink-0 flex items-center gap-2 flex-wrap">
             {/* Role-based access indicator */}
             {riverWalk.collaboration_role === 'owner' || (!riverWalk.collaboration_role && riverWalk.access_type === 'owned') || (!riverWalk.collaboration_role && !riverWalk.access_type) ? (
-              <div className="flex items-center gap-1 text-purple-600 bg-purple-50 px-2 py-1 rounded-full">
+              <div className="flex items-center gap-1 text-blue-600 bg-blue-50 px-2 py-1 rounded-full">
                 <Crown className="w-3 h-3 sm:w-4 sm:h-4" />
                 <span className="text-xs font-medium hidden sm:inline">Owner</span>
               </div>
             ) : riverWalk.collaboration_role === 'editor' ? (
-              <div className="flex items-center gap-1 text-green-600 bg-green-50 px-2 py-1 rounded-full">
+              <div className="flex items-center gap-1 text-cyan-600 bg-cyan-50 px-2 py-1 rounded-full">
                 <Edit className="w-3 h-3 sm:w-4 sm:h-4" />
                 <span className="text-xs font-medium hidden sm:inline">Editor</span>
               </div>
@@ -107,7 +107,7 @@ export function RiverWalkList({
                 <span className="text-xs font-medium hidden sm:inline">Viewer</span>
               </div>
             ) : riverWalk.access_type === 'collaborated' ? (
-              <div className="flex items-center gap-1 text-green-600 bg-green-50 px-2 py-1 rounded-full">
+              <div className="flex items-center gap-1 text-cyan-600 bg-cyan-50 px-2 py-1 rounded-full">
                 <Edit className="w-3 h-3 sm:w-4 sm:h-4" />
                 <span className="text-xs font-medium hidden sm:inline">Editor</span>
               </div>
@@ -344,21 +344,21 @@ export function RiverWalkList({
         <div>
           <button
             onClick={() => setShowMyRiverWalks(!showMyRiverWalks)}
-            className="w-full flex items-center justify-between p-3 sm:p-4 text-left bg-gradient-to-r from-purple-50 to-purple-100 hover:from-purple-100 hover:to-purple-150 rounded-lg border border-purple-200 transition-all duration-200 touch-manipulation mb-3 sm:mb-4"
+            className="w-full flex items-center justify-between p-3 sm:p-4 text-left bg-gradient-to-r from-blue-50 to-blue-100 hover:from-blue-100 hover:to-blue-150 rounded-lg border border-blue-200 transition-all duration-200 touch-manipulation mb-3 sm:mb-4"
           >
             <div className="flex items-center gap-2">
-              <Crown className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600" />
+              <Crown className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
               <h2 className="text-base sm:text-lg font-semibold text-foreground">My River Walks</h2>
               <span className="text-xs sm:text-sm text-muted-foreground">({myRiverWalks.length})</span>
             </div>
             {showMyRiverWalks ? (
-              <ChevronUp className="w-4 h-4 text-purple-600" />
+              <ChevronUp className="w-4 h-4 text-blue-600" />
             ) : (
-              <ChevronDown className="w-4 h-4 text-purple-600" />
+              <ChevronDown className="w-4 h-4 text-blue-600" />
             )}
           </button>
           <div className={`accordion-content ${showMyRiverWalks ? 'accordion-content-visible' : 'accordion-content-hidden'}`}>
-            <div className="space-y-3 sm:space-y-4 pl-3 sm:pl-4 border-l-2 border-purple-200">
+            <div className="space-y-3 sm:space-y-4 pl-3 sm:pl-4 border-l-2 border-blue-200">
               {myRiverWalks.map((riverWalk) => renderRiverWalk(riverWalk, false))}
             </div>
           </div>
@@ -396,21 +396,21 @@ export function RiverWalkList({
         <div>
           <button
             onClick={() => setShowSharedByMe(!showSharedByMe)}
-            className="w-full flex items-center justify-between p-3 sm:p-4 text-left bg-gradient-to-r from-green-50 to-green-100 hover:from-green-100 hover:to-green-150 rounded-lg border border-green-200 transition-all duration-200 touch-manipulation mb-3 sm:mb-4"
+            className="w-full flex items-center justify-between p-3 sm:p-4 text-left bg-gradient-to-r from-cyan-50 to-cyan-100 hover:from-cyan-100 hover:to-cyan-150 rounded-lg border border-cyan-200 transition-all duration-200 touch-manipulation mb-3 sm:mb-4"
           >
             <div className="flex items-center gap-2">
-              <Share className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
+              <Share className="w-4 h-4 sm:w-5 sm:h-5 text-cyan-600" />
               <h2 className="text-base sm:text-lg font-semibold text-foreground">River Walks I've Shared</h2>
               <span className="text-xs sm:text-sm text-muted-foreground">({sharedByMe.length})</span>
             </div>
             {showSharedByMe ? (
-              <ChevronUp className="w-4 h-4 text-green-600" />
+              <ChevronUp className="w-4 h-4 text-cyan-600" />
             ) : (
-              <ChevronDown className="w-4 h-4 text-green-600" />
+              <ChevronDown className="w-4 h-4 text-cyan-600" />
             )}
           </button>
           <div className={`accordion-content ${showSharedByMe ? 'accordion-content-visible' : 'accordion-content-hidden'}`}>
-            <div className="space-y-3 sm:space-y-4 pl-3 sm:pl-4 border-l-2 border-green-200">
+            <div className="space-y-3 sm:space-y-4 pl-3 sm:pl-4 border-l-2 border-cyan-200">
               {sharedByMe.map((riverWalk) => renderRiverWalk(riverWalk, false))}
             </div>
           </div>

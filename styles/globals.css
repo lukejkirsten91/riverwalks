@@ -6,49 +6,49 @@
   :root {
     /* Modern CSS accordion animation support */
     interpolate-size: allow-keywords;
-    /* Nature-inspired brand color scheme */
-    /* Based on logo colors: 98CCDC, FCF0C1, 1A625D, 4F9F6B, 7CB455, 70B8CF */
+    /* Professional blue theme color scheme */
+    /* Based on landing page gradient: #1e40af, #3b82f6, #60a5fa, #2563eb, #1d4ed8 */
     
     --background: 0 0% 100%;
-    --foreground: 181 56% 24%; /* #1A625D - Dark teal for text */
+    --foreground: 210 50% 20%; /* #1e40af dark blue for text */
 
     --card: 0 0% 100%;
-    --card-foreground: 181 56% 24%;
+    --card-foreground: 210 50% 20%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 181 56% 24%;
+    --popover-foreground: 210 50% 20%;
 
-    /* Primary: Sky blue from logo */
-    --primary: 196 52% 70%; /* #70B8CF - Sky blue */
+    /* Primary: Main blue from gradient */
+    --primary: 217 91% 60%; /* #3b82f6 - Blue-500 */
     --primary-foreground: 0 0% 100%;
 
-    /* Secondary: Light blue from logo */
-    --secondary: 194 47% 71%; /* #98CCDC - Light blue */
-    --secondary-foreground: 181 56% 24%;
+    /* Secondary: Light blue variation */
+    --secondary: 213 93% 68%; /* #60a5fa - Blue-400 */
+    --secondary-foreground: 210 50% 20%;
 
-    /* Muted: Cream from logo */
-    --muted: 51 77% 88%; /* #FCF0C1 - Cream */
-    --muted-foreground: 181 56% 24%;
+    /* Muted: Very light blue */
+    --muted: 214 100% 97%; /* #dbeafe - Blue-50 */
+    --muted-foreground: 210 50% 20%;
 
-    /* Accent: Medium green from logo */
-    --accent: 149 34% 47%; /* #4F9F6B - Medium green */
+    /* Accent: Medium blue from gradient */
+    --accent: 215 84% 56%; /* #2563eb - Blue-600 */
     --accent-foreground: 0 0% 100%;
 
-    /* Success: Light green from logo */
-    --success: 86 46% 57%; /* #7CB455 - Light green */
+    /* Success: Blue-green variation */
+    --success: 197 71% 52%; /* #06b6d4 - Cyan-500 */
     --success-foreground: 0 0% 100%;
 
-    /* Warning: Warm amber (keeping original as it works well) */
-    --warning: 47.9 95.8% 53.1%;
+    /* Warning: Blue-amber variation */
+    --warning: 45 93% 58%; /* #f59e0b - Amber-500 */
     --warning-foreground: 26 83.3% 14.1%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
     /* Borders and inputs */
-    --border: 194 47% 85%; /* Lighter version of secondary */
-    --input: 194 47% 85%;
-    --ring: 196 52% 70%; /* Primary color */
+    --border: 214 76% 88%; /* #bfdbfe - Blue-200 */
+    --input: 214 76% 88%;
+    --ring: 217 91% 60%; /* Primary color */
 
     --radius: 0.75rem;
   }
@@ -106,11 +106,11 @@
 @layer components {
   /* Modern gradient backgrounds */
   .gradient-primary {
-    background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 100%);
+    background: linear-gradient(135deg, #2563eb 0%, #3b82f6 25%, #60a5fa 50%, #1d4ed8 75%, #1e40af 100%);
   }
   
   .gradient-muted {
-    background: linear-gradient(135deg, hsl(var(--muted)) 0%, hsl(var(--secondary)) 100%);
+    background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 25%, #93c5fd 50%, #60a5fa 75%, #3b82f6 100%);
   }
   
   .gradient-hero {

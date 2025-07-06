@@ -129,24 +129,24 @@ export function SubscriptionBadge({ subscription, userEmail, compact = false }: 
       <>
         <div 
           ref={badgeRef}
-          className={`flex items-center gap-2 bg-gradient-to-r from-amber-50 to-yellow-50 border border-amber-200 rounded-lg ${compact ? 'px-2 py-1' : 'px-3 py-1.5'}`}
+          className={`flex items-center gap-2 bg-gradient-to-r from-blue-50 to-cyan-50 border border-blue-200 rounded-lg ${compact ? 'px-2 py-1' : 'px-3 py-1.5'}`}
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
         >
-          <Crown className="w-4 h-4 text-amber-600 flex-shrink-0" />
+          <Crown className="w-4 h-4 text-blue-600 flex-shrink-0" />
           {compact ? (
             <>
-              <span className="text-xs font-medium text-amber-800 truncate">
+              <span className="text-xs font-medium text-blue-800 truncate">
                 Pro
               </span>
-              <Info className="w-3 h-3 text-amber-500 opacity-60 flex-shrink-0" />
+              <Info className="w-3 h-3 text-blue-500 opacity-60 flex-shrink-0" />
             </>
           ) : (
             <>
-              <span className="text-sm font-medium text-amber-800">
+              <span className="text-sm font-medium text-blue-800">
                 Pro RiverWalker for life
               </span>
-              <Info className="w-3 h-3 text-amber-500 opacity-60" />
+              <Info className="w-3 h-3 text-blue-500 opacity-60" />
             </>
           )}
         </div>
@@ -171,24 +171,24 @@ export function SubscriptionBadge({ subscription, userEmail, compact = false }: 
     <>
       <div 
         ref={badgeRef}
-        className={`flex items-center gap-2 bg-gradient-to-r from-green-50 to-teal-50 border border-green-200 rounded-lg ${compact ? 'px-2 py-1' : 'px-3 py-1.5'}`}
+        className={`flex items-center gap-2 bg-gradient-to-r from-cyan-50 to-blue-50 border border-cyan-200 rounded-lg ${compact ? 'px-2 py-1' : 'px-3 py-1.5'}`}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
       >
-        <Crown className="w-4 h-4 text-green-600 flex-shrink-0" />
+        <Crown className="w-4 h-4 text-cyan-600 flex-shrink-0" />
         {compact ? (
           <>
-            <span className="text-xs font-medium text-green-800 truncate">
+            <span className="text-xs font-medium text-cyan-800 truncate">
               Pro {daysRemaining}d
             </span>
-            <Info className="w-3 h-3 text-green-500 opacity-60 flex-shrink-0" />
+            <Info className="w-3 h-3 text-cyan-500 opacity-60 flex-shrink-0" />
           </>
         ) : (
           <>
-            <span className="text-sm font-medium text-green-800">
+            <span className="text-sm font-medium text-cyan-800">
               Pro RiverWalker for {daysRemaining} days
             </span>
-            <Info className="w-3 h-3 text-green-500 opacity-60" />
+            <Info className="w-3 h-3 text-cyan-500 opacity-60" />
           </>
         )}
       </div>
