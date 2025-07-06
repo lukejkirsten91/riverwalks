@@ -19,8 +19,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       throw new Error('Service role key not configured');
     }
 
-    // Exclude demo/test data from metrics (temporarily using your account until we create dedicated demo account)
-    const excludeTestEmails = ['luke.kirsten@gmail.com']; // Will change to demo@riverwalks.co.uk later
+    // Exclude demo/test data from metrics
+    const excludeTestEmails = ['demo@riverwalks.co.uk'];
     
     // Get user IDs to exclude
     let excludeUserIds: string[] = [];

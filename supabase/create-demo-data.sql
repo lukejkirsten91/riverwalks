@@ -1,9 +1,6 @@
 -- Create demo river walk and sites for interactive preview
 -- This will create a sample river study that users can interact with
-
--- First, get luke.kirsten@gmail.com user ID
--- Run this query to get your user ID: SELECT id FROM auth.users WHERE email = 'luke.kirsten@gmail.com';
--- Then replace 'USER_ID_HERE' below with the actual UUID
+-- Uses dedicated demo account: demo@riverwalks.co.uk (ID: 64ff3cca-bdab-408f-806b-c42e755cef53)
 
 -- Insert demo river walk
 INSERT INTO river_walks (id, name, date, country, county, user_id, archived, notes) 
@@ -13,7 +10,7 @@ VALUES (
   '2024-06-15',
   'UK',
   'Devon',
-  'USER_ID_HERE', -- Replace with actual luke.kirsten@gmail.com user ID
+  '64ff3cca-bdab-408f-806b-c42e755cef53', -- demo@riverwalks.co.uk user ID
   false,
   'Demonstration river walk for interactive preview feature. Contains 5 pre-filled sites with realistic data from the River Dart in Devon.'
 );
@@ -193,8 +190,6 @@ UPDATE sites SET sedimentation_data = '{
 }' WHERE id = '3b3d1e3d-69c6-42e2-8c54-ef63a6837ae6';
 
 -- Instructions:
--- 1. First run: SELECT id FROM auth.users WHERE email = 'luke.kirsten@gmail.com';
--- 2. Copy the returned UUID
--- 3. Replace 'USER_ID_HERE' in the river_walks INSERT with the actual UUID  
--- 4. Run this script in Supabase SQL editor
--- 5. All other UUIDs have been pre-filled!
+-- This script is ready to run! The demo account has been pre-created.
+-- Demo account: demo@riverwalks.co.uk (ID: 64ff3cca-bdab-408f-806b-c42e755cef53)
+-- All UUIDs have been pre-filled and are ready for use.
