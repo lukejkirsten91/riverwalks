@@ -223,6 +223,13 @@ export function SiteManagement({ riverWalk, onClose }: SiteManagementProps) {
     initializeMeasurements(site);
   };
 
+  // Direct task access from site list  
+  const handleSiteTaskClick = (site: Site, taskType: 'site_info' | 'cross_section' | 'velocity' | 'sediment') => {
+    // For now, just open the measurements editor - this component doesn't have individual task forms
+    setEditingMeasurements(site);
+    initializeMeasurements(site);
+  };
+
   const handleSaveMeasurements = async () => {
     if (!editingMeasurements) return;
 
@@ -364,11 +371,11 @@ export function SiteManagement({ riverWalk, onClose }: SiteManagementProps) {
           ) : (
             <SiteList
               sites={sites}
-              onEditMeasurements={handleEditMeasurements}
               onEditSite={handleEditSite}
               onUpdateSite={handleUpdateSiteField}
               onDeleteSite={handleDeleteSiteWithConfirm}
               onAddNewSite={() => setShowSiteForm(true)}
+              onSiteTaskClick={handleSiteTaskClick}
             />
           )}
         </div>

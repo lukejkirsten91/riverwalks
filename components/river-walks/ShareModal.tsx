@@ -175,7 +175,7 @@ export function ShareModal({ riverWalk, isOpen, onClose }: ShareModalProps) {
         </div>
 
         {/* Content */}
-        <div className="p-6 max-h-96 overflow-y-auto">
+        <div className="p-6">
           {error && (
             <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
               {error}

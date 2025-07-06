@@ -58,7 +58,7 @@ export default function RiverWalksPage() {
   const [showFeedbackForm, setShowFeedbackForm] = useState(false);
 
   // Apply scroll lock when any modal is open
-  useScrollLock(!!selectedRiverWalk || !!reportRiverWalk || !!shareRiverWalk || !!manageCollaboratorsRiverWalk || !!showUpgradePrompt || loadingReport);
+  useScrollLock(!!selectedRiverWalk || !!reportRiverWalk || !!shareRiverWalk || !!manageCollaboratorsRiverWalk || !!showUpgradePrompt || !!showForm || loadingReport);
 
   const {
     riverWalks,
@@ -510,17 +510,6 @@ export default function RiverWalksPage() {
             </div>
           </div>
 
-          {/* Form State */}
-          {showForm && (
-            <div className={`form-morph form-enter`}>
-              <RiverWalkForm
-                currentRiverWalk={currentRiverWalk}
-                onSubmit={handleFormSubmit}
-                onCancel={handleFormCancel}
-                loading={loading}
-              />
-            </div>
-          )}
 
           {/* Join Collaboration State */}
           {showJoinCollaboration && (
@@ -708,6 +697,26 @@ export default function RiverWalksPage() {
             onComplete={markWelcomeComplete}
             userEmail={user.email}
           />
+        )}
+
+        {/* River Walk Form Modal */}
+        {showForm && (
+          <div 
+            className="fixed inset-0 bg-white sm:bg-black sm:bg-opacity-50 flex items-stretch sm:items-center justify-center sm:p-4 z-50"
+            onClick={handleFormCancel}
+          >
+            <div 
+              className="w-full sm:w-auto sm:max-w-4xl sm:rounded-lg overflow-hidden"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <RiverWalkForm
+                currentRiverWalk={currentRiverWalk}
+                onSubmit={handleFormSubmit}
+                onCancel={handleFormCancel}
+                loading={loading}
+              />
+            </div>
+          </div>
         )}
 
         {/* Feedback Form Modal */}

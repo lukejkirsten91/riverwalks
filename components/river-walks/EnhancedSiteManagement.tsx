@@ -233,6 +233,26 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
     }
   };
 
+  // Direct task access from site list - skips the todo overview
+  const handleSiteTaskClick = (site: Site, todoType: 'site_info' | 'cross_section' | 'velocity' | 'sediment') => {
+    // Set the current site first
+    setCurrentSite(site);
+    
+    // Then navigate directly to the appropriate form
+    const viewMap: Record<typeof todoType, CurrentView> = {
+      site_info: 'site_info_form',
+      cross_section: 'cross_section_form',
+      velocity: 'velocity_form',
+      sediment: 'sediment_form',
+    };
+    const newView = viewMap[todoType];
+    animateToView(newView, 'forward', site);
+    // Push state for back button navigation
+    if (typeof window !== 'undefined') {
+      window.history.pushState({ view: newView, site }, '', window.location.href);
+    }
+  };
+
   const handleBackToTodos = () => {
     animateToView('site_todos', 'back');
     // Push state for back button navigation
@@ -651,11 +671,11 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
           return (
             <SiteList
               sites={sites}
-              onEditMeasurements={handleSiteSelect} // Now opens todo list instead
-              onEditSite={handleSiteSelect} // Now opens todo list instead
+              onEditSite={handleSiteSelect}
               onUpdateSite={handleUpdateSiteField}
               onDeleteSite={handleDeleteSiteWithConfirm}
               onAddNewSite={handleAddNewSite}
+              onSiteTaskClick={handleSiteTaskClick}
               addingSite={addingSite}
             />
           );
