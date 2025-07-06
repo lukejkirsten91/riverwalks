@@ -173,10 +173,10 @@ export function WelcomeFlow({ onComplete, userEmail }: WelcomeFlowProps) {
   const Icon = currentStepData.icon;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-xl max-w-lg w-full mx-auto shadow-2xl">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-start justify-center p-4 z-50 overflow-y-auto">
+      <div className="bg-white rounded-xl max-w-lg w-full mx-auto shadow-2xl my-4 max-h-[calc(100vh-2rem)] flex flex-col">
         {/* Progress Bar */}
-        <div className="h-2 bg-gray-200 rounded-t-xl">
+        <div className="h-2 bg-gray-200 rounded-t-xl flex-shrink-0">
           <div 
             className="h-full bg-gradient-to-r from-blue-500 to-teal-500 rounded-tl-xl transition-all duration-300"
             style={{ width: `${((currentStep + 1) / steps.length) * 100}%` }}
@@ -184,33 +184,33 @@ export function WelcomeFlow({ onComplete, userEmail }: WelcomeFlowProps) {
         </div>
 
         {/* Header */}
-        <div className="p-6 border-b border-gray-100">
+        <div className="p-4 sm:p-6 border-b border-gray-100 flex-shrink-0">
           <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
-                <Icon className="w-5 h-5 text-blue-600" />
+            <div className="flex items-center min-w-0 flex-1">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-3 flex-shrink-0">
+                <Icon className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
               </div>
-              <div>
-                <h3 className="font-semibold text-gray-900">{currentStepData.title}</h3>
-                <p className="text-sm text-gray-500">{currentStepData.description}</p>
+              <div className="min-w-0 flex-1">
+                <h3 className="font-semibold text-gray-900 text-sm sm:text-base">{currentStepData.title}</h3>
+                <p className="text-xs sm:text-sm text-gray-500 truncate">{currentStepData.description}</p>
               </div>
             </div>
-            <span className="text-sm text-gray-400">
+            <span className="text-xs sm:text-sm text-gray-400 ml-2 flex-shrink-0">
               {currentStep + 1} of {steps.length}
             </span>
           </div>
         </div>
 
-        {/* Content */}
-        <div className="p-6">
+        {/* Content - Scrollable */}
+        <div className="p-4 sm:p-6 overflow-y-auto flex-1 min-h-0">
           {currentStepData.content}
         </div>
 
         {/* Actions */}
-        <div className="p-6 border-t border-gray-100 flex justify-between">
+        <div className="p-4 sm:p-6 border-t border-gray-100 flex justify-between items-center flex-shrink-0">
           <button
             onClick={skipOnboarding}
-            className="text-gray-600 hover:text-gray-800 font-medium transition-colors"
+            className="text-gray-600 hover:text-gray-800 font-medium transition-colors text-sm"
           >
             Skip for now
           </button>
@@ -219,7 +219,7 @@ export function WelcomeFlow({ onComplete, userEmail }: WelcomeFlowProps) {
             {currentStep === steps.length - 1 ? (
               <button
                 onClick={nextStep}
-                className="bg-gradient-to-r from-blue-600 to-teal-600 hover:from-blue-700 hover:to-teal-700 text-white px-6 py-2 rounded-lg font-semibold transition-all flex items-center gap-2"
+                className="bg-gradient-to-r from-blue-600 to-teal-600 hover:from-blue-700 hover:to-teal-700 text-white px-4 sm:px-6 py-2 rounded-lg font-semibold transition-all flex items-center gap-2 text-sm"
               >
                 Get Started
                 <CheckCircle className="w-4 h-4" />
@@ -227,7 +227,7 @@ export function WelcomeFlow({ onComplete, userEmail }: WelcomeFlowProps) {
             ) : (
               <button
                 onClick={nextStep}
-                className="bg-gradient-to-r from-blue-600 to-teal-600 hover:from-blue-700 hover:to-teal-700 text-white px-6 py-2 rounded-lg font-semibold transition-all flex items-center gap-2"
+                className="bg-gradient-to-r from-blue-600 to-teal-600 hover:from-blue-700 hover:to-teal-700 text-white px-4 sm:px-6 py-2 rounded-lg font-semibold transition-all flex items-center gap-2 text-sm"
               >
                 Next
                 <ArrowRight className="w-4 h-4" />

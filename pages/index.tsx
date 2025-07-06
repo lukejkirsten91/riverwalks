@@ -97,8 +97,6 @@ export default function Home() {
     // Use the custom domain for OAuth callback to avoid domain mismatches
     const redirectUrl = 'https://www.riverwalks.co.uk/api/auth/callback';
     
-    console.log('🚀 Starting OAuth with redirect URL:', redirectUrl);
-    
     await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {

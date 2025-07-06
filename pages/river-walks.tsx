@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { createPortal } from 'react-dom';
 import { supabase } from '../lib/supabase';
-import { LogOut, MapPin, User as UserIcon, Users, UserCheck, Crown, Settings } from 'lucide-react';
+import { LogOut, MapPin, User as UserIcon, Users, UserCheck, Crown, Settings, MessageCircle } from 'lucide-react';
 import {
   RiverWalkForm,
   RiverWalkList,
@@ -22,6 +22,7 @@ import { useSubscription, canAccessAdvancedFeatures } from '../hooks/useSubscrip
 import { TermsGate } from '../components/auth/TermsGate';
 import { WelcomeFlow } from '../components/onboarding/WelcomeFlow';
 import { useOnboarding } from '../hooks/useOnboarding';
+import FeedbackForm from '../components/FeedbackForm';
 import type { RiverWalk, RiverWalkFormData, Site } from '../types';
 import { getSitesForRiverWalk } from '../lib/api/sites';
 import type { User } from '@supabase/supabase-js';
@@ -53,6 +54,7 @@ export default function RiverWalksPage() {
   const [joinCollabLink, setJoinCollabLink] = useState('');
   const [manageCollaboratorsRiverWalk, setManageCollaboratorsRiverWalk] = useState<RiverWalk | null>(null);
   const [showUpgradePrompt, setShowUpgradePrompt] = useState<'reports' | 'export' | 'advanced' | null>(null);
+  const [showFeedbackForm, setShowFeedbackForm] = useState(false);
 
   const {
     riverWalks,
@@ -694,6 +696,13 @@ export default function RiverWalksPage() {
             userEmail={user.email}
           />
         )}
+
+        {/* Feedback Form Modal */}
+        <FeedbackForm
+          isOpen={showFeedbackForm}
+          onClose={() => setShowFeedbackForm(false)}
+          userEmail={user?.email}
+        />
       </div>
       
 
@@ -739,6 +748,18 @@ export default function RiverWalksPage() {
           >
             <UserCheck className="w-4 h-4" />
             Switch Account
+          </button>
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setShowProfileDropdown(false);
+              setShowFeedbackForm(true);
+            }}
+            className="w-full text-left px-4 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all duration-200 hover:scale-[1.02] flex items-center gap-2 border-b border-border"
+          >
+            <MessageCircle className="w-4 h-4" />
+            Send Feedback
           </button>
           <button
             onClick={(e) => {

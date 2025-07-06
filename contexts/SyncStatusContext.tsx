@@ -106,7 +106,13 @@ export function SyncStatusProvider({ children }: SyncStatusProviderProps) {
       setTimeout(() => {
         updateSyncStatus();
       }, 100);
-      showSuccess('Sync Complete', 'All your data has been successfully synced to the cloud.');
+      
+      // Only show "synced to cloud" message if actually online
+      if (syncStatus.isOnline) {
+        showSuccess('Sync Complete', 'All your data has been successfully synced to the cloud.');
+      } else {
+        showSuccess('Data Saved', 'Your changes have been saved locally and will sync when you\'re back online.');
+      }
     };
 
     const handleSyncFailed = (event: CustomEvent) => {
