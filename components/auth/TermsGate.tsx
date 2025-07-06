@@ -56,20 +56,14 @@ export function TermsGate({ user, children }: TermsGateProps) {
         userAgent
       );
 
-      showSuccess(
-        'Terms Accepted', 
-        'Thank you for accepting our terms. Welcome to Riverwalks!'
-      );
+      showSuccess('Welcome to Riverwalks!');
       
       // Hide the terms gate
       setNeedsAcceptance(false);
       
     } catch (error) {
       console.error('Error recording terms acceptance:', error);
-      showError(
-        'Error', 
-        'There was a problem recording your acceptance. Please try again.'
-      );
+      showError('Could not record acceptance');
     } finally {
       setSubmitting(false);
     }

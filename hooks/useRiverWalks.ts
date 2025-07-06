@@ -41,11 +41,11 @@ export function useRiverWalks() {
       setLoading(true);
       await createRiverWalk(formData);
       await fetchRiverWalks();
-      showSuccess('River Walk Created', `${formData.name} has been successfully created.`);
+      showSuccess(`${formData.name} created`);
     } catch (err) {
       const errorMessage = 'Failed to create river walk';
       setError(errorMessage);
-      showError('Creation Failed', errorMessage);
+      showError('Could not create river walk');
       console.error(err);
       throw err;
     } finally {
@@ -76,11 +76,11 @@ export function useRiverWalks() {
       const riverWalk = riverWalks.find(rw => rw.id === id);
       await archiveRiverWalk(id);
       await fetchRiverWalks();
-      showSuccess('River Walk Archived', `${riverWalk?.name || 'River walk'} has been archived.`);
+      showSuccess(`${riverWalk?.name || 'River walk'} archived`);
     } catch (err) {
       const errorMessage = 'Failed to archive river walk';
       setError(errorMessage);
-      showError('Archive Failed', errorMessage);
+      showError('Could not archive');
       console.error(err);
       throw err;
     } finally {
@@ -94,11 +94,11 @@ export function useRiverWalks() {
       const riverWalk = archivedRiverWalks.find(rw => rw.id === id);
       await restoreRiverWalk(id);
       await fetchRiverWalks();
-      showSuccess('River Walk Restored', `${riverWalk?.name || 'River walk'} has been restored.`);
+      showSuccess(`${riverWalk?.name || 'River walk'} restored`);
     } catch (err) {
       const errorMessage = 'Failed to restore river walk';
       setError(errorMessage);
-      showError('Restore Failed', errorMessage);
+      showError('Could not restore');
       console.error(err);
       throw err;
     } finally {
@@ -112,11 +112,11 @@ export function useRiverWalks() {
       const riverWalk = archivedRiverWalks.find(rw => rw.id === id);
       await deleteRiverWalk(id);
       await fetchRiverWalks();
-      showSuccess('River Walk Deleted', `${riverWalk?.name || 'River walk'} has been permanently deleted.`);
+      showSuccess(`${riverWalk?.name || 'River walk'} deleted`);
     } catch (err) {
       const errorMessage = 'Failed to delete river walk';
       setError(errorMessage);
-      showError('Delete Failed', errorMessage);
+      showError('Could not delete');
       console.error(err);
       throw err;
     } finally {

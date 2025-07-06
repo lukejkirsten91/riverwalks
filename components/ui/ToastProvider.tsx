@@ -10,10 +10,10 @@ interface ToastData {
 
 interface ToastContextType {
   showToast: (toast: Omit<ToastData, 'id'>) => void;
-  showSuccess: (message: string) => void;
-  showError: (message: string) => void;
-  showWarning: (message: string) => void;
-  showInfo: (message: string) => void;
+  showSuccess: (messageOrTitle: string, message?: string) => void;
+  showError: (messageOrTitle: string, message?: string) => void;
+  showWarning: (messageOrTitle: string, message?: string) => void;
+  showInfo: (messageOrTitle: string, message?: string) => void;
 }
 
 const ToastContext = createContext<ToastContextType | undefined>(undefined);
@@ -46,20 +46,28 @@ export function ToastProvider({ children }: ToastProviderProps) {
     setToasts(prev => [...prev, newToast]);
   }, []);
 
-  const showSuccess = useCallback((message: string) => {
-    showToast({ type: 'success', message });
+  const showSuccess = useCallback((messageOrTitle: string, message?: string) => {
+    // If message is provided, use it, otherwise use messageOrTitle as the message
+    const finalMessage = message || messageOrTitle;
+    showToast({ type: 'success', message: finalMessage });
   }, [showToast]);
 
-  const showError = useCallback((message: string) => {
-    showToast({ type: 'error', message });
+  const showError = useCallback((messageOrTitle: string, message?: string) => {
+    // If message is provided, use it, otherwise use messageOrTitle as the message
+    const finalMessage = message || messageOrTitle;
+    showToast({ type: 'error', message: finalMessage });
   }, [showToast]);
 
-  const showWarning = useCallback((message: string) => {
-    showToast({ type: 'warning', message });
+  const showWarning = useCallback((messageOrTitle: string, message?: string) => {
+    // If message is provided, use it, otherwise use messageOrTitle as the message
+    const finalMessage = message || messageOrTitle;
+    showToast({ type: 'warning', message: finalMessage });
   }, [showToast]);
 
-  const showInfo = useCallback((message: string) => {
-    showToast({ type: 'info', message });
+  const showInfo = useCallback((messageOrTitle: string, message?: string) => {
+    // If message is provided, use it, otherwise use messageOrTitle as the message
+    const finalMessage = message || messageOrTitle;
+    showToast({ type: 'info', message: finalMessage });
   }, [showToast]);
 
   const contextValue: ToastContextType = {

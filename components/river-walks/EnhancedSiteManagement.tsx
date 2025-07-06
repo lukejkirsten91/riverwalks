@@ -71,7 +71,7 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
       await updateSite(id, data);
       await fetchSites();
       if (showToast) {
-        showSuccess('Site Updated', 'Site has been successfully updated.');
+        showSuccess('Site updated');
       }
     } catch (error) {
       console.error('Failed to update site:', error);
@@ -80,11 +80,11 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
       const errorMessage = error instanceof Error ? error.message : 'Failed to update site';
       if (errorMessage.includes('insufficient_privilege') || errorMessage.includes('permission denied')) {
         if (showToast) {
-          showError('Permission Denied', 'You do not have permission to edit this site.');
+          showError('Permission denied');
         }
       } else {
         if (showToast) {
-          showError('Update Failed', errorMessage);
+          showError('Update failed');
         }
       }
       throw error; // Re-throw so calling function can handle the error appropriately
@@ -99,7 +99,7 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
 
     try {
       await deleteSite(id);
-      showSuccess('Site Deleted', 'Site has been successfully deleted.');
+      showSuccess('Site deleted');
       
       // If we're currently viewing this site, go back to site list
       if (currentSite?.id === id) {
@@ -112,9 +112,9 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
       // Check for RLS permission errors
       const errorMessage = error instanceof Error ? error.message : 'Failed to delete site';
       if (errorMessage.includes('insufficient_privilege') || errorMessage.includes('permission denied')) {
-        showError('Permission Denied', 'You do not have permission to delete this site.');
+        showError('Permission denied');
       } else {
-        showError('Delete Failed', errorMessage);
+        showError('Delete failed');
       }
     }
   };
@@ -308,7 +308,7 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
       // Update current site state immediately for instant UI update
       setCurrentSite(prev => prev ? { ...prev, ...updateData } : null);
       
-      showSuccess('Site Info Updated', 'Site information has been saved successfully.');
+      showSuccess('Site info saved');
       animateToView('site_todos', 'back');
       // Push state for back button navigation
       if (typeof window !== 'undefined') {
@@ -317,7 +317,7 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
     } catch (error) {
       console.error('Error updating site info:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      showError('Update Failed', `Could not update site info: ${errorMessage}`);
+      showError('Could not save site info');
     }
   };
 
@@ -369,7 +369,7 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
         measurement_points: updatedMeasurementPoints
       } : null);
       
-      showSuccess('Cross-Section Updated', 'Cross-sectional measurements have been saved successfully.');
+      showSuccess('Cross-section saved');
       animateToView('site_todos', 'back');
       // Push state for back button navigation
       if (typeof window !== 'undefined') {
@@ -378,7 +378,7 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
     } catch (error) {
       console.error('Error updating cross-section:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      showError('Update Failed', `Could not update cross-section: ${errorMessage}`);
+      showError('Could not save cross-section');
     }
   };
 
@@ -406,7 +406,7 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
       // Update current site state immediately for instant UI update
       setCurrentSite(prev => prev ? { ...prev, ...updateData } : null);
       
-      showSuccess('Velocity Updated', 'Velocity measurements have been saved successfully.');
+      showSuccess('Velocity saved');
       animateToView('site_todos', 'back');
       // Push state for back button navigation
       if (typeof window !== 'undefined') {
@@ -415,7 +415,7 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
     } catch (error) {
       console.error('Error updating velocity:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      showError('Update Failed', `Could not update velocity: ${errorMessage}`);
+      showError('Could not save velocity');
     }
   };
 
@@ -484,7 +484,7 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
       // Update current site state immediately for instant UI update
       setCurrentSite(prev => prev ? { ...prev, ...updateData } : null);
       
-      showSuccess('Sediment Analysis Updated', 'Sediment analysis has been saved successfully.');
+      showSuccess('Sediment analysis saved');
       animateToView('site_todos', 'back');
       // Push state for back button navigation
       if (typeof window !== 'undefined') {
@@ -493,7 +493,7 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
     } catch (error) {
       console.error('Error updating sediment analysis:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      showError('Update Failed', `Could not update sediment analysis: ${errorMessage}`);
+      showError('Could not save sediment analysis');
     }
   };
 
@@ -520,10 +520,10 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
     ) {
       try {
         await handleDeleteSite(site.id, riverWalk.id);
-        showSuccess('Site Deleted', `${site.site_name} has been successfully deleted.`);
+        showSuccess(`${site.site_name} deleted`);
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-        showError('Delete Failed', `Could not delete ${site.site_name}: ${errorMessage}`);
+        showError(`Could not delete ${site.site_name}`);
       }
     }
   };
@@ -563,7 +563,7 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
       const createdSite = await handleCreateSite(newSite);
       if (createdSite) {
         await fetchSites();
-        showSuccess('Site Created', `${newSite.site_name} has been successfully created.`);
+        showSuccess(`${newSite.site_name} created`);
       }
     } catch (error) {
       console.error('Error creating site:', error);
@@ -576,7 +576,7 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
         
         // Check for RLS permission errors
         if (errorMessage.includes('insufficient_privilege') || errorMessage.includes('permission denied')) {
-          showError('Permission Denied', 'You do not have permission to create sites in this river walk.');
+          showError('Permission denied');
           return;
         }
         
@@ -590,7 +590,7 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
         }
       }
       
-      showError('Site Creation Failed', `Could not create site: ${errorMessage}`);
+      showError('Could not create site');
     } finally {
       setAddingSite(false);
     }

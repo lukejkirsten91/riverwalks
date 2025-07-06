@@ -49,10 +49,7 @@ export function SyncStatusProvider({ children }: SyncStatusProviderProps) {
       // Show helpful message when first going offline
       if (wasOnline && isNowOffline && !hasShownOfflineMessage) {
         setHasShownOfflineMessage(true);
-        showSuccess(
-          '📱 Working Offline', 
-          'No worries! You can keep working on your river studies. All changes will be saved and synced when you get signal again.'
-        );
+        showSuccess('📱 Working offline');
       }
       
       // Reset message flag when back online
@@ -115,7 +112,7 @@ export function SyncStatusProvider({ children }: SyncStatusProviderProps) {
         isSyncing: false, 
         syncError: event.detail?.message || 'Sync failed'
       }));
-      showError('Sync Failed', event.detail?.message || 'Failed to sync data. Please try again.');
+      showError('Sync failed');
     };
 
     const handleDataChanged = () => {
