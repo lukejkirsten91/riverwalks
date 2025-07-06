@@ -13,6 +13,19 @@ interface SiteListProps {
   addingSite?: boolean;
 }
 
+// Helper function to calculate site progress
+const calculateSiteProgress = (site: Site): number => {
+  const tasks = [
+    site.todo_site_info_status,
+    site.todo_cross_section_status,
+    site.todo_velocity_status,
+    site.todo_sediment_status,
+  ];
+  
+  const completedTasks = tasks.filter(status => status === 'complete').length;
+  return (completedTasks / tasks.length) * 100;
+};
+
 export function SiteList({
   sites,
   onEditSite,
@@ -153,60 +166,74 @@ export function SiteList({
 
             {/* Action buttons and progress */}
             <div className="flex flex-col gap-3">
-              {/* Task Progress Buttons */}
-              <div className="grid grid-cols-2 gap-2">
+              {/* Task Progress Buttons - Larger and more prominent */}
+              <div className="grid grid-cols-2 gap-3">
                 <button
                   onClick={() => onSiteTaskClick(site, 'site_info')}
-                  className={`text-xs px-2 py-1 rounded border transition-all hover:shadow-md ${
-                    site.todo_site_info_status === 'complete' ? 'bg-green-50 text-green-700 border-green-200 hover:bg-green-100' :
-                    site.todo_site_info_status === 'in_progress' ? 'bg-yellow-50 text-yellow-700 border-yellow-200 hover:bg-yellow-100' :
-                    'bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100'
+                  className={`text-sm px-3 py-2.5 rounded-lg border-2 transition-all hover:shadow-lg font-medium ${
+                    site.todo_site_info_status === 'complete' ? 'bg-green-50 text-green-700 border-green-300 hover:bg-green-100' :
+                    site.todo_site_info_status === 'in_progress' ? 'bg-yellow-50 text-yellow-700 border-yellow-300 hover:bg-yellow-100' :
+                    'bg-gray-50 text-gray-600 border-gray-300 hover:bg-gray-100'
                   }`}
                 >
-                  Site Info: {site.todo_site_info_status === 'complete' ? '✓' : 
+                  Site Info {site.todo_site_info_status === 'complete' ? '✓' : 
                            site.todo_site_info_status === 'in_progress' ? '⏳' : '○'}
                 </button>
                 <button
                   onClick={() => onSiteTaskClick(site, 'cross_section')}
-                  className={`text-xs px-2 py-1 rounded border transition-all hover:shadow-md ${
-                    site.todo_cross_section_status === 'complete' ? 'bg-green-50 text-green-700 border-green-200 hover:bg-green-100' :
-                    site.todo_cross_section_status === 'in_progress' ? 'bg-yellow-50 text-yellow-700 border-yellow-200 hover:bg-yellow-100' :
-                    'bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100'
+                  className={`text-sm px-3 py-2.5 rounded-lg border-2 transition-all hover:shadow-lg font-medium ${
+                    site.todo_cross_section_status === 'complete' ? 'bg-green-50 text-green-700 border-green-300 hover:bg-green-100' :
+                    site.todo_cross_section_status === 'in_progress' ? 'bg-yellow-50 text-yellow-700 border-yellow-300 hover:bg-yellow-100' :
+                    'bg-gray-50 text-gray-600 border-gray-300 hover:bg-gray-100'
                   }`}
                 >
-                  Cross-Section: {site.todo_cross_section_status === 'complete' ? '✓' : 
+                  Cross-Section {site.todo_cross_section_status === 'complete' ? '✓' : 
                                  site.todo_cross_section_status === 'in_progress' ? '⏳' : '○'}
                 </button>
                 <button
                   onClick={() => onSiteTaskClick(site, 'velocity')}
-                  className={`text-xs px-2 py-1 rounded border transition-all hover:shadow-md ${
-                    site.todo_velocity_status === 'complete' ? 'bg-green-50 text-green-700 border-green-200 hover:bg-green-100' :
-                    site.todo_velocity_status === 'in_progress' ? 'bg-yellow-50 text-yellow-700 border-yellow-200 hover:bg-yellow-100' :
-                    'bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100'
+                  className={`text-sm px-3 py-2.5 rounded-lg border-2 transition-all hover:shadow-lg font-medium ${
+                    site.todo_velocity_status === 'complete' ? 'bg-green-50 text-green-700 border-green-300 hover:bg-green-100' :
+                    site.todo_velocity_status === 'in_progress' ? 'bg-yellow-50 text-yellow-700 border-yellow-300 hover:bg-yellow-100' :
+                    'bg-gray-50 text-gray-600 border-gray-300 hover:bg-gray-100'
                   }`}
                 >
-                  Velocity: {site.todo_velocity_status === 'complete' ? '✓' : 
+                  Velocity {site.todo_velocity_status === 'complete' ? '✓' : 
                             site.todo_velocity_status === 'in_progress' ? '⏳' : '○'}
                 </button>
                 <button
                   onClick={() => onSiteTaskClick(site, 'sediment')}
-                  className={`text-xs px-2 py-1 rounded border transition-all hover:shadow-md ${
-                    site.todo_sediment_status === 'complete' ? 'bg-green-50 text-green-700 border-green-200 hover:bg-green-100' :
-                    site.todo_sediment_status === 'in_progress' ? 'bg-yellow-50 text-yellow-700 border-yellow-200 hover:bg-yellow-100' :
-                    'bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100'
+                  className={`text-sm px-3 py-2.5 rounded-lg border-2 transition-all hover:shadow-lg font-medium ${
+                    site.todo_sediment_status === 'complete' ? 'bg-green-50 text-green-700 border-green-300 hover:bg-green-100' :
+                    site.todo_sediment_status === 'in_progress' ? 'bg-yellow-50 text-yellow-700 border-yellow-300 hover:bg-yellow-100' :
+                    'bg-gray-50 text-gray-600 border-gray-300 hover:bg-gray-100'
                   }`}
                 >
-                  Sediment: {site.todo_sediment_status === 'complete' ? '✓' : 
+                  Sediment {site.todo_sediment_status === 'complete' ? '✓' : 
                             site.todo_sediment_status === 'in_progress' ? '⏳' : '○'}
                 </button>
               </div>
               
-              <div className="flex flex-col sm:flex-row gap-3">
+              {/* Overall Progress Bar */}
+              <div className="mt-3">
+                <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
+                  <span>Progress</span>
+                  <span>{Math.round(calculateSiteProgress(site))}%</span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div
+                    className="bg-gradient-to-r from-blue-500 to-green-500 h-2 rounded-full transition-all duration-300"
+                    style={{ width: `${calculateSiteProgress(site)}%` }}
+                  ></div>
+                </div>
+              </div>
+              
+              <div className="flex flex-col sm:flex-row gap-3 mt-3">
                 <button
                   onClick={() => onDeleteSite(site)}
-                  className="bg-destructive/10 hover:bg-destructive/20 text-destructive px-4 py-2 rounded-lg font-medium transition-all duration-200 border border-destructive/20 shadow-modern hover:shadow-modern-lg touch-manipulation flex items-center justify-center"
+                  className="bg-destructive/5 hover:bg-destructive/10 text-destructive px-3 py-1.5 rounded text-sm font-medium transition-all duration-200 border border-destructive/20 touch-manipulation flex items-center justify-center"
                 >
-                  <Trash2 className="w-4 h-4 mr-2" />
+                  <Trash2 className="w-3 h-3 mr-1" />
                   Delete
                 </button>
               </div>

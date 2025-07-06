@@ -254,10 +254,10 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
   };
 
   const handleBackToTodos = () => {
-    animateToView('site_todos', 'back');
+    animateToView('site_list', 'back');
     // Push state for back button navigation
     if (typeof window !== 'undefined') {
-      window.history.pushState({ view: 'site_todos', site: currentSite }, '', window.location.href);
+      window.history.pushState({ view: 'site_list' }, '', window.location.href);
     }
   };
 
@@ -329,10 +329,10 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
       setCurrentSite(prev => prev ? { ...prev, ...updateData } : null);
       
       showSuccess('Site info saved');
-      animateToView('site_todos', 'back');
+      animateToView('site_list', 'back');
       // Push state for back button navigation
       if (typeof window !== 'undefined') {
-        window.history.pushState({ view: 'site_todos', site: currentSite }, '', window.location.href);
+        window.history.pushState({ view: 'site_list' }, '', window.location.href);
       }
     } catch (error) {
       console.error('Error updating site info:', error);
@@ -390,10 +390,10 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
       } : null);
       
       showSuccess('Cross-section saved');
-      animateToView('site_todos', 'back');
+      animateToView('site_list', 'back');
       // Push state for back button navigation
       if (typeof window !== 'undefined') {
-        window.history.pushState({ view: 'site_todos', site: currentSite }, '', window.location.href);
+        window.history.pushState({ view: 'site_list' }, '', window.location.href);
       }
     } catch (error) {
       console.error('Error updating cross-section:', error);
@@ -427,10 +427,10 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
       setCurrentSite(prev => prev ? { ...prev, ...updateData } : null);
       
       showSuccess('Velocity saved');
-      animateToView('site_todos', 'back');
+      animateToView('site_list', 'back');
       // Push state for back button navigation
       if (typeof window !== 'undefined') {
-        window.history.pushState({ view: 'site_todos', site: currentSite }, '', window.location.href);
+        window.history.pushState({ view: 'site_list' }, '', window.location.href);
       }
     } catch (error) {
       console.error('Error updating velocity:', error);
@@ -505,10 +505,10 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
       setCurrentSite(prev => prev ? { ...prev, ...updateData } : null);
       
       showSuccess('Sediment analysis saved');
-      animateToView('site_todos', 'back');
+      animateToView('site_list', 'back');
       // Push state for back button navigation
       if (typeof window !== 'undefined') {
-        window.history.pushState({ view: 'site_todos', site: currentSite }, '', window.location.href);
+        window.history.pushState({ view: 'site_list' }, '', window.location.href);
       }
     } catch (error) {
       console.error('Error updating sediment analysis:', error);

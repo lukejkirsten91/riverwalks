@@ -38,7 +38,7 @@ export function RiverWalkForm({
   };
 
   return (
-    <div className="bg-white w-full h-full sm:rounded-lg sm:shadow-modern-lg sm:max-w-4xl sm:w-full sm:max-h-[90vh] overflow-hidden p-6 sm:p-8">
+    <div className="bg-white w-full h-full sm:rounded-lg sm:shadow-modern-lg sm:max-w-4xl sm:w-full sm:max-h-[90vh] overflow-y-auto p-6 sm:p-8">
       <div className="flex items-center gap-3 mb-6">
         <div className="w-10 h-10 rounded-lg gradient-primary flex items-center justify-center">
           <MapPin className="w-5 h-5 text-white" />
