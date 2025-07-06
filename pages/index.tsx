@@ -270,7 +270,7 @@ export default function Home() {
                 and watch professional reports generate in real-time.
               </p>
             </div>
-            <InteractivePreview />
+            <InteractivePreview onSignIn={handleSignIn} />
           </div>
         )}
 

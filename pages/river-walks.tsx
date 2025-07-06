@@ -603,10 +603,13 @@ export default function RiverWalksPage() {
         {/* Site management modal */}
         {selectedRiverWalk && (
           <div 
-            className="fixed inset-0 bg-black bg-opacity-50 flex items-start sm:items-center justify-center p-2 sm:p-4 z-50"
+            className="fixed inset-0 bg-black bg-opacity-50 flex items-stretch sm:items-center justify-center sm:p-4 z-50"
             onClick={handleCloseSiteManagement}
           >
-            <div onClick={(e) => e.stopPropagation()}>
+            <div 
+              className="w-full sm:w-auto sm:max-w-6xl sm:rounded-lg overflow-hidden"
+              onClick={(e) => e.stopPropagation()}
+            >
               <EnhancedSiteManagement
                 riverWalk={selectedRiverWalk}
                 onClose={handleCloseSiteManagement}

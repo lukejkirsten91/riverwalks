@@ -725,7 +725,7 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
 
   return (
     <div 
-      className="bg-white rounded-lg w-full max-w-6xl max-h-[98vh] sm:max-h-[90vh] overflow-y-auto mt-2 sm:mt-0"
+      className="bg-white w-full h-full sm:rounded-lg sm:max-w-6xl sm:max-h-[90vh] overflow-y-auto flex flex-col"
       data-modal="site-management"
     >
         {/* Header */}
@@ -765,7 +765,7 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
         </div>
 
         {/* Content */}
-        <div className="p-4 sm:p-6">
+        <div className="p-4 sm:p-6 flex-1 overflow-y-auto">
           <div className="mb-4">
             <p className="text-gray-600">
               {formatDate(riverWalk.date)} •{' '}
