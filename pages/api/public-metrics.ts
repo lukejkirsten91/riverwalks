@@ -87,8 +87,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       lastUpdated: new Date().toISOString()
     };
 
-    // Set cache headers for reasonable caching (5 minutes)
-    res.setHeader('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=600');
+    // No caching - always fetch fresh data
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
     
     return res.status(200).json(metrics);
 

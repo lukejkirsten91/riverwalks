@@ -190,9 +190,9 @@ export const SiteInfoForm = forwardRef<SiteInfoFormRef, SiteInfoFormProps>(({
       
       <form onSubmit={(e) => handleSubmit(e, false)} className="space-y-8">
         {/* Site Details Section */}
-        <div className="bg-blue-50/50 rounded-xl p-6 border border-blue-100">
+        <div className="space-y-6">
           {/* Site name header - not editable */}
-          <div className="mb-6 p-4 bg-white/80 rounded-lg border border-blue-200">
+          <div className="mb-6 p-4 bg-blue-50/50 rounded-lg border border-blue-200">
             <h3 className="text-xl font-semibold text-foreground">Site {site.site_number}</h3>
           </div>
           
