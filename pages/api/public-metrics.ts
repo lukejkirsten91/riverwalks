@@ -25,41 +25,49 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Get user IDs to exclude
     let excludeUserIds: string[] = [];
     try {
-      const { data: allUsers } = await supabaseAdmin.auth.admin.listUsers();
-      excludeUserIds = allUsers?.users
-        ?.filter(u => excludeTestEmails.includes(u.email || ''))
-        ?.map(u => u.id) || [];
+      const { data: allUsers, error: usersError } = await supabaseAdmin.auth.admin.listUsers();
+      if (usersError) {
+        console.error('Error fetching users for filtering:', usersError);
+      } else {
+        excludeUserIds = allUsers?.users
+          ?.filter(u => excludeTestEmails.includes(u.email || ''))
+          ?.map(u => u.id) || [];
+        console.log('Excluding user IDs:', excludeUserIds);
+      }
     } catch (error) {
-      console.log('Could not filter demo users, including all data');
+      console.error('Could not filter demo users, including all data:', error);
     }
 
-    // Get total river walks (excluding archived and demo/test data)
-    let riverWalkQuery = supabaseAdmin
+    // First get valid river walk IDs (excluding archived and demo/test data)
+    let validRiverWalkQuery = supabaseAdmin
       .from('river_walks')
-      .select('*', { count: 'exact', head: true })
+      .select('id')
       .eq('archived', false);
     
     if (excludeUserIds.length > 0) {
-      riverWalkQuery = riverWalkQuery.not('user_id', 'in', `(${excludeUserIds.map(id => `'${id}'`).join(',')})`);
+      validRiverWalkQuery = validRiverWalkQuery.not('user_id', 'in', `(${excludeUserIds.join(',')})`);
     }
     
-    const { count: riverWalkCount, error: riverWalkError } = await riverWalkQuery;
+    const { data: validRiverWalks, error: riverWalkError } = await validRiverWalkQuery;
 
     if (riverWalkError) {
       console.error('Error fetching river walks:', riverWalkError);
       throw riverWalkError;
     }
 
-    // Get total sites (excluding demo/test data)
+    const riverWalkCount = validRiverWalks?.length || 0;
+    const validRiverWalkIds = validRiverWalks?.map(rw => rw.id) || [];
+
+    // Get total sites (from valid river walks only)
     let siteQuery = supabaseAdmin
       .from('sites')
       .select('*', { count: 'exact', head: true });
     
-    if (excludeUserIds.length > 0) {
-      // Exclude sites from demo/test river walks
-      siteQuery = siteQuery
-        .not('river_walk_id', 'in', 
-          `(SELECT id FROM river_walks WHERE user_id IN (${excludeUserIds.map(id => `'${id}'`).join(',')}))`);
+    if (validRiverWalkIds.length > 0) {
+      siteQuery = siteQuery.in('river_walk_id', validRiverWalkIds);
+    } else {
+      // No valid river walks, so no sites
+      siteQuery = siteQuery.eq('id', 'never-matches');
     }
     
     const { count: siteCount, error: siteError } = await siteQuery;
@@ -69,16 +77,35 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       throw siteError;
     }
 
-    // Get total measurement points (excluding demo/test data)
+    // Get valid site IDs first
+    let validSiteQuery = supabaseAdmin
+      .from('sites')
+      .select('id');
+    
+    if (validRiverWalkIds.length > 0) {
+      validSiteQuery = validSiteQuery.in('river_walk_id', validRiverWalkIds);
+    } else {
+      validSiteQuery = validSiteQuery.eq('id', 'never-matches');
+    }
+    
+    const { data: validSites, error: validSitesError } = await validSiteQuery;
+    
+    if (validSitesError) {
+      console.error('Error fetching valid sites:', validSitesError);
+      throw validSitesError;
+    }
+    
+    const validSiteIds = validSites?.map(s => s.id) || [];
+
+    // Get total measurement points (from valid sites only)
     let measurementQuery = supabaseAdmin
       .from('measurement_points')
       .select('*', { count: 'exact', head: true });
     
-    if (excludeUserIds.length > 0) {
-      // Exclude measurements from demo/test sites
-      measurementQuery = measurementQuery
-        .not('site_id', 'in', 
-          `(SELECT s.id FROM sites s JOIN river_walks rw ON s.river_walk_id = rw.id WHERE rw.user_id IN (${excludeUserIds.map(id => `'${id}'`).join(',')}))`);
+    if (validSiteIds.length > 0) {
+      measurementQuery = measurementQuery.in('site_id', validSiteIds);
+    } else {
+      measurementQuery = measurementQuery.eq('id', 'never-matches');
     }
     
     const { count: measurementCount, error: measurementError } = await measurementQuery;
@@ -88,11 +115,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       throw measurementError;
     }
 
-    // Calculate total area studied (sum of cross-sectional areas)
-    const { data: sitesData, error: sitesDataError } = await supabaseAdmin
+    // Calculate total area studied (from valid sites only)
+    let areaSitesQuery = supabaseAdmin
       .from('sites')
       .select('river_width')
       .not('river_width', 'is', null);
+    
+    if (validSiteIds.length > 0) {
+      areaSitesQuery = areaSitesQuery.in('id', validSiteIds);
+    } else {
+      areaSitesQuery = areaSitesQuery.eq('id', 'never-matches');
+    }
+
+    const { data: sitesData, error: sitesDataError } = await areaSitesQuery;
 
     if (sitesDataError) {
       console.error('Error fetching site widths:', sitesDataError);
@@ -104,18 +139,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return total + (parseFloat(site.river_width) || 0);
     }, 0) || 0;
 
-    // Get sites with coordinates for map (excluding demo/test data)
+    // Get sites with coordinates for map (from valid sites only)
     let coordinatesQuery = supabaseAdmin
       .from('sites')
       .select('latitude, longitude, site_name')
       .not('latitude', 'is', null)
       .not('longitude', 'is', null);
     
-    if (excludeUserIds.length > 0) {
-      // Exclude coordinates from demo/test river walks
-      coordinatesQuery = coordinatesQuery
-        .not('river_walk_id', 'in', 
-          `(SELECT id FROM river_walks WHERE user_id IN (${excludeUserIds.map(id => `'${id}'`).join(',')}))`);
+    if (validSiteIds.length > 0) {
+      coordinatesQuery = coordinatesQuery.in('id', validSiteIds);
+    } else {
+      coordinatesQuery = coordinatesQuery.eq('id', 'never-matches');
     }
     
     const { data: coordinatesData, error: coordinatesError } = await coordinatesQuery;
