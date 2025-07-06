@@ -56,7 +56,7 @@ const getWelcomeEmailHtml = (userEmail: string) => `
             
             <p>Welcome to the Riverwalks community! Whether you're working on GCSE Geography coursework, researching waterways, or just curious about rivers, you're now part of a growing community of river enthusiasts across the UK.</p>
             
-            <a href="https://riverwalks.vercel.app/river-walks" class="button">Start Your First River Study →</a>
+            <a href="https://www.riverwalks.co.uk/river-walks" class="button">Start Your First River Study →</a>
             
             <h3 style="color: #1e40af; margin-top: 32px;">Getting Started in 3 Easy Steps:</h3>
             

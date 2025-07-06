@@ -123,7 +123,7 @@ export default function AcceptInvitePage() {
     supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/api/auth/callback?redirect_to=${encodeURIComponent('/river-walks')}`,
+        redirectTo: 'https://www.riverwalks.co.uk/api/auth/callback?redirect_to=' + encodeURIComponent('/river-walks'),
         queryParams: {
           prompt: 'select_account',
           access_type: 'online'
@@ -209,7 +209,7 @@ export default function AcceptInvitePage() {
                 onClick={async () => {
                   await supabase.auth.signOut();
                   // Force account selection on next sign in
-                  const redirectUrl = `${window.location.origin}/invite/${token}`;
+                  const redirectUrl = `https://www.riverwalks.co.uk/api/auth/callback?redirect_to=${encodeURIComponent('/invite/' + token)}`;
                   setTimeout(() => {
                     supabase.auth.signInWithOAuth({
                       provider: 'google',
@@ -252,7 +252,7 @@ export default function AcceptInvitePage() {
                 onClick={async () => {
                   await supabase.auth.signOut();
                   // Force account selection on next sign in
-                  const redirectUrl = `${window.location.origin}/invite/${token}`;
+                  const redirectUrl = `https://www.riverwalks.co.uk/api/auth/callback?redirect_to=${encodeURIComponent('/invite/' + token)}`;
                   setTimeout(() => {
                     supabase.auth.signInWithOAuth({
                       provider: 'google',

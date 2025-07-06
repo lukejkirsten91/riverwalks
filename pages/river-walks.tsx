@@ -285,7 +285,7 @@ export default function RiverWalksPage() {
       supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/river-walks`,
+          redirectTo: 'https://www.riverwalks.co.uk/api/auth/callback?redirect_to=' + encodeURIComponent('/river-walks'),
           queryParams: {
             prompt: 'select_account',
             access_type: 'online'

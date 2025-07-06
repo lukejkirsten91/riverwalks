@@ -49,8 +49,7 @@ export default function AuthCard() {
   }, [loading]);
 
   const handleSignIn = async () => {
-    const { protocol, host } = window.location;
-    const redirectUrl = `${protocol}//${host}/api/auth/callback`;
+    const redirectUrl = 'https://www.riverwalks.co.uk/api/auth/callback';
     console.log('Redirecting to:', redirectUrl);
 
     await supabase.auth.signInWithOAuth({
@@ -75,8 +74,7 @@ export default function AuthCard() {
     await supabase.auth.signOut();
     // Force account selection on next sign in
     setTimeout(() => {
-      const { protocol, host } = window.location;
-      const redirectUrl = `${protocol}//${host}/api/auth/callback`;
+      const redirectUrl = 'https://www.riverwalks.co.uk/api/auth/callback';
       
       supabase.auth.signInWithOAuth({
         provider: 'google',

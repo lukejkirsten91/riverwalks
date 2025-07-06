@@ -94,8 +94,8 @@ export default function Home() {
   }, [user]);
 
   const handleSignIn = async () => {
-    const { protocol, host } = window.location;
-    const redirectUrl = `${protocol}//${host}/api/auth/callback`;
+    // Use the custom domain for OAuth callback to avoid domain mismatches
+    const redirectUrl = 'https://www.riverwalks.co.uk/api/auth/callback';
     
     console.log('🚀 Starting OAuth with redirect URL:', redirectUrl);
     
