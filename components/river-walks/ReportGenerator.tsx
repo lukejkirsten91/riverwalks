@@ -9,6 +9,7 @@ import { supabase } from '../../lib/supabase';
 import { UpgradePrompt } from '../ui/UpgradePrompt';
 import { useSubscription, canAccessReports, canExportData } from '../../hooks/useSubscription';
 import type { RiverWalk, Site, MeasurementPoint } from '../../types';
+import { useScrollLock } from '../../hooks/useScrollLock';
 
 // Dynamically import Plotly to avoid SSR issues
 const Plot = dynamic(() => import('react-plotly.js'), { 
@@ -23,6 +24,8 @@ interface ReportGeneratorProps {
 }
 
 export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorProps) {
+  useScrollLock(true); // Always lock scroll when report generator is open
+  
   const [isExporting, setIsExporting] = useState(false);
   const [showUpgradePrompt, setShowUpgradePrompt] = useState<'reports' | 'export' | null>(null);
   const reportRef = useRef<HTMLDivElement>(null);

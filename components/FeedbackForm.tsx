@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { X, Send, MessageCircle, Bug, Lightbulb, Heart } from 'lucide-react';
+import { useScrollLock } from '../hooks/useScrollLock';
 
 interface FeedbackFormProps {
   isOpen: boolean;
@@ -15,6 +16,8 @@ const feedbackTypes = [
 ];
 
 export default function FeedbackForm({ isOpen, onClose, userEmail }: FeedbackFormProps) {
+  useScrollLock(isOpen);
+  
   const [selectedType, setSelectedType] = useState('general');
   const [email, setEmail] = useState(userEmail || '');
   const [message, setMessage] = useState('');

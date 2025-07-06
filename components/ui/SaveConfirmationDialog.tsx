@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Save, Clock, X, ArrowLeft } from 'lucide-react';
+import { useScrollLock } from '../../hooks/useScrollLock';
 
 interface SaveConfirmationDialogProps {
   isOpen: boolean;
@@ -20,6 +21,8 @@ export function SaveConfirmationDialog({
   hasUnsavedChanges,
   loading = false
 }: SaveConfirmationDialogProps) {
+  useScrollLock(isOpen);
+  
   const [isVisible, setIsVisible] = useState(false);
   const [animationClass, setAnimationClass] = useState('');
 

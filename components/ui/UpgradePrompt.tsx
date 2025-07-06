@@ -2,6 +2,7 @@ import React from 'react';
 import Link from 'next/link';
 import { Crown, Zap, FileText, Download } from 'lucide-react';
 import { trackUserAction } from '../../hooks/usePerformanceMonitoring';
+import { useScrollLock } from '../../hooks/useScrollLock';
 
 interface UpgradePromptProps {
   feature: 'reports' | 'export' | 'advanced';
@@ -48,6 +49,9 @@ const featureConfig = {
 export function UpgradePrompt({ feature, inline = false, onClose }: UpgradePromptProps) {
   const config = featureConfig[feature];
   const Icon = config.icon;
+  
+  // Lock scroll for modal mode only
+  useScrollLock(!inline);
 
   if (inline) {
     return (

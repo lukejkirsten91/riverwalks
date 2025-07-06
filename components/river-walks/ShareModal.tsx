@@ -3,6 +3,7 @@ import { X, Link, Copy, Trash2, Users, Plus, Check } from 'lucide-react';
 import { useCollaboration } from '../../hooks/useCollaboration';
 import type { CollaboratorAccess } from '../../lib/api/collaboration';
 import type { RiverWalk } from '../../types';
+import { useScrollLock } from '../../hooks/useScrollLock';
 
 interface ShareModalProps {
   riverWalk: RiverWalk;
@@ -11,6 +12,8 @@ interface ShareModalProps {
 }
 
 export function ShareModal({ riverWalk, isOpen, onClose }: ShareModalProps) {
+  useScrollLock(isOpen);
+  
   const {
     collaborators,
     isLoading,

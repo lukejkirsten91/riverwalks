@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { AlertTriangle, Copy, CheckCircle } from 'lucide-react';
+import { useScrollLock } from '../hooks/useScrollLock';
 
 export function StorageSetupHelper() {
   const [showHelper, setShowHelper] = useState(false);
+  useScrollLock(showHelper);
   const [copied, setCopied] = useState(false);
 
   const sqlScript = `-- Run this SQL in your Supabase SQL Editor to set up storage

@@ -15,6 +15,7 @@ import type {
   CreateSiteData,
   UpdateSiteData,
 } from '../../types';
+import { useScrollLock } from '../../hooks/useScrollLock';
 
 interface SiteManagementProps {
   riverWalk: RiverWalk;
@@ -22,6 +23,8 @@ interface SiteManagementProps {
 }
 
 export function SiteManagement({ riverWalk, onClose }: SiteManagementProps) {
+  useScrollLock(true); // Always lock scroll when site management is open
+  
   const {
     sites,
     loading: sitesLoading,

@@ -3,6 +3,7 @@ import { MapContainer, TileLayer, Marker, Popup, useMapEvents, useMap } from 're
 import { LatLng, Icon } from 'leaflet';
 import { MapPin, Navigation, Search, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
 import 'leaflet/dist/leaflet.css';
+import { useScrollLock } from '../../hooks/useScrollLock';
 
 // Fix for default markers in react-leaflet
 import L from 'leaflet';
@@ -106,6 +107,9 @@ export function MapLocationPicker({
   const [statusMessage, setStatusMessage] = useState('');
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [pendingLocation, setPendingLocation] = useState<{lat: number, lng: number, address?: string} | null>(null);
+
+  // Lock scroll when confirmation dialog is open
+  useScrollLock(showConfirmDialog);
 
   // Update position when props change
   useEffect(() => {

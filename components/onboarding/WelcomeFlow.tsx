@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { MapPin, BookOpen, BarChart3, Users, CheckCircle, ArrowRight, Crown } from 'lucide-react';
 import Link from 'next/link';
 import { trackUserAction } from '../../hooks/usePerformanceMonitoring';
+import { useScrollLock } from '../../hooks/useScrollLock';
 
 interface WelcomeFlowProps {
   onComplete: () => void;
@@ -17,6 +18,8 @@ interface Step {
 }
 
 export function WelcomeFlow({ onComplete, userEmail }: WelcomeFlowProps) {
+  useScrollLock(true); // Always lock scroll when welcome flow is open
+  
   const [currentStep, setCurrentStep] = useState(0);
 
   const steps: Step[] = [

@@ -26,6 +26,7 @@ import FeedbackForm from '../components/FeedbackForm';
 import type { RiverWalk, RiverWalkFormData, Site } from '../types';
 import { getSitesForRiverWalk } from '../lib/api/sites';
 import type { User } from '@supabase/supabase-js';
+import { useScrollLock } from '../hooks/useScrollLock';
 
 export default function RiverWalksPage() {
   const router = useRouter();
@@ -55,6 +56,8 @@ export default function RiverWalksPage() {
   const [manageCollaboratorsRiverWalk, setManageCollaboratorsRiverWalk] = useState<RiverWalk | null>(null);
   const [showUpgradePrompt, setShowUpgradePrompt] = useState<'reports' | 'export' | 'advanced' | null>(null);
   const [showFeedbackForm, setShowFeedbackForm] = useState(false);
+
+  // Scroll lock is handled by individual modal components
 
   const {
     riverWalks,
