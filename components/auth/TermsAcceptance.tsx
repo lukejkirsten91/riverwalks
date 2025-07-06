@@ -27,7 +27,7 @@ export function TermsAcceptance({ onAcceptance, loading = false, required = true
   };
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-4 sm:p-6 max-h-[85vh] overflow-y-auto">
+    <div className="bg-white rounded-lg border border-gray-200 p-4 sm:p-6">
       {/* Header */}
       <div className="flex items-center gap-3 mb-4 sm:mb-6">
         <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">

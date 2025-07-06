@@ -267,13 +267,15 @@ export const SiteInfoForm = forwardRef<SiteInfoFormRef, SiteInfoFormProps>(({
               </div>
               
               {showMap && (
-                <div className="border-2 border-primary/20 rounded-lg p-4 bg-white/50">
-                  <MapLocationPicker
-                    latitude={formData.latitude ? parseFloat(formData.latitude) : undefined}
-                    longitude={formData.longitude ? parseFloat(formData.longitude) : undefined}
-                    onLocationChange={handleMapLocationChange}
-                    height="400px"
-                  />
+                <div className="border border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm">
+                  <div className="p-2 sm:p-4">
+                    <MapLocationPicker
+                      latitude={formData.latitude ? parseFloat(formData.latitude) : undefined}
+                      longitude={formData.longitude ? parseFloat(formData.longitude) : undefined}
+                      onLocationChange={handleMapLocationChange}
+                      height="350px"
+                    />
+                  </div>
                 </div>
               )}
               

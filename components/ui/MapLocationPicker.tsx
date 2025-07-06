@@ -262,9 +262,9 @@ export function MapLocationPicker({
   };
 
   return (
-    <div className={`space-y-4 ${className}`}>
+    <div className={`space-y-3 sm:space-y-4 ${className}`}>
       {/* Controls */}
-      <div className="space-y-3">
+      <div className="space-y-2 sm:space-y-3">
         {/* Find Location Button */}
         <div className="flex flex-col sm:flex-row gap-3">
           <button
@@ -301,24 +301,24 @@ export function MapLocationPicker({
           <div className="flex gap-2">
             <input
               type="text"
-              placeholder="Search for address or postcode..."
+              placeholder="Search address or postcode..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyPress={handleSearchKeyPress}
-              className="input-modern flex-1"
+              className="input-modern flex-1 text-sm sm:text-base"
             />
             <button
               type="button"
               onClick={handleSearch}
               disabled={isSearching || !searchQuery.trim()}
-              className="btn-secondary flex items-center gap-2 touch-manipulation"
+              className="btn-secondary flex items-center gap-1 sm:gap-2 touch-manipulation px-3 sm:px-4 flex-shrink-0"
             >
               {isSearching ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
               ) : (
                 <Search className="w-4 h-4" />
               )}
-              Search
+              <span className="hidden xs:inline sm:inline">Search</span>
             </button>
           </div>
           
