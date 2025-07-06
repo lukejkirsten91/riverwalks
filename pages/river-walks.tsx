@@ -606,7 +606,7 @@ export default function RiverWalksPage() {
         {/* Site management modal */}
         {selectedRiverWalk && (
           <div 
-            className="fixed inset-0 bg-black bg-opacity-50 flex items-stretch sm:items-center justify-center sm:p-4 z-50"
+            className="fixed inset-0 bg-white sm:bg-black sm:bg-opacity-50 flex items-stretch sm:items-center justify-center sm:p-4 z-50"
             onClick={handleCloseSiteManagement}
           >
             <div 
