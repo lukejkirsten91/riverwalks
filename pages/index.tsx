@@ -97,6 +97,8 @@ export default function Home() {
     const { protocol, host } = window.location;
     const redirectUrl = `${protocol}//${host}/api/auth/callback`;
     
+    console.log('🚀 Starting OAuth with redirect URL:', redirectUrl);
+    
     await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
