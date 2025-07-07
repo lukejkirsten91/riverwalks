@@ -394,17 +394,6 @@ export function ShareModal({ riverWalk, isOpen, onClose }: ShareModalProps) {
           )}
         </div>
 
-        {/* Footer */}
-        <div className="px-6 py-4 bg-gradient-to-r from-blue-50 to-teal-50 border-t border-border">
-          <div className="flex justify-end">
-            <button
-              onClick={onClose}
-              className="btn-primary"
-            >
-              Done
-            </button>
-          </div>
-        </div>
       </div>
   );
 }
