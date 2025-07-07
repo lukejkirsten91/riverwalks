@@ -146,7 +146,7 @@
     width: 12px;
     height: 12px;
     left: 8%;
-    top: 100vh;
+    top: 0;
     opacity: 0.4;
     animation: moveBubblesUp 12s linear infinite, sideWays 3s ease-in-out infinite;
     animation-delay: 0s;
@@ -156,7 +156,7 @@
     width: 18px;
     height: 18px;
     left: 22%;
-    top: 100vh;
+    top: 0;
     opacity: 0.3;
     animation: moveBubblesUp 15s linear infinite, sideWays 4s ease-in-out infinite;
     animation-delay: 2s;
@@ -166,7 +166,7 @@
     width: 8px;
     height: 8px;
     left: 38%;
-    top: 100vh;
+    top: 0;
     opacity: 0.5;
     animation: moveBubblesUp 10s linear infinite, sideWays 2s ease-in-out infinite;
     animation-delay: 4s;
@@ -176,7 +176,7 @@
     width: 16px;
     height: 16px;
     left: 54%;
-    top: 100vh;
+    top: 0;
     opacity: 0.35;
     animation: moveBubblesUp 18s linear infinite, sideWays 5s ease-in-out infinite;
     animation-delay: 1s;
@@ -186,7 +186,7 @@
     width: 6px;
     height: 6px;
     left: 71%;
-    top: 100vh;
+    top: 0;
     opacity: 0.4;
     animation: moveBubblesUp 8s linear infinite, sideWays 1.5s ease-in-out infinite;
     animation-delay: 3s;
@@ -196,7 +196,7 @@
     width: 14px;
     height: 14px;
     left: 13%;
-    top: 100vh;
+    top: 0;
     opacity: 0.3;
     animation: moveBubblesUp 14s linear infinite, sideWays 3.5s ease-in-out infinite;
     animation-delay: 6s;
@@ -206,7 +206,7 @@
     width: 10px;
     height: 10px;
     left: 29%;
-    top: 100vh;
+    top: 0;
     opacity: 0.45;
     animation: moveBubblesUp 11s linear infinite, sideWays 2.5s ease-in-out infinite;
     animation-delay: 5s;
@@ -216,7 +216,7 @@
     width: 20px;
     height: 20px;
     left: 47%;
-    top: 100vh;
+    top: 0;
     opacity: 0.25;
     animation: moveBubblesUp 16s linear infinite, sideWays 4.5s ease-in-out infinite;
     animation-delay: 7s;
@@ -226,7 +226,7 @@
     width: 11px;
     height: 11px;
     left: 63%;
-    top: 100vh;
+    top: 0;
     opacity: 0.4;
     animation: moveBubblesUp 13s linear infinite, sideWays 3s ease-in-out infinite;
     animation-delay: 2.5s;
@@ -236,7 +236,7 @@
     width: 7px;
     height: 7px;
     left: 82%;
-    top: 100vh;
+    top: 0;
     opacity: 0.5;
     animation: moveBubblesUp 9s linear infinite, sideWays 2s ease-in-out infinite;
     animation-delay: 4.5s;
@@ -250,7 +250,7 @@
 
   @keyframes moveBubblesUp {
     0% {
-      transform: translateY(0px) translateX(0px);
+      transform: translateY(100vh) translateX(0px);
       opacity: 0;
     }
     5% {
@@ -260,7 +260,7 @@
       opacity: 1;
     }
     100% {
-      transform: translateY(-100vh) translateX(0px);
+      transform: translateY(-100px) translateX(0px);
       opacity: 0;
     }
   }
