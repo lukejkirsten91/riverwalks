@@ -116,6 +116,22 @@ export default function Home() {
 
   return (
     <div className="gradient-hero" style={{ minHeight: '100vh', overflow: 'visible' }}>
+      {/* Water Bubbles */}
+      {!user && (
+        <>
+          <div className="water-bubble bubble-1"></div>
+          <div className="water-bubble bubble-2"></div>
+          <div className="water-bubble bubble-3"></div>
+          <div className="water-bubble bubble-4"></div>
+          <div className="water-bubble bubble-5"></div>
+          <div className="water-bubble bubble-6"></div>
+          <div className="water-bubble bubble-7"></div>
+          <div className="water-bubble bubble-8"></div>
+          <div className="water-bubble bubble-9"></div>
+          <div className="water-bubble bubble-10"></div>
+        </>
+      )}
+      
       <div className="relative" style={{ overflow: 'visible' }}>
         {/* Top Header */}
         <header className="absolute top-0 left-0 right-0 z-50 p-4">
