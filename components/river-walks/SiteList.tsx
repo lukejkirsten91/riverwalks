@@ -95,7 +95,7 @@ export function SiteList({
           <div className="flex flex-col sm:flex-row sm:justify-between gap-4 mb-4">
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-3 mb-2">
-                {/* Site photo or camera emoji */}
+                {/* Site photo - only show when photo exists */}
                 {site.photo_url && site.photo_url.startsWith('http') ? (
                   <div className="relative">
                     <img
@@ -129,11 +129,7 @@ export function SiteList({
                   <div className="w-12 h-12 rounded-lg bg-yellow-100 border border-yellow-200 shadow-modern flex items-center justify-center" title={`Offline photo: ${site.photo_url}`}>
                     <span className="text-xs text-yellow-600">⏳</span>
                   </div>
-                ) : (
-                  <div className="w-12 h-12 rounded-lg bg-muted/50 border border-border shadow-modern flex items-center justify-center">
-                    <span className="text-xs text-muted-foreground">📷</span>
-                  </div>
-                )}
+                ) : null}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <InlineEdit

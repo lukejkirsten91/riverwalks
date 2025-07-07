@@ -288,11 +288,12 @@ const SubscriptionPage: React.FC = () => {
           {/* Annual Plan */}
           <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6 lg:p-8 border-2 border-gray-200 hover:border-blue-300 transition-colors">
             <div className="text-center mb-4 sm:mb-6">
-              <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">Annual Access</h3>
+              <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">One-Year Access</h3>
               <div className="text-3xl sm:text-4xl font-bold text-blue-600 mb-2">
                 {formatPrice(plans.yearly.price, discount)}
               </div>
               <p className="text-sm sm:text-base text-gray-600">Perfect for current GCSE students</p>
+              <p className="text-xs text-gray-500 mt-1">One-time payment • No recurring charges</p>
             </div>
             
             <ul className="space-y-2 sm:space-y-3 mb-6 sm:mb-8">
@@ -306,15 +307,15 @@ const SubscriptionPage: React.FC = () => {
               </li>
               <li className="flex items-center text-gray-700 text-sm sm:text-base">
                 <span className="w-5 h-5 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-sm mr-3 flex-shrink-0">✓</span>
-                Excel data export for analysis
-              </li>
-              <li className="flex items-center text-gray-700 text-sm sm:text-base">
-                <span className="w-5 h-5 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-sm mr-3 flex-shrink-0">✓</span>
                 Collaboration with classmates
               </li>
               <li className="flex items-center text-gray-700 text-sm sm:text-base">
                 <span className="w-5 h-5 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-sm mr-3 flex-shrink-0">✓</span>
-                12 months of access
+                12 months of full access
+              </li>
+              <li className="flex items-center text-gray-700 text-sm sm:text-base">
+                <span className="w-5 h-5 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-sm mr-3 flex-shrink-0">✓</span>
+                Keep all your data forever
               </li>
             </ul>
 
@@ -323,7 +324,7 @@ const SubscriptionPage: React.FC = () => {
               disabled={loading === 'yearly'}
               className="w-full py-3 px-6 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors min-h-[48px] touch-manipulation"
             >
-              {loading === 'yearly' ? 'Processing...' : 'Choose Annual Plan'}
+              {loading === 'yearly' ? 'Processing...' : 'Get One-Year Access'}
             </button>
           </div>
 
@@ -341,6 +342,7 @@ const SubscriptionPage: React.FC = () => {
                 {formatPrice(plans.lifetime.price, discount)}
               </div>
               <p className="text-sm sm:text-base text-gray-600">For students and future reference</p>
+              <p className="text-xs text-gray-500 mt-1">One-time payment • Never expires</p>
             </div>
             
             <ul className="space-y-2 sm:space-y-3 mb-6 sm:mb-8">

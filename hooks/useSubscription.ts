@@ -117,7 +117,7 @@ export function canAccessReports(subscription: SubscriptionStatus): boolean {
 }
 
 export function canExportData(subscription: SubscriptionStatus): boolean {
-  return subscription.isSubscribed;
+  return true; // Excel export is now free for all users
 }
 
 export function canAccessAdvancedFeatures(subscription: SubscriptionStatus): boolean {
