@@ -245,8 +245,12 @@ export function ShareModal({ riverWalk, isOpen, onClose }: ShareModalProps) {
                   </div>
                 ) : (
                   <div className="p-3 bg-orange-50 border border-orange-200 rounded-lg">
-                    <p className="font-medium text-orange-900 text-sm">🔗 Quick sharing</p>
-                    <p className="text-orange-700 text-sm mt-1">Anyone with the link can access (one-time use)</p>
+                    <p className="font-medium text-orange-900 text-sm">🔗 Public link sharing</p>
+                    <div className="text-orange-700 text-sm mt-2 space-y-1">
+                      <p>• <strong>One-time use only</strong> - link expires after first person uses it</p>
+                      <p>• Perfect for quick sharing with classmates</p>
+                      <p>• Expires after 7 days if unused</p>
+                    </div>
                   </div>
                 )}
               </div>
@@ -392,10 +396,7 @@ export function ShareModal({ riverWalk, isOpen, onClose }: ShareModalProps) {
 
         {/* Footer */}
         <div className="px-6 py-4 bg-gradient-to-r from-blue-50 to-teal-50 border-t border-border">
-          <div className="flex justify-between items-center">
-            <div className="text-sm text-blue-700">
-              <p className="font-medium">🔗 Share securely with classmates and teachers</p>
-            </div>
+          <div className="flex justify-end">
             <button
               onClick={onClose}
               className="btn-primary"
