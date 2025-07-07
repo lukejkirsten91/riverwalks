@@ -119,101 +119,126 @@
     overflow: hidden;
   }
 
+  /* Water Bubbles Container */
+  .bubbles-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    pointer-events: none;
+    z-index: 1;
+    overflow: hidden;
+  }
+
   /* Water Bubbles */
   .water-bubble {
     position: absolute;
     background: rgba(255, 255, 255, 0.6);
     border-radius: 50%;
     pointer-events: none;
+    will-change: transform;
+    backface-visibility: hidden;
+    transform: translateZ(0);
   }
 
   .bubble-1 {
-    width: 15px;
-    height: 15px;
-    left: 10%;
+    width: 12px;
+    height: 12px;
+    left: 8%;
+    bottom: 0;
     opacity: 0.4;
-    animation: moveBubblesUp 12s linear infinite, sideWays 3s ease-in-out infinite alternate;
+    animation: moveBubblesUp 12s linear infinite, sideWays 3s ease-in-out infinite;
     animation-delay: 0s;
   }
 
   .bubble-2 {
-    width: 25px;
-    height: 25px;
-    left: 25%;
+    width: 18px;
+    height: 18px;
+    left: 22%;
+    bottom: 0;
     opacity: 0.3;
-    animation: moveBubblesUp 15s linear infinite, sideWays 4s ease-in-out infinite alternate;
+    animation: moveBubblesUp 15s linear infinite, sideWays 4s ease-in-out infinite;
     animation-delay: 2s;
   }
 
   .bubble-3 {
-    width: 10px;
-    height: 10px;
-    left: 45%;
+    width: 8px;
+    height: 8px;
+    left: 38%;
+    bottom: 0;
     opacity: 0.5;
-    animation: moveBubblesUp 10s linear infinite, sideWays 2s ease-in-out infinite alternate;
+    animation: moveBubblesUp 10s linear infinite, sideWays 2s ease-in-out infinite;
     animation-delay: 4s;
   }
 
   .bubble-4 {
-    width: 20px;
-    height: 20px;
-    left: 65%;
+    width: 16px;
+    height: 16px;
+    left: 54%;
+    bottom: 0;
     opacity: 0.35;
-    animation: moveBubblesUp 18s linear infinite, sideWays 5s ease-in-out infinite alternate;
+    animation: moveBubblesUp 18s linear infinite, sideWays 5s ease-in-out infinite;
     animation-delay: 1s;
   }
 
   .bubble-5 {
-    width: 8px;
-    height: 8px;
-    left: 80%;
+    width: 6px;
+    height: 6px;
+    left: 71%;
+    bottom: 0;
     opacity: 0.4;
-    animation: moveBubblesUp 8s linear infinite, sideWays 1.5s ease-in-out infinite alternate;
+    animation: moveBubblesUp 8s linear infinite, sideWays 1.5s ease-in-out infinite;
     animation-delay: 3s;
   }
 
   .bubble-6 {
-    width: 18px;
-    height: 18px;
-    left: 15%;
+    width: 14px;
+    height: 14px;
+    left: 13%;
+    bottom: 0;
     opacity: 0.3;
-    animation: moveBubblesUp 14s linear infinite, sideWays 3.5s ease-in-out infinite alternate;
+    animation: moveBubblesUp 14s linear infinite, sideWays 3.5s ease-in-out infinite;
     animation-delay: 6s;
   }
 
   .bubble-7 {
-    width: 12px;
-    height: 12px;
-    left: 35%;
+    width: 10px;
+    height: 10px;
+    left: 29%;
+    bottom: 0;
     opacity: 0.45;
-    animation: moveBubblesUp 11s linear infinite, sideWays 2.5s ease-in-out infinite alternate;
+    animation: moveBubblesUp 11s linear infinite, sideWays 2.5s ease-in-out infinite;
     animation-delay: 5s;
   }
 
   .bubble-8 {
-    width: 22px;
-    height: 22px;
-    left: 55%;
+    width: 20px;
+    height: 20px;
+    left: 47%;
+    bottom: 0;
     opacity: 0.25;
-    animation: moveBubblesUp 16s linear infinite, sideWays 4.5s ease-in-out infinite alternate;
+    animation: moveBubblesUp 16s linear infinite, sideWays 4.5s ease-in-out infinite;
     animation-delay: 7s;
   }
 
   .bubble-9 {
-    width: 14px;
-    height: 14px;
-    left: 75%;
+    width: 11px;
+    height: 11px;
+    left: 63%;
+    bottom: 0;
     opacity: 0.4;
-    animation: moveBubblesUp 13s linear infinite, sideWays 3s ease-in-out infinite alternate;
+    animation: moveBubblesUp 13s linear infinite, sideWays 3s ease-in-out infinite;
     animation-delay: 2.5s;
   }
 
   .bubble-10 {
-    width: 9px;
-    height: 9px;
-    left: 90%;
+    width: 7px;
+    height: 7px;
+    left: 82%;
+    bottom: 0;
     opacity: 0.5;
-    animation: moveBubblesUp 9s linear infinite, sideWays 2s ease-in-out infinite alternate;
+    animation: moveBubblesUp 9s linear infinite, sideWays 2s ease-in-out infinite;
     animation-delay: 4.5s;
   }
 
@@ -225,27 +250,50 @@
 
   @keyframes moveBubblesUp {
     0% {
-      top: 100vh;
+      transform: translateY(100vh) translateX(0px);
       opacity: 0;
     }
-    10% {
+    5% {
       opacity: 1;
     }
-    90% {
+    95% {
       opacity: 1;
     }
     100% {
-      top: -100px;
+      transform: translateY(-150px) translateX(0px);
       opacity: 0;
     }
   }
 
   @keyframes sideWays {
     0% {
-      margin-left: 0px;
+      transform: translateX(0px);
+    }
+    50% {
+      transform: translateX(30px);
     }
     100% {
-      margin-left: 50px;
+      transform: translateX(0px);
+    }
+  }
+
+  /* Mobile optimizations */
+  @media (max-width: 768px) {
+    .water-bubble {
+      transform: translate3d(0, 0, 0);
+    }
+    
+    .bubbles-container {
+      will-change: transform;
+    }
+    
+    /* Reduce bubble count and optimize for mobile performance */
+    .bubble-6, .bubble-7, .bubble-8, .bubble-9, .bubble-10 {
+      display: none;
+    }
+    
+    .bubble-1, .bubble-2, .bubble-3, .bubble-4, .bubble-5 {
+      animation-duration: 8s, 2s;
     }
   }
 
