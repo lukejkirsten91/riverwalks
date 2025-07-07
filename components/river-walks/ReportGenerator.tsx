@@ -792,6 +792,18 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
                 </div>
               </div>
               <div className="flex gap-1 sm:gap-2">
+                {/* Excel Export - Always available for free */}
+                <button
+                  onClick={exportToExcel}
+                  disabled={isExporting}
+                  className="btn-primary flex items-center gap-1 sm:gap-2 disabled:opacity-50 text-xs sm:text-sm lg:text-base px-2 py-1 sm:px-3 sm:py-2 lg:px-4 lg:py-3 shrink-0"
+                >
+                  <FileSpreadsheet className="w-3 h-3 sm:w-4 sm:h-4" />
+                  <span className="hidden sm:inline">Export Excel</span>
+                  <span className="sm:hidden">Excel</span>
+                </button>
+                
+                {/* Visualise Report (PDF) - Premium only */}
                 {canAccessReports(subscription) ? (
                   <button
                     onClick={exportToPDF}
@@ -806,9 +818,9 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
                       </>
                     ) : (
                       <>
-                        <Download className="w-3 h-3 sm:w-4 sm:h-4" />
-                        <span className="hidden sm:inline">Export PDF</span>
-                        <span className="sm:hidden">PDF</span>
+                        <FileText className="w-3 h-3 sm:w-4 sm:h-4" />
+                        <span className="hidden sm:inline">Visualise Report</span>
+                        <span className="sm:hidden">Report</span>
                       </>
                     )}
                   </button>
@@ -818,32 +830,8 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
                     className="bg-gradient-to-r from-blue-500 to-teal-500 hover:from-blue-600 hover:to-teal-600 text-white flex items-center gap-1 sm:gap-2 text-xs sm:text-sm lg:text-base px-2 py-1 sm:px-3 sm:py-2 lg:px-4 lg:py-3 shrink-0 rounded-lg font-medium transition-all relative"
                   >
                     <Crown className="w-3 h-3 sm:w-4 sm:h-4" />
-                    <span className="hidden sm:inline">Export PDF</span>
-                    <span className="sm:hidden">PDF</span>
-                    <div className="absolute -top-1 -right-1 bg-orange-500 text-white text-xs px-1 py-0.5 rounded-full">
-                      Pro
-                    </div>
-                  </button>
-                )}
-                
-                {canExportData(subscription) ? (
-                  <button
-                    onClick={exportToExcel}
-                    disabled={isExporting}
-                    className="btn-primary flex items-center gap-1 sm:gap-2 disabled:opacity-50 text-xs sm:text-sm lg:text-base px-2 py-1 sm:px-3 sm:py-2 lg:px-4 lg:py-3 shrink-0"
-                  >
-                    <FileSpreadsheet className="w-3 h-3 sm:w-4 sm:h-4" />
-                    <span className="hidden sm:inline">Export Excel</span>
-                    <span className="sm:hidden">Excel</span>
-                  </button>
-                ) : (
-                  <button
-                    onClick={() => setShowUpgradePrompt('export')}
-                    className="bg-gradient-to-r from-blue-500 to-teal-500 hover:from-blue-600 hover:to-teal-600 text-white flex items-center gap-1 sm:gap-2 text-xs sm:text-sm lg:text-base px-2 py-1 sm:px-3 sm:py-2 lg:px-4 lg:py-3 shrink-0 rounded-lg font-medium transition-all relative"
-                  >
-                    <Crown className="w-3 h-3 sm:w-4 sm:h-4" />
-                    <span className="hidden sm:inline">Export Excel</span>
-                    <span className="sm:hidden">Excel</span>
+                    <span className="hidden sm:inline">Visualise Report</span>
+                    <span className="sm:hidden">Report</span>
                     <div className="absolute -top-1 -right-1 bg-orange-500 text-white text-xs px-1 py-0.5 rounded-full">
                       Pro
                     </div>
