@@ -125,9 +125,9 @@ export default function Home() {
               <span className="text-white font-semibold text-lg">Riverwalks</span>
             </div>
             
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1 sm:gap-3">
               {user ? (
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-1 sm:gap-3">
                   <div className="flex items-center gap-2 text-white/90 text-sm">
                     {user.user_metadata?.avatar_url && (
                       <img
@@ -136,25 +136,27 @@ export default function Home() {
                         className="w-6 h-6 rounded-full"
                       />
                     )}
-                    <span className="hidden sm:inline">{user.email}</span>
+                    <span className="hidden md:inline">{user.email}</span>
                   </div>
                   <button
                     onClick={() => window.location.href = '/river-walks'}
-                    className="bg-white/20 hover:bg-white/30 backdrop-blur-sm border border-white/30 text-white px-3 py-1.5 rounded-lg text-sm font-medium transition-colors"
+                    className="bg-white/20 hover:bg-white/30 backdrop-blur-sm border border-white/30 text-white px-2 py-1.5 sm:px-3 rounded-lg text-xs sm:text-sm font-medium transition-colors"
                   >
-                    Dashboard
+                    <span className="hidden sm:inline">Dashboard</span>
+                    <span className="sm:hidden">🏠</span>
                   </button>
                   <button
                     onClick={handleSignOut}
-                    className="bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/20 text-white/90 px-3 py-1.5 rounded-lg text-sm transition-colors"
+                    className="bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/20 text-white/90 px-2 py-1.5 sm:px-3 rounded-lg text-xs sm:text-sm transition-colors"
                   >
-                    Sign Out
+                    <span className="hidden sm:inline">Sign Out</span>
+                    <span className="sm:hidden">👋</span>
                   </button>
                 </div>
               ) : (
                 <button
                   onClick={handleSignIn}
-                  className="bg-white/20 hover:bg-white/30 backdrop-blur-sm border border-white/30 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+                  className="bg-white/20 hover:bg-white/30 backdrop-blur-sm border border-white/30 text-white px-2 py-1.5 sm:px-4 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors flex items-center gap-1 sm:gap-2"
                 >
                   <svg className="w-4 h-4" viewBox="0 0 24 24">
                     <path
@@ -174,7 +176,8 @@ export default function Home() {
                       d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
                     />
                   </svg>
-                  Sign In
+                  <span className="hidden sm:inline">Sign In</span>
+                  <span className="sm:hidden">🔑</span>
                 </button>
               )}
             </div>

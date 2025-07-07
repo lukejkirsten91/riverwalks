@@ -139,9 +139,9 @@ export function ShareModal({ riverWalk, isOpen, onClose }: ShareModalProps) {
           <div>
             <h2 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
               <Users className="w-5 h-5 text-blue-600" />
-              Share River Walk
+              Collaborate on River Walk
             </h2>
-            <p className="text-sm text-blue-700 mt-1 font-medium">{riverWalk.name}</p>
+            <p className="text-sm text-blue-700 mt-1 font-medium">Invite classmates to work together on "{riverWalk.name}"</p>
           </div>
           <button
             onClick={onClose}

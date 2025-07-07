@@ -814,7 +814,7 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
                       <>
                         <div className="animate-spin w-3 h-3 sm:w-4 sm:h-4 border-2 border-white border-t-transparent rounded-full"></div>
                         <span className="hidden sm:inline">Generating...</span>
-                        <span className="sm:hidden">Gen...</span>
+                        <span className="sm:hidden">Creating...</span>
                       </>
                     ) : (
                       <>
