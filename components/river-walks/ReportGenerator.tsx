@@ -1200,6 +1200,11 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
               width: 100% !important;
             }
           `}</style>
+          
+          {/* Conditional content based on subscription */}
+          {canAccessReports(subscription) ? (
+            /* FULL PREMIUM REPORT WITH VISUALIZATIONS */
+            <>
           {/* NEW SUMMARY PAGE */}
           <div data-summary-section className="mb-8">
             {/* Report header */}
@@ -2214,6 +2219,92 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
             <p>Generated on {new Date().toLocaleDateString()} using Riverwalks GCSE Geography Tool</p>
             <p className="mt-1">This report contains {sites.length} measurement sites with detailed cross-section analysis</p>
           </div>
+          </>
+          ) : (
+            /* SIMPLIFIED VIEW FOR FREE USERS - EXPORT ONLY */
+            <div className="max-w-4xl mx-auto">
+              {/* Header */}
+              <div className="text-center mb-8">
+                <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                  Data Export
+                </h1>
+                <h2 className="text-xl text-gray-700 mb-4">{riverWalk.name}</h2>
+                <div className="text-gray-600">
+                  <p>Study Date: {formatDate(riverWalk.date)}</p>
+                  <p>Location: {riverWalk.county ? `${riverWalk.county}, ` : ''}{riverWalk.country || 'UK'}</p>
+                </div>
+              </div>
+
+              {/* Data Summary Table */}
+              <div className="bg-gray-50 rounded-lg p-6 mb-8">
+                <h3 className="text-lg font-semibold mb-4">Data Summary</h3>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b">
+                        <th className="text-left py-2">Site</th>
+                        <th className="text-left py-2">Width (m)</th>
+                        <th className="text-left py-2">Avg Depth (m)</th>
+                        <th className="text-left py-2">Cross-Section (m²)</th>
+                        <th className="text-left py-2">Velocity (m/s)</th>
+                        <th className="text-left py-2">Discharge (m³/s)</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {sites.map(site => {
+                        const avgDepth = site.measurement_points && site.measurement_points.length > 0 
+                          ? (site.measurement_points.reduce((sum, p) => sum + p.depth, 0) / site.measurement_points.length).toFixed(2)
+                          : 'N/A';
+                        
+                        return (
+                          <tr key={site.id} className="border-b">
+                            <td className="py-2">{site.site_name}</td>
+                            <td className="py-2">{site.river_width}</td>
+                            <td className="py-2">{avgDepth}</td>
+                            <td className="py-2">{calculateCrossSectionalArea(site).toFixed(2)}</td>
+                            <td className="py-2">{site.velocity_data?.average_velocity?.toFixed(2) || 'N/A'}</td>
+                            <td className="py-2">{calculateDischarge(site).toFixed(2)}</td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Export Instructions */}
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-8">
+                <h3 className="text-lg font-semibold text-blue-900 mb-2">📊 Export Your Data</h3>
+                <p className="text-blue-800 mb-4">
+                  Click the "Export Excel" button above to download a comprehensive Excel spreadsheet containing:
+                </p>
+                <ul className="text-blue-800 space-y-1 mb-4">
+                  <li>• Summary of all sites and measurements</li>
+                  <li>• Detailed cross-sectional data for each site</li>
+                  <li>• Velocity measurements and calculations</li>
+                  <li>• Sediment analysis data</li>
+                  <li>• GPS coordinates and site information</li>
+                </ul>
+                <p className="text-sm text-blue-700">
+                  Perfect for analysis in Excel or importing into other software for your geography coursework.
+                </p>
+              </div>
+
+              {/* Upgrade Prompt */}
+              <div className="bg-gradient-to-r from-blue-50 to-teal-50 border-2 border-blue-200 rounded-lg p-6 text-center">
+                <h3 className="text-lg font-semibold text-blue-900 mb-2">🎯 Want More?</h3>
+                <p className="text-blue-800 mb-4">
+                  Upgrade to premium for professional report generation with interactive charts, maps, and PDF export.
+                </p>
+                <button
+                  onClick={() => setShowUpgradePrompt('reports')}
+                  className="bg-gradient-to-r from-blue-600 to-teal-600 hover:from-blue-700 hover:to-teal-700 text-white px-6 py-3 rounded-lg font-medium transition-all"
+                >
+                  View Premium Features
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

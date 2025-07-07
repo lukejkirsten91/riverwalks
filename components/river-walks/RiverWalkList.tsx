@@ -205,7 +205,7 @@ export function RiverWalkList({
               className="bg-green-50 hover:bg-green-100 text-green-700 px-3 py-2 sm:px-4 sm:py-3 rounded-lg font-medium transition-all duration-200 border border-green-200 shadow-modern hover:shadow-modern-lg touch-manipulation flex-1 sm:flex-none flex items-center justify-center text-sm sm:text-base"
             >
               <FileSpreadsheet className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
-              <span className="truncate">Export Data</span>
+              <span className="truncate">Export</span>
             </button>
             
             {/* Visualise Report - Premium only */}
