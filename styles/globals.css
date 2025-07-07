@@ -114,9 +114,7 @@
   }
   
   .gradient-hero {
-    background: linear-gradient(135deg, #E6F3FF 0%, #B3D9FF 15%, #80BFFF 30%, #4DA6FF 45%, #1A8CFF 60%, #0066CC 75%, #004C99 90%, #003366 100%);
-    background-size: 400% 400%;
-    animation: gradientShift 15s ease infinite;
+    background: linear-gradient(to bottom, #E6F3FF 0%, #B3D9FF 20%, #80BFFF 40%, #4DA6FF 60%, #1A8CFF 75%, #0066CC 85%, #004C99 95%, #001A33 100%);
     position: relative;
     overflow: hidden;
   }
@@ -129,16 +127,18 @@
     right: 0;
     bottom: 0;
     background-image: 
-      radial-gradient(circle at 20% 80%, rgba(255, 255, 255, 0.3) 2px, transparent 2px),
-      radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.25) 1.5px, transparent 1.5px),
-      radial-gradient(circle at 40% 40%, rgba(255, 255, 255, 0.2) 1px, transparent 1px),
-      radial-gradient(circle at 75% 60%, rgba(255, 255, 255, 0.3) 2.5px, transparent 2.5px),
-      radial-gradient(circle at 10% 30%, rgba(255, 255, 255, 0.15) 1px, transparent 1px),
-      radial-gradient(circle at 90% 70%, rgba(255, 255, 255, 0.2) 1.5px, transparent 1.5px),
-      radial-gradient(circle at 30% 90%, rgba(255, 255, 255, 0.25) 2px, transparent 2px),
-      radial-gradient(circle at 65% 15%, rgba(255, 255, 255, 0.2) 1px, transparent 1px);
-    background-size: 200px 200px, 300px 300px, 150px 150px, 250px 250px, 180px 180px, 220px 220px, 280px 280px, 160px 160px;
-    animation: floatingBubbles 25s ease-in-out infinite;
+      radial-gradient(circle at 15% 100%, rgba(255, 255, 255, 0.4) 3px, transparent 3px),
+      radial-gradient(circle at 35% 100%, rgba(255, 255, 255, 0.3) 2px, transparent 2px),
+      radial-gradient(circle at 55% 100%, rgba(255, 255, 255, 0.35) 2.5px, transparent 2.5px),
+      radial-gradient(circle at 75% 100%, rgba(255, 255, 255, 0.25) 1.5px, transparent 1.5px),
+      radial-gradient(circle at 85% 100%, rgba(255, 255, 255, 0.3) 2px, transparent 2px),
+      radial-gradient(circle at 25% 100%, rgba(255, 255, 255, 0.2) 1px, transparent 1px),
+      radial-gradient(circle at 65% 100%, rgba(255, 255, 255, 0.4) 3.5px, transparent 3.5px),
+      radial-gradient(circle at 45% 100%, rgba(255, 255, 255, 0.25) 1.5px, transparent 1.5px),
+      radial-gradient(circle at 5% 100%, rgba(255, 255, 255, 0.3) 2px, transparent 2px),
+      radial-gradient(circle at 95% 100%, rgba(255, 255, 255, 0.2) 1px, transparent 1px);
+    background-size: 120px 100vh, 180px 100vh, 220px 100vh, 160px 100vh, 200px 100vh, 140px 100vh, 250px 100vh, 170px 100vh, 130px 100vh, 190px 100vh;
+    animation: bubblesRising 15s linear infinite, bubblesRising2 18s linear infinite, bubblesRising3 22s linear infinite;
     pointer-events: none;
   }
 
@@ -148,22 +148,60 @@
     100% { background-position: 0% 50%; }
   }
 
-  @keyframes floatingBubbles {
-    0%, 100% {
-      transform: translateY(0px) rotate(0deg);
-      opacity: 0.7;
+  @keyframes bubblesRising {
+    0% {
+      transform: translateY(100vh);
+      opacity: 0;
     }
-    25% {
-      transform: translateY(-10px) rotate(90deg);
+    10% {
+      opacity: 1;
+    }
+    90% {
+      opacity: 1;
+    }
+    100% {
+      transform: translateY(-100px);
+      opacity: 0;
+    }
+  }
+
+  @keyframes bubblesRising2 {
+    0% {
+      transform: translateY(100vh) translateX(0px);
+      opacity: 0;
+    }
+    10% {
       opacity: 1;
     }
     50% {
-      transform: translateY(-5px) rotate(180deg);
-      opacity: 0.8;
+      transform: translateY(50vh) translateX(20px);
     }
-    75% {
-      transform: translateY(-15px) rotate(270deg);
-      opacity: 0.9;
+    90% {
+      opacity: 1;
+    }
+    100% {
+      transform: translateY(-100px) translateX(0px);
+      opacity: 0;
+    }
+  }
+
+  @keyframes bubblesRising3 {
+    0% {
+      transform: translateY(100vh) translateX(0px);
+      opacity: 0;
+    }
+    15% {
+      opacity: 1;
+    }
+    50% {
+      transform: translateY(50vh) translateX(-15px);
+    }
+    85% {
+      opacity: 1;
+    }
+    100% {
+      transform: translateY(-100px) translateX(10px);
+      opacity: 0;
     }
   }
 
