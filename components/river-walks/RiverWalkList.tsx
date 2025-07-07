@@ -1,4 +1,4 @@
-import { MapPin, Calendar, Globe, Trash2, Archive, RotateCcw, BarChart3, ChevronUp, ChevronDown, CheckCircle, Clock, Link, Users, User, Edit, Eye, Crown, Share } from 'lucide-react';
+import { MapPin, Calendar, Globe, Trash2, Archive, RotateCcw, BarChart3, ChevronUp, ChevronDown, CheckCircle, Clock, Link, Users, User, Edit, Eye, Crown, Share, FileSpreadsheet } from 'lucide-react';
 import { useState } from 'react';
 import { formatDate } from '../../lib/utils';
 import { InlineEdit } from '../ui/InlineEdit';
@@ -198,26 +198,27 @@ export function RiverWalkList({
         )}
         
         {!isArchived && (
-          canAccessReports(subscription) ? (
+          <>
+            {/* Export Data - Always available for all users */}
             <button
               onClick={() => onGenerateReport(riverWalk)}
-              className="bg-accent/10 hover:bg-accent/20 text-accent px-3 py-2 sm:px-4 sm:py-3 rounded-lg font-medium transition-all duration-200 border border-accent/20 shadow-modern hover:shadow-modern-lg touch-manipulation flex-1 sm:flex-none flex items-center justify-center text-sm sm:text-base"
+              className="bg-green-50 hover:bg-green-100 text-green-700 px-3 py-2 sm:px-4 sm:py-3 rounded-lg font-medium transition-all duration-200 border border-green-200 shadow-modern hover:shadow-modern-lg touch-manipulation flex-1 sm:flex-none flex items-center justify-center text-sm sm:text-base"
             >
-              <BarChart3 className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
-              <span className="truncate">Visualize Report</span>
+              <FileSpreadsheet className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
+              <span className="truncate">Export Data</span>
             </button>
-          ) : (
-            <button
-              onClick={() => setShowUpgradePrompt('reports')}
-              className="bg-gradient-to-r from-blue-50 to-teal-50 hover:from-blue-100 hover:to-teal-100 text-blue-700 px-3 py-2 sm:px-4 sm:py-3 rounded-lg font-medium transition-all duration-200 border-2 border-blue-200 shadow-modern hover:shadow-modern-lg touch-manipulation flex-1 sm:flex-none flex items-center justify-center text-sm sm:text-base relative"
-            >
-              <Crown className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
-              <span className="truncate">Generate Report</span>
-              <div className="absolute -top-1 -right-1 bg-blue-600 text-white text-xs px-1.5 py-0.5 rounded-full">
-                Pro
-              </div>
-            </button>
-          )
+            
+            {/* Visualise Report - Premium only */}
+            {canAccessReports(subscription) && (
+              <button
+                onClick={() => onGenerateReport(riverWalk)}
+                className="bg-accent/10 hover:bg-accent/20 text-accent px-3 py-2 sm:px-4 sm:py-3 rounded-lg font-medium transition-all duration-200 border border-accent/20 shadow-modern hover:shadow-modern-lg touch-manipulation flex-1 sm:flex-none flex items-center justify-center text-sm sm:text-base"
+              >
+                <BarChart3 className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
+                <span className="truncate">Visualise Report</span>
+              </button>
+            )}
+          </>
         )}
         
         {canShare && (
