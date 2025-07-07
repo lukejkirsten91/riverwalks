@@ -190,6 +190,7 @@ export function RiverWalkList({
         {canManageSites && (
           <button
             onClick={() => onManageSites(riverWalk)}
+            title="Create measurement locations along your river where you'll collect field data"
             className="btn-primary touch-manipulation flex-1 sm:flex-none text-sm sm:text-base px-3 py-2 sm:px-4 sm:py-3"
           >
             <MapPin className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
