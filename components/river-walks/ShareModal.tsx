@@ -133,29 +133,32 @@ export function ShareModal({ riverWalk, isOpen, onClose }: ShareModalProps) {
   };
 
   return (
-    <div className="bg-white w-full h-full sm:rounded-lg sm:shadow-modern-lg sm:max-w-2xl sm:w-full sm:max-h-[80vh] overflow-hidden">
+    <div className="bg-white w-full h-full sm:rounded-lg sm:shadow-modern-lg sm:max-w-2xl sm:w-full sm:max-h-[80vh] overflow-y-auto flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-border">
+        <div className="flex items-center justify-between p-6 border-b border-border bg-gradient-to-r from-blue-50 to-teal-50">
           <div>
-            <h2 className="text-xl font-semibold text-foreground">Share River Walk</h2>
-            <p className="text-sm text-muted-foreground mt-1">{riverWalk.name}</p>
+            <h2 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
+              <Users className="w-5 h-5 text-blue-600" />
+              Share River Walk
+            </h2>
+            <p className="text-sm text-blue-700 mt-1 font-medium">{riverWalk.name}</p>
           </div>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-muted rounded-lg transition-colors"
+            className="p-2 hover:bg-white/50 rounded-lg transition-colors text-gray-600 hover:text-gray-800"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Tabs */}
-        <div className="flex border-b border-border">
+        <div className="flex border-b border-border bg-gray-50">
           <button
             onClick={() => setActiveTab('share')}
-            className={`flex-1 py-3 px-6 text-sm font-medium transition-colors ${
+            className={`flex-1 py-4 px-6 text-sm font-medium transition-all ${
               activeTab === 'share'
-                ? 'text-primary border-b-2 border-primary'
-                : 'text-muted-foreground hover:text-foreground'
+                ? 'text-blue-700 border-b-2 border-blue-600 bg-white'
+                : 'text-gray-600 hover:text-gray-800 hover:bg-gray-100'
             }`}
           >
             <Link className="w-4 h-4 inline mr-2" />
@@ -163,10 +166,10 @@ export function ShareModal({ riverWalk, isOpen, onClose }: ShareModalProps) {
           </button>
           <button
             onClick={() => setActiveTab('manage')}
-            className={`flex-1 py-3 px-6 text-sm font-medium transition-colors ${
+            className={`flex-1 py-4 px-6 text-sm font-medium transition-all ${
               activeTab === 'manage'
-                ? 'text-primary border-b-2 border-primary'
-                : 'text-muted-foreground hover:text-foreground'
+                ? 'text-blue-700 border-b-2 border-blue-600 bg-white'
+                : 'text-gray-600 hover:text-gray-800 hover:bg-gray-100'
             }`}
           >
             <Users className="w-4 h-4 inline mr-2" />
@@ -175,7 +178,7 @@ export function ShareModal({ riverWalk, isOpen, onClose }: ShareModalProps) {
         </div>
 
         {/* Content */}
-        <div className="p-6">
+        <div className="p-6 flex-1 overflow-y-auto">
           {error && (
             <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
               {error}
@@ -185,75 +188,65 @@ export function ShareModal({ riverWalk, isOpen, onClose }: ShareModalProps) {
           {activeTab === 'share' && (
             <div className="space-y-6">
               {/* Role Selection */}
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-2">
-                  Permission Level
+              <div className="bg-white border border-gray-200 rounded-lg p-4">
+                <label className="block text-sm font-medium text-gray-900 mb-3">
+                  📋 Choose Permission Level
                 </label>
                 <div className="grid grid-cols-2 gap-3">
                   <button
                     onClick={() => setInviteRole('editor')}
-                    className={`p-3 rounded-lg border-2 text-left transition-colors ${
+                    className={`p-4 rounded-lg border-2 text-left transition-all hover:shadow-sm ${
                       inviteRole === 'editor'
-                        ? 'border-primary bg-primary/5'
-                        : 'border-border hover:border-primary/50'
+                        ? 'border-blue-500 bg-blue-50 shadow-sm'
+                        : 'border-gray-200 hover:border-blue-300'
                     }`}
                   >
-                    <div className="font-medium text-sm">Editor</div>
-                    <div className="text-xs text-muted-foreground">Can edit and view</div>
+                    <div className="font-medium text-sm text-gray-900">✏️ Editor</div>
+                    <div className="text-xs text-gray-600 mt-1">Can edit and view data</div>
                   </button>
                   <button
                     onClick={() => setInviteRole('viewer')}
-                    className={`p-3 rounded-lg border-2 text-left transition-colors ${
+                    className={`p-4 rounded-lg border-2 text-left transition-all hover:shadow-sm ${
                       inviteRole === 'viewer'
-                        ? 'border-primary bg-primary/5'
-                        : 'border-border hover:border-primary/50'
+                        ? 'border-blue-500 bg-blue-50 shadow-sm'
+                        : 'border-gray-200 hover:border-blue-300'
                     }`}
                   >
-                    <div className="font-medium text-sm">Viewer</div>
-                    <div className="text-xs text-muted-foreground">Can only view</div>
+                    <div className="font-medium text-sm text-gray-900">👁️ Viewer</div>
+                    <div className="text-xs text-gray-600 mt-1">Can only view data</div>
                   </button>
                 </div>
               </div>
 
               {/* Email Option */}
-              <div>
-                <label className="flex items-center space-x-2 text-sm">
+              <div className="bg-white border border-gray-200 rounded-lg p-4">
+                <label className="flex items-center space-x-3 text-sm font-medium text-gray-900 mb-3">
                   <input
                     type="checkbox"
                     checked={useSpecificEmail}
                     onChange={(e) => setUseSpecificEmail(e.target.checked)}
-                    className="rounded border-border"
+                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                   />
-                  <span>Send to specific email address</span>
+                  <span>📧 Send to specific email address</span>
                 </label>
-                {useSpecificEmail && (
-                  <>
+                {useSpecificEmail ? (
+                  <div className="space-y-3">
                     <input
                       type="email"
                       value={specificEmail}
                       onChange={(e) => setSpecificEmail(e.target.value)}
                       placeholder="Enter email address"
-                      className="mt-2 w-full p-2 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
-                    <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm">
-                      <p className="font-medium text-blue-900 mb-1">Email-specific invites:</p>
-                      <ul className="text-blue-800 space-y-1">
-                        <li>• Can only be used by the specified email address</li>
-                        <li>• More secure for controlled sharing</li>
-                        <li>• Still expires after 7 days</li>
-                      </ul>
+                    <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                      <p className="font-medium text-blue-900 text-sm">🔒 More secure sharing</p>
+                      <p className="text-blue-700 text-sm mt-1">Only the specified email can use this link</p>
                     </div>
-                  </>
-                )}
-                {!useSpecificEmail && (
-                  <div className="mt-2 p-3 bg-orange-50 border border-orange-200 rounded-lg text-sm">
-                    <p className="font-medium text-orange-900 mb-1">Public links ("Anyone with link"):</p>
-                    <ul className="text-orange-800 space-y-1">
-                      <li>• <strong>One-time use only</strong> - link becomes invalid after first use</li>
-                      <li>• Can be used by anyone who has the link</li>
-                      <li>• Expires after 7 days if unused</li>
-                      <li>• More convenient but less secure</li>
-                    </ul>
+                  </div>
+                ) : (
+                  <div className="p-3 bg-orange-50 border border-orange-200 rounded-lg">
+                    <p className="font-medium text-orange-900 text-sm">🔗 Quick sharing</p>
+                    <p className="text-orange-700 text-sm mt-1">Anyone with the link can access (one-time use)</p>
                   </div>
                 )}
               </div>
@@ -398,18 +391,16 @@ export function ShareModal({ riverWalk, isOpen, onClose }: ShareModalProps) {
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-4 bg-muted/50 border-t border-border">
-          <div className="flex justify-between items-start">
-            <div className="text-xs text-muted-foreground space-y-1">
-              <p>📅 All links expire after 7 days</p>
-              <p>🔐 Email-specific links are more secure</p>
-              <p>⚠️ Public links are one-time use only</p>
+        <div className="px-6 py-4 bg-gradient-to-r from-blue-50 to-teal-50 border-t border-border">
+          <div className="flex justify-between items-center">
+            <div className="text-sm text-blue-700">
+              <p className="font-medium">🔗 Share securely with classmates and teachers</p>
             </div>
             <button
               onClick={onClose}
-              className="btn-secondary"
+              className="btn-primary"
             >
-              Close
+              Done
             </button>
           </div>
         </div>

@@ -780,7 +780,7 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
       className="bg-white rounded-lg w-full max-w-[95vw] sm:max-w-5xl lg:max-w-6xl max-h-[95vh] sm:max-h-[90vh] overflow-y-auto m-2 sm:m-0"
     >
         {/* Header with controls */}
-        <div className="sticky top-0 bg-white border-b p-3 sm:p-4 lg:p-6 z-10 rounded-t-lg shadow-sm">
+        <div className="sticky top-0 bg-white border-b p-3 sm:p-4 lg:p-6 z-20 rounded-t-lg shadow-sm">
           <div className="flex items-start justify-between gap-2 sm:gap-4">
             {/* Left side: Report info and export buttons */}
             <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 lg:gap-4 min-w-0 flex-1">
@@ -1369,7 +1369,7 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
                         width="100%" 
                         height="400" 
                         viewBox={`0 0 ${mapWidth} ${mapHeight}`} 
-                        className="absolute inset-0 z-10 pointer-events-none"
+                        className="absolute inset-0 z-5 pointer-events-none"
                         style={{ background: 'transparent' }}
                       >
                         
