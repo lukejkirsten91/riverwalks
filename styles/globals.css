@@ -355,42 +355,6 @@
     animation-delay: 7s;
   }
 
-  /* Bubbles that start below viewport (now recurring) */
-  .bubble-below-1 {
-    width: 18px;
-    height: 18px;
-    left: 12%;
-    opacity: 0.4;
-    animation: moveBubblesBelowUp 60s linear infinite, sideWays 3s ease-in-out infinite;
-    animation-delay: 0s;
-  }
-
-  .bubble-below-2 {
-    width: 30px;
-    height: 30px;
-    left: 38%;
-    opacity: 0.2;
-    animation: moveBubblesBelowUp 75s linear infinite, sideWays 6s ease-in-out infinite;
-    animation-delay: 2s;
-  }
-
-  .bubble-below-3 {
-    width: 14px;
-    height: 14px;
-    left: 72%;
-    opacity: 0.35;
-    animation: moveBubblesBelowUp 65s linear infinite, sideWays 4s ease-in-out infinite;
-    animation-delay: 4s;
-  }
-
-  .bubble-below-4 {
-    width: 22px;
-    height: 22px;
-    left: 85%;
-    opacity: 0.3;
-    animation: moveBubblesBelowUp 70s linear infinite, sideWays 5s ease-in-out infinite;
-    animation-delay: 1s;
-  }
 
   /* More bubbles for constant stream effect */
   .bubble-24 {
@@ -546,6 +510,367 @@
     animation-delay: 21.2s;
   }
 
+  /* Double the bubbles - 40 more for even denser stream */
+  .bubble-41 {
+    width: 15px;
+    height: 15px;
+    left: 7%;
+    opacity: 0.32;
+    animation: moveBubblesUp 28s linear infinite, sideWays 3.1s ease-in-out infinite;
+    animation-delay: 22.5s;
+  }
+
+  .bubble-42 {
+    width: 9px;
+    height: 9px;
+    left: 21%;
+    opacity: 0.55;
+    animation: moveBubblesUp 18s linear infinite, sideWays 2.3s ease-in-out infinite;
+    animation-delay: 24.1s;
+  }
+
+  .bubble-43 {
+    width: 27px;
+    height: 27px;
+    left: 36%;
+    opacity: 0.22;
+    animation: moveBubblesUp 46s linear infinite, sideWays 5.9s ease-in-out infinite;
+    animation-delay: 1.8s;
+  }
+
+  .bubble-44 {
+    width: 12px;
+    height: 12px;
+    left: 51%;
+    opacity: 0.41;
+    animation: moveBubblesUp 26s linear infinite, sideWays 3.4s ease-in-out infinite;
+    animation-delay: 25.7s;
+  }
+
+  .bubble-45 {
+    width: 20px;
+    height: 20px;
+    left: 66%;
+    opacity: 0.29;
+    animation: moveBubblesUp 39s linear infinite, sideWays 4.9s ease-in-out infinite;
+    animation-delay: 3.2s;
+  }
+
+  .bubble-46 {
+    width: 8px;
+    height: 8px;
+    left: 81%;
+    opacity: 0.48;
+    animation: moveBubblesUp 20s linear infinite, sideWays 2.6s ease-in-out infinite;
+    animation-delay: 27.3s;
+  }
+
+  .bubble-47 {
+    width: 33px;
+    height: 33px;
+    left: 96%;
+    opacity: 0.16;
+    animation: moveBubblesUp 53s linear infinite, sideWays 7.2s ease-in-out infinite;
+    animation-delay: 4.7s;
+  }
+
+  .bubble-48 {
+    width: 11px;
+    height: 11px;
+    left: 13%;
+    opacity: 0.43;
+    animation: moveBubblesUp 24s linear infinite, sideWays 2.9s ease-in-out infinite;
+    animation-delay: 28.9s;
+  }
+
+  .bubble-49 {
+    width: 18px;
+    height: 18px;
+    left: 28%;
+    opacity: 0.34;
+    animation: moveBubblesUp 36s linear infinite, sideWays 4.6s ease-in-out infinite;
+    animation-delay: 30.5s;
+  }
+
+  .bubble-50 {
+    width: 6px;
+    height: 6px;
+    left: 43%;
+    opacity: 0.63;
+    animation: moveBubblesUp 16s linear infinite, sideWays 1.7s ease-in-out infinite;
+    animation-delay: 6.1s;
+  }
+
+  .bubble-51 {
+    width: 24px;
+    height: 24px;
+    left: 58%;
+    opacity: 0.26;
+    animation: moveBubblesUp 44s linear infinite, sideWays 5.6s ease-in-out infinite;
+    animation-delay: 32.1s;
+  }
+
+  .bubble-52 {
+    width: 13px;
+    height: 13px;
+    left: 73%;
+    opacity: 0.37;
+    animation: moveBubblesUp 30s linear infinite, sideWays 3.8s ease-in-out infinite;
+    animation-delay: 7.8s;
+  }
+
+  .bubble-53 {
+    width: 30px;
+    height: 30px;
+    left: 88%;
+    opacity: 0.19;
+    animation: moveBubblesUp 49s linear infinite, sideWays 6.4s ease-in-out infinite;
+    animation-delay: 33.7s;
+  }
+
+  .bubble-54 {
+    width: 10px;
+    height: 10px;
+    left: 4%;
+    opacity: 0.46;
+    animation: moveBubblesUp 22s linear infinite, sideWays 2.7s ease-in-out infinite;
+    animation-delay: 35.3s;
+  }
+
+  .bubble-55 {
+    width: 16px;
+    height: 16px;
+    left: 19%;
+    opacity: 0.31;
+    animation: moveBubblesUp 34s linear infinite, sideWays 4.3s ease-in-out infinite;
+    animation-delay: 9.4s;
+  }
+
+  .bubble-56 {
+    width: 22px;
+    height: 22px;
+    left: 34%;
+    opacity: 0.27;
+    animation: moveBubblesUp 42s linear infinite, sideWays 5.3s ease-in-out infinite;
+    animation-delay: 36.9s;
+  }
+
+  .bubble-57 {
+    width: 7px;
+    height: 7px;
+    left: 49%;
+    opacity: 0.58;
+    animation: moveBubblesUp 17s linear infinite, sideWays 1.9s ease-in-out infinite;
+    animation-delay: 11.1s;
+  }
+
+  .bubble-58 {
+    width: 28px;
+    height: 28px;
+    left: 64%;
+    opacity: 0.21;
+    animation: moveBubblesUp 47s linear infinite, sideWays 6.0s ease-in-out infinite;
+    animation-delay: 38.5s;
+  }
+
+  .bubble-59 {
+    width: 14px;
+    height: 14px;
+    left: 79%;
+    opacity: 0.39;
+    animation: moveBubblesUp 32s linear infinite, sideWays 4.0s ease-in-out infinite;
+    animation-delay: 12.7s;
+  }
+
+  .bubble-60 {
+    width: 26px;
+    height: 26px;
+    left: 94%;
+    opacity: 0.23;
+    animation: moveBubblesUp 45s linear infinite, sideWays 5.7s ease-in-out infinite;
+    animation-delay: 40.1s;
+  }
+
+  .bubble-61 {
+    width: 9px;
+    height: 9px;
+    left: 9%;
+    opacity: 0.51;
+    animation: moveBubblesUp 19s linear infinite, sideWays 2.2s ease-in-out infinite;
+    animation-delay: 41.7s;
+  }
+
+  .bubble-62 {
+    width: 17px;
+    height: 17px;
+    left: 24%;
+    opacity: 0.33;
+    animation: moveBubblesUp 35s linear infinite, sideWays 4.4s ease-in-out infinite;
+    animation-delay: 14.3s;
+  }
+
+  .bubble-63 {
+    width: 31px;
+    height: 31px;
+    left: 39%;
+    opacity: 0.17;
+    animation: moveBubblesUp 51s linear infinite, sideWays 6.7s ease-in-out infinite;
+    animation-delay: 43.3s;
+  }
+
+  .bubble-64 {
+    width: 12px;
+    height: 12px;
+    left: 54%;
+    opacity: 0.42;
+    animation: moveBubblesUp 25s linear infinite, sideWays 3.3s ease-in-out infinite;
+    animation-delay: 15.9s;
+  }
+
+  .bubble-65 {
+    width: 21px;
+    height: 21px;
+    left: 69%;
+    opacity: 0.28;
+    animation: moveBubblesUp 40s linear infinite, sideWays 5.1s ease-in-out infinite;
+    animation-delay: 44.9s;
+  }
+
+  .bubble-66 {
+    width: 8px;
+    height: 8px;
+    left: 84%;
+    opacity: 0.47;
+    animation: moveBubblesUp 21s linear infinite, sideWays 2.5s ease-in-out infinite;
+    animation-delay: 17.5s;
+  }
+
+  .bubble-67 {
+    width: 25px;
+    height: 25px;
+    left: 1%;
+    opacity: 0.25;
+    animation: moveBubblesUp 43s linear infinite, sideWays 5.4s ease-in-out infinite;
+    animation-delay: 46.5s;
+  }
+
+  .bubble-68 {
+    width: 11px;
+    height: 11px;
+    left: 16%;
+    opacity: 0.44;
+    animation: moveBubblesUp 23s linear infinite, sideWays 2.8s ease-in-out infinite;
+    animation-delay: 19.1s;
+  }
+
+  .bubble-69 {
+    width: 19px;
+    height: 19px;
+    left: 31%;
+    opacity: 0.30;
+    animation: moveBubblesUp 37s linear infinite, sideWays 4.7s ease-in-out infinite;
+    animation-delay: 48.1s;
+  }
+
+  .bubble-70 {
+    width: 14px;
+    height: 14px;
+    left: 46%;
+    opacity: 0.36;
+    animation: moveBubblesUp 31s linear infinite, sideWays 3.9s ease-in-out infinite;
+    animation-delay: 20.7s;
+  }
+
+  .bubble-71 {
+    width: 29px;
+    height: 29px;
+    left: 61%;
+    opacity: 0.20;
+    animation: moveBubblesUp 48s linear infinite, sideWays 6.2s ease-in-out infinite;
+    animation-delay: 49.7s;
+  }
+
+  .bubble-72 {
+    width: 10px;
+    height: 10px;
+    left: 76%;
+    opacity: 0.45;
+    animation: moveBubblesUp 27s linear infinite, sideWays 3.0s ease-in-out infinite;
+    animation-delay: 22.3s;
+  }
+
+  .bubble-73 {
+    width: 23px;
+    height: 23px;
+    left: 91%;
+    opacity: 0.24;
+    animation: moveBubblesUp 41s linear infinite, sideWays 5.2s ease-in-out infinite;
+    animation-delay: 51.3s;
+  }
+
+  .bubble-74 {
+    width: 7px;
+    height: 7px;
+    left: 6%;
+    opacity: 0.59;
+    animation: moveBubblesUp 18s linear infinite, sideWays 2.0s ease-in-out infinite;
+    animation-delay: 23.9s;
+  }
+
+  .bubble-75 {
+    width: 18px;
+    height: 18px;
+    left: 21%;
+    opacity: 0.35;
+    animation: moveBubblesUp 38s linear infinite, sideWays 4.8s ease-in-out infinite;
+    animation-delay: 52.9s;
+  }
+
+  .bubble-76 {
+    width: 32px;
+    height: 32px;
+    left: 36%;
+    opacity: 0.15;
+    animation: moveBubblesUp 54s linear infinite, sideWays 7.1s ease-in-out infinite;
+    animation-delay: 25.5s;
+  }
+
+  .bubble-77 {
+    width: 13px;
+    height: 13px;
+    left: 51%;
+    opacity: 0.40;
+    animation: moveBubblesUp 29s linear infinite, sideWays 3.6s ease-in-out infinite;
+    animation-delay: 54.5s;
+  }
+
+  .bubble-78 {
+    width: 20px;
+    height: 20px;
+    left: 66%;
+    opacity: 0.32;
+    animation: moveBubblesUp 36s linear infinite, sideWays 4.5s ease-in-out infinite;
+    animation-delay: 27.1s;
+  }
+
+  .bubble-79 {
+    width: 15px;
+    height: 15px;
+    left: 81%;
+    opacity: 0.38;
+    animation: moveBubblesUp 33s linear infinite, sideWays 4.2s ease-in-out infinite;
+    animation-delay: 56.1s;
+  }
+
+  .bubble-80 {
+    width: 24px;
+    height: 24px;
+    left: 96%;
+    opacity: 0.26;
+    animation: moveBubblesUp 44s linear infinite, sideWays 5.5s ease-in-out infinite;
+    animation-delay: 28.7s;
+  }
+
   @keyframes gradientShift {
     0% { background-position: 0% 50%; }
     50% { background-position: 100% 50%; }
@@ -569,22 +894,6 @@
     }
   }
 
-  @keyframes moveBubblesBelowUp {
-    0% {
-      bottom: -100vh;
-      opacity: 0;
-    }
-    5% {
-      opacity: 1;
-    }
-    95% {
-      opacity: 1;
-    }
-    100% {
-      bottom: 110%;
-      opacity: 0;
-    }
-  }
 
   @keyframes sideWays {
     0% {
@@ -618,11 +927,18 @@
     .bubble-6, .bubble-7, .bubble-8, .bubble-9, .bubble-10, 
     .bubble-11, .bubble-12, .bubble-13, .bubble-14, .bubble-15,
     .bubble-16, .bubble-17, .bubble-18, .bubble-19, .bubble-20,
-    .bubble-21, .bubble-22, .bubble-23, .bubble-below-3, .bubble-below-4,
-    .bubble-24, .bubble-25, .bubble-26, .bubble-27, .bubble-28,
-    .bubble-29, .bubble-30, .bubble-31, .bubble-32, .bubble-33,
-    .bubble-34, .bubble-35, .bubble-36, .bubble-37, .bubble-38,
-    .bubble-39, .bubble-40 {
+    .bubble-21, .bubble-22, .bubble-23, .bubble-24, .bubble-25,
+    .bubble-26, .bubble-27, .bubble-28, .bubble-29, .bubble-30,
+    .bubble-31, .bubble-32, .bubble-33, .bubble-34, .bubble-35,
+    .bubble-36, .bubble-37, .bubble-38, .bubble-39, .bubble-40,
+    .bubble-41, .bubble-42, .bubble-43, .bubble-44, .bubble-45,
+    .bubble-46, .bubble-47, .bubble-48, .bubble-49, .bubble-50,
+    .bubble-51, .bubble-52, .bubble-53, .bubble-54, .bubble-55,
+    .bubble-56, .bubble-57, .bubble-58, .bubble-59, .bubble-60,
+    .bubble-61, .bubble-62, .bubble-63, .bubble-64, .bubble-65,
+    .bubble-66, .bubble-67, .bubble-68, .bubble-69, .bubble-70,
+    .bubble-71, .bubble-72, .bubble-73, .bubble-74, .bubble-75,
+    .bubble-76, .bubble-77, .bubble-78, .bubble-79, .bubble-80 {
       display: none;
     }
     
