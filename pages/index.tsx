@@ -116,12 +116,131 @@ export default function Home() {
 
   return (
     <div className="gradient-hero" style={{ minHeight: '100vh', overflow: 'visible' }}>
-      {/* Water Bubbles - All 120 bubbles with proper delays */}
-      <div className="bubbles-container">
-        {Array.from({ length: 120 }, (_, i) => (
-          <div key={i + 1} className={`water-bubble bubble-${i + 1}`}></div>
-        ))}
-      </div>
+      {/* Water Bubbles - Absolute container within gradient hero */}
+      {!user && (
+        <div className="bubbles-container">
+          <div className="water-bubble bubble-1"></div>
+          <div className="water-bubble bubble-2"></div>
+          <div className="water-bubble bubble-3"></div>
+          <div className="water-bubble bubble-4"></div>
+          <div className="water-bubble bubble-5"></div>
+          <div className="water-bubble bubble-6"></div>
+          <div className="water-bubble bubble-7"></div>
+          <div className="water-bubble bubble-8"></div>
+          <div className="water-bubble bubble-9"></div>
+          <div className="water-bubble bubble-10"></div>
+          <div className="water-bubble bubble-11"></div>
+          <div className="water-bubble bubble-12"></div>
+          <div className="water-bubble bubble-13"></div>
+          <div className="water-bubble bubble-14"></div>
+          <div className="water-bubble bubble-15"></div>
+          <div className="water-bubble bubble-16"></div>
+          <div className="water-bubble bubble-17"></div>
+          <div className="water-bubble bubble-18"></div>
+          <div className="water-bubble bubble-19"></div>
+          <div className="water-bubble bubble-20"></div>
+          <div className="water-bubble bubble-21"></div>
+          <div className="water-bubble bubble-22"></div>
+          <div className="water-bubble bubble-23"></div>
+          <div className="water-bubble bubble-24"></div>
+          <div className="water-bubble bubble-25"></div>
+          <div className="water-bubble bubble-26"></div>
+          <div className="water-bubble bubble-27"></div>
+          <div className="water-bubble bubble-28"></div>
+          <div className="water-bubble bubble-29"></div>
+          <div className="water-bubble bubble-30"></div>
+          <div className="water-bubble bubble-31"></div>
+          <div className="water-bubble bubble-32"></div>
+          <div className="water-bubble bubble-33"></div>
+          <div className="water-bubble bubble-34"></div>
+          <div className="water-bubble bubble-35"></div>
+          <div className="water-bubble bubble-36"></div>
+          <div className="water-bubble bubble-37"></div>
+          <div className="water-bubble bubble-38"></div>
+          <div className="water-bubble bubble-39"></div>
+          <div className="water-bubble bubble-40"></div>
+          <div className="water-bubble bubble-41"></div>
+          <div className="water-bubble bubble-42"></div>
+          <div className="water-bubble bubble-43"></div>
+          <div className="water-bubble bubble-44"></div>
+          <div className="water-bubble bubble-45"></div>
+          <div className="water-bubble bubble-46"></div>
+          <div className="water-bubble bubble-47"></div>
+          <div className="water-bubble bubble-48"></div>
+          <div className="water-bubble bubble-49"></div>
+          <div className="water-bubble bubble-50"></div>
+          <div className="water-bubble bubble-51"></div>
+          <div className="water-bubble bubble-52"></div>
+          <div className="water-bubble bubble-53"></div>
+          <div className="water-bubble bubble-54"></div>
+          <div className="water-bubble bubble-55"></div>
+          <div className="water-bubble bubble-56"></div>
+          <div className="water-bubble bubble-57"></div>
+          <div className="water-bubble bubble-58"></div>
+          <div className="water-bubble bubble-59"></div>
+          <div className="water-bubble bubble-60"></div>
+          <div className="water-bubble bubble-61"></div>
+          <div className="water-bubble bubble-62"></div>
+          <div className="water-bubble bubble-63"></div>
+          <div className="water-bubble bubble-64"></div>
+          <div className="water-bubble bubble-65"></div>
+          <div className="water-bubble bubble-66"></div>
+          <div className="water-bubble bubble-67"></div>
+          <div className="water-bubble bubble-68"></div>
+          <div className="water-bubble bubble-69"></div>
+          <div className="water-bubble bubble-70"></div>
+          <div className="water-bubble bubble-71"></div>
+          <div className="water-bubble bubble-72"></div>
+          <div className="water-bubble bubble-73"></div>
+          <div className="water-bubble bubble-74"></div>
+          <div className="water-bubble bubble-75"></div>
+          <div className="water-bubble bubble-76"></div>
+          <div className="water-bubble bubble-77"></div>
+          <div className="water-bubble bubble-78"></div>
+          <div className="water-bubble bubble-79"></div>
+          <div className="water-bubble bubble-80"></div>
+          <div className="water-bubble bubble-81"></div>
+          <div className="water-bubble bubble-82"></div>
+          <div className="water-bubble bubble-83"></div>
+          <div className="water-bubble bubble-84"></div>
+          <div className="water-bubble bubble-85"></div>
+          <div className="water-bubble bubble-86"></div>
+          <div className="water-bubble bubble-87"></div>
+          <div className="water-bubble bubble-88"></div>
+          <div className="water-bubble bubble-89"></div>
+          <div className="water-bubble bubble-90"></div>
+          <div className="water-bubble bubble-91"></div>
+          <div className="water-bubble bubble-92"></div>
+          <div className="water-bubble bubble-93"></div>
+          <div className="water-bubble bubble-94"></div>
+          <div className="water-bubble bubble-95"></div>
+          <div className="water-bubble bubble-96"></div>
+          <div className="water-bubble bubble-97"></div>
+          <div className="water-bubble bubble-98"></div>
+          <div className="water-bubble bubble-99"></div>
+          <div className="water-bubble bubble-100"></div>
+          <div className="water-bubble bubble-101"></div>
+          <div className="water-bubble bubble-102"></div>
+          <div className="water-bubble bubble-103"></div>
+          <div className="water-bubble bubble-104"></div>
+          <div className="water-bubble bubble-105"></div>
+          <div className="water-bubble bubble-106"></div>
+          <div className="water-bubble bubble-107"></div>
+          <div className="water-bubble bubble-108"></div>
+          <div className="water-bubble bubble-109"></div>
+          <div className="water-bubble bubble-110"></div>
+          <div className="water-bubble bubble-111"></div>
+          <div className="water-bubble bubble-112"></div>
+          <div className="water-bubble bubble-113"></div>
+          <div className="water-bubble bubble-114"></div>
+          <div className="water-bubble bubble-115"></div>
+          <div className="water-bubble bubble-116"></div>
+          <div className="water-bubble bubble-117"></div>
+          <div className="water-bubble bubble-118"></div>
+          <div className="water-bubble bubble-119"></div>
+          <div className="water-bubble bubble-120"></div>
+        </div>
+      )}
       
       <div className="relative" style={{ overflow: 'visible' }}>
         {/* Top Header */}
