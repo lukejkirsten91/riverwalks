@@ -664,7 +664,7 @@ function createReportHTML(riverWalk: RiverWalk | null, sites: Site[] | null) {
     // Rank the size measurements
     const sizeRanks = measurements
       .map((m: any, i: number) => ({ value: m.sediment_size, index: i }))
-      .sort((a: any, b: any) => b.value - a.value)
+      .sort((a: any, b: any) => a.value - b.value)
       .map((item: any, rank: number) => ({ index: item.index, rank: rank + 1 }))
       .sort((a: any, b: any) => a.index - b.index)
       .map((item: any) => item.rank);
@@ -672,7 +672,7 @@ function createReportHTML(riverWalk: RiverWalk | null, sites: Site[] | null) {
     // Rank the roundness measurements
     const roundnessRanks = measurements
       .map((m: any, i: number) => ({ value: m.sediment_roundness, index: i }))
-      .sort((a: any, b: any) => b.value - a.value)
+      .sort((a: any, b: any) => a.value - b.value)
       .map((item: any, rank: number) => ({ index: item.index, rank: rank + 1 }))
       .sort((a: any, b: any) => a.index - b.index)
       .map((item: any) => item.rank);
