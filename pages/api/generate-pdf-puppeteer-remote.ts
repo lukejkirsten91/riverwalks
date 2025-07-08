@@ -1539,11 +1539,11 @@ function createReportHTML(riverWalk: RiverWalk | null, sites: Site[] | null) {
                     <h3 class="section-header sediment-header">Sediment Analysis</h3>
                     <div class="metric-grid">
                         <div class="metric-card">
-                            <div class="metric-value">${formatSignificantFigures(calculateAverageSedimentSize(site))}</div>
+                            <div class="metric-value">${formatSedimentSizeValue(site)}</div>
                             <div class="metric-label">Average Size (mm)</div>
                         </div>
                         <div class="metric-card">
-                            <div class="metric-value">${formatSignificantFigures(calculateAverageSedimentRoundness(site))}</div>
+                            <div class="metric-value">${formatSedimentRoundnessValue(site)}</div>
                             <div class="metric-label">Average Roundness</div>
                         </div>
                         <div class="metric-card">
