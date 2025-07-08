@@ -116,7 +116,7 @@ export default function Home() {
 
   return (
     <div className="gradient-hero" style={{ minHeight: '100vh', overflow: 'visible' }}>
-      {/* Water Bubbles - Fixed container that doesn't affect scrolling */}
+      {/* Water Bubbles - Absolute container within gradient hero */}
       {!user && (
         <div className="bubbles-container">
           <div className="water-bubble bubble-1"></div>
@@ -129,6 +129,11 @@ export default function Home() {
           <div className="water-bubble bubble-8"></div>
           <div className="water-bubble bubble-9"></div>
           <div className="water-bubble bubble-10"></div>
+          <div className="water-bubble bubble-11"></div>
+          <div className="water-bubble bubble-12"></div>
+          <div className="water-bubble bubble-13"></div>
+          <div className="water-bubble bubble-14"></div>
+          <div className="water-bubble bubble-15"></div>
         </div>
       )}
       
