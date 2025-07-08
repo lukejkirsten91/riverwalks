@@ -117,13 +117,11 @@ export default function Home() {
   return (
     <div className="gradient-hero" style={{ minHeight: '100vh', overflow: 'visible' }}>
       {/* Water Bubbles - All 120 bubbles with proper delays */}
-      {!user && (
-        <div className="bubbles-container">
-          {Array.from({ length: 120 }, (_, i) => (
-            <div key={i + 1} className={`water-bubble bubble-${i + 1}`}></div>
-          ))}
-        </div>
-      )}
+      <div className="bubbles-container">
+        {Array.from({ length: 120 }, (_, i) => (
+          <div key={i + 1} className={`water-bubble bubble-${i + 1}`}></div>
+        ))}
+      </div>
       
       <div className="relative" style={{ overflow: 'visible' }}>
         {/* Top Header */}
