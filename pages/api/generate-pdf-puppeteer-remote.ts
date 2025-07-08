@@ -644,19 +644,19 @@ function createReportHTML(riverWalk: RiverWalk | null, sites: Site[] | null) {
   };
 
   const calculateAverageSedimentSize = (site: any) => {
-    if (!site.sedimentation_data || !site.sedimentation_data.measurements || site.sedimentation_data.measurements.length === 0) return 0;
+    if (!site.sedimentation_data || !site.sedimentation_data.measurements || site.sedimentation_data.measurements.length === 0) return null;
     const totalSize = site.sedimentation_data.measurements.reduce((sum: number, measurement: any) => sum + measurement.sediment_size, 0);
     return totalSize / site.sedimentation_data.measurements.length;
   };
 
   const calculateAverageSedimentRoundness = (site: any) => {
-    if (!site.sedimentation_data || !site.sedimentation_data.measurements || site.sedimentation_data.measurements.length === 0) return 0;
+    if (!site.sedimentation_data || !site.sedimentation_data.measurements || site.sedimentation_data.measurements.length === 0) return null;
     const totalRoundness = site.sedimentation_data.measurements.reduce((sum: number, measurement: any) => sum + measurement.sediment_roundness, 0);
     return totalRoundness / site.sedimentation_data.measurements.length;
   };
 
   const calculateSpearmansRank = (site: any) => {
-    if (!site.sedimentation_data || !site.sedimentation_data.measurements || site.sedimentation_data.measurements.length < 3) return 0;
+    if (!site.sedimentation_data || !site.sedimentation_data.measurements || site.sedimentation_data.measurements.length < 3) return null;
     
     const measurements = site.sedimentation_data.measurements;
     const n = measurements.length;
@@ -686,6 +686,37 @@ function createReportHTML(riverWalk: RiverWalk | null, sites: Site[] | null) {
     
     const rs = 1 - (6 * sumD2) / (n * (n * n - 1));
     return rs;
+  };
+
+  // Helper functions to format values with N/A handling
+  const formatSpearmanValue = (site: any) => {
+    const value = calculateSpearmansRank(site);
+    return value !== null ? value.toFixed(3) : 'N/A';
+  };
+
+  const formatSedimentSizeValue = (site: any) => {
+    const value = calculateAverageSedimentSize(site);
+    return value !== null ? value.toFixed(2) : 'N/A';
+  };
+
+  const formatSedimentRoundnessValue = (site: any) => {
+    const value = calculateAverageSedimentRoundness(site);
+    return value !== null ? value.toFixed(2) : 'N/A';
+  };
+
+  const calculateValidSpearmanAverage = (sites: any[]) => {
+    const validValues = sites.map(site => calculateSpearmansRank(site)).filter(value => value !== null);
+    return validValues.length > 0 ? (validValues.reduce((sum, value) => sum + value, 0) / validValues.length).toFixed(3) : 'N/A';
+  };
+
+  const calculateValidSedimentSizeAverage = (sites: any[]) => {
+    const validValues = sites.map(site => calculateAverageSedimentSize(site)).filter(value => value !== null);
+    return validValues.length > 0 ? (validValues.reduce((sum, value) => sum + value, 0) / validValues.length).toFixed(2) : 'N/A';
+  };
+
+  const calculateValidSedimentRoundnessAverage = (sites: any[]) => {
+    const validValues = sites.map(site => calculateAverageSedimentRoundness(site)).filter(value => value !== null);
+    return validValues.length > 0 ? (validValues.reduce((sum, value) => sum + value, 0) / validValues.length).toFixed(2) : 'N/A';
   };
 
   const getSedimentRoundnessDescription = (roundness: number) => {
@@ -1323,18 +1354,18 @@ function createReportHTML(riverWalk: RiverWalk | null, sites: Site[] | null) {
                 <tbody>
                     <tr>
                         <td><strong>Sediment Size Average (mm)</strong></td>
-                        ${sitesData.map(site => `<td>${calculateAverageSedimentSize(site).toFixed(2)}</td>`).join('')}
-                        <td class="summary-col"><strong>${sitesData.length > 0 ? (sitesData.reduce((sum, site) => sum + calculateAverageSedimentSize(site), 0) / sitesData.length).toFixed(2) : '0.00'}</strong></td>
+                        ${sitesData.map(site => `<td>${formatSedimentSizeValue(site)}</td>`).join('')}
+                        <td class="summary-col"><strong>${calculateValidSedimentSizeAverage(sitesData)}</strong></td>
                     </tr>
                     <tr>
                         <td><strong>Sediment Shape Average</strong></td>
-                        ${sitesData.map(site => `<td>${calculateAverageSedimentRoundness(site).toFixed(2)}</td>`).join('')}
-                        <td class="summary-col"><strong>${sitesData.length > 0 ? (sitesData.reduce((sum, site) => sum + calculateAverageSedimentRoundness(site), 0) / sitesData.length).toFixed(2) : '0.00'}</strong></td>
+                        ${sitesData.map(site => `<td>${formatSedimentRoundnessValue(site)}</td>`).join('')}
+                        <td class="summary-col"><strong>${calculateValidSedimentRoundnessAverage(sitesData)}</strong></td>
                     </tr>
                     <tr>
                         <td><strong>Spearman's Rank Correlation</strong></td>
-                        ${sitesData.map(site => `<td>${calculateSpearmansRank(site).toFixed(3)}</td>`).join('')}
-                        <td class="summary-col"><strong>${sitesData.length > 0 ? (sitesData.reduce((sum, site) => sum + calculateSpearmansRank(site), 0) / sitesData.length).toFixed(3) : '0.000'}</strong></td>
+                        ${sitesData.map(site => `<td>${formatSpearmanValue(site)}</td>`).join('')}
+                        <td class="summary-col"><strong>${calculateValidSpearmanAverage(sitesData)}</strong></td>
                     </tr>
                 </tbody>
             </table>
@@ -1516,7 +1547,7 @@ function createReportHTML(riverWalk: RiverWalk | null, sites: Site[] | null) {
                             <div class="metric-label">Average Roundness</div>
                         </div>
                         <div class="metric-card">
-                            <div class="metric-value">${formatSignificantFigures(calculateSpearmansRank(site), 4)}</div>
+                            <div class="metric-value">${formatSpearmanValue(site)}</div>
                             <div class="metric-label">Spearman's Rank</div>
                         </div>
                         <div class="metric-card">
@@ -1552,11 +1583,15 @@ function createReportHTML(riverWalk: RiverWalk | null, sites: Site[] | null) {
                         
                         <div style="margin-top: 20px; padding: 15px; background: #fef3c7; border-radius: 6px; border-left: 4px solid #f59e0b;">
                             <strong>Correlation Interpretation:</strong>
-                            ${calculateSpearmansRank(site) > 0.7 ? 'Strong positive correlation between size and roundness' :
-                              calculateSpearmansRank(site) > 0.3 ? 'Moderate positive correlation between size and roundness' :
-                              calculateSpearmansRank(site) > -0.3 ? 'Weak or no correlation between size and roundness' :
-                              calculateSpearmansRank(site) > -0.7 ? 'Moderate negative correlation between size and roundness' :
-                              'Strong negative correlation between size and roundness'}
+                            ${(() => {
+                              const correlation = calculateSpearmansRank(site);
+                              if (correlation === null) return 'Insufficient data (minimum 3 measurements required)';
+                              if (correlation > 0.7) return 'Strong positive correlation between size and roundness';
+                              if (correlation > 0.3) return 'Moderate positive correlation between size and roundness';
+                              if (correlation > -0.3) return 'Weak or no correlation between size and roundness';
+                              if (correlation > -0.7) return 'Moderate negative correlation between size and roundness';
+                              return 'Strong negative correlation between size and roundness';
+                            })()}
                         </div>
                     ` : '<p style="text-align: center; color: #6b7280; font-style: italic; padding: 20px;">No sediment measurements recorded for this site</p>'}
                 </section>
