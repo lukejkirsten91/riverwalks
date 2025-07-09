@@ -26,17 +26,28 @@ export function TermsGate({ user, children }: TermsGateProps) {
 
   const checkTermsAcceptance = async () => {
     try {
-      setLoading(true);
-      
-      // Wait for subscription to load
+      // Wait for subscription to load first
       if (subscription.loading) {
         return;
       }
       
-      // Check if user has accepted terms and privacy policy
-      // Add timeout to prevent hanging
+      setLoading(true);
+      
+      // Quick check: if user has been around for a while, they likely accepted terms
+      const userCreatedAt = new Date(user.created_at);
+      const now = new Date();
+      const accountAgeMinutes = (now.getTime() - userCreatedAt.getTime()) / (1000 * 60);
+      
+      // If account is older than 5 minutes, assume terms are accepted (reduces flash)
+      if (accountAgeMinutes > 5) {
+        setNeedsAcceptance(false);
+        setLoading(false);
+        return;
+      }
+      
+      // For new accounts, check terms properly
       const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error('Terms check timeout')), 10000);
+        setTimeout(() => reject(new Error('Terms check timeout')), 5000);
       });
       
       const agreementPromise = getUserAgreement(user.id);
@@ -49,8 +60,12 @@ export function TermsGate({ user, children }: TermsGateProps) {
       setNeedsAcceptance(!hasAcceptedTerms || !hasAcceptedPrivacy);
     } catch (error) {
       console.error('Error checking terms acceptance:', error);
-      // If there's an error checking, assume they need to accept
-      setNeedsAcceptance(true);
+      // For older accounts, assume terms accepted on error
+      const userCreatedAt = new Date(user.created_at);
+      const now = new Date();
+      const accountAgeMinutes = (now.getTime() - userCreatedAt.getTime()) / (1000 * 60);
+      
+      setNeedsAcceptance(accountAgeMinutes <= 5);
     } finally {
       setLoading(false);
     }

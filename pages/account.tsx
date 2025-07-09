@@ -170,20 +170,24 @@ export default function AccountPage() {
     <div className="min-h-screen gradient-muted">
       <div className="p-4 sm:p-6 lg:p-8 max-w-4xl mx-auto">
         {/* Header */}
-        <div className="glass rounded-2xl p-6 mb-8 border border-white/20">
-          <div className="flex items-center gap-4 mb-6">
-            <div className="w-16 h-16 rounded-xl gradient-primary flex items-center justify-center">
-              <User className="w-8 h-8 text-white" />
+        <div className="glass rounded-2xl p-4 sm:p-6 mb-6 sm:mb-8 border border-white/20">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-4 sm:mb-6">
+            <div className="flex items-center gap-4 flex-1">
+              <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-xl gradient-primary flex items-center justify-center">
+                <User className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h1 className="text-xl sm:text-2xl font-bold text-foreground">Account Settings</h1>
+                <p className="text-sm sm:text-base text-muted-foreground">Manage your account and privacy settings</p>
+              </div>
             </div>
-            <div className="flex-1">
-              <h1 className="text-2xl font-bold text-foreground">Account Settings</h1>
-              <p className="text-muted-foreground">Manage your account and privacy settings</p>
-            </div>
-            <div className="flex items-center gap-3">
-              <SubscriptionBadge subscription={subscription} userEmail={user?.email} />
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
+              <div className="order-2 sm:order-1">
+                <SubscriptionBadge subscription={subscription} userEmail={user?.email} />
+              </div>
               <button
                 onClick={() => router.push('/river-walks')}
-                className="btn-secondary"
+                className="btn-secondary order-1 sm:order-2"
               >
                 Back to River Walks
               </button>
@@ -192,67 +196,67 @@ export default function AccountPage() {
         </div>
 
         {/* Account Information */}
-        <div className="glass rounded-2xl p-6 mb-8 border border-white/20">
-          <h2 className="text-xl font-semibold text-foreground mb-4 flex items-center gap-2">
-            <Mail className="w-5 h-5" />
+        <div className="glass rounded-2xl p-4 sm:p-6 mb-6 sm:mb-8 border border-white/20">
+          <h2 className="text-lg sm:text-xl font-semibold text-foreground mb-4 flex items-center gap-2">
+            <Mail className="w-4 h-4 sm:w-5 sm:h-5" />
             Account Information
           </h2>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+            <div className="space-y-3 sm:space-y-4">
               <div>
-                <label className="text-sm font-medium text-muted-foreground">Email Address</label>
-                <p className="text-foreground font-medium">{user?.email}</p>
+                <label className="text-xs sm:text-sm font-medium text-muted-foreground">Email Address</label>
+                <p className="text-sm sm:text-base text-foreground font-medium break-all">{user?.email}</p>
               </div>
               
               <div>
-                <label className="text-sm font-medium text-muted-foreground">Member Since</label>
-                <p className="text-foreground font-medium">{accountStats.memberSince}</p>
+                <label className="text-xs sm:text-sm font-medium text-muted-foreground">Member Since</label>
+                <p className="text-sm sm:text-base text-foreground font-medium">{accountStats.memberSince}</p>
               </div>
 
               <div>
-                <label className="text-sm font-medium text-muted-foreground">Authentication Provider</label>
-                <p className="text-foreground font-medium capitalize">
+                <label className="text-xs sm:text-sm font-medium text-muted-foreground">Authentication Provider</label>
+                <p className="text-sm sm:text-base text-foreground font-medium capitalize">
                   {user?.app_metadata?.provider || 'Google'}
                 </p>
               </div>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
               <div>
-                <label className="text-sm font-medium text-muted-foreground">River Walks Created</label>
-                <p className="text-foreground font-medium">{accountStats.riverWalks}</p>
+                <label className="text-xs sm:text-sm font-medium text-muted-foreground">River Walks Created</label>
+                <p className="text-sm sm:text-base text-foreground font-medium">{accountStats.riverWalks}</p>
               </div>
               
               <div>
-                <label className="text-sm font-medium text-muted-foreground">Total Sites Documented</label>
-                <p className="text-foreground font-medium">{accountStats.totalSites}</p>
+                <label className="text-xs sm:text-sm font-medium text-muted-foreground">Total Sites Documented</label>
+                <p className="text-sm sm:text-base text-foreground font-medium">{accountStats.totalSites}</p>
               </div>
 
               <div>
-                <label className="text-sm font-medium text-muted-foreground">Collaborated Projects</label>
-                <p className="text-foreground font-medium">{accountStats.collaboratedWalks}</p>
+                <label className="text-xs sm:text-sm font-medium text-muted-foreground">Collaborated Projects</label>
+                <p className="text-sm sm:text-base text-foreground font-medium">{accountStats.collaboratedWalks}</p>
               </div>
             </div>
           </div>
         </div>
 
         {/* Data Management */}
-        <div className="glass rounded-2xl p-6 mb-8 border border-white/20">
-          <h2 className="text-xl font-semibold text-foreground mb-4 flex items-center gap-2">
-            <Download className="w-5 h-5" />
+        <div className="glass rounded-2xl p-4 sm:p-6 mb-6 sm:mb-8 border border-white/20">
+          <h2 className="text-lg sm:text-xl font-semibold text-foreground mb-4 flex items-center gap-2">
+            <Download className="w-4 h-4 sm:w-5 sm:h-5" />
             Data Management
           </h2>
           
           <div className="space-y-4">
-            <div className="flex items-center justify-between p-4 bg-blue-50 border border-blue-200 rounded-lg">
-              <div>
-                <h3 className="font-medium text-blue-900">Export Your Data</h3>
-                <p className="text-sm text-blue-700">Download all your river walk data in JSON format</p>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-blue-50 border border-blue-200 rounded-lg gap-3">
+              <div className="flex-1">
+                <h3 className="font-medium text-blue-900 text-sm sm:text-base">Export Your Data</h3>
+                <p className="text-xs sm:text-sm text-blue-700">Download all your river walk data in JSON format</p>
               </div>
               <button
                 onClick={handleExportData}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2"
+                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 text-sm w-full sm:w-auto justify-center"
               >
                 <Download className="w-4 h-4" />
                 Export Data
@@ -262,21 +266,21 @@ export default function AccountPage() {
         </div>
 
         {/* Account Actions */}
-        <div className="glass rounded-2xl p-6 mb-8 border border-white/20">
-          <h2 className="text-xl font-semibold text-foreground mb-4 flex items-center gap-2">
-            <Shield className="w-5 h-5" />
+        <div className="glass rounded-2xl p-4 sm:p-6 mb-6 sm:mb-8 border border-white/20">
+          <h2 className="text-lg sm:text-xl font-semibold text-foreground mb-4 flex items-center gap-2">
+            <Shield className="w-4 h-4 sm:w-5 sm:h-5" />
             Account Actions
           </h2>
           
           <div className="space-y-4">
-            <div className="flex items-center justify-between p-4 bg-gray-50 border border-gray-200 rounded-lg">
-              <div>
-                <h3 className="font-medium text-gray-900">Sign Out</h3>
-                <p className="text-sm text-gray-600">Sign out of your account on this device</p>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-gray-50 border border-gray-200 rounded-lg gap-3">
+              <div className="flex-1">
+                <h3 className="font-medium text-gray-900 text-sm sm:text-base">Sign Out</h3>
+                <p className="text-xs sm:text-sm text-gray-600">Sign out of your account on this device</p>
               </div>
               <button
                 onClick={handleSignOut}
-                className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+                className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg font-medium transition-colors text-sm w-full sm:w-auto"
               >
                 Sign Out
               </button>
@@ -285,33 +289,33 @@ export default function AccountPage() {
         </div>
 
         {/* Danger Zone */}
-        <div className="glass rounded-2xl p-6 border border-red-200 bg-red-50/50">
-          <h2 className="text-xl font-semibold text-red-900 mb-4 flex items-center gap-2">
-            <AlertTriangle className="w-5 h-5" />
+        <div className="glass rounded-2xl p-4 sm:p-6 border border-red-200 bg-red-50/50">
+          <h2 className="text-lg sm:text-xl font-semibold text-red-900 mb-4 flex items-center gap-2">
+            <AlertTriangle className="w-4 h-4 sm:w-5 sm:h-5" />
             Danger Zone
           </h2>
           
           <div className="space-y-4">
             <div className="p-4 bg-red-100 border border-red-200 rounded-lg">
-              <h3 className="font-medium text-red-900 mb-2">Delete Account Permanently</h3>
-              <p className="text-sm text-red-700 mb-4">
+              <h3 className="font-medium text-red-900 mb-2 text-sm sm:text-base">Delete Account Permanently</h3>
+              <p className="text-xs sm:text-sm text-red-700 mb-4">
                 This action will permanently delete your account and all associated data, including:
               </p>
-              <ul className="text-sm text-red-700 mb-4 list-disc list-inside space-y-1">
+              <ul className="text-xs sm:text-sm text-red-700 mb-4 list-disc list-inside space-y-1">
                 <li>All river walks you own ({accountStats.riverWalks} river walks)</li>
                 <li>All site data and measurements ({accountStats.totalSites} sites)</li>
                 <li>All uploaded photos and files</li>
                 <li>Your subscription and payment history</li>
                 <li>All collaboration invites you've sent</li>
               </ul>
-              <p className="text-sm text-red-700 mb-4 font-medium">
+              <p className="text-xs sm:text-sm text-red-700 mb-4 font-medium">
                 ⚠️ This action cannot be undone. Projects you've collaborated on (but don't own) will remain intact.
               </p>
               
               {!showDeleteConfirmation ? (
                 <button
                   onClick={() => setShowDeleteConfirmation(true)}
-                  className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2"
+                  className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 text-sm w-full sm:w-auto justify-center"
                 >
                   <Trash2 className="w-4 h-4" />
                   Delete My Account
@@ -319,23 +323,23 @@ export default function AccountPage() {
               ) : (
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-red-900 mb-2">
+                    <label className="block text-xs sm:text-sm font-medium text-red-900 mb-2">
                       Type "DELETE MY ACCOUNT" to confirm:
                     </label>
                     <input
                       type="text"
                       value={deleteConfirmationText}
                       onChange={(e) => setDeleteConfirmationText(e.target.value)}
-                      className="w-full p-3 border border-red-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                      className="w-full p-3 border border-red-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm"
                       placeholder="DELETE MY ACCOUNT"
                     />
                   </div>
                   
-                  <div className="flex gap-3">
+                  <div className="flex flex-col sm:flex-row gap-3">
                     <button
                       onClick={handleDeleteAccount}
                       disabled={deleteConfirmationText !== 'DELETE MY ACCOUNT' || isDeletingAccount}
-                      className="bg-red-600 hover:bg-red-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white px-6 py-2 rounded-lg font-medium transition-colors flex items-center gap-2"
+                      className="bg-red-600 hover:bg-red-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white px-4 sm:px-6 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 text-sm justify-center flex-1 sm:flex-none"
                     >
                       {isDeletingAccount ? (
                         <>
@@ -345,7 +349,8 @@ export default function AccountPage() {
                       ) : (
                         <>
                           <Trash2 className="w-4 h-4" />
-                          Permanently Delete Account
+                          <span className="hidden sm:inline">Permanently Delete Account</span>
+                          <span className="sm:hidden">Delete Account</span>
                         </>
                       )}
                     </button>
@@ -356,7 +361,7 @@ export default function AccountPage() {
                         setDeleteConfirmationText('');
                       }}
                       disabled={isDeletingAccount}
-                      className="btn-secondary"
+                      className="btn-secondary text-sm"
                     >
                       Cancel
                     </button>
