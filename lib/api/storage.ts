@@ -18,10 +18,10 @@ export async function uploadSitePhoto(
       type: file.type
     });
 
-    // Check file size limit (20MB)
-    const maxSize = 20 * 1024 * 1024;
+    // Check file size limit (5MB)
+    const maxSize = 5 * 1024 * 1024;
     if (file.size > maxSize) {
-      throw new Error(`File size ${(file.size / 1024 / 1024).toFixed(1)}MB exceeds maximum of 20MB`);
+      throw new Error(`File size ${(file.size / 1024 / 1024).toFixed(1)}MB exceeds maximum of 5MB`);
     }
 
     // Check if bucket exists (don't try to create it)
@@ -117,7 +117,7 @@ export const createStorageBucket = async () => {
   const { data, error } = await supabase.storage.createBucket(BUCKET_NAME, {
     public: true,
     allowedMimeTypes: ['image/png', 'image/jpeg', 'image/jpg', 'image/webp'],
-    fileSizeLimit: 20 * 1024 * 1024, // 20MB
+    fileSizeLimit: 5 * 1024 * 1024, // 5MB
   });
 
   if (error && error.message !== 'Bucket already exists') {

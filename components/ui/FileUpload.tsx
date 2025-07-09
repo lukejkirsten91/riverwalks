@@ -20,7 +20,7 @@ export function FileUpload({
   onFileRemove,
   currentImageUrl,
   accept = "image/*",
-  maxSizeBytes = 20 * 1024 * 1024, // 20MB default
+  maxSizeBytes = 5 * 1024 * 1024, // 5MB default
   className = "",
   disabled = false,
   uploadText = "Upload site photo",
@@ -32,7 +32,7 @@ export function FileUpload({
   const [error, setError] = useState<string | null>(null);
   const { isOnline, isOfflineCapable } = useOffline();
 
-  const handleFileSelect = (file: File) => {
+  const handleFileSelect = async (file: File) => {
     setError(null);
 
     // List of supported image types
@@ -44,14 +44,82 @@ export function FileUpload({
       return;
     }
 
-    // Validate file size
+    // If file is larger than 5MB, compress it
     if (file.size > maxSizeBytes) {
-      const maxMB = Math.round(maxSizeBytes / (1024 * 1024));
-      setError(`File size must be less than ${maxMB}MB`);
+      try {
+        console.log(`File size ${(file.size / 1024 / 1024).toFixed(1)}MB exceeds limit. Compressing...`);
+        const compressedFile = await compressImage(file, maxSizeBytes);
+        console.log(`Compressed from ${(file.size / 1024 / 1024).toFixed(1)}MB to ${(compressedFile.size / 1024 / 1024).toFixed(1)}MB`);
+        onFileSelect(compressedFile);
+      } catch (error) {
+        console.error('Compression failed:', error);
+        const maxMB = Math.round(maxSizeBytes / (1024 * 1024));
+        setError(`File size must be less than ${maxMB}MB. Unable to compress this image.`);
+      }
       return;
     }
 
     onFileSelect(file);
+  };
+
+  // Compress image function (WhatsApp-style)
+  const compressImage = (file: File, maxSizeBytes: number): Promise<File> => {
+    return new Promise((resolve, reject) => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      const img = new Image();
+      
+      img.onload = () => {
+        // Calculate new dimensions (max 1920x1920 for quality balance)
+        const maxDimension = 1920;
+        let { width, height } = img;
+        
+        if (width > height) {
+          if (width > maxDimension) {
+            height = (height * maxDimension) / width;
+            width = maxDimension;
+          }
+        } else {
+          if (height > maxDimension) {
+            width = (width * maxDimension) / height;
+            height = maxDimension;
+          }
+        }
+        
+        canvas.width = width;
+        canvas.height = height;
+        
+        // Draw and compress
+        ctx?.drawImage(img, 0, 0, width, height);
+        
+        // Try different quality levels until we get under the size limit
+        const tryCompress = (quality: number) => {
+          canvas.toBlob((blob) => {
+            if (!blob) {
+              reject(new Error('Failed to compress image'));
+              return;
+            }
+            
+            if (blob.size <= maxSizeBytes || quality <= 0.1) {
+              // Success or minimum quality reached
+              const compressedFile = new File([blob], file.name, {
+                type: 'image/jpeg',
+                lastModified: Date.now(),
+              });
+              resolve(compressedFile);
+            } else {
+              // Try with lower quality
+              tryCompress(quality - 0.1);
+            }
+          }, 'image/jpeg', quality);
+        };
+        
+        tryCompress(0.8); // Start with 80% quality
+      };
+      
+      img.onerror = () => reject(new Error('Failed to load image'));
+      img.src = URL.createObjectURL(file);
+    });
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -175,7 +243,7 @@ export function FileUpload({
                       : 'Click to browse or drag and drop'}
                   </p>
                   <p className="text-muted-foreground text-xs mt-1">
-                    PNG, JPEG, JPG, WEBP up to {Math.round(maxSizeBytes / (1024 * 1024))}MB
+                    PNG, JPEG, JPG, WEBP up to {Math.round(maxSizeBytes / (1024 * 1024))}MB (larger images auto-compressed)
                   </p>
                 </>
               )}
