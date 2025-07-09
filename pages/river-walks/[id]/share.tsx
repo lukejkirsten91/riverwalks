@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import { supabase } from '../../../lib/supabase';
 import { ShareModal } from '../../../components/river-walks/ShareModal';
 import { getRiverWalkById } from '../../../lib/api/river-walks';
+import { resetModalStyles } from '../../../lib/utils/modal';
 import type { RiverWalk } from '../../../types';
 import type { User } from '@supabase/supabase-js';
 
@@ -13,6 +14,11 @@ export default function SharePage() {
   const [riverWalk, setRiverWalk] = useState<RiverWalk | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Reset any modal styles that might be blocking interactions
+  useEffect(() => {
+    resetModalStyles();
+  }, []);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -81,13 +87,15 @@ export default function SharePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-stretch sm:items-center justify-center sm:p-4">
-      <div className="w-full sm:w-auto sm:max-w-2xl sm:rounded-lg overflow-hidden">
-        <ShareModal
-          riverWalk={riverWalk}
-          isOpen={true}
-          onClose={handleClose}
-        />
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+      <div className="max-w-4xl mx-auto p-4">
+        <div className="bg-white rounded-lg shadow-xl">
+          <ShareModal
+            riverWalk={riverWalk}
+            isOpen={true}
+            onClose={handleClose}
+          />
+        </div>
       </div>
     </div>
   );

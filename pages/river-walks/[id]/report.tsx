@@ -4,6 +4,7 @@ import { supabase } from '../../../lib/supabase';
 import { ReportGenerator } from '../../../components/river-walks/ReportGenerator';
 import { getRiverWalkById } from '../../../lib/api/river-walks';
 import { getSitesForRiverWalk } from '../../../lib/api/sites';
+import { resetModalStyles } from '../../../lib/utils/modal';
 import type { RiverWalk, Site } from '../../../types';
 import type { User } from '@supabase/supabase-js';
 
@@ -15,6 +16,11 @@ export default function ReportPage() {
   const [sites, setSites] = useState<Site[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Reset any modal styles that might be blocking interactions
+  useEffect(() => {
+    resetModalStyles();
+  }, []);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -88,12 +94,14 @@ export default function ReportPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-start sm:items-center justify-center p-2 sm:p-4">
-      <ReportGenerator
-        riverWalk={riverWalk}
-        sites={sites}
-        onClose={handleClose}
-      />
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-2 sm:p-4">
+      <div className="max-w-6xl mx-auto">
+        <ReportGenerator
+          riverWalk={riverWalk}
+          sites={sites}
+          onClose={handleClose}
+        />
+      </div>
     </div>
   );
 }

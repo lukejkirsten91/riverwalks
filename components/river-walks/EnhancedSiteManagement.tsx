@@ -745,8 +745,8 @@ export function EnhancedSiteManagement({ riverWalk, onClose }: EnhancedSiteManag
 
   return (
     <div 
-      className="bg-white w-full h-full sm:rounded-lg sm:max-w-6xl sm:max-h-[90vh] overflow-y-auto flex flex-col"
-      data-modal="site-management"
+      className="bg-white w-full min-h-[600px] flex flex-col"
+      data-site-management
     >
         {/* Header */}
         <div className="sticky top-0 bg-white border-b p-4 sm:p-6 z-10">

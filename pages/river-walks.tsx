@@ -17,6 +17,7 @@ import { useSubscription, canAccessAdvancedFeatures } from '../hooks/useSubscrip
 import { TermsGate } from '../components/auth/TermsGate';
 import { WelcomeFlow } from '../components/onboarding/WelcomeFlow';
 import { useOnboarding } from '../hooks/useOnboarding';
+import { resetModalStyles } from '../lib/utils/modal';
 import type { RiverWalk, RiverWalkFormData } from '../types';
 import type { User } from '@supabase/supabase-js';
 import { useScrollLock } from '../hooks/useScrollLock';
@@ -99,6 +100,9 @@ export default function RiverWalksPage() {
     };
 
     checkUser();
+    
+    // Reset any modal styles that might be blocking interactions
+    resetModalStyles();
   }, [router, collaborationEnabled, acceptInvite, showSuccess, showError, refetch]);
 
   // One-time sync queue cleanup (remove after deployment)

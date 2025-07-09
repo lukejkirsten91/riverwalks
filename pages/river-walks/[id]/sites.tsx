@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import { supabase } from '../../../lib/supabase';
 import { EnhancedSiteManagement } from '../../../components/river-walks';
 import { getRiverWalkById } from '../../../lib/api/river-walks';
+import { resetModalStyles } from '../../../lib/utils/modal';
 import type { RiverWalk } from '../../../types';
 import type { User } from '@supabase/supabase-js';
 
@@ -13,6 +14,11 @@ export default function SitesPage() {
   const [riverWalk, setRiverWalk] = useState<RiverWalk | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Reset any modal styles that might be blocking interactions
+  useEffect(() => {
+    resetModalStyles();
+  }, []);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -82,10 +88,14 @@ export default function SitesPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      <EnhancedSiteManagement
-        riverWalk={riverWalk}
-        onClose={handleClose}
-      />
+      <div className="max-w-7xl mx-auto p-4">
+        <div className="bg-white rounded-lg shadow-xl">
+          <EnhancedSiteManagement
+            riverWalk={riverWalk}
+            onClose={handleClose}
+          />
+        </div>
+      </div>
     </div>
   );
 }
