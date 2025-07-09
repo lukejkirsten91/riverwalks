@@ -567,6 +567,18 @@ export default function RiverWalksPage() {
               e.preventDefault();
               e.stopPropagation();
               setShowProfileDropdown(false);
+              router.push('/account');
+            }}
+            className="w-full text-left px-4 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all duration-200 hover:scale-[1.02] flex items-center gap-2"
+          >
+            <Settings className="w-4 h-4" />
+            Account Settings
+          </button>
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setShowProfileDropdown(false);
               handleSwitchAccount();
             }}
             className="w-full text-left px-4 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all duration-200 hover:scale-[1.02] flex items-center gap-2"
