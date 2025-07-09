@@ -1,5 +1,4 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Check, X } from 'lucide-react';
 
 interface InlineNumberEditProps {
   value: number;
@@ -52,7 +51,8 @@ export function InlineNumberEdit({
   const handleStartEdit = () => {
     if (disabled) return;
     setIsEditing(true);
-    setEditValue(formatValue(value));
+    // Start with the raw number, not the formatted version
+    setEditValue(value === 0 ? '' : value.toString());
   };
 
   const handleSave = async () => {
@@ -62,13 +62,7 @@ export function InlineNumberEdit({
       return;
     }
     
-    // Handle values ending with decimal point (like "0.") - convert to valid number
-    let processedValue = editValue;
-    if (processedValue.endsWith('.')) {
-      processedValue = processedValue.slice(0, -1);
-    }
-    
-    const numValue = parseFloat(processedValue);
+    const numValue = parseFloat(editValue);
     
     if (isNaN(numValue)) {
       handleCancel();
@@ -119,54 +113,40 @@ export function InlineNumberEdit({
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const inputValue = e.target.value;
     
-    // Allow empty, numbers, and decimal point
-    if (inputValue === '' || /^\d*\.?\d*$/.test(inputValue)) {
+    // Allow empty input
+    if (inputValue === '') {
+      setEditValue('');
+      return;
+    }
+    
+    // Allow numbers, decimal point, and partial decimal inputs
+    // This regex allows: 123, 12.3, .5, 0.5, etc.
+    if (/^\d*\.?\d*$/.test(inputValue)) {
       setEditValue(inputValue);
     }
   };
 
   if (isEditing) {
     return (
-      <div className={`flex items-center gap-2 ${className}`}>
-        <div className="relative">
-          <input
-            ref={inputRef}
-            type="text"
-            inputMode="decimal"
-            pattern="[0-9]*\.?[0-9]*"
-            value={editValue}
-            onChange={handleChange}
-            onKeyDown={handleKeyDown}
-            onBlur={handleSave}
-            placeholder={placeholder}
-            className="input-modern pr-8 text-base min-h-[44px] w-full"
-            disabled={isLoading}
-          />
-          {suffix && (
-            <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground text-sm pointer-events-none">
-              {suffix}
-            </span>
-          )}
-        </div>
-        
-        <div className="flex items-center gap-1">
-          <button
-            onClick={handleSave}
-            disabled={isLoading}
-            className="p-1 text-success hover:bg-success/10 rounded transition-colors disabled:opacity-50"
-            title="Save"
-          >
-            <Check className="w-4 h-4" />
-          </button>
-          <button
-            onClick={handleCancel}
-            disabled={isLoading}
-            className="p-1 text-muted-foreground hover:bg-muted/50 rounded transition-colors disabled:opacity-50"
-            title="Cancel"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        </div>
+      <div className={`relative ${className}`}>
+        <input
+          ref={inputRef}
+          type="text"
+          inputMode="decimal"
+          pattern="[0-9]*\.?[0-9]*"
+          value={editValue}
+          onChange={handleChange}
+          onKeyDown={handleKeyDown}
+          onBlur={handleSave}
+          placeholder={placeholder}
+          className="input-modern text-base min-h-[44px] w-full pr-8"
+          disabled={isLoading}
+        />
+        {suffix && (
+          <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground text-sm pointer-events-none">
+            {suffix}
+          </span>
+        )}
       </div>
     );
   }
