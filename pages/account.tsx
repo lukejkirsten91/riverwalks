@@ -102,7 +102,7 @@ export default function AccountPage() {
         throw new Error('Failed to delete account');
       }
 
-      showSuccess('Account Deleted', 'Your account and all data have been permanently deleted');
+      showSuccess('Account Deleted', 'Your account, email address, and all data have been permanently deleted');
       
       // Sign out and redirect
       await supabase.auth.signOut();
@@ -302,6 +302,7 @@ export default function AccountPage() {
                 This action will permanently delete your account and all associated data, including:
               </p>
               <ul className="text-xs sm:text-sm text-red-700 mb-4 list-disc list-inside space-y-1">
+                <li>Your email address and login credentials</li>
                 <li>All river walks you own ({accountStats.riverWalks} river walks)</li>
                 <li>All site data and measurements ({accountStats.totalSites} sites)</li>
                 <li>All uploaded photos and files</li>

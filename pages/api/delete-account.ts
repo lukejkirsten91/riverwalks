@@ -44,10 +44,24 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     console.log(`🗑️ Starting account deletion for user: ${user.email} (ID: ${user.id})`);
 
-    // Execute comprehensive user deletion
-    await supabaseAdmin.rpc('delete_user_completely', { 
+    // Execute comprehensive user deletion using admin client
+    const { data: deletionResult, error: deletionError } = await supabaseAdmin.rpc('delete_user_completely', { 
       target_user_id: user.id 
     });
+
+    if (deletionError) {
+      console.error('❌ Database deletion error:', deletionError);
+      throw new Error(`Database deletion failed: ${deletionError.message}`);
+    }
+
+    if (deletionResult && deletionResult.length > 0) {
+      const result = deletionResult[0];
+      if (result.status === 'error') {
+        console.error('❌ Database function error:', result.deleted_records);
+        throw new Error(`Database function failed: ${result.deleted_records.error}`);
+      }
+      console.log('✅ Database deletion successful:', result.deleted_records);
+    }
 
     console.log(`✅ Account deletion completed for user: ${user.email}`);
     
