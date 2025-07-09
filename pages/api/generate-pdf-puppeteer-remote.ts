@@ -454,6 +454,27 @@ body {
   margin: var(--sp-lg) 0;
 }
 
+.photo-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-xs);
+}
+
+.photo-image {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  border-radius: var(--sp-sm);
+  border: 1px solid var(--clr-border);
+}
+
+.photo-caption {
+  text-align: center;
+  font-size: var(--font-size-sm);
+  color: var(--clr-text-light);
+  font-style: italic;
+}
+
 .photo-placeholder {
   height: 200px;
   background: #f3f4f6;
@@ -1428,11 +1449,19 @@ function createReportHTML(riverWalk: RiverWalk | null, sites: Site[] | null) {
                 <section class="site-section section-with-content">
                     <h3 class="section-header">Site Photography</h3>
                     <div class="photo-grid">
-                        <div class="photo-placeholder">
-                            ${site.photo_url ? 'Primary Site Photo' : 'No primary site photo available'}
+                        <div class="photo-container">
+                            ${site.photo_url ? 
+                              `<img src="${site.photo_url}" alt="Primary Site Photo" class="photo-image" style="width: 100%; height: 200px; object-fit: cover; border-radius: var(--sp-sm);" />
+                               <div class="photo-caption">Primary Site Photo</div>` : 
+                              `<div class="photo-placeholder">No primary site photo available</div>`
+                            }
                         </div>
-                        <div class="photo-placeholder">
-                            ${site.sedimentation_photo_url ? 'Sediment Sample Photo' : 'No sediment sample photo available'}
+                        <div class="photo-container">
+                            ${site.sedimentation_photo_url ? 
+                              `<img src="${site.sedimentation_photo_url}" alt="Sediment Sample Photo" class="photo-image" style="width: 100%; height: 200px; object-fit: cover; border-radius: var(--sp-sm);" />
+                               <div class="photo-caption">Sediment Sample Photo</div>` : 
+                              `<div class="photo-placeholder">No sediment sample photo available</div>`
+                            }
                         </div>
                     </div>
                 </section>
@@ -1728,9 +1757,28 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     console.log('📐 Setting viewport...');
     await page.setViewport({ width: 1080, height: 1024 });
 
-    // Wait for content to render
-    console.log('⏳ Waiting for content to render...');
-    await new Promise(resolve => setTimeout(resolve, 3000));
+    // Wait for content to render and images to load
+    console.log('⏳ Waiting for content to render and images to load...');
+    
+    // Wait for all images to load
+    await page.evaluate(() => {
+      const images = Array.from(document.images);
+      const imagePromises = images.map(img => {
+        if (img.complete) {
+          return Promise.resolve();
+        }
+        return new Promise((resolve, reject) => {
+          img.onload = resolve;
+          img.onerror = reject;
+          // Set a timeout to prevent hanging on broken images
+          setTimeout(() => resolve(null), 5000);
+        });
+      });
+      return Promise.all(imagePromises);
+    });
+    
+    // Additional time for layout to settle
+    await new Promise(resolve => setTimeout(resolve, 2000));
 
     // Generate PDF with headers/footers and page numbers
     console.log('📄 Generating PDF...');

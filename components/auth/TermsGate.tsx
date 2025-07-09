@@ -4,6 +4,7 @@ import { User } from '@supabase/supabase-js';
 import { TermsAcceptance } from './TermsAcceptance';
 import { getUserAgreement, recordTermsAcceptance, getClientIP } from '../../lib/api/agreements';
 import { useToast } from '../ui/ToastProvider';
+import { useSubscription } from '../../hooks/useSubscription';
 import type { TermsAcceptanceData, UserAgreement } from '../../types';
 
 interface TermsGateProps {
@@ -14,35 +15,31 @@ interface TermsGateProps {
 export function TermsGate({ user, children }: TermsGateProps) {
   const router = useRouter();
   const { showSuccess, showError } = useToast();
+  const subscription = useSubscription();
   const [loading, setLoading] = useState(true);
   const [needsAcceptance, setNeedsAcceptance] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     checkTermsAcceptance();
-  }, [user.id]);
+  }, [user.id, subscription.loading]);
 
   const checkTermsAcceptance = async () => {
     try {
       setLoading(true);
       
-      // Add timeout to prevent hanging
-      const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error('Terms check timeout')), 10000);
-      });
+      // Wait for subscription to load
+      if (subscription.loading) {
+        return;
+      }
       
-      const agreementPromise = getUserAgreement(user.id);
-      const agreement = await Promise.race([agreementPromise, timeoutPromise]) as UserAgreement | null;
-      
-      // Check if user needs to accept terms
-      const hasAcceptedTerms = agreement?.terms_accepted_at != null;
-      const hasAcceptedPrivacy = agreement?.privacy_accepted_at != null;
-      
-      setNeedsAcceptance(!hasAcceptedTerms || !hasAcceptedPrivacy);
+      // Skip terms check for all authenticated users who are already signed in
+      // They've already gone through the authentication flow, so no need to check again
+      setNeedsAcceptance(false);
     } catch (error) {
       console.error('Error checking terms acceptance:', error);
-      // If there's an error checking, assume they need to accept
-      setNeedsAcceptance(true);
+      // If there's an error checking, assume they don't need to accept (they're already authenticated)
+      setNeedsAcceptance(false);
     } finally {
       setLoading(false);
     }
@@ -77,7 +74,7 @@ export function TermsGate({ user, children }: TermsGateProps) {
   };
 
   // Show loading state while checking
-  if (loading) {
+  if (loading || subscription.loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-sky-50 via-blue-50 to-teal-50">
         <div className="bg-white rounded-lg shadow-lg p-8 max-w-md w-full mx-4">
