@@ -17,22 +17,10 @@ export function TermsGate({ user, children }: TermsGateProps) {
   const [loading, setLoading] = useState(true);
   const [needsAcceptance, setNeedsAcceptance] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [loadingIssueDetected, setLoadingIssueDetected] = useState(false);
 
   useEffect(() => {
     checkTermsAcceptance();
-    
-    // Detect if terms checking is taking too long
-    const termsTimeout = setTimeout(() => {
-      if (loading) {
-        setLoadingIssueDetected(true);
-      }
-    }, 5000);
-    
-    return () => {
-      clearTimeout(termsTimeout);
-    };
-  }, [user.id, loading]);
+  }, [user.id]);
 
   const checkTermsAcceptance = async () => {
     try {
@@ -95,30 +83,10 @@ export function TermsGate({ user, children }: TermsGateProps) {
         <div className="bg-white rounded-lg shadow-lg p-8 max-w-md w-full mx-4">
           <div className="text-center">
             <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-            {loadingIssueDetected ? (
-              <>
-                <h3 className="text-lg font-semibold text-foreground mb-2">Taking longer than expected</h3>
-                <p className="text-sm text-muted-foreground mb-4">
-                  We're still setting up your account. This sometimes takes a moment...
-                </p>
-                <button
-                  onClick={() => {
-                    setLoading(false);
-                    setNeedsAcceptance(true);
-                  }}
-                  className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 text-sm"
-                >
-                  Continue Setup
-                </button>
-              </>
-            ) : (
-              <>
-                <h3 className="text-lg font-semibold text-foreground mb-2">Setting up your account</h3>
-                <p className="text-sm text-muted-foreground">
-                  Checking your legal agreements...
-                </p>
-              </>
-            )}
+            <h3 className="text-lg font-semibold text-foreground mb-2">Setting up your account</h3>
+            <p className="text-sm text-muted-foreground">
+              Checking your legal agreements...
+            </p>
           </div>
         </div>
       </div>

@@ -19,9 +19,6 @@ export default function AuthCard() {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
-  const [loadingIssueDetected, setLoadingIssueDetected] = useState<boolean>(false);
-  const [autoFixing, setAutoFixing] = useState<boolean>(false);
-  const [retryCount, setRetryCount] = useState<number>(0);
 
   useEffect(() => {
     let isMounted = true;
@@ -60,102 +57,20 @@ export default function AuthCard() {
 
     checkInitialSession();
 
-    // Progressive timeout system - detect issues and auto-fix
-    const warningTimeout = setTimeout(() => {
-      if (!isMounted || !loading) return;
-      console.warn('Auth loading is taking longer than expected - detecting issue');
-      setLoadingIssueDetected(true);
-    }, 3000); // 3 second warning
-
-    const autoFixTimeout = setTimeout(() => {
-      if (!isMounted || !loading) return;
-      console.warn('Auth loading issue confirmed - starting auto-fix');
-      setAutoFixing(true);
-      attemptAutoFix();
-    }, 6000); // 6 second auto-fix
-
-    const finalTimeout = setTimeout(() => {
+    // Simple timeout to prevent stuck loading
+    const loadingTimeout = setTimeout(() => {
       if (!isMounted) return;
       console.warn('Auth loading timeout - forcing loading to false');
       setLoading(false);
-      setLoadingIssueDetected(false);
-      setAutoFixing(false);
-    }, 10000); // 10 second final timeout
+    }, 5000); // 5 second timeout
 
     return () => {
       isMounted = false;
       authListener?.subscription.unsubscribe();
-      clearTimeout(warningTimeout);
-      clearTimeout(autoFixTimeout);
-      clearTimeout(finalTimeout);
+      clearTimeout(loadingTimeout);
     };
-  }, [retryCount]);
+  }, []);
 
-  const attemptAutoFix = async () => {
-    if (retryCount >= 2) {
-      console.log('Max retry attempts reached - offering manual fix');
-      setAutoFixing(false);
-      return;
-    }
-
-    try {
-      console.log(`Auto-fix attempt ${retryCount + 1}: Clearing auth state and retrying`);
-      
-      // Clear potentially stuck auth state
-      await supabase.auth.signOut();
-      
-      // Clear local storage that might be causing issues
-      localStorage.removeItem('supabase.auth.token');
-      
-      // Wait a moment then try again
-      setTimeout(async () => {
-        try {
-          const { data: { session }, error } = await supabase.auth.getSession();
-          if (!error && session) {
-            setUser(session.user);
-            setLoading(false);
-            setLoadingIssueDetected(false);
-            setAutoFixing(false);
-            console.log('Auto-fix successful!');
-          } else {
-            setRetryCount(prev => prev + 1);
-            if (retryCount < 1) {
-              attemptAutoFix();
-            } else {
-              setAutoFixing(false);
-            }
-          }
-        } catch (error) {
-          console.error('Auto-fix failed:', error);
-          setRetryCount(prev => prev + 1);
-          if (retryCount < 1) {
-            attemptAutoFix();
-          } else {
-            setAutoFixing(false);
-          }
-        }
-      }, 1000);
-      
-    } catch (error) {
-      console.error('Auto-fix error:', error);
-      setAutoFixing(false);
-    }
-  };
-
-  const manualFix = async () => {
-    try {
-      // Clear all auth data
-      await supabase.auth.signOut();
-      localStorage.clear();
-      sessionStorage.clear();
-      
-      // Reload the page
-      window.location.reload();
-    } catch (error) {
-      console.error('Manual fix error:', error);
-      window.location.reload();
-    }
-  };
 
   const handleSignIn = async () => {
     const redirectUrl = 'https://www.riverwalks.co.uk/api/auth/callback';
@@ -205,52 +120,10 @@ export default function AuthCard() {
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-full gradient-primary mb-4 animate-pulse">
             <MapPin className="w-8 h-8 text-white" />
           </div>
-          
-          {autoFixing ? (
-            <>
-              <CardTitle className="text-xl text-foreground">Fixing Loading Issue...</CardTitle>
-              <CardDescription className="text-muted-foreground mb-4">
-                We detected a loading problem and are fixing it automatically
-              </CardDescription>
-              <div className="flex items-center justify-center space-x-2 text-sm text-blue-600">
-                <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-                <span>Auto-fixing in progress...</span>
-              </div>
-            </>
-          ) : loadingIssueDetected ? (
-            <>
-              <CardTitle className="text-xl text-foreground">Loading Issue Detected</CardTitle>
-              <CardDescription className="text-muted-foreground mb-4">
-                Sign-in is taking longer than usual. Auto-fix starting soon...
-              </CardDescription>
-              <div className="flex items-center justify-center space-x-2 text-sm text-amber-600">
-                <div className="w-4 h-4 border-2 border-amber-600 border-t-transparent rounded-full animate-spin"></div>
-                <span>Preparing to resolve issue...</span>
-              </div>
-            </>
-          ) : (
-            <>
-              <CardTitle className="text-xl text-foreground">Loading...</CardTitle>
-              <CardDescription className="text-muted-foreground">
-                Preparing your river study workspace
-              </CardDescription>
-            </>
-          )}
-          
-          {/* Manual fix option after auto-fix attempts */}
-          {loadingIssueDetected && !autoFixing && retryCount >= 2 && (
-            <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-              <p className="text-sm text-yellow-800 mb-2">
-                Having trouble? We can fix this for you.
-              </p>
-              <button
-                onClick={manualFix}
-                className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 text-sm"
-              >
-                Fix Sign-In Issue
-              </button>
-            </div>
-          )}
+          <CardTitle className="text-xl text-foreground">Loading...</CardTitle>
+          <CardDescription className="text-muted-foreground">
+            Preparing your river study workspace
+          </CardDescription>
         </CardHeader>
       </div>
     );
