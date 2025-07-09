@@ -99,7 +99,8 @@ export default function AccountPage() {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to delete account');
+        const errorData = await response.json();
+        throw new Error(errorData.details || errorData.error || 'Failed to delete account');
       }
 
       showSuccess('Account Deleted', 'Your account, email address, and all data have been permanently deleted');

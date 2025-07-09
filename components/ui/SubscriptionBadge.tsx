@@ -115,8 +115,8 @@ export function SubscriptionBadge({ subscription, userEmail, compact = false }: 
             <p className="font-semibold text-gray-900 mb-1">Basic Plan</p>
             <p className="text-gray-600 mb-2">✓ Create unlimited river walks</p>
             <p className="text-gray-600 mb-2">✓ Add sites and measurements</p>
-            <p className="text-gray-600 mb-3">✓ Collaborate with others</p>
-            <p className="text-blue-600 font-medium">Click to upgrade for reports & export!</p>
+            <p className="text-gray-600 mb-2">✓ Basic data export</p>
+            <p className="text-blue-600 font-medium">Click to upgrade for premium PDF reports & collaboration!</p>
           </div>
         </TooltipContent>
       </>

@@ -1694,7 +1694,43 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 
 ---
 
+## 🔄 **LATEST UPDATES (July 9, 2025)**
+
+### ✅ **Legal Agreement Flash Fix & Pricing Updates (COMPLETED)**
+**Priority: HIGH | Status: ✅ COMPLETED**
+
+**Legal Agreement Flash Fix:**
+- ✅ **Fixed Terms Agreement Flash**: Eliminated brief flash of "Checking legal agreements..." after loading screen
+- ✅ **Optimized Loading Flow**: Older accounts (>5 minutes) now skip the loading screen entirely to prevent flashing
+- ✅ **Improved User Experience**: Seamless transition from loading to app content without intermediate screens
+
+**Pricing Structure Updates:**
+- ✅ **Updated Feature Descriptions**: Modified all pricing text to reflect new feature distribution
+- ✅ **Free Plan Enhancement**: Added "Basic data export" to free user features across all components
+- ✅ **Premium Plan Clarification**: Updated paid features to emphasize "Premium PDF reports" and "Collaboration features"
+- ✅ **Comprehensive Text Updates**: Modified 8 key files including subscription page, landing page, terms gate, and upgrade prompts
+
+**Account Deletion Enhancement:**
+- ✅ **Enhanced Error Handling**: Added specific error messages for missing database function
+- ✅ **Better User Feedback**: Improved error messages in account settings to show specific failure reasons
+- ✅ **Database Function Status**: Added checks to detect when delete_user_completely function is missing
+
+**Files Updated:**
+- `components/auth/TermsGate.tsx` - Fixed legal agreement flash and updated pricing text
+- `pages/subscription.tsx` - Updated premium feature descriptions
+- `pages/index.tsx` - Updated landing page pricing messaging
+- `components/ui/SubscriptionBadge.tsx` - Updated tooltip with new feature structure
+- `components/ui/SubscriptionStatusCard.tsx` - Added basic data export to free features
+- `components/ui/UpgradePrompt.tsx` - Updated advanced export description
+- `components/onboarding/WelcomeFlow.tsx` - Updated premium feature list
+- `pages/api/delete-account.ts` - Enhanced error handling for missing database function
+- `pages/account.tsx` - Improved error message display for account deletion
+
+### **Current Feature Structure:**
+- **Free Users**: Unlimited river walks, data collection, basic data export
+- **Premium Users**: Premium PDF reports, collaboration features, advanced export options
+
 _Last Updated: July 9, 2025_
-_Status: ✅ **FREEMIUM SAAS PLATFORM LIVE WITH URL ROUTING & AUTHENTICATION FIXES**: Todo-Based Site Management System + Educational Workflow + Four Specialized Forms + Progress Tracking + Velocity Measurements + **COMPREHENSIVE REPORT RESTRUCTURE WITH ENHANCED ANALYSIS** + **✅ PROFESSIONAL PDF GENERATION WITH ACADEMIC-QUALITY FORMATTING** + **✅ MOBILE-OPTIMIZED REPORT ACCESS** + **SAVE CONFIRMATION DIALOGS** + **COMPREHENSIVE OFFLINE CAPABILITIES WITH PWA FUNCTIONALITY** + **✅ CRUD OPERATIONS FULLY RESTORED** + Mobile-First Design + All Educational Features Complete + **✅ COLLABORATION SYSTEM COMPLETE** (Real-time Sync + Microsoft-style UI + Collaborative Editing + **✅ STREAMLINED OAUTH FLOW**) + **✅ ALL PDF LAYOUT ISSUES RESOLVED** + **✅ API KEY SECURITY COMPLETED** + **✅ COMPREHENSIVE UX POLISH** + **✅ FREEMIUM SUBSCRIPTION MODEL COMPLETE** (Free River Walk Creation + Paid Reports/Exports + Contextual Upgrade Prompts + **✅ STRIPE INTEGRATION WITH WORKING WEBHOOKS** + **✅ COMPREHENSIVE VOUCHER SYSTEM** + **✅ 100% VOUCHER FLOW** + **✅ MOBILE-OPTIMIZED ADMIN DASHBOARD** + **✅ AUTOMATIC SUBSCRIPTION CREATION** + **✅ WEBHOOK 307 REDIRECT FIXES** + **✅ PRODUCTION BUILD SUCCESS** + **✅ LIVE PAYMENT PROCESSING** + **✅ URL ROUTING SYSTEM** + **✅ AUTHENTICATION TIMEOUT FIXES** + **✅ MOBILE INPUT IMPROVEMENTS** + **✅ PHOTO SIZE LIMIT INCREASE**)_
-_Current Status: **FREEMIUM SAAS PLATFORM LIVE** - Successfully processing real payments with comprehensive voucher system! URL routing system with proper back button support, fixed authentication loading issues, and mobile input improvements_
+_Status: ✅ **FREEMIUM SAAS PLATFORM LIVE WITH ENHANCED UX FIXES**: Todo-Based Site Management System + Educational Workflow + Four Specialized Forms + Progress Tracking + Velocity Measurements + **COMPREHENSIVE REPORT RESTRUCTURE WITH ENHANCED ANALYSIS** + **✅ PROFESSIONAL PDF GENERATION WITH ACADEMIC-QUALITY FORMATTING** + **✅ MOBILE-OPTIMIZED REPORT ACCESS** + **SAVE CONFIRMATION DIALOGS** + **COMPREHENSIVE OFFLINE CAPABILITIES WITH PWA FUNCTIONALITY** + **✅ CRUD OPERATIONS FULLY RESTORED** + Mobile-First Design + All Educational Features Complete + **✅ COLLABORATION SYSTEM COMPLETE** (Real-time Sync + Microsoft-style UI + Collaborative Editing + **✅ STREAMLINED OAUTH FLOW**) + **✅ ALL PDF LAYOUT ISSUES RESOLVED** + **✅ API KEY SECURITY COMPLETED** + **✅ COMPREHENSIVE UX POLISH** + **✅ FREEMIUM SUBSCRIPTION MODEL COMPLETE** (Free River Walk Creation + Paid Reports/Exports + Contextual Upgrade Prompts + **✅ STRIPE INTEGRATION WITH WORKING WEBHOOKS** + **✅ COMPREHENSIVE VOUCHER SYSTEM** + **✅ 100% VOUCHER FLOW** + **✅ MOBILE-OPTIMIZED ADMIN DASHBOARD** + **✅ AUTOMATIC SUBSCRIPTION CREATION** + **✅ WEBHOOK 307 REDIRECT FIXES** + **✅ PRODUCTION BUILD SUCCESS** + **✅ LIVE PAYMENT PROCESSING** + **✅ URL ROUTING SYSTEM** + **✅ AUTHENTICATION TIMEOUT FIXES** + **✅ MOBILE INPUT IMPROVEMENTS** + **✅ PHOTO SIZE LIMIT INCREASE** + **✅ LEGAL AGREEMENT FLASH FIX** + **✅ PRICING STRUCTURE UPDATES** + **✅ ACCOUNT DELETION ENHANCEMENT**)_
+_Current Status: **FREEMIUM SAAS PLATFORM LIVE** - Successfully processing real payments with comprehensive voucher system! Enhanced UX with fixed loading flashes, updated pricing structure, and improved account deletion handling_
 _Next Phase: **MICROSOFT AUTHENTICATION INTEGRATION** - Add Outlook/Office 365 login support + Enhanced marketing and growth initiatives_

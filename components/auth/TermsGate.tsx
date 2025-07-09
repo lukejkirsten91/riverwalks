@@ -31,8 +31,6 @@ export function TermsGate({ user, children }: TermsGateProps) {
         return;
       }
       
-      setLoading(true);
-      
       // Quick check: if user has been around for a while, they likely accepted terms
       const userCreatedAt = new Date(user.created_at);
       const now = new Date();
@@ -44,6 +42,8 @@ export function TermsGate({ user, children }: TermsGateProps) {
         setLoading(false);
         return;
       }
+      
+      setLoading(true);
       
       // For new accounts, check terms properly
       const timeoutPromise = new Promise((_, reject) => {
@@ -149,8 +149,8 @@ export function TermsGate({ user, children }: TermsGateProps) {
               <div className="bg-green-50 border border-green-200 rounded-lg p-4 max-w-lg mx-auto">
                 <h3 className="text-green-800 font-medium text-sm mb-2">💳 About Our Pricing</h3>
                 <p className="text-green-700 text-sm">
-                  You can create an account and test all features completely free. If you want to generate reports 
-                  or export your data for coursework, we charge a small fee (£1.99/year or £3.49 lifetime) to keep the platform running.
+                  You can create an account and test all features completely free. Basic data export is included - if you want premium PDF reports 
+                  or collaboration features for coursework, we charge a small fee (£1.99/year or £3.49 lifetime) to keep the platform running.
                 </p>
               </div>
             </div>

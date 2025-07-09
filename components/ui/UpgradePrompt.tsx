@@ -24,13 +24,13 @@ const featureConfig = {
   },
   export: {
     icon: Download,
-    title: 'Export Your Data',
-    description: 'Export your river walk data to Excel for further analysis and custom graphs.',
+    title: 'Advanced Export Options',
+    description: 'Unlock premium data export features including Excel format and enhanced formatting.',
     benefits: [
       'Export to Excel format',
       'Multi-sheet workbooks with raw data',
       'Perfect for creating custom graphs',
-      'All measurement data included'
+      'Enhanced formatting and analysis tools'
     ]
   },
   advanced: {

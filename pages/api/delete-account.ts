@@ -51,6 +51,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     if (deletionError) {
       console.error('❌ Database deletion error:', deletionError);
+      
+      // Check if function doesn't exist
+      if (deletionError.message.includes('function delete_user_completely') || 
+          deletionError.message.includes('does not exist')) {
+        throw new Error('Database function not found. Please contact support to deploy the deletion function.');
+      }
+      
       throw new Error(`Database deletion failed: ${deletionError.message}`);
     }
 

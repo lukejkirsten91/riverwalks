@@ -371,7 +371,7 @@ export default function Home() {
             <div className="bg-green-600/40 border border-green-400/60 rounded-xl p-4 mb-8 max-w-2xl mx-auto backdrop-blur-sm">
               <p className="text-green-50 text-sm font-medium mb-2">💡 Transparent Pricing - No Surprises</p>
               <p className="text-green-100 text-sm">
-                Create your account and test all features for free. Reports and data export require a small subscription (£1.99/year or £3.49 lifetime) to support development.
+                Create your account and test all features for free. Basic data export is included - premium PDF reports and collaboration require a small subscription (£1.99/year or £3.49 lifetime) to support development.
               </p>
             </div>
 

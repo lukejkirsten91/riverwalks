@@ -84,8 +84,8 @@ export function WelcomeFlow({ onComplete, userEmail }: WelcomeFlowProps) {
               <h4 className="font-semibold text-blue-900 text-sm">Premium Features</h4>
             </div>
             <div className="space-y-1 text-xs text-blue-800">
-              <div>• Professional PDF reports with charts and analysis</div>
-              <div>• Excel data export for statistical analysis</div>
+              <div>• Premium PDF reports with charts and analysis</div>
+              <div>• Advanced data export options (Excel format)</div>
               <div>• River walk sharing and collaboration</div>
             </div>
             <div className="mt-2 text-xs text-blue-600">

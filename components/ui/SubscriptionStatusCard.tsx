@@ -52,6 +52,10 @@ export function SubscriptionStatusCard({ subscription, userEmail, className = ''
                 <CheckCircle className="w-4 h-4 text-green-500 mr-2 flex-shrink-0" />
                 <span className="text-gray-700">Offline functionality</span>
               </div>
+              <div className="flex items-center text-sm">
+                <CheckCircle className="w-4 h-4 text-green-500 mr-2 flex-shrink-0" />
+                <span className="text-gray-700">Basic data export</span>
+              </div>
             </div>
 
             <div className="bg-white rounded-lg p-4 border border-blue-200 mb-4">
@@ -60,10 +64,10 @@ export function SubscriptionStatusCard({ subscription, userEmail, className = ''
                 Unlock Premium Features
               </h4>
               <ul className="text-sm text-gray-600 space-y-1 mb-3">
-                <li>• Professional PDF reports</li>
-                <li>• Excel data export</li>
-                <li>• River walk sharing</li>
-                <li>• Advanced visualizations</li>
+                <li>• Premium PDF reports</li>
+                <li>• Advanced data export options</li>
+                <li>• River walk collaboration</li>
+                <li>• Enhanced visualizations</li>
               </ul>
               <div className="text-xs text-blue-600 font-medium">
                 Starting at £1.99/year (less than 40p/month!)

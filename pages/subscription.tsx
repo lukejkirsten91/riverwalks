@@ -303,11 +303,15 @@ const SubscriptionPage: React.FC = () => {
               </li>
               <li className="flex items-center text-gray-700 text-sm sm:text-base">
                 <span className="w-5 h-5 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-sm mr-3 flex-shrink-0">✓</span>
-                Professional PDF report generation
+                Premium PDF report generation
               </li>
               <li className="flex items-center text-gray-700 text-sm sm:text-base">
                 <span className="w-5 h-5 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-sm mr-3 flex-shrink-0">✓</span>
                 Collaboration with classmates
+              </li>
+              <li className="flex items-center text-gray-700 text-sm sm:text-base">
+                <span className="w-5 h-5 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-sm mr-3 flex-shrink-0">✓</span>
+                Advanced data export options
               </li>
               <li className="flex items-center text-gray-700 text-sm sm:text-base">
                 <span className="w-5 h-5 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-sm mr-3 flex-shrink-0">✓</span>
