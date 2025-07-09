@@ -56,13 +56,19 @@ export function InlineNumberEdit({
   };
 
   const handleSave = async () => {
-    // Don't save if the value is incomplete (like "0." or ".")
-    if (editValue === '' || editValue === '.' || editValue.endsWith('.')) {
+    // Don't save if the value is empty or just a decimal point
+    if (editValue === '' || editValue === '.') {
       handleCancel();
       return;
     }
     
-    const numValue = parseFloat(editValue);
+    // Handle values ending with decimal point (like "0.") - convert to valid number
+    let processedValue = editValue;
+    if (processedValue.endsWith('.')) {
+      processedValue = processedValue.slice(0, -1);
+    }
+    
+    const numValue = parseFloat(processedValue);
     
     if (isNaN(numValue)) {
       handleCancel();
@@ -133,7 +139,7 @@ export function InlineNumberEdit({
             onKeyDown={handleKeyDown}
             onBlur={handleSave}
             placeholder={placeholder}
-            className="input-modern pr-8"
+            className="input-modern pr-8 text-base min-h-[44px] w-full"
             disabled={isLoading}
           />
           {suffix && (

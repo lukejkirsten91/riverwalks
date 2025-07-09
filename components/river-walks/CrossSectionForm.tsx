@@ -236,7 +236,7 @@ export function CrossSectionForm({
                   suffix={depthUnits}
                   min={depthUnits === 'mm' ? 100 : 0.1}
                   decimals={depthUnits === 'mm' ? 0 : 2}
-                  className="text-base font-medium border border-border min-w-[100px] flex-1"
+                  className="text-base font-medium border border-border min-w-[120px] sm:min-w-[140px] flex-1"
                 />
               </div>
               <p className="text-xs text-gray-500 mt-1">
@@ -256,7 +256,7 @@ export function CrossSectionForm({
                   min={2}
                   max={20}
                   decimals={0}
-                  className="text-base font-medium border border-border min-w-[80px] flex-1"
+                  className="text-base font-medium border border-border min-w-[100px] sm:min-w-[120px] flex-1"
                 />
               </div>
               <p className="text-xs text-gray-500 mt-1">
@@ -284,7 +284,7 @@ export function CrossSectionForm({
                       min={0}
                       max={riverWidth}
                       decimals={2}
-                      className="flex-1 bg-blue-50 hover:bg-blue-100 px-3 py-2 rounded-lg border border-blue-200"
+                      className="flex-1 bg-blue-50 hover:bg-blue-100 px-3 py-2 rounded-lg border border-blue-200 min-w-[120px] sm:min-w-[140px]"
                     />
                   </div>
                 ))}
@@ -308,7 +308,7 @@ export function CrossSectionForm({
                       min={0}
                       max={depthUnits === 'mm' ? 10000 : 10}
                       decimals={2}
-                      className="flex-1 bg-blue-50 hover:bg-blue-100 px-3 py-2 rounded-lg border border-blue-200"
+                      className="flex-1 bg-blue-50 hover:bg-blue-100 px-3 py-2 rounded-lg border border-blue-200 min-w-[120px] sm:min-w-[140px]"
                     />
                   </div>
                 ))}

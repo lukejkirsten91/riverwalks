@@ -243,7 +243,7 @@ export function SedimentForm({
                   min={1}
                   max={10}
                   decimals={0}
-                  className="text-base font-medium border border-border min-w-[80px] flex-1"
+                  className="text-base font-medium border border-border min-w-[100px] sm:min-w-[120px] flex-1"
                 />
               </div>
             </div>
