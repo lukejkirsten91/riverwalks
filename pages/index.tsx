@@ -313,46 +313,50 @@ export default function Home() {
         {/* Hero Section */}
         <div ref={heroRef} className="flex flex-col items-center justify-center py-16 p-4 sm:p-6 lg:p-8">
           <div className={`text-center max-w-5xl mx-auto ${user ? 'mb-8' : 'mb-12'}`}>
-            <div className="mb-6">
-              <div className="bg-blue-600/90 backdrop-blur-sm border border-blue-400/60 rounded-xl p-4 mb-4 max-w-2xl mx-auto">
+            <div className="mb-8">
+              <div className="bg-blue-600/90 backdrop-blur-sm border border-blue-400/60 rounded-xl p-4 mb-6 max-w-2xl mx-auto">
                 <p className="text-blue-50 text-lg font-bold mb-1">🎓 #1 Tool for GCSE Geography Coursework</p>
                 <p className="text-blue-100 text-sm">
                   The complete river study platform trusted by students and teachers across the UK
                 </p>
               </div>
+            </div>
+
+            {/* Hero Image - First thing users see */}
+            <div className="mb-8 flex justify-center">
+              <img 
+                src="/riverwalks-feature.png" 
+                alt="Riverwalks features visualization" 
+                className="max-w-lg w-full h-auto rounded-xl shadow-modern drop-shadow-lg"
+              />
+            </div>
+
+            {/* Primary CTA - Immediately after hero image */}
+            {!user && (
+              <div className="w-full max-w-md mx-auto mb-8">
+                <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl p-6 mb-4">
+                  <h2 className="text-2xl font-bold text-white mb-2 text-center">Get Started Now</h2>
+                  <p className="text-white/90 text-center mb-4">Sign up and start your first river study in under 2 minutes</p>
+                  <AuthCard />
+                </div>
+              </div>
+            )}
+
+            {/* Explanatory content after CTA */}
+            <div className="mb-6">
+              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-white mb-4">
+                Turn your river adventures into beautiful data stories
+              </h1>
+              
+              <p className="text-lg text-white/80 mb-6 max-w-3xl mx-auto">
+                Whether you're studying for GCSE Geography, researching waterways, or just curious about rivers, 
+                Riverwalks makes field data collection and analysis surprisingly engaging.
+              </p>
+
               <span className="inline-flex items-center px-4 py-2 rounded-full bg-white/20 backdrop-blur-sm border border-white/30 text-white text-sm font-medium">
                 <Waves className="w-4 h-4 mr-2" />
                 Walk. Track. Learn.
               </span>
-            </div>
-            
-            <div className="flex flex-col items-center mb-6">
-              <img 
-                src="/logo.png" 
-                alt="Riverwalks Logo" 
-                className="h-16 sm:h-20 lg:h-24 mb-4 drop-shadow-lg"
-              />
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-white">
-                Riverwalks
-              </h1>
-            </div>
-            
-            <p className="text-xl sm:text-2xl text-white/95 mb-4 max-w-4xl mx-auto leading-relaxed">
-              Turn your river adventures into beautiful data stories
-            </p>
-            
-            <p className="text-lg text-white/80 mb-6 max-w-3xl mx-auto">
-              Whether you're studying for GCSE Geography, researching waterways, or just curious about rivers, 
-              Riverwalks makes field data collection and analysis surprisingly engaging.
-            </p>
-
-            {/* Feature illustration */}
-            <div className="mb-6 flex justify-center">
-              <img 
-                src="/riverwalks-feature.png" 
-                alt="Riverwalks features visualization" 
-                className="max-w-md w-full h-auto rounded-xl shadow-modern drop-shadow-lg"
-              />
             </div>
 
             {/* Transparent pricing messaging */}
@@ -362,13 +366,6 @@ export default function Home() {
                 Create your account and test all features for free. Reports and data export require a small subscription (£1.99/year or £3.49 lifetime) to support development.
               </p>
             </div>
-
-            {/* Auth Card */}
-            {!user && (
-              <div className="w-full max-w-md mx-auto mb-8">
-                <AuthCard />
-              </div>
-            )}
 
             {/* Scroll indicator */}
             {!user && (
