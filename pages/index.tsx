@@ -18,18 +18,40 @@ export default function Home() {
   const ctaRef = useRef(null);
 
   useEffect(() => {
+    let isMounted = true;
+    
     const { data: authListener } = supabase.auth.onAuthStateChange(
       (event, session) => {
+        if (!isMounted) return;
+        console.log('Index page auth state changed:', event, session?.user?.email);
         setUser(session?.user || null);
       }
     );
 
-    // Initial session check
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user || null);
-    });
+    // Initial session check with error handling
+    const checkInitialSession = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (!isMounted) return;
+        
+        if (error) {
+          console.error('Index page session check error:', error);
+          setUser(null);
+          return;
+        }
+        
+        setUser(session?.user || null);
+      } catch (error) {
+        console.error('Index page session check exception:', error);
+        if (!isMounted) return;
+        setUser(null);
+      }
+    };
+
+    checkInitialSession();
 
     return () => {
+      isMounted = false;
       authListener?.subscription.unsubscribe();
     };
   }, []);

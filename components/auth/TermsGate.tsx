@@ -25,7 +25,14 @@ export function TermsGate({ user, children }: TermsGateProps) {
   const checkTermsAcceptance = async () => {
     try {
       setLoading(true);
-      const agreement = await getUserAgreement(user.id);
+      
+      // Add timeout to prevent hanging
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Terms check timeout')), 10000);
+      });
+      
+      const agreementPromise = getUserAgreement(user.id);
+      const agreement = await Promise.race([agreementPromise, timeoutPromise]) as UserAgreement | null;
       
       // Check if user needs to accept terms
       const hasAcceptedTerms = agreement?.terms_accepted_at != null;

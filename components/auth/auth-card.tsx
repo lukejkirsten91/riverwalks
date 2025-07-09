@@ -21,32 +21,55 @@ export default function AuthCard() {
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
+    let isMounted = true;
+    
     const { data: authListener } = supabase.auth.onAuthStateChange(
       (event, session) => {
+        if (!isMounted) return;
+        console.log('Auth state changed:', event, session?.user?.email);
         setUser(session?.user || null);
         setLoading(false);
       }
     );
 
-    // Initial session check
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user || null);
-      setLoading(false);
-    });
-
-    // Fallback timeout to prevent infinite loading
-    const loadingTimeout = setTimeout(() => {
-      if (loading) {
-        console.warn('Auth loading timeout - forcing loading to false');
+    // Initial session check with error handling
+    const checkInitialSession = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (!isMounted) return;
+        
+        if (error) {
+          console.error('Session check error:', error);
+          setUser(null);
+          setLoading(false);
+          return;
+        }
+        
+        setUser(session?.user || null);
+        setLoading(false);
+      } catch (error) {
+        console.error('Session check exception:', error);
+        if (!isMounted) return;
+        setUser(null);
         setLoading(false);
       }
-    }, 10000); // 10 second timeout
+    };
+
+    checkInitialSession();
+
+    // Shorter timeout to prevent stuck loading - 5 seconds instead of 10
+    const loadingTimeout = setTimeout(() => {
+      if (!isMounted) return;
+      console.warn('Auth loading timeout - forcing loading to false');
+      setLoading(false);
+    }, 5000); // 5 second timeout
 
     return () => {
+      isMounted = false;
       authListener?.subscription.unsubscribe();
       clearTimeout(loadingTimeout);
     };
-  }, [loading]);
+  }, []);
 
   const handleSignIn = async () => {
     const redirectUrl = 'https://www.riverwalks.co.uk/api/auth/callback';

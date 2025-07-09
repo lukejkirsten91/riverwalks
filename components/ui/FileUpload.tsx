@@ -20,7 +20,7 @@ export function FileUpload({
   onFileRemove,
   currentImageUrl,
   accept = "image/*",
-  maxSizeBytes = 5 * 1024 * 1024, // 5MB default
+  maxSizeBytes = 20 * 1024 * 1024, // 20MB default
   className = "",
   disabled = false,
   uploadText = "Upload site photo",

@@ -56,6 +56,12 @@ export function InlineNumberEdit({
   };
 
   const handleSave = async () => {
+    // Don't save if the value is incomplete (like "0." or ".")
+    if (editValue === '' || editValue === '.' || editValue.endsWith('.')) {
+      handleCancel();
+      return;
+    }
+    
     const numValue = parseFloat(editValue);
     
     if (isNaN(numValue)) {
@@ -121,6 +127,7 @@ export function InlineNumberEdit({
             ref={inputRef}
             type="text"
             inputMode="decimal"
+            pattern="[0-9]*\.?[0-9]*"
             value={editValue}
             onChange={handleChange}
             onKeyDown={handleKeyDown}

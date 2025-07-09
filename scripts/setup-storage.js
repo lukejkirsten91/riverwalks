@@ -20,7 +20,7 @@ async function setupStorage() {
     const { data, error } = await supabase.storage.createBucket('site-photos', {
       public: true,
       allowedMimeTypes: ['image/png', 'image/jpeg', 'image/jpg', 'image/webp'],
-      fileSizeLimit: 5 * 1024 * 1024, // 5MB
+      fileSizeLimit: 20 * 1024 * 1024, // 20MB
     });
 
     if (error && error.message !== 'Bucket already exists') {

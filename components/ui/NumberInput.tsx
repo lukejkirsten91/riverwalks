@@ -103,6 +103,7 @@ export function NumberInput({
         id={id}
         type="text"
         inputMode="decimal"
+        pattern="[0-9]*\.?[0-9]*"
         value={internalValue}
         onChange={handleChange}
         onBlur={handleBlur}
