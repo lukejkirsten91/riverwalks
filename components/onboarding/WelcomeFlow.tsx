@@ -30,15 +30,15 @@ export function WelcomeFlow({ onComplete, userEmail }: WelcomeFlowProps) {
       icon: MapPin,
       content: (
         <div className="text-center">
-          <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-teal-500 rounded-full flex items-center justify-center mx-auto mb-6">
-            <MapPin className="w-10 h-10 text-white" />
+          <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-teal-500 rounded-full flex items-center justify-center mx-auto mb-4">
+            <MapPin className="w-8 h-8 text-white" />
           </div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Welcome to Riverwalks!</h2>
-          <p className="text-gray-600 mb-6">
+          <h2 className="text-xl font-bold text-gray-900 mb-3">Welcome to Riverwalks!</h2>
+          <p className="text-gray-600 mb-4 text-sm">
             You've joined thousands of GCSE Geography students using Riverwalks to create 
             professional river study documentation and reports.
           </p>
-          <div className="bg-blue-50 rounded-lg p-4 mb-6">
+          <div className="bg-blue-50 rounded-lg p-3">
             <p className="text-sm text-blue-800">
               <strong>Signed in as:</strong> {userEmail}
             </p>
@@ -53,43 +53,42 @@ export function WelcomeFlow({ onComplete, userEmail }: WelcomeFlowProps) {
       icon: BookOpen,
       content: (
         <div>
-          <h3 className="text-xl font-bold text-gray-900 mb-6 text-center">Free Features</h3>
-          <div className="space-y-4">
+          <h3 className="text-lg font-bold text-gray-900 mb-4 text-center">Free Features</h3>
+          <div className="space-y-3">
             <div className="flex items-start">
-              <CheckCircle className="w-5 h-5 text-green-500 mt-1 mr-3 flex-shrink-0" />
+              <CheckCircle className="w-4 h-4 text-green-500 mt-1 mr-3 flex-shrink-0" />
               <div>
-                <h4 className="font-semibold text-gray-900">River Walk Creation</h4>
-                <p className="text-sm text-gray-600">Create unlimited river walks with site management</p>
+                <h4 className="font-semibold text-gray-900 text-sm">River Walk Creation</h4>
+                <p className="text-xs text-gray-600">Create unlimited river walks with site management</p>
               </div>
             </div>
             <div className="flex items-start">
-              <CheckCircle className="w-5 h-5 text-green-500 mt-1 mr-3 flex-shrink-0" />
+              <CheckCircle className="w-4 h-4 text-green-500 mt-1 mr-3 flex-shrink-0" />
               <div>
-                <h4 className="font-semibold text-gray-900">Data Collection</h4>
-                <p className="text-sm text-gray-600">Record measurements, photos, and field notes</p>
+                <h4 className="font-semibold text-gray-900 text-sm">Data Collection</h4>
+                <p className="text-xs text-gray-600">Record measurements, photos, and field notes</p>
               </div>
             </div>
             <div className="flex items-start">
-              <CheckCircle className="w-5 h-5 text-green-500 mt-1 mr-3 flex-shrink-0" />
+              <CheckCircle className="w-4 h-4 text-green-500 mt-1 mr-3 flex-shrink-0" />
               <div>
-                <h4 className="font-semibold text-gray-900">Offline Support</h4>
-                <p className="text-sm text-gray-600">Works offline in the field, syncs when online</p>
+                <h4 className="font-semibold text-gray-900 text-sm">Offline Support</h4>
+                <p className="text-xs text-gray-600">Works offline in the field, syncs when online</p>
               </div>
             </div>
           </div>
           
-          <div className="mt-8 p-4 bg-gradient-to-r from-blue-50 to-teal-50 rounded-lg border border-blue-200">
-            <div className="flex items-center mb-3">
-              <Crown className="w-5 h-5 text-blue-600 mr-2" />
-              <h4 className="font-semibold text-blue-900">Premium Features</h4>
+          <div className="mt-4 p-3 bg-gradient-to-r from-blue-50 to-teal-50 rounded-lg border border-blue-200">
+            <div className="flex items-center mb-2">
+              <Crown className="w-4 h-4 text-blue-600 mr-2" />
+              <h4 className="font-semibold text-blue-900 text-sm">Premium Features</h4>
             </div>
-            <div className="space-y-2 text-sm text-blue-800">
+            <div className="space-y-1 text-xs text-blue-800">
               <div>• Professional PDF reports with charts and analysis</div>
               <div>• Excel data export for statistical analysis</div>
               <div>• River walk sharing and collaboration</div>
-              <div>• Advanced data visualization tools</div>
             </div>
-            <div className="mt-3 text-xs text-blue-600">
+            <div className="mt-2 text-xs text-blue-600">
               Starting at just £1.99/year (less than 40p per month!)
             </div>
           </div>
@@ -103,43 +102,43 @@ export function WelcomeFlow({ onComplete, userEmail }: WelcomeFlowProps) {
       icon: BarChart3,
       content: (
         <div>
-          <h3 className="text-xl font-bold text-gray-900 mb-6 text-center">Your First River Walk</h3>
-          <div className="space-y-6">
+          <h3 className="text-lg font-bold text-gray-900 mb-4 text-center">Your First River Walk</h3>
+          <div className="space-y-4">
             <div className="flex items-center">
-              <div className="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm font-bold mr-4">
+              <div className="w-7 h-7 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm font-bold mr-3">
                 1
               </div>
               <div>
-                <h4 className="font-semibold text-gray-900">Create a River Walk</h4>
-                <p className="text-sm text-gray-600">Give your study a name, date, and location</p>
+                <h4 className="font-semibold text-gray-900 text-sm">Create a River Walk</h4>
+                <p className="text-xs text-gray-600">Give your study a name, date, and location</p>
               </div>
             </div>
             <div className="flex items-center">
-              <div className="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm font-bold mr-4">
+              <div className="w-7 h-7 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm font-bold mr-3">
                 2
               </div>
               <div>
-                <h4 className="font-semibold text-gray-900">Add Study Sites</h4>
-                <p className="text-sm text-gray-600">Mark locations along your river where you'll take measurements</p>
+                <h4 className="font-semibold text-gray-900 text-sm">Add Study Sites</h4>
+                <p className="text-xs text-gray-600">Mark locations along your river where you'll take measurements</p>
               </div>
             </div>
             <div className="flex items-center">
-              <div className="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm font-bold mr-4">
+              <div className="w-7 h-7 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm font-bold mr-3">
                 3
               </div>
               <div>
-                <h4 className="font-semibold text-gray-900">Collect Data</h4>
-                <p className="text-sm text-gray-600">Record measurements, photos, and observations at each site</p>
+                <h4 className="font-semibold text-gray-900 text-sm">Collect Data</h4>
+                <p className="text-xs text-gray-600">Record measurements, photos, and observations at each site</p>
               </div>
             </div>
             <div className="flex items-center">
-              <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-teal-500 text-white rounded-full flex items-center justify-center mr-4">
-                <Crown className="w-4 h-4" />
+              <div className="w-7 h-7 bg-gradient-to-r from-blue-500 to-teal-500 text-white rounded-full flex items-center justify-center mr-3">
+                <Crown className="w-3 h-3" />
               </div>
               <div>
-                <h4 className="font-semibold text-gray-900">Generate Report</h4>
-                <p className="text-sm text-gray-600">Create professional PDF reports for your coursework</p>
-                <span className="text-xs text-blue-600 bg-blue-100 px-2 py-1 rounded mt-1 inline-block">Premium Feature</span>
+                <h4 className="font-semibold text-gray-900 text-sm">Generate Report</h4>
+                <p className="text-xs text-gray-600">Create professional PDF reports for your coursework</p>
+                <span className="text-xs text-blue-600 bg-blue-100 px-2 py-0.5 rounded mt-1 inline-block">Premium Feature</span>
               </div>
             </div>
           </div>

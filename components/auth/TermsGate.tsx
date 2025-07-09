@@ -33,13 +33,24 @@ export function TermsGate({ user, children }: TermsGateProps) {
         return;
       }
       
-      // Skip terms check for all authenticated users who are already signed in
-      // They've already gone through the authentication flow, so no need to check again
-      setNeedsAcceptance(false);
+      // Check if user has accepted terms and privacy policy
+      // Add timeout to prevent hanging
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Terms check timeout')), 10000);
+      });
+      
+      const agreementPromise = getUserAgreement(user.id);
+      const agreement = await Promise.race([agreementPromise, timeoutPromise]) as UserAgreement | null;
+      
+      // Check if user needs to accept terms
+      const hasAcceptedTerms = agreement?.terms_accepted_at != null;
+      const hasAcceptedPrivacy = agreement?.privacy_accepted_at != null;
+      
+      setNeedsAcceptance(!hasAcceptedTerms || !hasAcceptedPrivacy);
     } catch (error) {
       console.error('Error checking terms acceptance:', error);
-      // If there's an error checking, assume they don't need to accept (they're already authenticated)
-      setNeedsAcceptance(false);
+      // If there's an error checking, assume they need to accept
+      setNeedsAcceptance(true);
     } finally {
       setLoading(false);
     }

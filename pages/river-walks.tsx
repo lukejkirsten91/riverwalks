@@ -534,7 +534,7 @@ export default function RiverWalksPage() {
       {/* Profile dropdown portal - renders at top level */}
       {showProfileDropdown && dropdownPosition && typeof window !== 'undefined' && createPortal(
         <div 
-          className="fixed w-48 bg-white rounded-lg shadow-modern border border-white/30 py-2 z-[99999] animate-in slide-in-from-top-2 fade-in-0 duration-200"
+          className="fixed w-64 sm:w-48 bg-white rounded-lg shadow-modern border border-white/30 py-2 z-[99999] animate-in slide-in-from-top-2 fade-in-0 duration-200"
           style={{
             top: dropdownPosition.top,
             right: dropdownPosition.right,
@@ -544,8 +544,10 @@ export default function RiverWalksPage() {
           <div className="px-4 py-2 text-sm text-muted-foreground border-b border-border">
             Signed in as
           </div>
-          <div className="px-4 py-2 text-sm font-medium text-foreground border-b border-border">
-            {user?.email}
+          <div className="px-4 py-2 text-sm font-medium text-foreground border-b border-border break-words">
+            <div className="truncate max-w-[224px] sm:max-w-[160px]" title={user?.email}>
+              {user?.email}
+            </div>
           </div>
           {/* Admin button - only visible to luke.kirsten@gmail.com */}
           {user?.email === 'luke.kirsten@gmail.com' && (

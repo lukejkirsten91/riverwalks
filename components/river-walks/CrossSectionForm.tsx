@@ -319,18 +319,18 @@ export function CrossSectionForm({
 
         {/* Real-time Cross-Sectional Chart */}
         {measurementData.length > 0 && measurementData.some(point => point.depth > 0) && (
-          <div className="mt-8 bg-blue-50/50 rounded-xl p-6 border border-blue-100">
+          <div className="mt-8">
             <div className="flex items-center gap-3 mb-4">
               <BarChart3 className="w-5 h-5 text-blue-600" />
               <h4 className="font-semibold text-blue-800">Cross-Sectional Profile</h4>
             </div>
             
-            <div className="bg-white rounded-lg p-4 border border-blue-200" style={{backgroundColor: 'lightcyan'}}>
+            <div className="bg-white rounded-lg p-4" style={{backgroundColor: 'lightcyan'}}>
               <svg
                 width="100%"
                 height="300"
                 viewBox="0 0 800 300"
-                className="border border-gray-200 rounded"
+                className="rounded"
               >
                 {/* Grid lines */}
                 <defs>
