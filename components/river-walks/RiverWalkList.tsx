@@ -19,6 +19,7 @@ interface RiverWalkListProps {
   onGenerateReport: (riverWalk: RiverWalk) => void;
   onShare?: (riverWalk: RiverWalk) => void;
   onManageCollaborators?: (riverWalk: RiverWalk) => void;
+  onUpgradePrompt: (feature: string) => void;
   isRiverWalkSynced: (riverWalk: RiverWalk) => boolean;
   archiveLoading?: string | null;
 }
@@ -34,6 +35,7 @@ export function RiverWalkList({
   onGenerateReport,
   onShare,
   onManageCollaborators,
+  onUpgradePrompt,
   isRiverWalkSynced,
   archiveLoading,
 }: RiverWalkListProps) {
@@ -41,7 +43,6 @@ export function RiverWalkList({
   const [showMyRiverWalks, setShowMyRiverWalks] = useState(true);
   const [showSharedWithMe, setShowSharedWithMe] = useState(true);
   const [showSharedByMe, setShowSharedByMe] = useState(true);
-  const [showUpgradePrompt, setShowUpgradePrompt] = useState<'reports' | 'advanced' | null>(null);
   
   // Get collaborator information for all river walks
   const { collaboratorInfo, getCollaboratorInfo } = useCollaboratorInfo(riverWalks);
@@ -220,7 +221,7 @@ export function RiverWalkList({
             </button>
           ) : (
             <button
-              onClick={() => setShowUpgradePrompt('advanced')}
+              onClick={() => onUpgradePrompt('advanced')}
               className="bg-gradient-to-r from-blue-50 to-teal-50 hover:from-blue-100 hover:to-teal-100 text-blue-700 px-3 py-2 sm:px-4 sm:py-3 rounded-lg font-medium transition-all duration-200 border-2 border-blue-200 shadow-modern hover:shadow-modern-lg touch-manipulation flex-1 sm:flex-none flex items-center justify-center text-sm sm:text-base relative"
             >
               <Crown className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
@@ -448,13 +449,6 @@ export function RiverWalkList({
         </div>
       )}
 
-      {/* Upgrade Prompt Modal */}
-      {showUpgradePrompt && (
-        <UpgradePrompt
-          feature={showUpgradePrompt}
-          onClose={() => setShowUpgradePrompt(null)}
-        />
-      )}
     </div>
   );
 }

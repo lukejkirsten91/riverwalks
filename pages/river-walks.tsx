@@ -5,26 +5,19 @@ import { createPortal } from 'react-dom';
 import { supabase } from '../lib/supabase';
 import { LogOut, MapPin, User as UserIcon, Users, UserCheck, Crown, Settings, MessageCircle } from 'lucide-react';
 import {
-  RiverWalkForm,
   RiverWalkList,
-  EnhancedSiteManagement,
 } from '../components/river-walks';
-import { ReportGenerator } from '../components/river-walks/ReportGenerator';
-import { ShareModal } from '../components/river-walks/ShareModal';
 import { useOfflineRiverWalks } from '../hooks/useOfflineData';
 import { useCollaboration, useCollaborationFeatureFlag } from '../hooks/useCollaboration';
 import { useToast } from '../components/ui/ToastProvider';
 import { offlineDataService } from '../lib/offlineDataService';
 // Force redeploy timestamp: 2025-07-03T04:21:00Z
 import { SubscriptionBadge } from '../components/ui/SubscriptionBadge';
-import { UpgradePrompt } from '../components/ui/UpgradePrompt';
 import { useSubscription, canAccessAdvancedFeatures } from '../hooks/useSubscription';
 import { TermsGate } from '../components/auth/TermsGate';
 import { WelcomeFlow } from '../components/onboarding/WelcomeFlow';
 import { useOnboarding } from '../hooks/useOnboarding';
-import FeedbackForm from '../components/FeedbackForm';
-import type { RiverWalk, RiverWalkFormData, Site } from '../types';
-import { getSitesForRiverWalk } from '../lib/api/sites';
+import type { RiverWalk, RiverWalkFormData } from '../types';
 import type { User } from '@supabase/supabase-js';
 import { useScrollLock } from '../hooks/useScrollLock';
 
@@ -38,27 +31,14 @@ export default function RiverWalksPage() {
   
   const [user, setUser] = useState<User | null>(null);
   const [showForm, setShowForm] = useState(false);
-  const [currentRiverWalk, setCurrentRiverWalk] = useState<RiverWalk | null>(
-    null
-  );
-  const [selectedRiverWalk, setSelectedRiverWalk] = useState<RiverWalk | null>(
-    null
-  );
-  const [reportRiverWalk, setReportRiverWalk] = useState<RiverWalk | null>(null);
-  const [reportSites, setReportSites] = useState<Site[]>([]);
-  const [loadingReport, setLoadingReport] = useState(false);
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const [dropdownPosition, setDropdownPosition] = useState<{top: number, right: number} | null>(null);
   const [archiveLoading, setArchiveLoading] = useState<string | null>(null);
-  const [shareRiverWalk, setShareRiverWalk] = useState<RiverWalk | null>(null);
   const [showJoinCollaboration, setShowJoinCollaboration] = useState(false);
   const [joinCollabLink, setJoinCollabLink] = useState('');
-  const [manageCollaboratorsRiverWalk, setManageCollaboratorsRiverWalk] = useState<RiverWalk | null>(null);
-  const [showUpgradePrompt, setShowUpgradePrompt] = useState<'reports' | 'export' | 'advanced' | null>(null);
-  const [showFeedbackForm, setShowFeedbackForm] = useState(false);
 
   // Apply scroll lock when any modal is open
-  useScrollLock(!!selectedRiverWalk || !!reportRiverWalk || !!shareRiverWalk || !!manageCollaboratorsRiverWalk || !!showUpgradePrompt || !!showForm || loadingReport);
+  useScrollLock(!!showForm || !!showJoinCollaboration || !!shouldShowWelcome);
 
   const {
     riverWalks,
@@ -153,29 +133,6 @@ export default function RiverWalksPage() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [showProfileDropdown]);
 
-  const handleFormSubmit = async (formData: RiverWalkFormData) => {
-    try {
-      if (currentRiverWalk) {
-        await updateRiverWalk(currentRiverWalk.id, formData);
-      } else {
-        await createRiverWalk(formData);
-        // Mark first river walk creation for onboarding
-        await markFirstRiverWalkCreated();
-      }
-
-      // Reset form state
-      setShowForm(false);
-      setCurrentRiverWalk(null);
-    } catch (error) {
-      console.error('Failed to save river walk:', error);
-      setError(error instanceof Error ? error.message : 'Failed to save river walk');
-    }
-  };
-
-  const handleFormCancel = () => {
-    setShowForm(false);
-    setCurrentRiverWalk(null);
-  };
 
   const handleUpdateField = async (id: string, field: keyof RiverWalk, value: string) => {
     try {
@@ -232,46 +189,19 @@ export default function RiverWalksPage() {
   };
 
   const handleManageSites = (riverWalk: RiverWalk) => {
-    setSelectedRiverWalk(riverWalk);
-  };
-
-  const handleCloseSiteManagement = () => {
-    setSelectedRiverWalk(null);
+    router.push(`/river-walks/${riverWalk.id}/sites`);
   };
 
   const handleGenerateReport = async (riverWalk: RiverWalk) => {
-    setLoadingReport(true);
-    try {
-      const sites = await getSitesForRiverWalk(riverWalk.id);
-      setReportSites(sites);
-      setReportRiverWalk(riverWalk);
-    } catch (error) {
-      console.error('Error loading sites for report:', error);
-      setError('Failed to load sites for report. Please try again.');
-    } finally {
-      setLoadingReport(false);
-    }
-  };
-
-  const handleCloseReport = () => {
-    setReportRiverWalk(null);
-    setReportSites([]);
+    router.push(`/river-walks/${riverWalk.id}/report`);
   };
 
   const handleShare = (riverWalk: RiverWalk) => {
-    setShareRiverWalk(riverWalk);
-  };
-
-  const handleCloseShare = () => {
-    setShareRiverWalk(null);
+    router.push(`/river-walks/${riverWalk.id}/share`);
   };
 
   const handleManageCollaborators = (riverWalk: RiverWalk) => {
-    setManageCollaboratorsRiverWalk(riverWalk);
-  };
-
-  const handleCloseManageCollaborators = () => {
-    setManageCollaboratorsRiverWalk(null);
+    router.push(`/river-walks/${riverWalk.id}/share`);
   };
 
   const handleSignOut = async () => {
@@ -302,13 +232,7 @@ export default function RiverWalksPage() {
   };
 
   const handleAddNewRiverWalk = () => {
-    setShowForm(!showForm);
-    setCurrentRiverWalk(null);
-    // Close join collaboration if it's open
-    if (showJoinCollaboration) {
-      setShowJoinCollaboration(false);
-      setJoinCollabLink('');
-    }
+    router.push('/river-walks/new');
   };
 
   const handleJoinCollaboration = () => {
@@ -488,8 +412,7 @@ export default function RiverWalksPage() {
                       // Close add form if it's open
                       if (showForm) {
                         setShowForm(false);
-                        setCurrentRiverWalk(null);
-                      }
+                                        }
                     }}
                   >
                     Join a Walk
@@ -497,7 +420,7 @@ export default function RiverWalksPage() {
                 ) : (
                   <button
                     className="bg-gradient-to-r from-blue-50 to-teal-50 hover:from-blue-100 hover:to-teal-100 text-blue-700 px-4 py-3 rounded-lg font-medium transition-all duration-200 border-2 border-blue-200 shadow-modern hover:shadow-modern-lg touch-manipulation relative"
-                    onClick={() => setShowUpgradePrompt('advanced')}
+                    onClick={() => router.push('/upgrade?feature=advanced')}
                   >
                     <Crown className="w-4 h-4 mr-2" />
                     Join a Walk
@@ -588,106 +511,9 @@ export default function RiverWalksPage() {
             onGenerateReport={handleGenerateReport}
             onShare={collaborationEnabled ? handleShare : undefined}
             onManageCollaborators={collaborationEnabled ? handleManageCollaborators : undefined}
+            onUpgradePrompt={(feature) => router.push(`/upgrade?feature=${feature}`)}
             isRiverWalkSynced={isRiverWalkSynced}
             archiveLoading={archiveLoading}
-          />
-        )}
-
-        {/* Site management modal */}
-        {selectedRiverWalk && (
-          <div 
-            className="fixed inset-0 bg-white sm:bg-black sm:bg-opacity-50 flex items-stretch sm:items-center justify-center sm:p-4 z-50"
-            onClick={handleCloseSiteManagement}
-          >
-            <div 
-              className="w-full sm:w-auto sm:max-w-6xl sm:rounded-lg overflow-hidden"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <EnhancedSiteManagement
-                riverWalk={selectedRiverWalk}
-                onClose={handleCloseSiteManagement}
-              />
-            </div>
-          </div>
-        )}
-
-        {/* Report generator modal */}
-        {reportRiverWalk && (
-          <div 
-            className="fixed inset-0 bg-black bg-opacity-50 flex items-start sm:items-center justify-center p-2 sm:p-4 z-50"
-            onClick={handleCloseReport}
-          >
-            <div onClick={(e) => e.stopPropagation()}>
-              <ReportGenerator
-                riverWalk={reportRiverWalk}
-                sites={reportSites}
-                onClose={handleCloseReport}
-              />
-            </div>
-          </div>
-        )}
-
-        {/* Share modal */}
-        {shareRiverWalk && collaborationEnabled && (
-          <div 
-            className="fixed inset-0 bg-white sm:bg-black sm:bg-opacity-50 flex items-stretch sm:items-center justify-center sm:p-4 z-50"
-            onClick={handleCloseShare}
-          >
-            <div 
-              className="w-full sm:w-auto sm:max-w-2xl sm:rounded-lg overflow-hidden"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <ShareModal
-                riverWalk={shareRiverWalk}
-                isOpen={true}
-                onClose={handleCloseShare}
-              />
-            </div>
-          </div>
-        )}
-
-        {/* Manage Collaborators modal */}
-        {manageCollaboratorsRiverWalk && collaborationEnabled && (
-          <div 
-            className="fixed inset-0 bg-white sm:bg-black sm:bg-opacity-50 flex items-stretch sm:items-center justify-center sm:p-4 z-50"
-            onClick={handleCloseManageCollaborators}
-          >
-            <div 
-              className="w-full sm:w-auto sm:max-w-2xl sm:rounded-lg overflow-hidden"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <ShareModal
-                riverWalk={manageCollaboratorsRiverWalk}
-                isOpen={true}
-                onClose={handleCloseManageCollaborators}
-              />
-            </div>
-          </div>
-        )}
-
-        {/* Loading indicator for report generation */}
-        {loadingReport && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg p-8 max-w-md mx-auto text-center">
-              <div className="mb-6">
-                <div className="animate-spin w-12 h-12 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
-                <div className="flex space-x-1 justify-center">
-                  <div className="w-2 h-2 bg-primary rounded-full animate-pulse delay-0"></div>
-                  <div className="w-2 h-2 bg-primary rounded-full animate-pulse delay-75"></div>
-                  <div className="w-2 h-2 bg-primary rounded-full animate-pulse delay-150"></div>
-                </div>
-              </div>
-              <h3 className="text-lg font-semibold text-gray-800 mb-2">Generating Report</h3>
-              <p className="text-gray-600">Loading site data and preparing visualizations...</p>
-            </div>
-          </div>
-        )}
-
-        {/* Upgrade Prompt Modal */}
-        {showUpgradePrompt && (
-          <UpgradePrompt
-            feature={showUpgradePrompt}
-            onClose={() => setShowUpgradePrompt(null)}
           />
         )}
 
@@ -698,33 +524,6 @@ export default function RiverWalksPage() {
             userEmail={user.email}
           />
         )}
-
-        {/* River Walk Form Modal */}
-        {showForm && (
-          <div 
-            className="fixed inset-0 bg-white sm:bg-black sm:bg-opacity-50 flex items-stretch sm:items-center justify-center sm:p-4 z-50"
-            onClick={handleFormCancel}
-          >
-            <div 
-              className="w-full sm:w-auto sm:max-w-4xl sm:rounded-lg overflow-hidden"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <RiverWalkForm
-                currentRiverWalk={currentRiverWalk}
-                onSubmit={handleFormSubmit}
-                onCancel={handleFormCancel}
-                loading={loading}
-              />
-            </div>
-          </div>
-        )}
-
-        {/* Feedback Form Modal */}
-        <FeedbackForm
-          isOpen={showFeedbackForm}
-          onClose={() => setShowFeedbackForm(false)}
-          userEmail={user?.email}
-        />
       </div>
       
 
@@ -776,7 +575,7 @@ export default function RiverWalksPage() {
               e.preventDefault();
               e.stopPropagation();
               setShowProfileDropdown(false);
-              setShowFeedbackForm(true);
+              router.push('/feedback');
             }}
             className="w-full text-left px-4 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all duration-200 hover:scale-[1.02] flex items-center gap-2 border-b border-border"
           >
