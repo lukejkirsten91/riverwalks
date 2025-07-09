@@ -157,24 +157,12 @@ export default function AuthCard() {
 
   return (
     <div className="card-modern-xl backdrop-blur-sm bg-white/95 w-full">
-      <CardHeader className="text-center pb-6">
+      <CardHeader className="text-center pb-4">
         <CardTitle className="text-2xl text-foreground mb-2">
-          Create Your Free Account
+          Get Started Now
         </CardTitle>
-        <CardDescription className="text-muted-foreground">
-          Join Riverwalks to start your river documentation journey
-        </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        <div className="text-center">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full gradient-primary mb-4">
-            <MapPin className="w-8 h-8 text-white" />
-          </div>
-          <p className="text-sm text-muted-foreground">
-            Professional river analysis tools for students and educators
-          </p>
-        </div>
-        
         <button 
           onClick={handleSignIn} 
           className="btn-primary w-full touch-manipulation text-base text-white"
@@ -201,10 +189,14 @@ export default function AuthCard() {
         </button>
         
         <div className="text-center">
+          <CardDescription className="text-muted-foreground mb-4">
+            Join Riverwalks to start your river documentation journey
+          </CardDescription>
+          
           <p className="text-xs text-muted-foreground mb-2">
             New to Riverwalks? This will create your free account.
           </p>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-muted-foreground mb-4">
             Already have an account? You'll be signed in automatically.
           </p>
         </div>

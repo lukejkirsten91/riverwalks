@@ -334,11 +334,7 @@ export default function Home() {
             {/* Primary CTA - Immediately after hero image */}
             {!user && (
               <div className="w-full max-w-md mx-auto mb-8">
-                <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl p-6 mb-4">
-                  <h2 className="text-2xl font-bold text-white mb-2 text-center">Get Started Now</h2>
-                  <p className="text-white/90 text-center mb-4">Sign up and start your first river study in under 2 minutes</p>
-                  <AuthCard />
-                </div>
+                <AuthCard />
               </div>
             )}
 
