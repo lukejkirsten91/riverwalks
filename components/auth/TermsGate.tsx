@@ -26,11 +26,6 @@ export function TermsGate({ user, children }: TermsGateProps) {
 
   const checkTermsAcceptance = async () => {
     try {
-      // Wait for subscription to load first
-      if (subscription.loading) {
-        return;
-      }
-      
       // Quick check: if user has been around for a while, they likely accepted terms
       const userCreatedAt = new Date(user.created_at);
       const now = new Date();
@@ -40,6 +35,11 @@ export function TermsGate({ user, children }: TermsGateProps) {
       if (accountAgeMinutes > 5) {
         setNeedsAcceptance(false);
         setLoading(false);
+        return;
+      }
+      
+      // Wait for subscription to load first for new accounts only
+      if (subscription.loading) {
         return;
       }
       
@@ -99,8 +99,12 @@ export function TermsGate({ user, children }: TermsGateProps) {
     }
   };
 
-  // Show loading state while checking
-  if (loading || subscription.loading) {
+  // Show loading state while checking (only for new accounts)
+  const userCreatedAt = new Date(user.created_at);
+  const now = new Date();
+  const accountAgeMinutes = (now.getTime() - userCreatedAt.getTime()) / (1000 * 60);
+  
+  if ((loading || subscription.loading) && accountAgeMinutes <= 5) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-sky-50 via-blue-50 to-teal-50">
         <div className="bg-white rounded-lg shadow-lg p-8 max-w-md w-full mx-4">
