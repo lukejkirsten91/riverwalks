@@ -347,16 +347,6 @@ export default function Home() {
               <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-white mb-4">
                 Turn your river adventures into beautiful data stories
               </h1>
-              
-              <p className="text-lg text-white/80 mb-6 max-w-3xl mx-auto">
-                Whether you're studying for GCSE Geography, researching waterways, or just curious about rivers, 
-                Riverwalks makes field data collection and analysis surprisingly engaging.
-              </p>
-
-              <span className="inline-flex items-center px-4 py-2 rounded-full bg-white/20 backdrop-blur-sm border border-white/30 text-white text-sm font-medium">
-                <Waves className="w-4 h-4 mr-2" />
-                Walk. Track. Learn.
-              </span>
             </div>
 
             {/* Transparent pricing messaging */}
