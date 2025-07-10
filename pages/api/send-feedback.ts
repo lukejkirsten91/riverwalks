@@ -30,7 +30,7 @@ const sendFeedbackEmail = async (userEmail: string, message: string, type: strin
 
     const mailOptions = {
       from: `"Riverwalks Feedback" <${process.env.SMTP_USER}>`,
-      to: 'luke.kirsten@gmail.com',
+      to: 'support@riverwalks.co.uk',
       replyTo: userEmail,
       subject: `🌊 Riverwalks Feedback: ${type}`,
       text: `
