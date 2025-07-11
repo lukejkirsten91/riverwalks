@@ -266,17 +266,17 @@ export default function Home() {
       
       <div className="relative" style={{ overflow: 'visible' }}>
         {/* Top Header */}
-        <header className="absolute top-0 left-0 right-0 z-50 p-4">
+        <header className="absolute top-0 left-0 right-0 z-50 p-4 pointer-events-none">
           <div className="max-w-7xl mx-auto flex justify-between items-center">
             <div className="flex items-center gap-2">
               <img src="/logo.png" alt="Riverwalks" className="h-8 w-8" />
               <span className="text-white font-semibold text-lg">Riverwalks</span>
             </div>
             
-            <div className="flex items-center gap-1 sm:gap-3">
+            <div className="flex items-center gap-1 sm:gap-3 pointer-events-auto">
               {user ? (
                 <div className="flex items-center gap-1 sm:gap-3">
-                  <div className="flex items-center gap-2 text-white/90 text-sm">
+                  <div className="flex items-center gap-2 text-white/90 text-sm bg-black/20 backdrop-blur-sm rounded-lg px-3 py-1">
                     {user.user_metadata?.avatar_url && (
                       <img
                         src={user.user_metadata.avatar_url}
@@ -284,7 +284,7 @@ export default function Home() {
                         className="w-6 h-6 rounded-full"
                       />
                     )}
-                    <span className="hidden md:inline">{user.email}</span>
+                    <span className="hidden md:inline max-w-[200px] truncate">{user.email}</span>
                   </div>
                   <button
                     onClick={() => window.location.href = '/river-walks'}
