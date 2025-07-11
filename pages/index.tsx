@@ -23,7 +23,6 @@ export default function Home() {
     const { data: authListener } = supabase.auth.onAuthStateChange(
       (event, session) => {
         if (!isMounted) return;
-        console.log('Index page auth state changed:', event, session?.user?.email);
         setUser(session?.user || null);
       }
     );

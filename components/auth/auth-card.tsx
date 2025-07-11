@@ -28,7 +28,6 @@ export default function AuthCard() {
     const { data: authListener } = supabase.auth.onAuthStateChange(
       (event, session) => {
         if (!isMounted) return;
-        console.log('Auth state changed:', event, session?.user?.email);
         setUser(session?.user || null);
         setLoading(false);
       }
@@ -62,7 +61,6 @@ export default function AuthCard() {
     // Simple timeout to prevent stuck loading
     const loadingTimeout = setTimeout(() => {
       if (!isMounted) return;
-      console.warn('Auth loading timeout - forcing loading to false');
       setLoading(false);
     }, 5000); // 5 second timeout
 
@@ -76,7 +74,6 @@ export default function AuthCard() {
 
   const handleSignIn = async () => {
     const redirectUrl = 'https://www.riverwalks.co.uk/api/auth/callback';
-    console.log('Redirecting to:', redirectUrl);
 
     await supabase.auth.signInWithOAuth({
       provider: 'google',
@@ -231,10 +228,10 @@ export default function AuthCard() {
 
         <div className="relative">
           <div className="absolute inset-0 flex items-center">
-            <span className="w-full border-t border-gray-300" />
+            <span className="w-full border-t border-gray-200" />
           </div>
           <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-white px-2 text-muted-foreground">Or</span>
+            <span className="bg-white/95 backdrop-blur-sm px-3 py-1 rounded-full text-muted-foreground border border-gray-100">Or</span>
           </div>
         </div>
 
