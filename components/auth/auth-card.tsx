@@ -12,13 +12,15 @@ import {
   CardContent,
   CardFooter,
 } from '../ui/card';
-import { LogIn, LogOut, MapPin, UserCheck } from 'lucide-react';
+import { LogIn, LogOut, MapPin, UserCheck, Mail } from 'lucide-react';
 import { TermsGate } from './TermsGate';
+import { EmailAuthForm } from './EmailAuthForm';
 
 export default function AuthCard() {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const [showEmailAuth, setShowEmailAuth] = useState<boolean>(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -179,6 +181,21 @@ export default function AuthCard() {
     );
   }
 
+  if (showEmailAuth) {
+    return (
+      <div className="card-modern-xl backdrop-blur-sm bg-white/95 w-full">
+        <CardHeader className="text-center pb-4">
+          <CardTitle className="text-2xl text-foreground mb-2">
+            Get Started Now
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <EmailAuthForm onBack={() => setShowEmailAuth(false)} />
+        </CardContent>
+      </div>
+    );
+  }
+
   return (
     <div className="card-modern-xl backdrop-blur-sm bg-white/95 w-full">
       <CardHeader className="text-center pb-4">
@@ -186,7 +203,7 @@ export default function AuthCard() {
           Get Started Now
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-6">
+      <CardContent className="space-y-4">
         <button 
           onClick={handleSignIn} 
           className="btn-primary w-full touch-manipulation text-base text-white"
@@ -209,26 +226,34 @@ export default function AuthCard() {
               d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
             />
           </svg>
-          Sign In / Create Account
+          Continue with Google
+        </button>
+
+        <div className="relative">
+          <div className="absolute inset-0 flex items-center">
+            <span className="w-full border-t border-gray-300" />
+          </div>
+          <div className="relative flex justify-center text-xs uppercase">
+            <span className="bg-white px-2 text-muted-foreground">Or</span>
+          </div>
+        </div>
+
+        <button 
+          onClick={() => setShowEmailAuth(true)}
+          className="btn-secondary w-full touch-manipulation text-base"
+        >
+          <Mail className="mr-3 h-5 w-5" />
+          Continue with Email
         </button>
         
-        <div className="text-center">
-          <CardDescription className="text-muted-foreground mb-4">
-            Join Riverwalks to start your river documentation journey
-          </CardDescription>
-          
-          <p className="text-xs text-muted-foreground mb-2">
-            New to Riverwalks? This will create your free account.
-          </p>
-          <p className="text-xs text-muted-foreground mb-4">
-            Already have an account? You'll be signed in automatically.
-          </p>
-        </div>
-        
         <div className="text-center space-y-3">
+          <p className="text-xs text-muted-foreground">
+            New to Riverwalks? Either option will create your free account.
+          </p>
+          
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
             <p className="text-xs text-blue-800 font-medium">
-              ✨ Creating an account allows you to save your river studies and access them from any device
+              ✨ Save your river studies and access them from any device
             </p>
           </div>
           

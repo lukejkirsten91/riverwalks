@@ -21,12 +21,6 @@ const createTransporter = () => {
 
 const sendFeedbackEmail = async (userEmail: string, message: string, type: string): Promise<boolean> => {
   try {
-    console.log('Attempting to send feedback email...');
-    console.log('SMTP_USER:', process.env.SMTP_USER ? 'configured' : 'missing');
-    console.log('SMTP_PASS:', process.env.SMTP_PASS ? 'configured' : 'missing');
-    console.log('SMTP_HOST:', process.env.SMTP_HOST);
-    console.log('SMTP_PORT:', process.env.SMTP_PORT);
-    
     const transporter = createTransporter();
     
     if (!transporter) {
@@ -84,10 +78,6 @@ Reply directly to this email to respond to the user.
     
   } catch (error) {
     console.error('Failed to send feedback email:', error);
-    console.error('Error details:', error instanceof Error ? error.message : 'Unknown error');
-    if (error instanceof Error && 'code' in error) {
-      console.error('Error code:', error.code);
-    }
     return false;
   }
 };
