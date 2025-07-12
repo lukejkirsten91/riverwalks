@@ -1343,7 +1343,7 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
                     <div className="relative">
                       {/* MapTiler OpenStreetMap Static API - matches coordinate picker style */}
                       <img
-                        src={`https://api.maptiler.com/maps/openstreetmap/static/${centerLng},${centerLat},${zoom}/600x400.png?key=${process.env.NEXT_PUBLIC_MAPTILER_API_KEY}`}
+                        src={`https://api.maptiler.com/maps/basic/static/${centerLng},${centerLat},${zoom}/600x400.png?key=${process.env.NEXT_PUBLIC_MAPTILER_API_KEY}`}
                         alt="Site Location Map"
                         className="w-full h-96 object-cover"
                         onError={(e) => {
