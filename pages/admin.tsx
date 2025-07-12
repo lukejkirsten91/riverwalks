@@ -391,7 +391,7 @@ export default function AdminDashboard() {
                   } whitespace-nowrap py-3 sm:py-4 px-1 sm:px-2 border-b-2 font-medium text-xs sm:text-sm flex items-center gap-1 sm:gap-2 flex-1 sm:flex-none justify-center sm:justify-start`}
                 >
                   <Icon className="w-3 h-3 sm:w-4 sm:h-4" />
-                  <span className="hidden xs:inline">{tab.name}</span>
+                  <span>{tab.name}</span>
                 </button>
               );
             })}
