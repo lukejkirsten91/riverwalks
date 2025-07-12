@@ -14,11 +14,5 @@
   },
   "env": {
     "CHROMIUM_REMOTE_EXEC_PATH": "https://github.com/Sparticuz/chromium/releases/download/v131.0.0/chromium-v131.0.0-pack.tar"
-  },
-  "crons": [
-    {
-      "path": "/api/cron/weekly-analytics",
-      "schedule": "0 9 * * MON"
-    }
-  ]
+  }
 }
