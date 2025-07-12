@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { supabase } from '../lib/supabase';
-import { Users, CreditCard, Tag, Activity, AlertCircle, Crown, Plus, Edit, Trash2 } from 'lucide-react';
+import { Users, CreditCard, Tag, Activity, AlertCircle, Crown, Plus, Edit, Trash2, BarChart3, Mail } from 'lucide-react';
+import { AnalyticsDashboard } from '../components/analytics/AnalyticsDashboard';
 
 interface AdminStats {
   totalUsers: number;
@@ -372,6 +373,7 @@ export default function AdminDashboard() {
           <nav className="flex flex-wrap sm:space-x-8 px-4 sm:px-6" aria-label="Tabs">
             {[
               { id: 'overview', name: 'Overview', icon: Activity },
+              { id: 'analytics', name: 'Analytics', icon: BarChart3 },
               { id: 'users', name: 'Users', icon: Users },
               { id: 'vouchers', name: 'Vouchers', icon: Tag },
               { id: 'voucher-usage', name: 'Usage', icon: Activity },
@@ -398,6 +400,49 @@ export default function AdminDashboard() {
 
         {/* Tab Content */}
         <div className="bg-white rounded-lg shadow">
+          {activeTab === 'analytics' && (
+            <div>
+              <div className="p-4 sm:p-6 border-b border-gray-200">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                  <div>
+                    <h3 className="text-lg font-medium text-gray-900">Analytics & Insights</h3>
+                    <p className="text-sm text-gray-600">User behavior, conversion metrics, and platform performance</p>
+                  </div>
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <button
+                      onClick={async () => {
+                        try {
+                          const response = await fetch('/api/analytics/report', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ 
+                              period: '7d', 
+                              email: 'luke.kirsten@gmail.com',
+                              type: 'manual'
+                            })
+                          });
+                          const result = await response.json();
+                          if (result.success) {
+                            alert('📧 Weekly report sent to luke.kirsten@gmail.com!');
+                          } else {
+                            alert('❌ Report failed: ' + result.error);
+                          }
+                        } catch (error) {
+                          alert('❌ Report error: ' + error);
+                        }
+                      }}
+                      className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2"
+                    >
+                      <Mail className="w-4 h-4" />
+                      Send Weekly Report
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <AnalyticsDashboard />
+            </div>
+          )}
+
           {activeTab === 'users' && (
             <div className="p-4 sm:p-6">
               <h3 className="text-lg font-medium text-gray-900 mb-4">User Management</h3>

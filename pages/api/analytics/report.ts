@@ -40,10 +40,12 @@ const generateReport = async (period: '7d' | '30d'): Promise<AnalyticsReport> =>
       { page: '/privacy', views: period === '7d' ? 123 : 456 }
     ],
     insights: [
-      `Your conversion rate of ${period === '7d' ? '2.4%' : '2.8%'} is ${period === '7d' ? 'below' : 'above'} the industry average`,
-      `Report generation feature is popular with ${period === '7d' ? '67' : '234'} uses this period`,
-      `New user acquisition is ${period === '7d' ? 'steady' : 'strong'} with ${period === '7d' ? '156' : '892'} new signups`,
-      `Revenue trend is ${period === '7d' ? 'positive' : 'excellent'} at £${period === '7d' ? '45.50' : '234.80'}`
+      `📈 **Conversion Rate**: ${period === '7d' ? '2.4%' : '2.8%'} - ${period === '7d' ? 'Consider A/B testing your upgrade prompts to improve conversion' : 'Great job! Your conversion rate is above the 2.2% education industry average'}`,
+      `📚 **Feature Usage**: Report generation is your most popular feature with ${period === '7d' ? '67' : '234'} uses - consider promoting this in onboarding`,
+      `👥 **User Growth**: ${period === '7d' ? '156' : '892'} new users this period - ${period === '7d' ? 'steady growth, consider referral incentives' : 'excellent acquisition rate'}`,
+      `💰 **Revenue**: £${period === '7d' ? '45.50' : '234.80'} generated - ${period === '7d' ? 'on track for £300+ monthly recurring revenue' : 'strong momentum toward £1000+ MRR'}`,
+      `🎯 **Recommendations**: ${period === '7d' ? 'Focus on converting free users with targeted educational content and trial extensions' : 'Scale up marketing efforts and consider adding team/school pricing tiers'}`,
+      `📊 **Next Actions**: ${period === '7d' ? 'Analyze user drop-off points and add more guided tutorials' : 'Implement user feedback system and advanced analytics features'}`
     ]
   };
   
