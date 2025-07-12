@@ -1329,7 +1329,7 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
                 if (maxDiff > 0.5) zoom = 8;
                 
                 // Debug: Log API key availability and map parameters
-                console.log('Google Maps API Key available:', !!process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY);
+                console.log('MapTiler API Key available:', !!process.env.NEXT_PUBLIC_MAPTILER_API_KEY);
                 console.log('Map center:', centerLat, centerLng);
                 console.log('Map zoom:', zoom);
                 console.log('Sites with coordinates:', sitesWithCoords.length);
