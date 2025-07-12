@@ -2,20 +2,15 @@ import { useState } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
 import { ArrowLeft, Cookie, Settings, BarChart3, Shield, CheckCircle, XCircle } from 'lucide-react';
+import { useCookieConsent } from '../contexts/CookieConsentContext';
 
 export default function CookiePolicy() {
-  const [functionalEnabled, setFunctionalEnabled] = useState(true);
-  const [analyticsEnabled, setAnalyticsEnabled] = useState(false);
-  const [marketingEnabled, setMarketingEnabled] = useState(false);
+  const { consent, setAnalyticsConsent, setMarketingConsent } = useCookieConsent();
+  const [showSaveMessage, setShowSaveMessage] = useState(false);
 
   const handleSavePreferences = () => {
-    // This would integrate with your cookie consent system
-    console.log('Saving preferences:', { 
-      functional: functionalEnabled, 
-      analytics: analyticsEnabled, 
-      marketing: marketingEnabled 
-    });
-    alert('Cookie preferences saved!');
+    setShowSaveMessage(true);
+    setTimeout(() => setShowSaveMessage(false), 3000);
   };
 
   return (
@@ -94,9 +89,9 @@ export default function CookiePolicy() {
                   <label className="relative inline-flex items-center cursor-pointer">
                     <input
                       type="checkbox"
-                      checked={functionalEnabled}
-                      onChange={(e) => setFunctionalEnabled(e.target.checked)}
+                      checked={consent.essential}
                       className="sr-only peer"
+                      disabled
                     />
                     <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/25 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
                   </label>
@@ -111,8 +106,8 @@ export default function CookiePolicy() {
                   <label className="relative inline-flex items-center cursor-pointer">
                     <input
                       type="checkbox"
-                      checked={analyticsEnabled}
-                      onChange={(e) => setAnalyticsEnabled(e.target.checked)}
+                      checked={consent.analytics}
+                      onChange={(e) => setAnalyticsConsent(e.target.checked)}
                       className="sr-only peer"
                     />
                     <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/25 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
@@ -128,8 +123,8 @@ export default function CookiePolicy() {
                   <label className="relative inline-flex items-center cursor-pointer">
                     <input
                       type="checkbox"
-                      checked={marketingEnabled}
-                      onChange={(e) => setMarketingEnabled(e.target.checked)}
+                      checked={consent.marketing}
+                      onChange={(e) => setMarketingConsent(e.target.checked)}
                       className="sr-only peer"
                     />
                     <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/25 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
@@ -140,9 +135,16 @@ export default function CookiePolicy() {
               <div className="flex justify-end mt-4">
                 <button
                   onClick={handleSavePreferences}
-                  className="bg-primary hover:bg-primary/90 text-white px-6 py-2 rounded-lg font-medium transition-colors"
+                  className="bg-primary hover:bg-primary/90 text-white px-6 py-2 rounded-lg font-medium transition-colors flex items-center gap-2"
                 >
-                  Save Preferences
+                  {showSaveMessage ? (
+                    <>
+                      <CheckCircle className="w-4 h-4" />
+                      Saved!
+                    </>
+                  ) : (
+                    'Save Preferences'
+                  )}
                 </button>
               </div>
             </div>
@@ -254,14 +256,14 @@ export default function CookiePolicy() {
                   </thead>
                   <tbody className="divide-y divide-gray-200">
                     <tr>
+                      <td className="px-4 py-3 text-sm text-gray-900">Google Analytics 4</td>
+                      <td className="px-4 py-3 text-sm text-gray-600">Website usage analytics and user behavior insights</td>
+                      <td className="px-4 py-3 text-sm text-gray-600">Page views, events, user interactions, educational progress (anonymized)</td>
+                    </tr>
+                    <tr>
                       <td className="px-4 py-3 text-sm text-gray-900">Vercel Analytics</td>
                       <td className="px-4 py-3 text-sm text-gray-600">Performance monitoring and usage statistics</td>
                       <td className="px-4 py-3 text-sm text-gray-600">Page views, performance metrics (anonymized)</td>
-                    </tr>
-                    <tr>
-                      <td className="px-4 py-3 text-sm text-gray-900">PostHog (if enabled)</td>
-                      <td className="px-4 py-3 text-sm text-gray-600">User behavior analytics for improvement</td>
-                      <td className="px-4 py-3 text-sm text-gray-600">Feature usage, user flows (anonymized)</td>
                     </tr>
                   </tbody>
                 </table>
@@ -303,7 +305,13 @@ export default function CookiePolicy() {
                 <li><strong>Stripe:</strong> For secure payment processing and fraud prevention</li>
               </ul>
 
-              <h3>4.3 Performance and Security</h3>
+              <h3>4.3 Analytics Services</h3>
+              <ul>
+                <li><strong>Google Analytics 4:</strong> For website analytics and user behavior insights (with consent)</li>
+                <li><strong>Vercel Analytics:</strong> For performance monitoring and optimization</li>
+              </ul>
+
+              <h3>4.4 Performance and Security</h3>
               <ul>
                 <li><strong>Vercel:</strong> For website hosting and performance optimization</li>
                 <li><strong>Supabase:</strong> For secure data storage and authentication</li>
@@ -376,9 +384,19 @@ export default function CookiePolicy() {
               <ul>
                 <li><strong>Session cookies:</strong> Deleted when you close your browser</li>
                 <li><strong>Persistent cookies:</strong> Stored until their expiration date or until you delete them</li>
-                <li><strong>Analytics data:</strong> Anonymized and retained for up to 26 months</li>
-                <li><strong>Preference cookies:</strong> Retained until you change your settings</li>
+                <li><strong>Google Analytics data:</strong> Anonymized and retained for up to 26 months, then automatically deleted</li>
+                <li><strong>Vercel Analytics data:</strong> Retained according to Vercel's data retention policy</li>
+                <li><strong>Preference cookies:</strong> Retained until you change your settings or clear browser data</li>
               </ul>
+
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 my-4 not-prose">
+                <h4 className="font-semibold text-blue-900 mb-2">Your Data Rights</h4>
+                <p className="text-sm text-blue-800">
+                  You have the right to access, rectify, or delete your personal data, including analytics data. 
+                  You can also withdraw consent for optional cookies at any time by updating your preferences above 
+                  or contacting us directly.
+                </p>
+              </div>
 
               <h2>8. Updates to This Policy</h2>
               <p>

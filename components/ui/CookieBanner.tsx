@@ -1,28 +1,11 @@
-import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Cookie, X } from 'lucide-react';
+import { Cookie, X, BarChart3, Settings } from 'lucide-react';
+import { useCookieConsent } from '../../contexts/CookieConsentContext';
 
 export function CookieBanner() {
-  const [isVisible, setIsVisible] = useState(false);
+  const { showBanner, acceptAll, acceptEssential, dismissBanner } = useCookieConsent();
 
-  useEffect(() => {
-    // Check if user has already dismissed the banner
-    const cookieConsent = localStorage.getItem('cookie-banner-dismissed');
-    if (!cookieConsent) {
-      // Show banner after a short delay for better UX
-      const timer = setTimeout(() => {
-        setIsVisible(true);
-      }, 2000);
-      return () => clearTimeout(timer);
-    }
-  }, []);
-
-  const handleDismiss = () => {
-    setIsVisible(false);
-    localStorage.setItem('cookie-banner-dismissed', 'true');
-  };
-
-  if (!isVisible) {
+  if (!showBanner) {
     return null;
   }
 
@@ -36,8 +19,8 @@ export function CookieBanner() {
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm text-gray-700 leading-relaxed">
-                <span className="font-medium">Essential Cookies Notice:</span> This site uses essential cookies for authentication and core functionality. 
-                We do not use tracking or advertising cookies. Learn more in our{' '}
+                <span className="font-medium">We value your privacy:</span> This site uses essential cookies for core functionality and optional analytics cookies to improve your experience. 
+                You can choose which cookies to accept. Learn more in our{' '}
                 <Link 
                   href="/cookies" 
                   target="_blank"
@@ -57,22 +40,30 @@ export function CookieBanner() {
               </p>
               <div className="flex flex-col sm:flex-row gap-2 mt-3">
                 <button
-                  onClick={handleDismiss}
-                  className="bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                  onClick={acceptAll}
+                  className="bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
                 >
-                  Got it
+                  <BarChart3 className="w-4 h-4" />
+                  Accept All
+                </button>
+                <button
+                  onClick={acceptEssential}
+                  className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                >
+                  Essential Only
                 </button>
                 <Link
                   href="/cookies"
                   target="_blank"
-                  className="text-center sm:text-left px-4 py-2 text-sm text-gray-600 hover:text-gray-800 transition-colors"
+                  className="text-center sm:text-left px-4 py-2 text-sm text-gray-600 hover:text-gray-800 transition-colors flex items-center gap-2 justify-center sm:justify-start"
                 >
-                  Learn more
+                  <Settings className="w-4 h-4" />
+                  Customize
                 </Link>
               </div>
             </div>
             <button
-              onClick={handleDismiss}
+              onClick={dismissBanner}
               className="flex-shrink-0 p-1 text-gray-400 hover:text-gray-600 transition-colors"
               aria-label="Close cookie notice"
             >

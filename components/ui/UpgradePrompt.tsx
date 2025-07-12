@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { Crown, Zap, FileText, Download } from 'lucide-react';
 import { trackUserAction } from '../../hooks/usePerformanceMonitoring';
 import { useScrollLock } from '../../hooks/useScrollLock';
+import { trackEvent, trackButtonClick } from '../../lib/analytics';
 
 interface UpgradePromptProps {
   feature: 'reports' | 'export' | 'advanced';
@@ -64,7 +65,24 @@ export function UpgradePrompt({ feature, inline = false, onClose }: UpgradePromp
             <h4 className="font-semibold text-gray-900 mb-1">{config.title}</h4>
             <p className="text-sm text-gray-600 mb-3">{config.description}</p>
             <Link href="/subscription">
-              <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+              <button 
+                onClick={() => {
+                  trackButtonClick('upgrade_now_inline', `upgrade_prompt_${feature}`);
+                  trackEvent('begin_checkout', {
+                    currency: 'GBP',
+                    value: 1.99,
+                    items: [{
+                      item_id: 'annual_subscription',
+                      item_name: 'Annual Subscription',
+                      item_category: 'subscription',
+                      price: 1.99,
+                      quantity: 1
+                    }],
+                    source: `upgrade_prompt_${feature}_inline`
+                  });
+                }}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+              >
                 Upgrade Now
               </button>
             </Link>
@@ -125,7 +143,22 @@ export function UpgradePrompt({ feature, inline = false, onClose }: UpgradePromp
           <div className="flex gap-3">
             <Link href="/subscription" className="flex-1">
               <button 
-                onClick={() => trackUserAction('premium_feature_attempted', { feature, source: 'upgrade_prompt' })}
+                onClick={() => {
+                  trackUserAction('premium_feature_attempted', { feature, source: 'upgrade_prompt' });
+                  trackButtonClick('upgrade_now_modal', `upgrade_prompt_${feature}`);
+                  trackEvent('begin_checkout', {
+                    currency: 'GBP',
+                    value: 1.99,
+                    items: [{
+                      item_id: 'annual_subscription',
+                      item_name: 'Annual Subscription',
+                      item_category: 'subscription',
+                      price: 1.99,
+                      quantity: 1
+                    }],
+                    source: `upgrade_prompt_${feature}_modal`
+                  });
+                }}
                 className="w-full bg-gradient-to-r from-blue-600 to-teal-600 hover:from-blue-700 hover:to-teal-700 text-white px-4 py-3 rounded-lg font-semibold transition-all"
               >
                 Upgrade Now
@@ -135,6 +168,11 @@ export function UpgradePrompt({ feature, inline = false, onClose }: UpgradePromp
               <button 
                 onClick={() => {
                   trackUserAction('premium_feature_dismissed', { feature, source: 'upgrade_prompt' });
+                  trackButtonClick('maybe_later', `upgrade_prompt_${feature}`);
+                  trackEvent('upgrade_dismissed', {
+                    feature,
+                    source: 'upgrade_prompt_modal'
+                  });
                   onClose();
                 }}
                 className="px-4 py-3 text-gray-600 hover:text-gray-800 font-medium transition-colors"

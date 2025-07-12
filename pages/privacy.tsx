@@ -362,10 +362,34 @@ export default function PrivacyPolicy() {
 
               <h3>10.2 Optional Cookies (with consent)</h3>
               <ul>
-                <li>Analytics to understand usage patterns</li>
-                <li>Performance monitoring and optimization</li>
-                <li>User experience improvements</li>
+                <li><strong>Google Analytics 4:</strong> Website usage analytics, user behavior patterns, and performance metrics</li>
+                <li><strong>Vercel Analytics:</strong> Performance monitoring and optimization</li>
+                <li>User experience improvements and feature usage tracking</li>
               </ul>
+
+              <h3>10.3 Analytics Data Collection</h3>
+              <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4 not-prose">
+                <div className="flex items-start gap-3">
+                  <Cookie className="w-5 h-5 text-yellow-600 mt-0.5" />
+                  <div>
+                    <p className="text-sm text-yellow-800 mb-2">
+                      <strong>Google Analytics 4:</strong> When you consent to analytics cookies, we collect:
+                    </p>
+                    <ul className="text-sm text-yellow-800 space-y-1">
+                      <li>• Page views, session duration, and user navigation patterns</li>
+                      <li>• Button clicks, form interactions, and feature usage</li>
+                      <li>• Educational progress milestones and learning analytics</li>
+                      <li>• Subscription conversions and upgrade interactions</li>
+                      <li>• File downloads and report generation events</li>
+                      <li>• Anonymized user demographics and interests (when available)</li>
+                    </ul>
+                    <p className="text-sm text-yellow-800 mt-2">
+                      <strong>Data Retention:</strong> Analytics data is retained for 26 months and is automatically deleted afterward. 
+                      You can opt-out anytime by updating your cookie preferences.
+                    </p>
+                  </div>
+                </div>
+              </div>
 
               <h2>11. Changes to This Policy</h2>
               <p>

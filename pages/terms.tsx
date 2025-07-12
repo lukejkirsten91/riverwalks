@@ -213,12 +213,30 @@ export default function TermsOfService() {
                 We process personal data on the following lawful bases:
               </p>
               <ul>
-                <li><strong>Consent:</strong> For marketing communications and cookies (where required)</li>
+                <li><strong>Consent:</strong> For optional analytics cookies, marketing communications, and Google Analytics 4 data collection</li>
                 <li><strong>Contract:</strong> To provide the Service and process payments</li>
-                <li><strong>Legitimate Interest:</strong> For service improvement and fraud prevention</li>
+                <li><strong>Legitimate Interest:</strong> For service improvement, fraud prevention, and essential performance monitoring</li>
               </ul>
 
-              <h3>8.3 Your Rights</h3>
+              <h3>8.3 Analytics and Usage Data</h3>
+              <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4 not-prose">
+                <p className="text-sm text-yellow-800 mb-2">
+                  <strong>Analytics Collection:</strong> With your consent, we use Google Analytics 4 to collect:
+                </p>
+                <ul className="text-sm text-yellow-800 space-y-1 mb-2">
+                  <li>• Website usage patterns and navigation behavior</li>
+                  <li>• Educational feature usage and learning progress</li>
+                  <li>• User interactions, button clicks, and form submissions</li>
+                  <li>• Subscription conversions and upgrade interactions</li>
+                  <li>• File downloads and report generation events</li>
+                </ul>
+                <p className="text-sm text-yellow-800">
+                  This data is anonymized, used solely for service improvement, and you can opt-out at any time 
+                  through our cookie preferences.
+                </p>
+              </div>
+
+              <h3>8.4 Your Rights</h3>
               <p>
                 Under UK GDPR, you have the right to:
               </p>
@@ -234,16 +252,17 @@ export default function TermsOfService() {
                 To exercise these rights, contact us at support@riverwalks.co.uk. We will respond within one month.
               </p>
 
-              <h3>8.4 Data Retention</h3>
+              <h3>8.5 Data Retention</h3>
               <p>
                 We retain personal data for as long as necessary to provide the Service and comply with legal obligations. 
                 Account data is retained for 30 days after account deletion to allow for recovery. Payment data is retained 
-                as required by financial regulations (typically 7 years).
+                as required by financial regulations (typically 7 years). Analytics data is anonymized and retained for up to 
+                26 months, after which it is automatically deleted.
               </p>
 
-              <h3>8.5 International Transfers</h3>
+              <h3>8.6 International Transfers</h3>
               <p>
-                Our service providers (including Supabase and Stripe) may process data outside the UK. We ensure adequate 
+                Our service providers (including Supabase, Stripe, and Google Analytics) may process data outside the UK. We ensure adequate 
                 protections are in place through appropriate safeguards such as adequacy decisions or standard contractual clauses.
               </p>
 

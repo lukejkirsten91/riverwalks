@@ -2,6 +2,7 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import { buffer } from 'micro';
 import Stripe from 'stripe';
 import { createClient } from '@supabase/supabase-js';
+import { trackPurchase } from '../../../lib/analytics';
 
 // Create service role client for admin operations
 const supabaseAdmin = createClient(
@@ -155,6 +156,16 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     }
 
     console.log(`✅ Subscription created for ${customerEmail}: ${subscriptionType}`);
+    
+    // Track purchase in Google Analytics
+    const amount = session.amount_total ? session.amount_total / 100 : 0; // Convert from cents
+    trackPurchase(
+      session.id,
+      amount,
+      session.currency?.toUpperCase() || 'GBP'
+    );
+    
+    console.log(`📊 Analytics: Tracked purchase - ${amount} ${session.currency?.toUpperCase()}`);
   } catch (error) {
     console.error('❌ Error handling checkout completion:', error);
     throw error;

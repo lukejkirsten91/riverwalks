@@ -15,6 +15,7 @@ import {
 import { LogIn, LogOut, MapPin, UserCheck, Mail } from 'lucide-react';
 import { TermsGate } from './TermsGate';
 import { EmailAuthForm } from './EmailAuthForm';
+import { trackSignup, trackButtonClick, trackEvent } from '../../lib/analytics';
 
 export default function AuthCard() {
   const router = useRouter();
@@ -30,6 +31,20 @@ export default function AuthCard() {
         if (!isMounted) return;
         setUser(session?.user || null);
         setLoading(false);
+        
+        // Track authentication events
+        if (event === 'SIGNED_IN' && session?.user) {
+          trackSignup('google');
+          trackEvent('user_authenticated', {
+            user_id: session.user.id,
+            provider: session.user.app_metadata?.provider || 'unknown',
+            is_new_user: session.user.created_at === session.user.last_sign_in_at
+          });
+        } else if (event === 'SIGNED_OUT') {
+          trackEvent('user_signed_out', {
+            event_category: 'authentication'
+          });
+        }
       }
     );
 
@@ -73,6 +88,8 @@ export default function AuthCard() {
 
 
   const handleSignIn = async () => {
+    trackButtonClick('continue_with_google', 'auth_card');
+    
     const redirectUrl = 'https://www.riverwalks.co.uk/api/auth/callback';
 
     await supabase.auth.signInWithOAuth({
@@ -88,11 +105,15 @@ export default function AuthCard() {
   };
 
   const handleSignOut = async () => {
+    trackButtonClick('sign_out', 'auth_card');
+    
     await supabase.auth.signOut();
     router.push('/');
   };
 
   const handleSwitchAccount = async () => {
+    trackButtonClick('switch_account', 'auth_card');
+    
     // Sign out current user
     await supabase.auth.signOut();
     // Force account selection on next sign in
@@ -152,7 +173,10 @@ export default function AuthCard() {
           </CardHeader>
           <CardFooter className="flex flex-col space-y-3 pt-2">
             <button
-              onClick={() => router.push('/river-walks')}
+              onClick={() => {
+                trackButtonClick('view_river_walks', 'auth_card');
+                router.push('/river-walks');
+              }}
               className="btn-primary w-full touch-manipulation"
             >
               <MapPin className="mr-2 h-5 w-5" /> 
@@ -236,7 +260,10 @@ export default function AuthCard() {
         </div>
 
         <button 
-          onClick={() => setShowEmailAuth(true)}
+          onClick={() => {
+            trackButtonClick('continue_with_email', 'auth_card');
+            setShowEmailAuth(true);
+          }}
           className="btn-secondary w-full touch-manipulation text-base"
         >
           <Mail className="mr-3 h-5 w-5" />

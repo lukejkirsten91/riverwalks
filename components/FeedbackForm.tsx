@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { X, Send, MessageCircle, Bug, Lightbulb, Heart } from 'lucide-react';
 import { useScrollLock } from '../hooks/useScrollLock';
+import { trackFormSubmission, trackEvent } from '../lib/analytics';
 
 interface FeedbackFormProps {
   isOpen: boolean;
@@ -49,6 +50,16 @@ export default function FeedbackForm({ isOpen, onClose, userEmail }: FeedbackFor
 
       if (response.ok) {
         setSubmitStatus('success');
+        
+        // Track successful feedback submission
+        trackFormSubmission('feedback_form', true);
+        trackEvent('feedback_submitted', {
+          feedback_type: selectedType,
+          has_email: !!email,
+          message_length: message.length,
+          event_category: 'engagement'
+        });
+        
         setTimeout(() => {
           onClose();
           setMessage('');
@@ -56,13 +67,38 @@ export default function FeedbackForm({ isOpen, onClose, userEmail }: FeedbackFor
         }, 2000);
       } else {
         setSubmitStatus('error');
+        trackFormSubmission('feedback_form', false);
       }
     } catch (error) {
       console.error('Feedback submission error:', error);
       setSubmitStatus('error');
+      trackFormSubmission('feedback_form', false);
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  // Track when feedback form is opened
+  const handleOpen = () => {
+    if (isOpen) {
+      trackEvent('feedback_form_opened', {
+        event_category: 'engagement'
+      });
+    }
+  };
+
+  // Track feedback type selection
+  const handleTypeChange = (typeId: string) => {
+    setSelectedType(typeId);
+    trackEvent('feedback_type_selected', {
+      feedback_type: typeId,
+      event_category: 'engagement'
+    });
+  };
+
+  // Track form opening
+  if (isOpen && selectedType === 'general') {
+    handleOpen();
   };
 
   if (!isOpen) return null;
@@ -95,7 +131,7 @@ export default function FeedbackForm({ isOpen, onClose, userEmail }: FeedbackFor
                   <button
                     key={type.id}
                     type="button"
-                    onClick={() => setSelectedType(type.id)}
+                    onClick={() => handleTypeChange(type.id)}
                     className={`p-3 border rounded-lg text-left transition-colors ${
                       selectedType === type.id
                         ? 'border-blue-500 bg-blue-50 text-blue-700'
