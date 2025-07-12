@@ -870,7 +870,7 @@ function createReportHTML(riverWalk: RiverWalk | null, sites: Site[] | null) {
         </div>
       `;
     }
-    const mapUrl = `https://api.maptiler.com/maps/basic/static/${centerLng},${centerLat},${zoom}/600x400.png?key=${process.env.NEXT_PUBLIC_MAPTILER_API_KEY}`;
+    const mapUrl = `https://maps.googleapis.com/maps/api/staticmap?center=${centerLat},${centerLng}&zoom=${zoom}&size=600x400&maptype=roadmap&style=feature:poi|visibility:off&style=feature:transit|visibility:off&style=feature:administrative.locality|element:labels|visibility:simplified&style=feature:landscape|color:0xf2f2f2&style=feature:water|color:0xb3d1ff&key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}`;
 
     // Calculate scaling for SVG overlay (frontend logic)
     const scaleX = width / (lonDiff);
