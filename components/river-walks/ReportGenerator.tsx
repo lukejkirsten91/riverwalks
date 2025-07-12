@@ -1341,13 +1341,13 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
                   <div className="bg-white rounded-lg border border-gray-300 overflow-hidden map-container">
                     {/* Static Map with Site Markers */}
                     <div className="relative">
-                      {/* Google Maps Static API - clean background without markers */}
+                      {/* MapTiler OpenStreetMap Static API - matches coordinate picker style */}
                       <img
-                        src={`https://maps.googleapis.com/maps/api/staticmap?center=${centerLat},${centerLng}&zoom=${zoom}&size=600x400&maptype=roadmap&style=feature:poi|visibility:off&style=feature:transit|visibility:off&style=feature:administrative.locality|element:labels|visibility:simplified&key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}`}
+                        src={`https://api.maptiler.com/maps/openstreetmap/static/${centerLng},${centerLat},${zoom}/600x400.png?key=${process.env.NEXT_PUBLIC_MAPTILER_API_KEY}`}
                         alt="Site Location Map"
                         className="w-full h-96 object-cover"
                         onError={(e) => {
-                          console.error('Google Maps Static API failed to load');
+                          console.error('MapTiler OpenStreetMap Static API failed to load');
                           const target = e.currentTarget;
                           target.alt = 'Map could not be loaded - API key needs domain authorization for riverwalks.co.uk';
                           // Hide the broken image and show a message
