@@ -35,6 +35,7 @@ export default function RiverWalksPage() {
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const [dropdownPosition, setDropdownPosition] = useState<{top: number, right: number} | null>(null);
   const [archiveLoading, setArchiveLoading] = useState<string | null>(null);
+  const [templateLoading, setTemplateLoading] = useState<string | null>(null);
   const [showJoinCollaboration, setShowJoinCollaboration] = useState(false);
   const [joinCollabLink, setJoinCollabLink] = useState('');
 
@@ -214,6 +215,8 @@ export default function RiverWalksPage() {
       return;
     }
 
+    setTemplateLoading(riverWalk.id);
+
     try {
       const fileName = `${riverWalk.name.replace(/[^a-z0-9\s]/gi, '_').replace(/\s+/g, '_')}_template.pdf`;
       
@@ -252,6 +255,8 @@ export default function RiverWalksPage() {
     } catch (error) {
       console.error('Error generating print template:', error);
       showError('Generation Failed', 'Failed to generate print template. Please try again.');
+    } finally {
+      setTemplateLoading(null);
     }
   };
 
@@ -574,6 +579,7 @@ export default function RiverWalksPage() {
             onUpgradePrompt={(feature) => router.push(`/upgrade?feature=${feature}`)}
             isRiverWalkSynced={isRiverWalkSynced}
             archiveLoading={archiveLoading}
+            templateLoading={templateLoading}
           />
         )}
 

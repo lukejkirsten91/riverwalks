@@ -321,9 +321,9 @@ function createPrintTemplateHTML(riverWalk: RiverWalk | null, siteCount: number)
     <div class="template-container">
         <div class="header">
             <h1>River Study Data Collection Template</h1>
-            <p><strong>Study Name:</strong> ${reportData.name}</p>
-            <p><strong>Date:</strong> ${formatDate(reportData.date)}</p>
-            <p><strong>Location:</strong> ${reportData.county || '_________________'}, ${reportData.country}</p>
+            <p><strong>Study Name:</strong> _________________</p>
+            <p><strong>Date:</strong> _________________</p>
+            <p><strong>Location:</strong> _________________</p>
             <p><strong>Number of Sites:</strong> ${siteCount}</p>
         </div>
 
@@ -363,17 +363,17 @@ function createPrintTemplateHTML(riverWalk: RiverWalk | null, siteCount: number)
             <div class="field-row">
                 <div class="field">
                     <label for="study-name">Study Name:</label>
-                    <input type="text" id="study-name" value="${reportData.name}" />
+                    <input type="text" id="study-name" value="" />
                 </div>
                 <div class="field">
                     <label for="date">Date:</label>
-                    <input type="text" id="date" value="${formatDate(reportData.date)}" />
+                    <input type="text" id="date" value="" />
                 </div>
             </div>
             <div class="field-row">
                 <div class="field">
                     <label for="location">Location:</label>
-                    <input type="text" id="location" value="${reportData.county || ''}, ${reportData.country}" />
+                    <input type="text" id="location" value="" />
                 </div>
                 <div class="field">
                     <label for="weather">Weather Conditions:</label>
@@ -382,7 +382,7 @@ function createPrintTemplateHTML(riverWalk: RiverWalk | null, siteCount: number)
             </div>
             <div class="field extra-large-field">
                 <label for="study-notes">Study Notes:</label>
-                <textarea id="study-notes">${reportData.notes || ''}</textarea>
+                <textarea id="study-notes"></textarea>
             </div>
         </div>
 
@@ -528,7 +528,7 @@ function createPrintTemplateHTML(riverWalk: RiverWalk | null, siteCount: number)
 
         <div class="footer">
             <p><strong>Next Steps:</strong> After completing your field work, visit <strong>riverwalks.co.uk</strong> to input your data and generate professional analysis reports.</p>
-            <p>© 2025 Riverwalks - Generated ${formatDate(new Date().toISOString())}</p>
+            <p>© 2025 Riverwalks - Print Template</p>
         </div>
     </div>
 </body>

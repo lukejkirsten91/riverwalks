@@ -23,6 +23,7 @@ interface RiverWalkListProps {
   onUpgradePrompt: (feature: string) => void;
   isRiverWalkSynced: (riverWalk: RiverWalk) => boolean;
   archiveLoading?: string | null;
+  templateLoading?: string | null;
 }
 
 export function RiverWalkList({
@@ -40,6 +41,7 @@ export function RiverWalkList({
   onUpgradePrompt,
   isRiverWalkSynced,
   archiveLoading,
+  templateLoading,
 }: RiverWalkListProps) {
   const [showArchived, setShowArchived] = useState(false);
   const [showMyRiverWalks, setShowMyRiverWalks] = useState(true);
@@ -205,11 +207,21 @@ export function RiverWalkList({
           /* Print Template - Always available for all users */
           <button
             onClick={() => onGeneratePrintTemplate(riverWalk)}
-            className="bg-orange-50 hover:bg-orange-100 text-orange-700 px-3 py-2 sm:px-4 sm:py-3 rounded-lg font-medium transition-all duration-200 border border-orange-200 shadow-modern hover:shadow-modern-lg touch-manipulation flex-1 sm:flex-none flex items-center justify-center text-sm sm:text-base"
+            disabled={templateLoading === riverWalk.id}
+            className="bg-orange-50 hover:bg-orange-100 text-orange-700 px-3 py-2 sm:px-4 sm:py-3 rounded-lg font-medium transition-all duration-200 border border-orange-200 shadow-modern hover:shadow-modern-lg touch-manipulation flex-1 sm:flex-none flex items-center justify-center text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed"
             title="Generate a print template for offline data collection"
           >
-            <FileText className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
-            <span className="truncate">Print Template</span>
+            {templateLoading === riverWalk.id ? (
+              <>
+                <div className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2 animate-spin rounded-full border-2 border-orange-700/30 border-t-orange-700"></div>
+                <span className="truncate">Generating...</span>
+              </>
+            ) : (
+              <>
+                <FileText className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
+                <span className="truncate">Print Template</span>
+              </>
+            )}
           </button>
         )}
         
