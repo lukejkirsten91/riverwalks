@@ -341,6 +341,13 @@ export default function Home() {
                   The complete river study platform trusted by students and teachers across the UK
                 </p>
               </div>
+              
+              <div className="bg-green-600/90 backdrop-blur-sm border border-green-400/60 rounded-xl p-4 mb-6 max-w-2xl mx-auto">
+                <p className="text-green-50 text-lg font-bold mb-1">📱 No Mobile, No Problem!</p>
+                <p className="text-green-100 text-sm">
+                  Collect data on-site with our print templates, then digitize when you're back. Perfect for field trips where mobiles aren't allowed.
+                </p>
+              </div>
             </div>
 
             {/* Hero Image - First thing users see */}
@@ -370,7 +377,7 @@ export default function Home() {
             <div className="bg-green-600/40 border border-green-400/60 rounded-xl p-4 mb-8 max-w-2xl mx-auto backdrop-blur-sm">
               <p className="text-green-50 text-sm font-medium mb-2">💡 Transparent Pricing - No Surprises</p>
               <p className="text-green-100 text-sm">
-                Create your account and test all features for free. Basic data export is included - premium PDF reports and collaboration require a small subscription (£1.99/year or £3.49 lifetime) to support development.
+                Create your account and test all features for free. Basic data export is included - premium PDF reports and collaboration require a small one-off payment (£1.99/year or £3.49 lifetime) to support development.
               </p>
             </div>
 
@@ -400,7 +407,7 @@ export default function Home() {
               </h2>
               <p className="text-white/80 text-lg max-w-2xl mx-auto">
                 Jump in with real data from the River Dart. Add your own measurements 
-                and watch professional reports generate in real-time.
+                and watch professional reports generate in real-time. Or generate print templates for offline data collection.
               </p>
             </div>
             <InteractivePreview onSignIn={handleSignIn} />
@@ -451,7 +458,7 @@ export default function Home() {
                 Start your first river study in less than 2 minutes. No credit card required to get started.
               </p>
               <p className="text-gray-300 text-sm mb-6">
-                Test all features free, then pay just £1.99/year or £3.49 lifetime for reports and data export.
+                Test all features free, then pay just £1.99/year or £3.49 lifetime (one-off payment) for reports and data export.
               </p>
               <AuthCard />
             </div>

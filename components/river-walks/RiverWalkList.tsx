@@ -1,4 +1,4 @@
-import { MapPin, Calendar, Globe, Trash2, Archive, RotateCcw, BarChart3, ChevronUp, ChevronDown, CheckCircle, Clock, Link, Users, User, Edit, Eye, Crown, Share, FileSpreadsheet } from 'lucide-react';
+import { MapPin, Calendar, Globe, Trash2, Archive, RotateCcw, BarChart3, ChevronUp, ChevronDown, CheckCircle, Clock, Link, Users, User, Edit, Eye, Crown, Share, FileSpreadsheet, FileText } from 'lucide-react';
 import { useState } from 'react';
 import { formatDate } from '../../lib/utils';
 import { InlineEdit } from '../ui/InlineEdit';
@@ -17,6 +17,7 @@ interface RiverWalkListProps {
   onDelete: (id: string) => void;
   onManageSites: (riverWalk: RiverWalk) => void;
   onGenerateReport: (riverWalk: RiverWalk) => void;
+  onGeneratePrintTemplate: (riverWalk: RiverWalk) => void;
   onShare?: (riverWalk: RiverWalk) => void;
   onManageCollaborators?: (riverWalk: RiverWalk) => void;
   onUpgradePrompt: (feature: string) => void;
@@ -33,6 +34,7 @@ export function RiverWalkList({
   onDelete,
   onManageSites,
   onGenerateReport,
+  onGeneratePrintTemplate,
   onShare,
   onManageCollaborators,
   onUpgradePrompt,
@@ -207,6 +209,18 @@ export function RiverWalkList({
           >
             <FileSpreadsheet className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
             <span className="truncate">Export</span>
+          </button>
+        )}
+        
+        {!isArchived && (
+          /* Print Template - Always available for all users */
+          <button
+            onClick={() => onGeneratePrintTemplate(riverWalk)}
+            className="bg-orange-50 hover:bg-orange-100 text-orange-700 px-3 py-2 sm:px-4 sm:py-3 rounded-lg font-medium transition-all duration-200 border border-orange-200 shadow-modern hover:shadow-modern-lg touch-manipulation flex-1 sm:flex-none flex items-center justify-center text-sm sm:text-base"
+            title="Generate a print template for offline data collection"
+          >
+            <FileText className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
+            <span className="truncate">Print Template</span>
           </button>
         )}
         

@@ -200,6 +200,61 @@ export default function RiverWalksPage() {
     router.push(`/river-walks/${riverWalk.id}/report`);
   };
 
+  const handleGeneratePrintTemplate = async (riverWalk: RiverWalk) => {
+    // Show modal to ask for number of sites
+    const siteCount = prompt('How many sites will you be measuring? (Enter a number between 1 and 20)', '5');
+    
+    if (!siteCount || isNaN(parseInt(siteCount))) {
+      return;
+    }
+
+    const numSites = parseInt(siteCount);
+    if (numSites < 1 || numSites > 20) {
+      showError('Invalid Site Count', 'Please enter a number between 1 and 20');
+      return;
+    }
+
+    try {
+      const fileName = `${riverWalk.name.replace(/[^a-z0-9\s]/gi, '_').replace(/\s+/g, '_')}_template.pdf`;
+      
+      // Get the user's session token
+      const { data: { session } } = await supabase.auth.getSession();
+      const authToken = session?.access_token;
+      
+      const response = await fetch('/api/generate-print-template', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(authToken && { 'Authorization': `Bearer ${authToken}` }),
+        },
+        body: JSON.stringify({
+          riverWalkId: riverWalk.id,
+          siteCount: numSites,
+          fileName: fileName,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to generate print template');
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      
+      showSuccess('Print Template Generated', 'Your print template has been downloaded successfully!');
+    } catch (error) {
+      console.error('Error generating print template:', error);
+      showError('Generation Failed', 'Failed to generate print template. Please try again.');
+    }
+  };
+
   const handleShare = (riverWalk: RiverWalk) => {
     router.push(`/river-walks/${riverWalk.id}/share`);
   };
@@ -513,6 +568,7 @@ export default function RiverWalksPage() {
             onDelete={handleDelete}
             onManageSites={handleManageSites}
             onGenerateReport={handleGenerateReport}
+            onGeneratePrintTemplate={handleGeneratePrintTemplate}
             onShare={collaborationEnabled ? handleShare : undefined}
             onManageCollaborators={collaborationEnabled ? handleManageCollaborators : undefined}
             onUpgradePrompt={(feature) => router.push(`/upgrade?feature=${feature}`)}

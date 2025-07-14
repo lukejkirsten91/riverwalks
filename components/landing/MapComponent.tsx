@@ -38,8 +38,8 @@ const createCustomIcon = () => {
   });
 };
 
-const ukCenter: [number, number] = [54.5, -3.0]; // Centre of UK showing more of Scotland/Wales
-const zoomLevel = 6; // Zoomed out to show most of UK
+const ukCenter: [number, number] = [51.7520, -1.2577]; // Oxford coordinates
+const zoomLevel = 5; // Zoomed out more to show broader area
 
 export default function MapComponent({ sites }: MapComponentProps) {
   const customIcon = createCustomIcon();
