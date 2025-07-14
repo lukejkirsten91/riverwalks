@@ -322,6 +322,16 @@ const SubscriptionPage: React.FC = () => {
                 Keep all your data forever
               </li>
             </ul>
+            
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4 sm:mb-6">
+              <p className="text-blue-800 text-xs sm:text-sm">
+                <strong>After 1 year:</strong> Your account transitions to our free basic plan. All your data stays safe, 
+                and you can upgrade anytime for premium features.
+              </p>
+            </div>
+
+            <ul className="space-y-2 sm:space-y-3 mb-6 sm:mb-8" style={{display: 'none'}}>
+            </ul>
 
             <button
               onClick={() => handleCheckout('yearly')}
@@ -368,7 +378,7 @@ const SubscriptionPage: React.FC = () => {
               </li>
               <li className="flex items-center text-gray-700 text-sm sm:text-base">
                 <span className="w-5 h-5 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-sm mr-3 flex-shrink-0">✓</span>
-                Save £0.49 vs. 2 annual plans
+                Save 14% vs. 2 annual plans
               </li>
             </ul>
 

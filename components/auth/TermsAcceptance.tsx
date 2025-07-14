@@ -67,7 +67,7 @@ export function TermsAcceptance({ onAcceptance, loading = false, required = true
               type="checkbox"
               checked={termsAccepted}
               onChange={(e) => setTermsAccepted(e.target.checked)}
-              className="w-5 h-5 text-primary focus:ring-primary border-gray-300 rounded"
+              className="w-5 h-5 text-green-600 focus:ring-green-500 border-gray-300 rounded checked:bg-green-600 checked:border-green-600"
               disabled={loading}
             />
           </label>
@@ -105,7 +105,7 @@ export function TermsAcceptance({ onAcceptance, loading = false, required = true
               type="checkbox"
               checked={privacyAccepted}
               onChange={(e) => setPrivacyAccepted(e.target.checked)}
-              className="w-5 h-5 text-primary focus:ring-primary border-gray-300 rounded"
+              className="w-5 h-5 text-green-600 focus:ring-green-500 border-gray-300 rounded checked:bg-green-600 checked:border-green-600"
               disabled={loading}
             />
           </label>
@@ -143,7 +143,7 @@ export function TermsAcceptance({ onAcceptance, loading = false, required = true
               type="checkbox"
               checked={marketingConsent}
               onChange={(e) => setMarketingConsent(e.target.checked)}
-              className="w-5 h-5 text-primary focus:ring-primary border-gray-300 rounded"
+              className="w-5 h-5 text-green-600 focus:ring-green-500 border-gray-300 rounded checked:bg-green-600 checked:border-green-600"
               disabled={loading}
             />
           </label>

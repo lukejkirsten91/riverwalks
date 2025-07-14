@@ -22,10 +22,15 @@ export default function AccountPage() {
     collaboratedWalks: 0,
     memberSince: '',
   });
+  const [emailPreferences, setEmailPreferences] = useState({
+    marketing: false,
+    loading: false,
+  });
 
   useEffect(() => {
     checkUser();
     loadAccountStats();
+    loadEmailPreferences();
   }, []);
 
   const checkUser = async () => {
@@ -77,6 +82,58 @@ export default function AccountPage() {
       });
     } catch (error) {
       console.error('Error loading account stats:', error);
+    }
+  };
+
+  const loadEmailPreferences = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: agreement } = await supabase
+        .from('user_agreements')
+        .select('marketing_consent')
+        .eq('user_id', user.id)
+        .single();
+
+      setEmailPreferences({
+        marketing: agreement?.marketing_consent || false,
+        loading: false,
+      });
+    } catch (error) {
+      console.error('Error loading email preferences:', error);
+    }
+  };
+
+  const updateEmailPreference = async (type: 'marketing', value: boolean) => {
+    setEmailPreferences(prev => ({ ...prev, loading: true }));
+    
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { error } = await supabase
+        .from('user_agreements')
+        .update({ marketing_consent: value })
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+
+      setEmailPreferences({
+        marketing: value,
+        loading: false,
+      });
+
+      showSuccess(
+        'Preferences Updated', 
+        value 
+          ? 'You will receive educational updates and GCSE Geography tips'
+          : 'You have been unsubscribed from educational updates'
+      );
+    } catch (error) {
+      console.error('Error updating email preferences:', error);
+      showError('Update Failed', 'Failed to update email preferences. Please try again.');
+      setEmailPreferences(prev => ({ ...prev, loading: false }));
     }
   };
 
@@ -238,6 +295,47 @@ export default function AccountPage() {
                 <label className="text-xs sm:text-sm font-medium text-muted-foreground">Collaborated Projects</label>
                 <p className="text-sm sm:text-base text-foreground font-medium">{accountStats.collaboratedWalks}</p>
               </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Email Preferences */}
+        <div className="glass rounded-2xl p-4 sm:p-6 mb-6 sm:mb-8 border border-white/20">
+          <h2 className="text-lg sm:text-xl font-semibold text-foreground mb-4 flex items-center gap-2">
+            <Mail className="w-4 h-4 sm:w-5 sm:h-5" />
+            Email Preferences
+          </h2>
+          
+          <div className="space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-blue-50 border border-blue-200 rounded-lg gap-3">
+              <div className="flex-1">
+                <h3 className="font-medium text-blue-900 text-sm sm:text-base flex items-center gap-2">
+                  Educational Updates
+                  <span className="text-xs bg-blue-200 text-blue-700 px-2 py-0.5 rounded">Optional</span>
+                </h3>
+                <p className="text-xs sm:text-sm text-blue-700">
+                  Receive helpful GCSE Geography tips, study resources, and product updates via email
+                </p>
+              </div>
+              <label className="flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={emailPreferences.marketing}
+                  onChange={(e) => updateEmailPreference('marketing', e.target.checked)}
+                  disabled={emailPreferences.loading}
+                  className="w-5 h-5 text-green-600 focus:ring-green-500 border-gray-300 rounded checked:bg-green-600 checked:border-green-600 disabled:opacity-50"
+                />
+                <span className="ml-2 text-sm font-medium text-blue-900">
+                  {emailPreferences.marketing ? 'Subscribed' : 'Unsubscribed'}
+                </span>
+              </label>
+            </div>
+            
+            <div className="p-3 bg-gray-50 border border-gray-200 rounded-lg">
+              <p className="text-xs text-gray-600">
+                <strong>Note:</strong> You can change this preference anytime. We never share your email address with third parties.
+                Unsubscribe links are included in all marketing emails.
+              </p>
             </div>
           </div>
         </div>
