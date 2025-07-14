@@ -89,22 +89,35 @@ export default function AuthCard() {
 
 
   const handleSignIn = async (provider: 'google' | 'azure') => {
+    console.log('Attempting to sign in with provider:', provider);
     trackButtonClick(`continue_with_${provider}`, 'auth_card');
     
     const redirectUrl = 'https://www.riverwalks.co.uk/api/auth/callback';
 
-    await supabase.auth.signInWithOAuth({
-      provider: provider,
-      options: {
-        redirectTo: redirectUrl,
-        queryParams: provider === 'google' ? {
-          prompt: 'select_account', // Force Google to show account selection
-          access_type: 'online'
-        } : {
-          prompt: 'select_account' // Force Microsoft to show account selection
-        }
-      },
-    });
+    try {
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: provider,
+        options: {
+          redirectTo: redirectUrl,
+          queryParams: provider === 'google' ? {
+            prompt: 'select_account', // Force Google to show account selection
+            access_type: 'online'
+          } : {
+            prompt: 'select_account' // Force Microsoft to show account selection
+          }
+        },
+      });
+      
+      if (error) {
+        console.error('OAuth error:', error);
+        alert(`Authentication error: ${error.message}`);
+      } else {
+        console.log('OAuth initiated successfully:', data);
+      }
+    } catch (err) {
+      console.error('OAuth exception:', err);
+      alert(`Authentication failed: ${err}`);
+    }
   };
 
   const handleSignOut = async () => {
