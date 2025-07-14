@@ -163,8 +163,16 @@ body {
 }
 
 .field textarea {
-  height: 100px;
+  height: 120px;
   resize: vertical;
+}
+
+.field.large-field input[type="text"] {
+  min-height: 60px;
+}
+
+.field.extra-large-field textarea {
+  height: 180px;
 }
 
 .measurement-table {
@@ -372,7 +380,7 @@ function createPrintTemplateHTML(riverWalk: RiverWalk | null, siteCount: number)
                     <input type="text" id="weather" />
                 </div>
             </div>
-            <div class="field">
+            <div class="field extra-large-field">
                 <label for="study-notes">Study Notes:</label>
                 <textarea id="study-notes">${reportData.notes || ''}</textarea>
             </div>
@@ -406,11 +414,11 @@ function createPrintTemplateHTML(riverWalk: RiverWalk | null, siteCount: number)
                         </div>
                     </div>
                     <div class="field-row">
-                        <div class="field">
+                        <div class="field large-field">
                             <label for="site-${siteNumber}-weather">Weather:</label>
                             <input type="text" id="site-${siteNumber}-weather" />
                         </div>
-                        <div class="field">
+                        <div class="field large-field">
                             <label for="site-${siteNumber}-land-use">Land Use:</label>
                             <input type="text" id="site-${siteNumber}-land-use" />
                         </div>
@@ -495,9 +503,9 @@ function createPrintTemplateHTML(riverWalk: RiverWalk | null, siteCount: number)
 
                 <div class="notes-section">
                     <h4>📝 Site Notes & Observations</h4>
-                    <div class="field">
+                    <div class="field extra-large-field">
                         <label for="site-${siteNumber}-notes">Additional Notes:</label>
-                        <textarea id="site-${siteNumber}-notes" style="height: 150px;"></textarea>
+                        <textarea id="site-${siteNumber}-notes"></textarea>
                     </div>
                 </div>
 

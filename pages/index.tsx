@@ -364,7 +364,7 @@ export default function Home() {
               <div className="bg-green-600/90 backdrop-blur-sm border border-green-400/60 rounded-xl p-4 mb-8 max-w-2xl mx-auto">
                 <p className="text-green-50 text-lg font-bold mb-1">📱 No Mobile, No Problem!</p>
                 <p className="text-green-100 text-sm">
-                  Collect data on-site with our print templates, then digitize when you're back. Perfect for field trips where mobiles aren't allowed.
+                  Collect data on-site with our print templates, then digitise when you're back. Perfect for field trips where mobiles aren't allowed.
                 </p>
               </div>
             )}

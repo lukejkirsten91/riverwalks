@@ -39,7 +39,7 @@ const createCustomIcon = () => {
 };
 
 const ukCenter: [number, number] = [51.7520, -1.2577]; // Oxford coordinates
-const zoomLevel = 5; // Zoomed out more to show broader area
+const zoomLevel = 6; // Zoomed in slightly from previous level
 
 export default function MapComponent({ sites }: MapComponentProps) {
   const customIcon = createCustomIcon();

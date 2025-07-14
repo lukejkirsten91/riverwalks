@@ -450,7 +450,7 @@ export function InteractivePreview({ onSignIn }: InteractivePreviewProps = {}) {
                   onChange={(e) => setUserSite(prev => ({ ...prev, riverWidth: parseFloat(e.target.value) || 0 }))}
                   onFocus={(e) => e.target.select()}
                   className="w-full px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white placeholder-white/50 text-center"
-                  placeholder="3.5"
+                  placeholder=""
                 />
               </div>
               
@@ -483,7 +483,7 @@ export function InteractivePreview({ onSignIn }: InteractivePreviewProps = {}) {
                           onChange={(e) => updateMeasurementPoint(index, parseFloat(e.target.value) || 0)}
                           onFocus={(e) => e.target.select()}
                           className="flex-1 px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white placeholder-white/50 text-center"
-                          placeholder="0.0"
+                          placeholder=""
                         />
                         <span className="text-white/60 text-sm">m deep</span>
                       </div>
@@ -573,7 +573,7 @@ export function InteractivePreview({ onSignIn }: InteractivePreviewProps = {}) {
                           onChange={(e) => updateVelocityMeasurement(index, 'time', parseFloat(e.target.value) || 0)}
                           onFocus={(e) => e.target.select()}
                           className="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white placeholder-white/50 text-center"
-                          placeholder="12.5"
+                          placeholder=""
                         />
                       </div>
                       <div>
@@ -704,7 +704,7 @@ export function InteractivePreview({ onSignIn }: InteractivePreviewProps = {}) {
                             onChange={(e) => updateSedimentMeasurement(index, 'size_mm', parseFloat(e.target.value) || 0)}
                             onFocus={(e) => e.target.select()}
                             className="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/20 text-white placeholder-white/50 text-center"
-                            placeholder="25.5"
+                            placeholder=""
                           />
                         </div>
                         <div>
