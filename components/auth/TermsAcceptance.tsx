@@ -59,7 +59,11 @@ export function TermsAcceptance({ onAcceptance, loading = false, required = true
       <div className="space-y-3 sm:space-y-4 mb-4 sm:mb-6">
         {/* Terms of Service */}
         <div 
-          className="flex items-start gap-3 p-4 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"
+          className={`flex items-start gap-3 p-4 border rounded-lg cursor-pointer transition-all duration-200 ${
+            termsAccepted 
+              ? 'bg-green-50 border-green-300 hover:bg-green-100' 
+              : 'border-gray-200 hover:bg-gray-50'
+          }`}
           onClick={() => !loading && setTermsAccepted(!termsAccepted)}
         >
           <label className="flex items-center cursor-pointer">
@@ -108,7 +112,11 @@ export function TermsAcceptance({ onAcceptance, loading = false, required = true
 
         {/* Privacy Policy */}
         <div 
-          className="flex items-start gap-3 p-4 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"
+          className={`flex items-start gap-3 p-4 border rounded-lg cursor-pointer transition-all duration-200 ${
+            privacyAccepted 
+              ? 'bg-green-50 border-green-300 hover:bg-green-100' 
+              : 'border-gray-200 hover:bg-gray-50'
+          }`}
           onClick={() => !loading && setPrivacyAccepted(!privacyAccepted)}
         >
           <label className="flex items-center cursor-pointer">
@@ -157,7 +165,11 @@ export function TermsAcceptance({ onAcceptance, loading = false, required = true
 
         {/* Optional Marketing Consent */}
         <div 
-          className="flex items-start gap-3 p-4 border border-gray-200 rounded-lg bg-gray-50 cursor-pointer hover:bg-gray-100 transition-colors"
+          className={`flex items-start gap-3 p-4 border rounded-lg cursor-pointer transition-all duration-200 ${
+            marketingConsent 
+              ? 'bg-green-50 border-green-300 hover:bg-green-100' 
+              : 'bg-gray-50 border-gray-200 hover:bg-gray-100'
+          }`}
           onClick={() => !loading && setMarketingConsent(!marketingConsent)}
         >
           <label className="flex items-center cursor-pointer">

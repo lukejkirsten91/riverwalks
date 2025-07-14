@@ -330,13 +330,25 @@ export default function AccountPage() {
           </h2>
           
           <div className="space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-blue-50 border border-blue-200 rounded-lg gap-3">
+            <div className={`flex flex-col sm:flex-row sm:items-center justify-between p-4 border rounded-lg gap-3 transition-all duration-200 ${
+              emailPreferences.marketing 
+                ? 'bg-green-50 border-green-300' 
+                : 'bg-blue-50 border-blue-200'
+            }`}>
               <div className="flex-1">
-                <h3 className="font-medium text-blue-900 text-sm sm:text-base flex items-center gap-2">
+                <h3 className={`font-medium text-sm sm:text-base flex items-center gap-2 ${
+                  emailPreferences.marketing ? 'text-green-900' : 'text-blue-900'
+                }`}>
                   Educational Updates
-                  <span className="text-xs bg-blue-200 text-blue-700 px-2 py-0.5 rounded">Optional</span>
+                  <span className={`text-xs px-2 py-0.5 rounded ${
+                    emailPreferences.marketing 
+                      ? 'bg-green-200 text-green-700' 
+                      : 'bg-blue-200 text-blue-700'
+                  }`}>Optional</span>
                 </h3>
-                <p className="text-xs sm:text-sm text-blue-700">
+                <p className={`text-xs sm:text-sm ${
+                  emailPreferences.marketing ? 'text-green-700' : 'text-blue-700'
+                }`}>
                   Receive helpful GCSE Geography tips, study resources, and product updates via email
                 </p>
               </div>
@@ -359,7 +371,9 @@ export default function AccountPage() {
                   disabled={emailPreferences.loading}
                   className="sr-only"
                 />
-                <span className="ml-2 text-sm font-medium text-blue-900">
+                <span className={`ml-2 text-sm font-medium ${
+                  emailPreferences.marketing ? 'text-green-900' : 'text-blue-900'
+                }`}>
                   {emailPreferences.marketing ? 'Subscribed' : 'Unsubscribed'}
                 </span>
               </label>

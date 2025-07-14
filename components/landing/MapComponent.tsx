@@ -38,15 +38,15 @@ const createCustomIcon = () => {
   });
 };
 
-const londonCenter: [number, number] = [51.5074, -0.1278]; // Centre of London
-const zoomLevel = 7; // Zoomed out to show more of the Thames region
+const ukCenter: [number, number] = [54.5, -3.0]; // Centre of UK showing more of Scotland/Wales
+const zoomLevel = 6; // Zoomed out to show most of UK
 
 export default function MapComponent({ sites }: MapComponentProps) {
   const customIcon = createCustomIcon();
 
   return (
     <MapContainer 
-      center={londonCenter} 
+      center={ukCenter} 
       zoom={zoomLevel} 
       style={{ height: '100%', width: '100%', borderRadius: '0.5rem' }}
       className="z-0"
