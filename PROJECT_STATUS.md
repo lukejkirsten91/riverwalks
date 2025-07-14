@@ -1352,6 +1352,119 @@ CREATE TABLE measurement_points (
 - **feature/3d-profile**: Phase 3 - 3D river profile and report generation
 - **feature/gcse-enhancement**: Phase 4 - AI analysis and educational features
 
+## 🎓 Interactive Tutorial System - IN DEVELOPMENT
+
+### 📋 Implementation Status: **DEVELOPMENT BRANCH - NOT IN PRODUCTION**
+
+The interactive tutorial system is being developed in a feature branch to provide new users with guided onboarding without affecting the production application.
+
+### ✅ Completed Components:
+
+#### Core Tutorial Infrastructure:
+- **TutorialOverlay Component**: Mobile-optimized overlay with spotlight effects
+- **useTutorial Hook**: State management for tutorial progression and persistence
+- **Tutorial Steps System**: Structured step-by-step guidance with targeting system
+- **Mobile Responsive Design**: Optimized tooltips and interactions for mobile devices
+- **Visual Feedback**: Animated highlight rings around target elements
+
+#### Key Features Implemented:
+- **Spotlight System**: Dark overlay with cutouts highlighting specific UI elements
+- **Clickable Elements**: Highlighted buttons remain fully functional during tutorial
+- **Mobile Optimization**: Bottom-positioned tooltips that don't cover buttons
+- **Progress Tracking**: Visual progress bar and step counter
+- **Skip/Exit Options**: Users can skip tutorial or exit anytime
+- **Auto-Advancement**: Tutorial progresses when users perform suggested actions
+- **Persistent State**: Tutorial progress saved to user metadata
+
+### 🚧 Known Issues (Reason for Branch Development):
+
+#### Critical Issues to Resolve:
+1. **Navigation Disruption**: Tutorial causes unexpected navigation back to start page after saving site info
+2. **Cross-Page Compatibility**: Tutorial doesn't handle multi-page workflows properly
+3. **State Management**: Complex state interactions between tutorial and app navigation
+
+#### Mobile Issues Fixed:
+- ✅ Tooltip positioning and sizing for mobile screens
+- ✅ Button click-through functionality
+- ✅ Skip button functionality
+- ✅ Visual feedback and highlighting
+
+### 🎯 Development Plan:
+
+#### Phase 1: Core Stability (Current Priority)
+- **Objective**: Fix navigation issues and ensure tutorial doesn't break app functionality
+- **Approach**: Simplify tutorial flow to single-page demonstrations only
+- **Target**: Tutorial works perfectly within river-walks page without navigation
+
+#### Phase 2: Enhanced Workflow
+- **Multi-Page Support**: Handle tutorial across different pages safely
+- **Smart Navigation**: Tutorial that adapts to user's actual workflow
+- **Context Awareness**: Tutorial steps that match user's current location
+
+#### Phase 3: Advanced Features
+- **Conditional Steps**: Tutorial adapts based on user subscription level
+- **Interactive Demos**: Mock data for demonstration purposes
+- **Completion Tracking**: Analytics on tutorial effectiveness
+
+### 🔧 Current Development Approach:
+
+#### Branch Strategy:
+```bash
+# Development happening in feature branch
+feature/interactive-tutorial
+
+# Main branch remains stable for production users
+main (stable - no tutorial)
+```
+
+#### Testing Protocol:
+1. **Local Development**: All tutorial features tested in isolation
+2. **Navigation Testing**: Ensure no interference with normal app flow
+3. **Mobile Testing**: Verify mobile responsiveness and touch interactions
+4. **Cross-Browser Testing**: Compatibility across different devices
+
+#### Merge Criteria:
+- ✅ Tutorial does not interfere with normal app functionality
+- ✅ Navigation remains stable throughout tutorial flow
+- ✅ Mobile experience is optimized and bug-free
+- ✅ Skip/exit functionality works reliably
+- ✅ No performance impact on main application
+
+### 📱 Tutorial Content Overview:
+
+#### Planned Tutorial Steps:
+1. **Welcome & Introduction**: Overview of River Walks platform
+2. **Create River Walk**: Guide through creating first study
+3. **Print Template**: Explain offline data collection option
+4. **Site Management**: Introduction to adding measurement sites
+5. **Data Export**: Show Excel export functionality
+6. **Premium Features**: Highlight collaboration and PDF reports
+7. **Organization**: Archive and restore functionality
+8. **Account Management**: Profile menu and settings
+9. **Completion**: Congratulations and next steps
+
+#### Educational Focus:
+- **GCSE Geography Students**: Language and examples targeted at educational use
+- **Step-by-Step Guidance**: Clear, actionable instructions
+- **Best Practices**: Tips for effective river study documentation
+- **Feature Discovery**: Highlight lesser-known but useful features
+
+### 🚀 Next Steps:
+
+1. **Resolve Navigation Issues**: Fix tutorial state management
+2. **Comprehensive Testing**: Ensure stability across all user flows  
+3. **Performance Optimization**: Minimize impact on app performance
+4. **User Testing**: Gather feedback on tutorial effectiveness
+5. **Production Deployment**: Merge to main when fully stable
+
+### 💡 Design Principles:
+
+- **Non-Intrusive**: Tutorial enhances without disrupting normal usage
+- **Educational**: Content specifically designed for GCSE Geography context
+- **Accessible**: Works perfectly on mobile devices (primary user platform)
+- **Optional**: Users can skip, exit, or restart tutorial anytime
+- **Persistent**: Tutorial progress saved and can be resumed later
+
 ## 📝 Development Notes for Future Sessions
 
 ### When Starting New Sessions:
