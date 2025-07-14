@@ -6,12 +6,13 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  // Auth callback received
+  console.log('OAuth callback received:', { method: req.method, query: req.query, headers: req.headers.referer });
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
   if (!supabaseUrl || !supabaseAnonKey) {
+    console.error('Missing Supabase environment variables');
     throw new Error('Missing Supabase environment variables');
   }
 
@@ -19,14 +20,18 @@ export default async function handler(
 
   const { code } = req.query;
   const codeString = Array.isArray(code) ? code[0] : code;
+  console.log('OAuth code received:', !!codeString);
 
   if (codeString) {
     try {
+      console.log('Exchanging OAuth code for session...');
       const { data, error } =
         await supabase.auth.exchangeCodeForSession(codeString);
       if (error) {
         console.error('Error exchanging code for session:', error);
+        console.error('Error details:', { message: error.message, status: error.status });
       } else {
+        console.log('Session exchange successful:', { user: data?.user?.email, provider: data?.user?.app_metadata?.provider });
         // Check if this is a new user and send welcome email
         if (data?.user && data?.session) {
           const user = data.user;

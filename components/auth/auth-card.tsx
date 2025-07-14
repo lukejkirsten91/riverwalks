@@ -28,6 +28,8 @@ export default function AuthCard() {
     
     const { data: authListener } = supabase.auth.onAuthStateChange(
       (event, session) => {
+        console.log('Auth state change:', { event, hasSession: !!session, user: session?.user?.email, provider: session?.user?.app_metadata?.provider });
+        
         if (!isMounted) return;
         setUser(session?.user || null);
         setLoading(false);
@@ -35,6 +37,7 @@ export default function AuthCard() {
         // Track authentication events
         if (event === 'SIGNED_IN' && session?.user) {
           const provider = session.user.app_metadata?.provider || 'unknown';
+          console.log('User signed in with provider:', provider);
           trackSignup(provider === 'azure' ? 'microsoft' : provider);
           trackEvent('user_authenticated', {
             user_id: session.user.id,
@@ -42,6 +45,7 @@ export default function AuthCard() {
             is_new_user: session.user.created_at === session.user.last_sign_in_at
           });
         } else if (event === 'SIGNED_OUT') {
+          console.log('User signed out');
           trackEvent('user_signed_out', {
             event_category: 'authentication'
           });
@@ -52,7 +56,10 @@ export default function AuthCard() {
     // Initial session check with error handling
     const checkInitialSession = async () => {
       try {
+        console.log('Checking initial session...');
         const { data: { session }, error } = await supabase.auth.getSession();
+        console.log('Session check result:', { session: !!session, user: session?.user?.email, error });
+        
         if (!isMounted) return;
         
         if (error) {
@@ -93,10 +100,15 @@ export default function AuthCard() {
     trackButtonClick(`continue_with_${provider}`, 'auth_card');
     
     const redirectUrl = 'https://www.riverwalks.co.uk/api/auth/callback';
+    console.log('Using redirect URL:', redirectUrl);
+    
+    // Map azure to microsoft for Supabase (Supabase uses 'azure' not 'microsoft')
+    const supabaseProvider = provider === 'azure' ? 'azure' : provider;
+    console.log('Mapped provider for Supabase:', supabaseProvider);
 
     try {
       const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: provider,
+        provider: supabaseProvider,
         options: {
           redirectTo: redirectUrl,
           queryParams: provider === 'google' ? {
