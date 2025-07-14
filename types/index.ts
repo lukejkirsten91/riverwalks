@@ -171,6 +171,7 @@ export interface UserAgreement {
   user_id: string;
   terms_accepted_at: string;
   privacy_accepted_at: string;
+  marketing_consent?: boolean;
   ip_address?: string;
   user_agent?: string;
   created_at: string;

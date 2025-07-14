@@ -112,10 +112,33 @@ export default function AccountPage() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      const { error } = await supabase
+      // First check if user_agreements record exists
+      const { data: existingAgreement } = await supabase
         .from('user_agreements')
-        .update({ marketing_consent: value })
-        .eq('user_id', user.id);
+        .select('id')
+        .eq('user_id', user.id)
+        .single();
+
+      let error;
+      if (existingAgreement) {
+        // Update existing record
+        const updateResult = await supabase
+          .from('user_agreements')
+          .update({ marketing_consent: value })
+          .eq('user_id', user.id);
+        error = updateResult.error;
+      } else {
+        // Create new record with basic terms acceptance
+        const insertResult = await supabase
+          .from('user_agreements')
+          .insert({
+            user_id: user.id,
+            terms_accepted_at: new Date().toISOString(),
+            privacy_accepted_at: new Date().toISOString(),
+            marketing_consent: value,
+          });
+        error = insertResult.error;
+      }
 
       if (error) throw error;
 
@@ -318,12 +341,23 @@ export default function AccountPage() {
                 </p>
               </div>
               <label className="flex items-center cursor-pointer">
+                <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
+                  emailPreferences.marketing 
+                    ? 'bg-green-600 border-green-600' 
+                    : 'border-gray-300 bg-white hover:border-green-300'
+                } ${emailPreferences.loading ? 'opacity-50' : ''}`}>
+                  {emailPreferences.marketing && (
+                    <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                  )}
+                </div>
                 <input
                   type="checkbox"
                   checked={emailPreferences.marketing}
                   onChange={(e) => updateEmailPreference('marketing', e.target.checked)}
                   disabled={emailPreferences.loading}
-                  className="w-5 h-5 text-green-600 focus:ring-green-500 border-gray-300 rounded checked:bg-green-600 checked:border-green-600 disabled:opacity-50"
+                  className="sr-only"
                 />
                 <span className="ml-2 text-sm font-medium text-blue-900">
                   {emailPreferences.marketing ? 'Subscribed' : 'Unsubscribed'}

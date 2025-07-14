@@ -14,6 +14,7 @@ export async function recordTermsAcceptance(
       user_id: userId,
       terms_accepted_at: acceptanceData.terms_accepted ? new Date().toISOString() : null,
       privacy_accepted_at: acceptanceData.privacy_accepted ? new Date().toISOString() : null,
+      marketing_consent: acceptanceData.marketing_consent || false,
       ip_address: ipAddress,
       user_agent: userAgent,
     })
