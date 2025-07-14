@@ -153,16 +153,17 @@ body {
 
 .field input[type="text"], .field input[type="number"], .field textarea {
   width: 100%;
-  padding: 8px 12px;
+  padding: 12px 16px;
   border: 1px solid #d1d5db;
   border-radius: 4px;
-  font-size: 14px;
+  font-size: 16px;
   background: white;
   box-sizing: border-box;
+  min-height: 40px;
 }
 
 .field textarea {
-  height: 60px;
+  height: 100px;
   resize: vertical;
 }
 
@@ -175,8 +176,9 @@ body {
 .measurement-table th,
 .measurement-table td {
   border: 1px solid #d1d5db;
-  padding: 10px;
+  padding: 15px 10px;
   text-align: left;
+  height: 50px;
 }
 
 .measurement-table th {
@@ -187,10 +189,11 @@ body {
 
 .measurement-table input {
   width: 100%;
-  padding: 6px;
+  padding: 10px;
   border: none;
   background: transparent;
-  font-size: 14px;
+  font-size: 16px;
+  min-height: 35px;
 }
 
 .checkbox-group {
@@ -253,6 +256,28 @@ body {
 @media print {
   .page-break {
     page-break-before: always;
+  }
+  
+  h4 {
+    page-break-after: avoid;
+    page-break-inside: avoid;
+  }
+  
+  .measurement-section {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  
+  .measurement-table {
+    page-break-inside: auto;
+  }
+  
+  .measurement-table thead {
+    page-break-after: avoid;
+  }
+  
+  .measurement-table tr {
+    page-break-inside: avoid;
   }
 }
 `;
@@ -392,9 +417,9 @@ function createPrintTemplateHTML(riverWalk: RiverWalk | null, siteCount: number)
                     </div>
                 </div>
 
-                <h4>📏 Cross-Section Measurements</h4>
-                <p><strong>Instructions:</strong> Measure depth at regular intervals across the river width. Start from 0m (left bank) and measure every 0.5m or 1m depending on river width.</p>
-                <table class="measurement-table">
+                <div class="measurement-section">
+                    <h4>📏 Cross-Section Measurements</h4>
+                    <table class="measurement-table">
                     <thead>
                         <tr>
                             <th>Point #</th>
@@ -413,11 +438,12 @@ function createPrintTemplateHTML(riverWalk: RiverWalk | null, siteCount: number)
                             </tr>
                         `).join('')}
                     </tbody>
-                </table>
+                    </table>
+                </div>
 
-                <h4>🌊 Velocity Measurements</h4>
-                <p><strong>Instructions:</strong> Use float method - time how long it takes a float to travel a known distance. Repeat 5 times for accuracy.</p>
-                <table class="measurement-table">
+                <div class="measurement-section">
+                    <h4>🌊 Velocity Measurements</h4>
+                    <table class="measurement-table">
                     <thead>
                         <tr>
                             <th>Measurement #</th>
@@ -438,11 +464,12 @@ function createPrintTemplateHTML(riverWalk: RiverWalk | null, siteCount: number)
                             </tr>
                         `).join('')}
                     </tbody>
-                </table>
+                    </table>
+                </div>
 
-                <h4>🪨 Sediment Analysis</h4>
-                <p><strong>Instructions:</strong> Collect 10-20 sediment samples from the river bed. Measure size with calipers and assess roundness (1=very rounded, 6=very angular).</p>
-                <table class="measurement-table">
+                <div class="measurement-section">
+                    <h4>🪨 Sediment Analysis</h4>
+                    <table class="measurement-table">
                     <thead>
                         <tr>
                             <th>Sample #</th>
@@ -463,13 +490,14 @@ function createPrintTemplateHTML(riverWalk: RiverWalk | null, siteCount: number)
                             </tr>
                         `).join('')}
                     </tbody>
-                </table>
+                    </table>
+                </div>
 
                 <div class="notes-section">
                     <h4>📝 Site Notes & Observations</h4>
                     <div class="field">
                         <label for="site-${siteNumber}-notes">Additional Notes:</label>
-                        <textarea id="site-${siteNumber}-notes" style="height: 100px;"></textarea>
+                        <textarea id="site-${siteNumber}-notes" style="height: 150px;"></textarea>
                     </div>
                 </div>
 

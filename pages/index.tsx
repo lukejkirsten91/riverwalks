@@ -341,13 +341,6 @@ export default function Home() {
                   The complete river study platform trusted by students and teachers across the UK
                 </p>
               </div>
-              
-              <div className="bg-green-600/90 backdrop-blur-sm border border-green-400/60 rounded-xl p-4 mb-6 max-w-2xl mx-auto">
-                <p className="text-green-50 text-lg font-bold mb-1">📱 No Mobile, No Problem!</p>
-                <p className="text-green-100 text-sm">
-                  Collect data on-site with our print templates, then digitize when you're back. Perfect for field trips where mobiles aren't allowed.
-                </p>
-              </div>
             </div>
 
             {/* Hero Image - First thing users see */}
@@ -363,6 +356,16 @@ export default function Home() {
             {!user && (
               <div className="w-full max-w-md mx-auto mb-8">
                 <AuthCard />
+              </div>
+            )}
+
+            {/* No Mobile, No Problem section - after CTA */}
+            {!user && (
+              <div className="bg-green-600/90 backdrop-blur-sm border border-green-400/60 rounded-xl p-4 mb-8 max-w-2xl mx-auto">
+                <p className="text-green-50 text-lg font-bold mb-1">📱 No Mobile, No Problem!</p>
+                <p className="text-green-100 text-sm">
+                  Collect data on-site with our print templates, then digitize when you're back. Perfect for field trips where mobiles aren't allowed.
+                </p>
               </div>
             )}
 
