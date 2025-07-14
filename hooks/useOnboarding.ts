@@ -11,6 +11,7 @@ interface OnboardingState {
 
 interface OnboardingStatus {
   shouldShowWelcome: boolean;
+  shouldShowTutorial: boolean;
   onboardingProgress: OnboardingState;
   loading: boolean;
   markWelcomeComplete: () => Promise<void>;
@@ -129,9 +130,13 @@ export function useOnboarding(): OnboardingStatus {
 
   // Should show welcome if user hasn't seen it and doesn't have any river walks
   const shouldShowWelcome = !loading && !onboardingState.hasSeenWelcome;
+  
+  // Should show tutorial after welcome is complete but no first river walk created
+  const shouldShowTutorial = !loading && onboardingState.hasSeenWelcome && !onboardingState.hasCreatedFirstRiverWalk;
 
   return {
     shouldShowWelcome,
+    shouldShowTutorial,
     onboardingProgress: onboardingState,
     loading,
     markWelcomeComplete,

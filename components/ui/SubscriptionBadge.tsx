@@ -88,6 +88,7 @@ export function SubscriptionBadge({ subscription, userEmail, compact = false }: 
             className={`flex items-center gap-2 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg transition-colors cursor-pointer ${compact ? 'px-2 py-1' : 'px-3 py-1.5'}`}
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
+            data-tutorial="upgrade"
           >
             <div className="w-4 h-4 bg-gray-400 rounded-full flex items-center justify-center flex-shrink-0">
               <span className="text-xs text-white font-bold">B</span>

@@ -197,6 +197,7 @@ export function RiverWalkList({
             onClick={() => onManageSites(riverWalk)}
             title="Create measurement locations along your river where you'll collect field data"
             className="btn-primary touch-manipulation flex-1 sm:flex-none text-sm sm:text-base px-3 py-2 sm:px-4 sm:py-3"
+            data-tutorial="manage-sites"
           >
             <MapPin className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
             <span className="truncate">Sites & Measurements</span>
@@ -210,6 +211,7 @@ export function RiverWalkList({
             disabled={templateLoading === riverWalk.id}
             className="bg-orange-50 hover:bg-orange-100 text-orange-700 px-3 py-2 sm:px-4 sm:py-3 rounded-lg font-medium transition-all duration-200 border border-orange-200 shadow-modern hover:shadow-modern-lg touch-manipulation flex-1 sm:flex-none flex items-center justify-center text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed"
             title="Generate a print template for offline data collection"
+            data-tutorial="export-template"
           >
             {templateLoading === riverWalk.id ? (
               <>
@@ -230,6 +232,7 @@ export function RiverWalkList({
           <button
             onClick={() => onGenerateReport(riverWalk)}
             className="bg-green-50 hover:bg-green-100 text-green-700 px-3 py-2 sm:px-4 sm:py-3 rounded-lg font-medium transition-all duration-200 border border-green-200 shadow-modern hover:shadow-modern-lg touch-manipulation flex-1 sm:flex-none flex items-center justify-center text-sm sm:text-base"
+            data-tutorial="export"
           >
             <FileSpreadsheet className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
             <span className="truncate">Export</span>
@@ -296,6 +299,7 @@ export function RiverWalkList({
               onClick={() => onArchive(riverWalk.id)}
               disabled={archiveLoading === riverWalk.id}
               className="bg-warning/10 hover:bg-warning/20 text-warning px-3 py-2 sm:px-4 sm:py-3 rounded-lg font-medium transition-all duration-200 border border-warning/20 shadow-modern hover:shadow-modern-lg touch-manipulation flex-1 sm:flex-none flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
+              data-tutorial="archive"
             >
               {archiveLoading === riverWalk.id ? (
                 <>

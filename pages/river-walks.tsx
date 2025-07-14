@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { createPortal } from 'react-dom';
 import { supabase } from '../lib/supabase';
-import { LogOut, MapPin, User as UserIcon, Users, UserCheck, Crown, Settings, MessageCircle } from 'lucide-react';
+import { LogOut, MapPin, User as UserIcon, Users, UserCheck, Crown, Settings, MessageCircle, Lightbulb } from 'lucide-react';
 import {
   RiverWalkList,
 } from '../components/river-walks';
@@ -16,7 +16,9 @@ import { SubscriptionBadge } from '../components/ui/SubscriptionBadge';
 import { useSubscription, canAccessAdvancedFeatures } from '../hooks/useSubscription';
 import { TermsGate } from '../components/auth/TermsGate';
 import { WelcomeFlow } from '../components/onboarding/WelcomeFlow';
+import { TutorialOverlay } from '../components/onboarding/TutorialOverlay';
 import { useOnboarding } from '../hooks/useOnboarding';
+import { useTutorial } from '../hooks/useTutorial';
 import { resetModalStyles } from '../lib/utils/modal';
 import type { RiverWalk, RiverWalkFormData } from '../types';
 import type { User } from '@supabase/supabase-js';
@@ -28,7 +30,19 @@ export default function RiverWalksPage() {
   const { collaborationEnabled } = useCollaborationFeatureFlag();
   const { pendingInvites, acceptInvite } = useCollaboration();
   const subscription = useSubscription();
-  const { shouldShowWelcome, markWelcomeComplete, markFirstRiverWalkCreated } = useOnboarding();
+  const { shouldShowWelcome, shouldShowTutorial, markWelcomeComplete, markFirstRiverWalkCreated } = useOnboarding();
+  const {
+    isActive: tutorialActive,
+    currentStep: tutorialStep,
+    steps: tutorialSteps,
+    startTutorial,
+    nextStep: nextTutorialStep,
+    previousStep: previousTutorialStep,
+    skipTutorial,
+    exitTutorial,
+    markStepComplete,
+    canStartTutorial
+  } = useTutorial();
   
   const [user, setUser] = useState<User | null>(null);
   const [showForm, setShowForm] = useState(false);
@@ -40,7 +54,7 @@ export default function RiverWalksPage() {
   const [joinCollabLink, setJoinCollabLink] = useState('');
 
   // Apply scroll lock when any modal is open
-  useScrollLock(!!showForm || !!showJoinCollaboration || !!shouldShowWelcome);
+  useScrollLock(!!showForm || !!showJoinCollaboration || !!shouldShowWelcome || tutorialActive);
 
   const {
     riverWalks,
@@ -98,13 +112,18 @@ export default function RiverWalksPage() {
           showError('Invite Failed', error instanceof Error ? error.message : 'Failed to accept invite');
         }
       }
+
+      // Auto-start tutorial for new users after welcome
+      if (shouldShowTutorial && canStartTutorial && !tutorialActive) {
+        setTimeout(() => startTutorial(), 1000); // Small delay to let page load
+      }
     };
 
     checkUser();
     
     // Reset any modal styles that might be blocking interactions
     resetModalStyles();
-  }, [router, collaborationEnabled, acceptInvite, showSuccess, showError, refetch]);
+  }, [router, collaborationEnabled, acceptInvite, showSuccess, showError, refetch, shouldShowTutorial, canStartTutorial, tutorialActive, startTutorial]);
 
   // One-time sync queue cleanup (remove after deployment)
   useEffect(() => {
@@ -194,10 +213,22 @@ export default function RiverWalksPage() {
   };
 
   const handleManageSites = (riverWalk: RiverWalk) => {
+    // If tutorial is active and we're on the manage-sites step, advance tutorial
+    if (tutorialActive && tutorialSteps[tutorialStep]?.id === 'manage-sites') {
+      setTimeout(() => {
+        nextTutorialStep();
+      }, 500);
+    }
     router.push(`/river-walks/${riverWalk.id}/sites`);
   };
 
   const handleGenerateReport = async (riverWalk: RiverWalk) => {
+    // If tutorial is active and we're on the export-options step, advance tutorial
+    if (tutorialActive && tutorialSteps[tutorialStep]?.id === 'export-options') {
+      setTimeout(() => {
+        nextTutorialStep();
+      }, 500);
+    }
     router.push(`/river-walks/${riverWalk.id}/report`);
   };
 
@@ -296,6 +327,13 @@ export default function RiverWalksPage() {
   };
 
   const handleAddNewRiverWalk = () => {
+    // If tutorial is active and we're on the new-river-walk step, advance tutorial
+    if (tutorialActive && tutorialSteps[tutorialStep]?.id === 'new-river-walk') {
+      // Small delay to let user see the action, then advance
+      setTimeout(() => {
+        nextTutorialStep();
+      }, 500);
+    }
     router.push('/river-walks/new');
   };
 
@@ -464,6 +502,7 @@ export default function RiverWalksPage() {
               <button
                 className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-200 transform hover:scale-105 shadow-lg touch-manipulation flex-1"
                 onClick={handleAddNewRiverWalk}
+                data-tutorial="new-river-walk"
               >
                 + New River Walk
               </button>
@@ -590,6 +629,20 @@ export default function RiverWalksPage() {
             userEmail={user.email}
           />
         )}
+
+        {/* Tutorial Overlay */}
+        {tutorialActive && (
+          <TutorialOverlay
+            steps={tutorialSteps}
+            currentStep={tutorialStep}
+            onNext={nextTutorialStep}
+            onPrevious={previousTutorialStep}
+            onSkip={skipTutorial}
+            onExit={exitTutorial}
+            onStepComplete={markStepComplete}
+            isVisible={tutorialActive}
+          />
+        )}
       </div>
       
 
@@ -638,6 +691,20 @@ export default function RiverWalksPage() {
             <Settings className="w-4 h-4" />
             Account Settings
           </button>
+          {canStartTutorial && (
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setShowProfileDropdown(false);
+                startTutorial();
+              }}
+              className="w-full text-left px-4 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all duration-200 hover:scale-[1.02] flex items-center gap-2"
+            >
+              <Lightbulb className="w-4 h-4" />
+              Tutorial
+            </button>
+          )}
           <button
             onClick={(e) => {
               e.preventDefault();
