@@ -34,10 +34,11 @@ export default function AuthCard() {
         
         // Track authentication events
         if (event === 'SIGNED_IN' && session?.user) {
-          trackSignup('google');
+          const provider = session.user.app_metadata?.provider || 'unknown';
+          trackSignup(provider === 'azure' ? 'microsoft' : provider);
           trackEvent('user_authenticated', {
             user_id: session.user.id,
-            provider: session.user.app_metadata?.provider || 'unknown',
+            provider: provider,
             is_new_user: session.user.created_at === session.user.last_sign_in_at
           });
         } else if (event === 'SIGNED_OUT') {
@@ -87,18 +88,20 @@ export default function AuthCard() {
   }, []);
 
 
-  const handleSignIn = async () => {
-    trackButtonClick('continue_with_google', 'auth_card');
+  const handleSignIn = async (provider: 'google' | 'azure') => {
+    trackButtonClick(`continue_with_${provider}`, 'auth_card');
     
     const redirectUrl = 'https://www.riverwalks.co.uk/api/auth/callback';
 
     await supabase.auth.signInWithOAuth({
-      provider: 'google',
+      provider: provider,
       options: {
         redirectTo: redirectUrl,
-        queryParams: {
+        queryParams: provider === 'google' ? {
           prompt: 'select_account', // Force Google to show account selection
           access_type: 'online'
+        } : {
+          prompt: 'select_account' // Force Microsoft to show account selection
         }
       },
     });
@@ -226,7 +229,7 @@ export default function AuthCard() {
       </CardHeader>
       <CardContent className="space-y-4">
         <button 
-          onClick={handleSignIn} 
+          onClick={() => handleSignIn('google')} 
           className="btn-primary w-full touch-manipulation text-base text-white"
         >
           <svg className="mr-3 h-5 w-5" viewBox="0 0 24 24">
@@ -248,6 +251,31 @@ export default function AuthCard() {
             />
           </svg>
           Continue with Google
+        </button>
+
+        <button 
+          onClick={() => handleSignIn('azure')} 
+          className="btn-secondary w-full touch-manipulation text-base"
+        >
+          <svg className="mr-3 h-5 w-5" viewBox="0 0 24 24">
+            <path
+              fill="#00A4EF"
+              d="M0 0h12v12H0z"
+            />
+            <path
+              fill="#FFB900"
+              d="M12 0h12v12H12z"
+            />
+            <path
+              fill="#00BCF2"
+              d="M0 12h12v12H0z"
+            />
+            <path
+              fill="#40E0D0"
+              d="M12 12h12v12H12z"
+            />
+          </svg>
+          Continue with Microsoft
         </button>
 
         <div className="relative">
@@ -272,7 +300,7 @@ export default function AuthCard() {
         
         <div className="text-center space-y-3">
           <p className="text-xs text-muted-foreground">
-            New to Riverwalks? Either option will create your free account.
+            New to Riverwalks? Any option will create your free account.
           </p>
           
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
