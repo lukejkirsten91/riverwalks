@@ -289,23 +289,23 @@ export default function AuthCard() {
 
         <button 
           onClick={() => handleSignIn('azure')} 
-          className="btn-secondary w-full touch-manipulation text-base"
+          className="btn-primary w-full touch-manipulation text-base text-white"
         >
           <svg className="mr-3 h-5 w-5" viewBox="0 0 24 24">
             <path
-              fill="#00A4EF"
+              fill="#F25022"
               d="M0 0h12v12H0z"
             />
             <path
-              fill="#FFB900"
+              fill="#7FBA00"
               d="M12 0h12v12H12z"
             />
             <path
-              fill="#00BCF2"
+              fill="#00A4EF"
               d="M0 12h12v12H0z"
             />
             <path
-              fill="#40E0D0"
+              fill="#FFB900"
               d="M12 12h12v12H12z"
             />
           </svg>
@@ -326,7 +326,7 @@ export default function AuthCard() {
             trackButtonClick('continue_with_email', 'auth_card');
             setShowEmailAuth(true);
           }}
-          className="btn-secondary w-full touch-manipulation text-base"
+          className="btn-primary w-full touch-manipulation text-base text-white"
         >
           <Mail className="mr-3 h-5 w-5" />
           Continue with Email
