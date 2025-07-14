@@ -142,7 +142,7 @@ export class OfflineDataService {
   }
 
   // Cache user ID for offline use
-  private async cacheUserId(): Promise<string | null> {
+  private async cacheUserId(retryCount: number = 0): Promise<string | null> {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (user?.id) {
@@ -150,10 +150,20 @@ export class OfflineDataService {
         if (typeof window !== 'undefined') {
           localStorage.setItem('riverwalks_user_id', user.id);
         }
+        console.log('User ID cached successfully:', user.id);
         return user.id;
+      } else if (retryCount < 3) {
+        // Retry after a short delay for OAuth session establishment
+        console.log('No user found, retrying...', retryCount + 1);
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        return this.cacheUserId(retryCount + 1);
       }
     } catch (error) {
       console.error('Failed to cache user ID:', error);
+      if (retryCount < 3) {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        return this.cacheUserId(retryCount + 1);
+      }
     }
     return null;
   }

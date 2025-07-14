@@ -53,12 +53,12 @@ export default function AuthCard() {
       }
     );
 
-    // Initial session check with error handling
-    const checkInitialSession = async () => {
+    // Initial session check with error handling and retry for OAuth
+    const checkInitialSession = async (retryCount: number = 0) => {
       try {
-        console.log('Checking initial session...');
+        console.log('Checking initial session...', retryCount);
         const { data: { session }, error } = await supabase.auth.getSession();
-        console.log('Session check result:', { session: !!session, user: session?.user?.email, error });
+        console.log('Session check result:', { session: !!session, user: session?.user?.email, error, retryCount });
         
         if (!isMounted) return;
         
@@ -66,6 +66,15 @@ export default function AuthCard() {
           console.error('Session check error:', error);
           setUser(null);
           setLoading(false);
+          return;
+        }
+        
+        // If no session and this might be after OAuth redirect, retry
+        if (!session && retryCount < 3) {
+          console.log('No session found, retrying after delay...');
+          setTimeout(() => {
+            if (isMounted) checkInitialSession(retryCount + 1);
+          }, 1000);
           return;
         }
         
