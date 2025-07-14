@@ -8,6 +8,7 @@ interface RiverWalkFormProps {
   onSubmit: (formData: RiverWalkFormData) => Promise<void>;
   onCancel: () => void;
   loading: boolean;
+  isTutorialMode?: boolean;
 }
 
 export function RiverWalkForm({
@@ -15,6 +16,7 @@ export function RiverWalkForm({
   onSubmit,
   onCancel,
   loading,
+  isTutorialMode = false,
 }: RiverWalkFormProps) {
   const [formData, setFormData] = useState<RiverWalkFormData>({
     name: currentRiverWalk?.name || '',
@@ -56,7 +58,7 @@ export function RiverWalkForm({
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Primary details */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-          <div>
+          <div data-tutorial="river-walk-name">
             <label className="block text-foreground mb-3 font-medium">Study Name</label>
             <input
               type="text"
@@ -68,7 +70,7 @@ export function RiverWalkForm({
               required
             />
           </div>
-          <div>
+          <div data-tutorial="river-walk-date">
             <label className="block text-foreground mb-3 font-medium">Study Date</label>
             <input
               type="date"
@@ -82,7 +84,7 @@ export function RiverWalkForm({
         </div>
 
         {/* Location details */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6" data-tutorial="river-walk-location">
           <div>
             <label className="block text-foreground mb-3 font-medium">Country</label>
             <input
@@ -133,8 +135,9 @@ export function RiverWalkForm({
             loading={loading}
             loadingText="Saving..."
             className="btn-success touch-manipulation"
+            data-tutorial="river-walk-save"
           >
-            {currentRiverWalk ? 'Update Study' : 'Create Study'}
+            {currentRiverWalk ? 'Update Study' : 'Create River Walk'}
           </LoadingButton>
           <button
             type="button"

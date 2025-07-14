@@ -58,27 +58,9 @@ const TUTORIAL_STEPS: TutorialStep[] = [
     tip: 'A river walk is a complete study session where you\'ll collect data from multiple sites along a river.'
   },
   {
-    id: 'demo-form',
-    title: 'Let\'s Create a Demo River Walk',
-    content: 'We\'ll create a practice river walk together. First, enter a name for your river walk study.',
-    targetSelector: 'center',
-    position: 'center',
-    actionRequired: true,
-    tip: 'This is just for practice - you can delete it later.'
-  },
-  {
-    id: 'demo-save',
-    title: 'Save Your River Walk',
-    content: 'Perfect! We\'ve filled in some example data for you. Now click "Save River Walk" to complete your first study.',
-    targetSelector: 'center',
-    position: 'center',
-    actionRequired: true,
-    tip: 'Once saved, you can add measurement sites and collect field data.'
-  },
-  {
     id: 'tutorial-complete',
     title: 'Tutorial Complete!',
-    content: 'Great! You\'ve created your first river walk. You can now add measurement sites, collect data, and export reports. Feel free to explore all the features!',
+    content: 'Great! You\'ve learned the basics of River Walks. You can now create river walks, add measurement sites, collect data, and export reports. Feel free to explore all the features!',
     targetSelector: 'center',
     position: 'center',
     tip: 'Happy studying! If you need help, use the feedback option in your profile menu to get support.'
@@ -195,7 +177,7 @@ export function useTutorial(): UseTutorialReturn {
       newCompletedSteps.push(stepId);
       updateTutorialState({ completedSteps: newCompletedSteps });
     }
-  }, [tutorialState.completedSteps]);
+  }, [tutorialState.completedSteps, updateTutorialState]);
 
   return {
     isActive,

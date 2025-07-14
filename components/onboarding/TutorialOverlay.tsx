@@ -106,7 +106,8 @@ const Spotlight: React.FC<SpotlightProps> = ({ targetElement, overlayRef }) => {
             left: `${rect.left - padding}px`,
             width: `${rect.width + padding * 2}px`,
             height: `${rect.height + padding * 2}px`,
-            boxShadow: '0 0 20px rgba(59, 130, 246, 0.5)',
+            boxShadow: '0 0 20px rgba(59, 130, 246, 0.5), 0 0 40px rgba(59, 130, 246, 0.3)',
+            animation: 'tutorial-glow 2s ease-in-out infinite',
           }}
         />,
       ].filter(element => {
@@ -254,8 +255,8 @@ const TutorialTooltip: React.FC<{
   }, [targetElement, step.position, isMobile]);
 
   const tooltipClasses = isMobile 
-    ? "w-full bg-white rounded-lg shadow-2xl border border-gray-200 p-4 animate-in slide-in-from-bottom-4 fade-in-0 duration-300"
-    : "max-w-sm bg-white rounded-xl shadow-xl border border-gray-200 p-6 animate-in fade-in-0 zoom-in-95 duration-300";
+    ? "w-full bg-white rounded-lg shadow-2xl border border-gray-200 p-4 animate-in slide-in-from-bottom-4 fade-in-0 duration-500 ease-out"
+    : "max-w-sm bg-white rounded-xl shadow-xl border border-gray-200 p-6 animate-in fade-in-0 zoom-in-95 duration-500 ease-out";
 
   return (
     <div

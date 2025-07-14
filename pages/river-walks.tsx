@@ -119,6 +119,14 @@ export default function RiverWalksPage() {
       if (shouldShowTutorial && canStartTutorial && !tutorialActive) {
         setTimeout(() => startTutorial(), 1000); // Small delay to let page load
       }
+      
+      // Check if returning from tutorial form completion
+      if (router.query.tutorial === 'complete' && tutorialActive) {
+        // Advance to final step
+        setTimeout(() => {
+          nextTutorialStep();
+        }, 500);
+      }
     };
 
     checkUser();
@@ -325,13 +333,15 @@ export default function RiverWalksPage() {
   };
 
   const handleAddNewRiverWalk = async () => {
-    // If tutorial is active and we're on the new-river-walk step, advance tutorial instead of navigating
+    // If tutorial is active and we're on the new-river-walk step, navigate to form and advance tutorial
     if (tutorialActive && tutorialSteps[tutorialStep]?.id === 'new-river-walk') {
-      // Small delay to let user see the action, then advance tutorial
+      // Navigate to the actual form
+      router.push('/river-walks/new?tutorial=true');
+      // Small delay to let navigation happen, then advance tutorial
       setTimeout(() => {
         nextTutorialStep();
       }, 500);
-      return; // Don't navigate during tutorial
+      return;
     }
     
     if (tutorialActive) {
@@ -342,33 +352,6 @@ export default function RiverWalksPage() {
   };
 
   const handleTutorialNext = async () => {
-    const currentStepId = tutorialSteps[tutorialStep]?.id;
-    
-    if (currentStepId === 'demo-save') {
-      // Create actual river walk from demo data
-      try {
-        const riverWalkData = {
-          name: demoFormData.name || 'Demo River Walk',
-          date: demoFormData.date,
-          county: demoFormData.county,
-          country: demoFormData.country
-        };
-        
-        await createRiverWalk(riverWalkData);
-        markFirstRiverWalkCreated();
-        
-        // Small delay then advance tutorial
-        setTimeout(() => {
-          nextTutorialStep();
-        }, 1000);
-        return;
-      } catch (error) {
-        console.error('Failed to create demo river walk:', error);
-        showError('Creation Failed', 'Failed to create demo river walk. Please try again.');
-        return;
-      }
-    }
-    
     // Default behavior - advance to next step
     nextTutorialStep();
   };
