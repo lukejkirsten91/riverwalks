@@ -57,7 +57,7 @@ export function useOnboarding(): OnboardingStatus {
       const { data: riverWalks, error } = await supabase
         .from('river_walks')
         .select('id, created_at')
-        .eq('user_id', user.id)
+        .eq('user_id', user?.id)
         .limit(1);
 
       if (!error && riverWalks && riverWalks.length > 0) {

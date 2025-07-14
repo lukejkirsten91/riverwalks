@@ -41,7 +41,9 @@ export default function RiverWalksPage() {
     skipTutorial,
     exitTutorial,
     markStepComplete,
-    canStartTutorial
+    canStartTutorial,
+    demoFormData,
+    setDemoFormData
   } = useTutorial();
   
   const [user, setUser] = useState<User | null>(null);
@@ -213,21 +215,17 @@ export default function RiverWalksPage() {
   };
 
   const handleManageSites = (riverWalk: RiverWalk) => {
-    // If tutorial is active and we're on the manage-sites step, advance tutorial
-    if (tutorialActive && tutorialSteps[tutorialStep]?.id === 'manage-sites') {
-      setTimeout(() => {
-        nextTutorialStep();
-      }, 500);
+    // If tutorial is active, prevent navigation
+    if (tutorialActive) {
+      return; // Don't navigate during tutorial
     }
     router.push(`/river-walks/${riverWalk.id}/sites`);
   };
 
   const handleGenerateReport = async (riverWalk: RiverWalk) => {
-    // If tutorial is active and we're on the export-options step, advance tutorial
-    if (tutorialActive && tutorialSteps[tutorialStep]?.id === 'export-options') {
-      setTimeout(() => {
-        nextTutorialStep();
-      }, 500);
+    // If tutorial is active, prevent navigation
+    if (tutorialActive) {
+      return; // Don't navigate during tutorial
     }
     router.push(`/river-walks/${riverWalk.id}/report`);
   };
@@ -326,15 +324,53 @@ export default function RiverWalksPage() {
     }, 500); // Small delay to ensure sign out completes
   };
 
-  const handleAddNewRiverWalk = () => {
-    // If tutorial is active and we're on the new-river-walk step, advance tutorial
+  const handleAddNewRiverWalk = async () => {
+    // If tutorial is active and we're on the new-river-walk step, advance tutorial instead of navigating
     if (tutorialActive && tutorialSteps[tutorialStep]?.id === 'new-river-walk') {
-      // Small delay to let user see the action, then advance
+      // Small delay to let user see the action, then advance tutorial
       setTimeout(() => {
         nextTutorialStep();
       }, 500);
+      return; // Don't navigate during tutorial
     }
+    
+    if (tutorialActive) {
+      return; // Don't navigate during any other tutorial step
+    }
+    
     router.push('/river-walks/new');
+  };
+
+  const handleTutorialNext = async () => {
+    const currentStepId = tutorialSteps[tutorialStep]?.id;
+    
+    if (currentStepId === 'demo-save') {
+      // Create actual river walk from demo data
+      try {
+        const riverWalkData = {
+          name: demoFormData.name || 'Demo River Walk',
+          date: demoFormData.date,
+          county: demoFormData.county,
+          country: demoFormData.country
+        };
+        
+        await createRiverWalk(riverWalkData);
+        markFirstRiverWalkCreated();
+        
+        // Small delay then advance tutorial
+        setTimeout(() => {
+          nextTutorialStep();
+        }, 1000);
+        return;
+      } catch (error) {
+        console.error('Failed to create demo river walk:', error);
+        showError('Creation Failed', 'Failed to create demo river walk. Please try again.');
+        return;
+      }
+    }
+    
+    // Default behavior - advance to next step
+    nextTutorialStep();
   };
 
   const handleJoinCollaboration = () => {
@@ -635,12 +671,14 @@ export default function RiverWalksPage() {
           <TutorialOverlay
             steps={tutorialSteps}
             currentStep={tutorialStep}
-            onNext={nextTutorialStep}
+            onNext={handleTutorialNext}
             onPrevious={previousTutorialStep}
             onSkip={skipTutorial}
             onExit={exitTutorial}
             onStepComplete={markStepComplete}
             isVisible={tutorialActive}
+            demoFormData={demoFormData}
+            onDemoFormChange={setDemoFormData}
           />
         )}
       </div>

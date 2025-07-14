@@ -21,6 +21,13 @@ interface TutorialOverlayProps {
   onExit: () => void;
   onStepComplete?: (stepId: string) => void;
   isVisible: boolean;
+  demoFormData?: {
+    name: string;
+    date: string;
+    county: string;
+    country: string;
+  };
+  onDemoFormChange?: (data: { name: string; date: string; county: string; country: string }) => void;
 }
 
 interface SpotlightProps {
@@ -139,7 +146,14 @@ const TutorialTooltip: React.FC<{
   onExit: () => void;
   currentStep: number;
   totalSteps: number;
-}> = ({ step, targetElement, onNext, onPrevious, onSkip, onExit, currentStep, totalSteps }) => {
+  demoFormData?: {
+    name: string;
+    date: string;
+    county: string;
+    country: string;
+  };
+  onDemoFormChange?: (data: { name: string; date: string; county: string; country: string }) => void;
+}> = ({ step, targetElement, onNext, onPrevious, onSkip, onExit, currentStep, totalSteps, demoFormData, onDemoFormChange }) => {
   const [tooltipStyle, setTooltipStyle] = useState<React.CSSProperties>({});
   const tooltipRef = useRef<HTMLDivElement>(null);
   const [isMobile, setIsMobile] = useState(false);
@@ -287,6 +301,43 @@ const TutorialTooltip: React.FC<{
           {step.content}
         </p>
         
+        {/* Demo Form for demo-form step */}
+        {step.id === 'demo-form' && demoFormData && onDemoFormChange && (
+          <div className="mt-4 space-y-3">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                River Walk Name *
+              </label>
+              <input
+                type="text"
+                value={demoFormData.name}
+                onChange={(e) => onDemoFormChange({
+                  ...demoFormData,
+                  name: e.target.value
+                })}
+                placeholder="e.g., River Thames Study"
+                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                autoFocus
+              />
+            </div>
+          </div>
+        )}
+        
+        {/* Demo Form for demo-save step */}
+        {step.id === 'demo-save' && demoFormData && (
+          <div className="mt-4 space-y-3 bg-gray-50 p-3 rounded-lg">
+            <div className="text-sm text-gray-600">Here's your river walk data:</div>
+            <div className="space-y-2 text-sm">
+              <div><strong>Name:</strong> {demoFormData.name || 'Demo River Walk'}</div>
+              <div><strong>Date:</strong> {demoFormData.date}</div>
+              <div><strong>Location:</strong> {demoFormData.county}, {demoFormData.country}</div>
+            </div>
+            <div className="text-xs text-blue-600 mt-2">
+              ✓ We've pre-filled some example location data for you
+            </div>
+          </div>
+        )}
+        
         {step.tip && !isMobile && (
           <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
             <div className="flex items-start gap-2">
@@ -337,10 +388,12 @@ const TutorialTooltip: React.FC<{
             
             <button
               onClick={onNext}
-              className={`bg-blue-600 hover:bg-blue-700 text-white px-4 ${isMobile ? 'py-2.5' : 'py-2'} rounded-lg font-medium transition-colors flex items-center justify-center gap-1 ${isMobile ? 'flex-1' : ''}`}
+              disabled={step.id === 'demo-form' && (!demoFormData?.name || demoFormData.name.trim() === '')}
+              className={`bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white px-4 ${isMobile ? 'py-2.5' : 'py-2'} rounded-lg font-medium transition-colors flex items-center justify-center gap-1 ${isMobile ? 'flex-1' : ''}`}
             >
-              {currentStep === totalSteps - 1 ? 'Finish' : 'Next'}
-              {currentStep < totalSteps - 1 && <ChevronRight className="w-4 h-4" />}
+              {step.id === 'demo-save' ? 'Save River Walk' : 
+               currentStep === totalSteps - 1 ? 'Finish' : 'Next'}
+              {currentStep < totalSteps - 1 && step.id !== 'demo-save' && <ChevronRight className="w-4 h-4" />}
             </button>
           </div>
         </div>
@@ -358,6 +411,8 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
   onExit,
   onStepComplete,
   isVisible,
+  demoFormData,
+  onDemoFormChange,
 }) => {
   const overlayRef = useRef<HTMLDivElement>(null);
   const [targetElement, setTargetElement] = useState<Element | null>(null);
@@ -461,6 +516,8 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
             onExit={onExit}
             currentStep={currentStep}
             totalSteps={steps.length}
+            demoFormData={demoFormData}
+            onDemoFormChange={onDemoFormChange}
           />
         </div>
       )}

@@ -29,6 +29,13 @@ interface UseTutorialReturn {
   exitTutorial: () => void;
   markStepComplete: (stepId: string) => void;
   canStartTutorial: boolean;
+  demoFormData: {
+    name: string;
+    date: string;
+    county: string;
+    country: string;
+  };
+  setDemoFormData: (data: { name: string; date: string; county: string; country: string }) => void;
 }
 
 const TUTORIAL_STEPS: TutorialStep[] = [
@@ -51,57 +58,27 @@ const TUTORIAL_STEPS: TutorialStep[] = [
     tip: 'A river walk is a complete study session where you\'ll collect data from multiple sites along a river.'
   },
   {
-    id: 'export-template',
-    title: 'Export Print Template (Optional)',
-    content: 'Before heading to the field, you can export a print template for offline data collection. This is useful if you expect poor signal coverage.',
-    targetSelector: '[data-tutorial="export-template"]',
-    position: 'top',
-    tip: 'Load this page with good signal, then switch to airplane mode - it works offline! But a printed backup is always wise.'
+    id: 'demo-form',
+    title: 'Let\'s Create a Demo River Walk',
+    content: 'We\'ll create a practice river walk together. First, enter a name for your river walk study.',
+    targetSelector: 'center',
+    position: 'center',
+    actionRequired: true,
+    tip: 'This is just for practice - you can delete it later.'
   },
   {
-    id: 'manage-sites',
-    title: 'Manage Sites and Info',
-    content: 'Now let\'s add your first site. Sites are specific locations along the river where you\'ll collect measurements.',
-    targetSelector: '[data-tutorial="manage-sites"]',
-    position: 'bottom',
-    actionRequired: true
-  },
-  {
-    id: 'export-options',
-    title: 'Export Your Data',
-    content: 'Once you\'ve collected data, you can export it in various formats. Excel export is available for all users.',
-    targetSelector: '[data-tutorial="export"]',
-    position: 'bottom',
-    tip: 'Export data for analysis in Excel, or upgrade for professional PDF reports.'
-  },
-  {
-    id: 'premium-features',
-    title: 'Premium Features Available',
-    content: 'With a premium subscription, you can export PDF reports, collaborate with team members, and access advanced features.',
-    targetSelector: '[data-tutorial="upgrade"]',
-    position: 'bottom',
-    tip: 'Premium features include PDF reports, team collaboration, unlimited storage, and priority support.'
-  },
-  {
-    id: 'archive-restore',
-    title: 'Archive and Restore',
-    content: 'You can archive completed river walks to keep your workspace organized, and restore them later if needed.',
-    targetSelector: '[data-tutorial="archive"]',
-    position: 'top',
-    tip: 'Archiving helps organize your studies without losing data. You can always restore archived walks later.'
-  },
-  {
-    id: 'profile-menu',
-    title: 'Profile Menu',
-    content: 'Access your profile menu to manage account settings, upgrade your subscription, or restart this tutorial anytime.',
-    targetSelector: '[data-profile-dropdown]',
-    position: 'bottom',
-    tip: 'Your profile menu also includes account settings, feedback options, and help resources.'
+    id: 'demo-save',
+    title: 'Save Your River Walk',
+    content: 'Perfect! We\'ve filled in some example data for you. Now click "Save River Walk" to complete your first study.',
+    targetSelector: 'center',
+    position: 'center',
+    actionRequired: true,
+    tip: 'Once saved, you can add measurement sites and collect field data.'
   },
   {
     id: 'tutorial-complete',
     title: 'Tutorial Complete!',
-    content: 'Congratulations! You\'ve completed the River Walks tutorial. You\'re now ready to create professional river studies. Remember, you can access this tutorial anytime from your profile menu.',
+    content: 'Great! You\'ve created your first river walk. You can now add measurement sites, collect data, and export reports. Feel free to explore all the features!',
     targetSelector: 'center',
     position: 'center',
     tip: 'Happy studying! If you need help, use the feedback option in your profile menu to get support.'
@@ -119,6 +96,12 @@ export function useTutorial(): UseTutorialReturn {
   const [currentStep, setCurrentStep] = useState(0);
   const [tutorialState, setTutorialState] = useState<TutorialState>(DEFAULT_TUTORIAL_STATE);
   const [canStartTutorial, setCanStartTutorial] = useState(false);
+  const [demoFormData, setDemoFormData] = useState({
+    name: '',
+    date: new Date().toISOString().split('T')[0],
+    county: 'Devon',
+    country: 'UK'
+  });
 
   useEffect(() => {
     loadTutorialState();
@@ -224,6 +207,8 @@ export function useTutorial(): UseTutorialReturn {
     skipTutorial,
     exitTutorial,
     markStepComplete,
-    canStartTutorial
+    canStartTutorial,
+    demoFormData,
+    setDemoFormData
   };
 }
