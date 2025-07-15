@@ -27,6 +27,7 @@ interface UseTutorialReturn {
   previousStep: () => void;
   skipTutorial: () => void;
   exitTutorial: () => void;
+  fullyExitTutorial: () => void;
   markStepComplete: (stepId: string) => void;
   canStartTutorial: boolean;
   hasExitedThisSession: boolean;
@@ -57,6 +58,42 @@ const TUTORIAL_STEPS: TutorialStep[] = [
     position: 'bottom',
     actionRequired: true,
     tip: 'A river walk is a complete study session where you\'ll collect data from multiple sites along a river.'
+  },
+  {
+    id: 'print-template',
+    title: 'Print Template',
+    content: 'This button generates a PDF template that you can print and take into the field for recording measurements by hand.',
+    targetSelector: '[data-tutorial="export-template"]',
+    position: 'top',
+    skipable: true,
+    tip: 'Perfect for when you need paper backups or want to record data offline.'
+  },
+  {
+    id: 'export',
+    title: 'Export Data',
+    content: 'Export your river walk data to Excel format for further analysis or sharing with teachers.',
+    targetSelector: '[data-tutorial="export"]',
+    position: 'top',
+    skipable: true,
+    tip: 'Premium feature - requires a subscription for full access.'
+  },
+  {
+    id: 'collaborate',
+    title: 'Collaborate',
+    content: 'Share your river walk with classmates or teachers to work together on data collection.',
+    targetSelector: 'button:has([data-lucide="users"])',
+    position: 'top',
+    skipable: true,
+    tip: 'Premium feature - ideal for group projects and teacher supervision.'
+  },
+  {
+    id: 'archive',
+    title: 'Archive',
+    content: 'Archive completed river walks to keep your workspace organized while preserving your data.',
+    targetSelector: '[data-tutorial="archive"]',
+    position: 'top',
+    skipable: true,
+    tip: 'Archived river walks can be restored anytime from the archived section.'
   },
   {
     id: 'profile-menu',
@@ -148,8 +185,8 @@ export function useTutorial(): UseTutorialReturn {
   }, []);
 
   const exitTutorial = useCallback(async () => {
-    setIsActive(false);
-    setCurrentStep(0);
+    // Show profile menu step before fully exiting
+    setCurrentStep(TUTORIAL_STEPS.length - 1); // Go to profile-menu step
     setHasExitedThisSession(true);
     await updateTutorialState({ hasSeenTutorial: true });
   }, [updateTutorialState]);
@@ -172,8 +209,16 @@ export function useTutorial(): UseTutorialReturn {
   }, [currentStep]);
 
   const skipTutorial = useCallback(async () => {
+    // Show profile menu step before fully exiting
+    setCurrentStep(TUTORIAL_STEPS.length - 1); // Go to profile-menu step
+    setHasExitedThisSession(true);
+    await updateTutorialState({ hasSeenTutorial: true });
+  }, [updateTutorialState]);
+
+  const fullyExitTutorial = useCallback(async () => {
     setIsActive(false);
     setCurrentStep(0);
+    setHasExitedThisSession(true);
     await updateTutorialState({ hasSeenTutorial: true });
   }, [updateTutorialState]);
 
@@ -194,6 +239,7 @@ export function useTutorial(): UseTutorialReturn {
     previousStep,
     skipTutorial,
     exitTutorial,
+    fullyExitTutorial,
     markStepComplete,
     canStartTutorial,
     hasExitedThisSession,

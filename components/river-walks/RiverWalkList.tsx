@@ -24,6 +24,7 @@ interface RiverWalkListProps {
   isRiverWalkSynced: (riverWalk: RiverWalk) => boolean;
   archiveLoading?: string | null;
   templateLoading?: string | null;
+  tutorialActive?: boolean;
 }
 
 export function RiverWalkList({
@@ -42,6 +43,7 @@ export function RiverWalkList({
   isRiverWalkSynced,
   archiveLoading,
   templateLoading,
+  tutorialActive = false,
 }: RiverWalkListProps) {
   const [showArchived, setShowArchived] = useState(false);
   const [showMyRiverWalks, setShowMyRiverWalks] = useState(true);
@@ -207,8 +209,8 @@ export function RiverWalkList({
         {!isArchived && (
           /* Print Template - Always available for all users */
           <button
-            onClick={() => onGeneratePrintTemplate(riverWalk)}
-            disabled={templateLoading === riverWalk.id}
+            onClick={tutorialActive ? undefined : () => onGeneratePrintTemplate(riverWalk)}
+            disabled={templateLoading === riverWalk.id || tutorialActive}
             className="bg-orange-50 hover:bg-orange-100 text-orange-700 px-3 py-2 sm:px-4 sm:py-3 rounded-lg font-medium transition-all duration-200 border border-orange-200 shadow-modern hover:shadow-modern-lg touch-manipulation flex-1 sm:flex-none flex items-center justify-center text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed"
             title="Generate a print template for offline data collection"
             data-tutorial="export-template"
@@ -230,8 +232,9 @@ export function RiverWalkList({
         {!isArchived && (
           /* Export - Always available (basic users get data export, premium users get full report) */
           <button
-            onClick={() => onGenerateReport(riverWalk)}
-            className="bg-green-50 hover:bg-green-100 text-green-700 px-3 py-2 sm:px-4 sm:py-3 rounded-lg font-medium transition-all duration-200 border border-green-200 shadow-modern hover:shadow-modern-lg touch-manipulation flex-1 sm:flex-none flex items-center justify-center text-sm sm:text-base"
+            onClick={tutorialActive ? undefined : () => onGenerateReport(riverWalk)}
+            disabled={tutorialActive}
+            className="bg-green-50 hover:bg-green-100 text-green-700 px-3 py-2 sm:px-4 sm:py-3 rounded-lg font-medium transition-all duration-200 border border-green-200 shadow-modern hover:shadow-modern-lg touch-manipulation flex-1 sm:flex-none flex items-center justify-center text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed"
             data-tutorial="export"
           >
             <FileSpreadsheet className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
@@ -242,16 +245,20 @@ export function RiverWalkList({
         {canShare && (
           canAccessAdvancedFeatures(subscription) ? (
             <button
-              onClick={() => onShare(riverWalk)}
-              className="bg-blue-50 hover:bg-blue-100 text-blue-600 px-3 py-2 sm:px-4 sm:py-3 rounded-lg font-medium transition-all duration-200 border border-blue-200 shadow-modern hover:shadow-modern-lg touch-manipulation flex-1 sm:flex-none flex items-center justify-center text-sm sm:text-base"
+              onClick={tutorialActive ? undefined : () => onShare(riverWalk)}
+              disabled={tutorialActive}
+              className="bg-blue-50 hover:bg-blue-100 text-blue-600 px-3 py-2 sm:px-4 sm:py-3 rounded-lg font-medium transition-all duration-200 border border-blue-200 shadow-modern hover:shadow-modern-lg touch-manipulation flex-1 sm:flex-none flex items-center justify-center text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed"
+              data-tutorial="collaborate"
             >
               <Users className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
               <span className="truncate">Collaborate</span>
             </button>
           ) : (
             <button
-              onClick={() => onUpgradePrompt('advanced')}
-              className="bg-gradient-to-r from-blue-50 to-teal-50 hover:from-blue-100 hover:to-teal-100 text-blue-700 px-3 py-2 sm:px-4 sm:py-3 rounded-lg font-medium transition-all duration-200 border-2 border-blue-200 shadow-modern hover:shadow-modern-lg touch-manipulation flex-1 sm:flex-none flex items-center justify-center text-sm sm:text-base relative"
+              onClick={tutorialActive ? undefined : () => onUpgradePrompt('advanced')}
+              disabled={tutorialActive}
+              className="bg-gradient-to-r from-blue-50 to-teal-50 hover:from-blue-100 hover:to-teal-100 text-blue-700 px-3 py-2 sm:px-4 sm:py-3 rounded-lg font-medium transition-all duration-200 border-2 border-blue-200 shadow-modern hover:shadow-modern-lg touch-manipulation flex-1 sm:flex-none flex items-center justify-center text-sm sm:text-base relative disabled:opacity-50 disabled:cursor-not-allowed"
+              data-tutorial="collaborate"
             >
               <Crown className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
               <span className="truncate">Collaborate</span>
@@ -296,8 +303,8 @@ export function RiverWalkList({
           // Active view: Archive button (only for owners)
           canArchive && (
             <button
-              onClick={() => onArchive(riverWalk.id)}
-              disabled={archiveLoading === riverWalk.id}
+              onClick={tutorialActive ? undefined : () => onArchive(riverWalk.id)}
+              disabled={archiveLoading === riverWalk.id || tutorialActive}
               className="bg-warning/10 hover:bg-warning/20 text-warning px-3 py-2 sm:px-4 sm:py-3 rounded-lg font-medium transition-all duration-200 border border-warning/20 shadow-modern hover:shadow-modern-lg touch-manipulation flex-1 sm:flex-none flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
               data-tutorial="archive"
             >

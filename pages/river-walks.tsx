@@ -40,6 +40,7 @@ export default function RiverWalksPage() {
     previousStep: previousTutorialStep,
     skipTutorial,
     exitTutorial,
+    fullyExitTutorial,
     markStepComplete,
     canStartTutorial,
     hasExitedThisSession,
@@ -119,9 +120,16 @@ export default function RiverWalksPage() {
 
       // Check for tutorial completion from query parameter
       if (router.query.tutorialComplete === 'true') {
-        setShowTutorialCompletionModal(true);
         // Clean up the query parameter
         router.replace('/river-walks', undefined, { shallow: true });
+        // Continue tutorial with premium features instead of showing completion modal
+        if (tutorialActive) {
+          // Tutorial is still active, continue with premium features
+          // The tutorial should be at the print-template step
+        } else {
+          // Tutorial was not active, show completion modal
+          setShowTutorialCompletionModal(true);
+        }
       }
 
       // Auto-start tutorial for new users after welcome (only if they haven't seen it)
@@ -342,7 +350,7 @@ export default function RiverWalksPage() {
     if (tutorialActive && tutorialSteps[tutorialStep]?.id === 'new-river-walk') {
       // Navigate to the actual form
       router.push('/river-walks/new?tutorial=true');
-      // Continue to next step (profile-menu step)
+      // Continue to next step (print-template step)
       setTimeout(() => {
         nextTutorialStep();
       }, 500);
@@ -643,6 +651,7 @@ export default function RiverWalksPage() {
             isRiverWalkSynced={isRiverWalkSynced}
             archiveLoading={archiveLoading}
             templateLoading={templateLoading}
+            tutorialActive={tutorialActive}
           />
         )}
 
@@ -655,7 +664,7 @@ export default function RiverWalksPage() {
         )}
 
         {/* Tutorial Overlay */}
-        {tutorialActive && (
+        {tutorialActive && !showTutorialCompletionModal && (
           <TutorialOverlay
             steps={tutorialSteps}
             currentStep={tutorialStep}
@@ -663,6 +672,7 @@ export default function RiverWalksPage() {
             onPrevious={previousTutorialStep}
             onSkip={skipTutorial}
             onExit={exitTutorial}
+            onFullyExit={fullyExitTutorial}
             onStepComplete={markStepComplete}
             isVisible={tutorialActive}
             demoFormData={demoFormData}
@@ -705,7 +715,7 @@ export default function RiverWalksPage() {
                     }}
                     className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-lg font-medium transition-colors"
                   >
-                    Explore Features
+                    Start Exploring
                   </button>
                 </div>
               </div>

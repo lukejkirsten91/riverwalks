@@ -19,6 +19,7 @@ interface TutorialOverlayProps {
   onPrevious: () => void;
   onSkip: () => void;
   onExit: () => void;
+  onFullyExit?: () => void;
   onStepComplete?: (stepId: string) => void;
   isVisible: boolean;
   demoFormData?: {
@@ -145,6 +146,7 @@ const TutorialTooltip: React.FC<{
   onPrevious: () => void;
   onSkip: () => void;
   onExit: () => void;
+  onFullyExit?: () => void;
   currentStep: number;
   totalSteps: number;
   demoFormData?: {
@@ -154,7 +156,7 @@ const TutorialTooltip: React.FC<{
     country: string;
   };
   onDemoFormChange?: (data: { name: string; date: string; county: string; country: string }) => void;
-}> = ({ step, targetElement, onNext, onPrevious, onSkip, onExit, currentStep, totalSteps, demoFormData, onDemoFormChange }) => {
+}> = ({ step, targetElement, onNext, onPrevious, onSkip, onExit, onFullyExit, currentStep, totalSteps, demoFormData, onDemoFormChange }) => {
   const [tooltipStyle, setTooltipStyle] = useState<React.CSSProperties>({});
   const tooltipRef = useRef<HTMLDivElement>(null);
   const [isMobile, setIsMobile] = useState(false);
@@ -276,7 +278,7 @@ const TutorialTooltip: React.FC<{
           </span>
         </div>
         <button
-          onClick={onExit}
+          onClick={step.id === 'profile-menu' && onFullyExit ? onFullyExit : onExit}
           className="text-gray-400 hover:text-gray-600 transition-colors p-1"
         >
           <X className={`${isMobile ? 'w-4 h-4' : 'w-5 h-5'}`} />
@@ -381,13 +383,15 @@ const TutorialTooltip: React.FC<{
             {/* Only show Next button for steps that aren't action-required */}
             {step.id !== 'new-river-walk' && step.id !== 'form-fill' && (
               <button
-                onClick={onNext}
+                onClick={step.id === 'profile-menu' && onFullyExit ? onFullyExit : onNext}
                 disabled={step.id === 'demo-form' && (!demoFormData?.name || demoFormData.name.trim() === '')}
                 className={`bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white px-4 ${isMobile ? 'py-2.5' : 'py-2'} rounded-lg font-medium transition-colors flex items-center justify-center gap-1 ${isMobile ? 'flex-1' : ''}`}
               >
                 {step.id === 'demo-save' ? 'Save River Walk' : 
+                 step.id === 'profile-menu' ? 'Got It' :
+                 ['print-template', 'export', 'collaborate', 'archive'].includes(step.id) ? 'Next' :
                  currentStep === totalSteps - 1 ? 'Finish' : 'Next'}
-                {currentStep < totalSteps - 1 && step.id !== 'demo-save' && <ChevronRight className="w-4 h-4" />}
+                {currentStep < totalSteps - 1 && step.id !== 'demo-save' && step.id !== 'profile-menu' && <ChevronRight className="w-4 h-4" />}
               </button>
             )}
           </div>
@@ -404,6 +408,7 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
   onPrevious,
   onSkip,
   onExit,
+  onFullyExit,
   onStepComplete,
   isVisible,
   demoFormData,
@@ -413,6 +418,7 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
   const [targetElement, setTargetElement] = useState<Element | null>(null);
   const [isReady, setIsReady] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
+  const [isTransitioning, setIsTransitioning] = useState(false);
 
   const currentStepData = steps[currentStep];
 
@@ -421,6 +427,7 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
       setIsReady(false);
       setTargetElement(null);
       setRetryCount(0);
+      setIsTransitioning(false);
       return;
     }
 
@@ -431,6 +438,7 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
         setTargetElement(null);
         setIsReady(true);
         setRetryCount(0);
+        setIsTransitioning(false);
         return;
       }
 
@@ -440,7 +448,6 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
         
         if (element) {
           setTargetElement(element);
-          setIsReady(true);
           setRetryCount(0);
           
           // Scroll element into view if needed
@@ -450,7 +457,22 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
               block: 'center',
               inline: 'center',
             });
-          }, 100);
+            // Also ensure the element is visible after scrolling
+            setTimeout(() => {
+              const rect = element.getBoundingClientRect();
+              const isVisible = rect.top >= 0 && rect.bottom <= window.innerHeight;
+              if (!isVisible) {
+                element.scrollIntoView({
+                  behavior: 'smooth',
+                  block: 'center',
+                  inline: 'center',
+                });
+              }
+              // Set ready after scrolling is complete
+              setIsReady(true);
+              setIsTransitioning(false);
+            }, 300);
+          }, 200);
         } else {
           // Retry with shorter delays, max 5 retries
           if (retryCount < 5) {
@@ -465,6 +487,7 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
             setTargetElement(null);
             setIsReady(true);
             setRetryCount(0);
+            setIsTransitioning(false);
           }
         }
       } catch (error) {
@@ -472,6 +495,7 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
         setTargetElement(null);
         setIsReady(true);
         setRetryCount(0);
+        setIsTransitioning(false);
       }
     };
 
@@ -479,9 +503,10 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
     setIsReady(false);
     setTargetElement(null);
     setRetryCount(0);
+    setIsTransitioning(true);
     
     // Small delay to ensure DOM is ready
-    setTimeout(findTargetElement, 100);
+    setTimeout(findTargetElement, 150);
   }, [currentStepData, isVisible, retryCount]);
 
   useEffect(() => {
@@ -499,8 +524,8 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
       {/* Dark overlay with spotlight */}
       <Spotlight targetElement={targetElement} overlayRef={overlayRef} />
       
-      {/* Tooltip - show when ready or after small delay */}
-      {isReady && (
+      {/* Tooltip - show when ready and not transitioning */}
+      {isReady && !isTransitioning && (
         <div className="pointer-events-auto">
           <TutorialTooltip
             step={currentStepData}
@@ -509,6 +534,7 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
             onPrevious={onPrevious}
             onSkip={onSkip}
             onExit={onExit}
+            onFullyExit={onFullyExit}
             currentStep={currentStep}
             totalSteps={steps.length}
             demoFormData={demoFormData}

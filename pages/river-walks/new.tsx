@@ -29,6 +29,7 @@ export default function NewRiverWalkPage() {
     previousStep: previousTutorialStep,
     skipTutorial,
     exitTutorial,
+    fullyExitTutorial,
     markStepComplete,
   } = useTutorial();
 
@@ -133,6 +134,7 @@ export default function NewRiverWalkPage() {
           onPrevious={() => {}}
           onSkip={skipTutorial}
           onExit={exitTutorial}
+          onFullyExit={fullyExitTutorial}
           isVisible={true}
         />
       )}

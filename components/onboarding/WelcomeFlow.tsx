@@ -59,21 +59,21 @@ export function WelcomeFlow({ onComplete, userEmail }: WelcomeFlowProps) {
               <CheckCircle className="w-4 h-4 text-green-500 mt-1 mr-3 flex-shrink-0" />
               <div>
                 <h4 className="font-semibold text-gray-900 text-sm">River Walk Creation</h4>
-                <p className="text-xs text-gray-600">Create unlimited river walks with site management</p>
+                <p className="text-sm text-gray-600">Create unlimited river walks with site management</p>
               </div>
             </div>
             <div className="flex items-start">
               <CheckCircle className="w-4 h-4 text-green-500 mt-1 mr-3 flex-shrink-0" />
               <div>
                 <h4 className="font-semibold text-gray-900 text-sm">Data Collection</h4>
-                <p className="text-xs text-gray-600">Record measurements, photos, and field notes</p>
+                <p className="text-sm text-gray-600">Record measurements, photos, and field notes</p>
               </div>
             </div>
             <div className="flex items-start">
               <CheckCircle className="w-4 h-4 text-green-500 mt-1 mr-3 flex-shrink-0" />
               <div>
                 <h4 className="font-semibold text-gray-900 text-sm">Offline Support</h4>
-                <p className="text-xs text-gray-600">Works offline in the field, syncs when online</p>
+                <p className="text-sm text-gray-600">Works offline in the field, syncs when online</p>
               </div>
             </div>
           </div>
@@ -83,12 +83,12 @@ export function WelcomeFlow({ onComplete, userEmail }: WelcomeFlowProps) {
               <Crown className="w-4 h-4 text-blue-600 mr-2" />
               <h4 className="font-semibold text-blue-900 text-sm">Premium Features</h4>
             </div>
-            <div className="space-y-1 text-xs text-blue-800">
+            <div className="space-y-1 text-sm text-blue-800">
               <div>• Premium PDF reports with charts and analysis</div>
               <div>• Advanced data export options (Excel format)</div>
               <div>• River walk sharing and collaboration</div>
             </div>
-            <div className="mt-2 text-xs text-blue-600">
+            <div className="mt-2 text-sm text-blue-600">
               Starting at just £1.99/year (less than 40p per month!)
             </div>
           </div>
@@ -110,7 +110,7 @@ export function WelcomeFlow({ onComplete, userEmail }: WelcomeFlowProps) {
               </div>
               <div>
                 <h4 className="font-semibold text-gray-900 text-sm">Create a River Walk</h4>
-                <p className="text-xs text-gray-600">Give your study a name, date, and location</p>
+                <p className="text-sm text-gray-600">Give your study a name, date, and location</p>
               </div>
             </div>
             <div className="flex items-center">
@@ -119,7 +119,7 @@ export function WelcomeFlow({ onComplete, userEmail }: WelcomeFlowProps) {
               </div>
               <div>
                 <h4 className="font-semibold text-gray-900 text-sm">Add Study Sites</h4>
-                <p className="text-xs text-gray-600">Mark locations along your river where you'll take measurements</p>
+                <p className="text-sm text-gray-600">Mark locations along your river where you'll take measurements</p>
               </div>
             </div>
             <div className="flex items-center">
@@ -128,7 +128,7 @@ export function WelcomeFlow({ onComplete, userEmail }: WelcomeFlowProps) {
               </div>
               <div>
                 <h4 className="font-semibold text-gray-900 text-sm">Collect Data</h4>
-                <p className="text-xs text-gray-600">Record measurements, photos, and observations at each site</p>
+                <p className="text-sm text-gray-600">Record measurements, photos, and observations at each site</p>
               </div>
             </div>
             <div className="flex items-center">
@@ -137,8 +137,8 @@ export function WelcomeFlow({ onComplete, userEmail }: WelcomeFlowProps) {
               </div>
               <div>
                 <h4 className="font-semibold text-gray-900 text-sm">Generate Report</h4>
-                <p className="text-xs text-gray-600">Create professional PDF reports for your coursework</p>
-                <span className="text-xs text-blue-600 bg-blue-100 px-2 py-0.5 rounded mt-1 inline-block">Premium Feature</span>
+                <p className="text-sm text-gray-600">Create professional PDF reports for your coursework</p>
+                <span className="text-sm text-blue-600 bg-blue-100 px-2 py-0.5 rounded mt-1 inline-block">Premium Feature</span>
               </div>
             </div>
           </div>
@@ -194,7 +194,7 @@ export function WelcomeFlow({ onComplete, userEmail }: WelcomeFlowProps) {
               </div>
               <div className="min-w-0 flex-1">
                 <h3 className="font-semibold text-gray-900 text-sm sm:text-base">{currentStepData.title}</h3>
-                <p className="text-xs sm:text-sm text-gray-500 truncate">{currentStepData.description}</p>
+                <p className="text-sm sm:text-base text-gray-500">{currentStepData.description}</p>
               </div>
             </div>
             <span className="text-xs sm:text-sm text-gray-400 ml-2 flex-shrink-0">
