@@ -183,13 +183,39 @@ const TutorialTooltip: React.FC<{
       let left = 0;
 
       if (isMobile) {
-        // On mobile, position tooltip at bottom of screen for better UX
-        top = window.innerHeight - tooltipRect.height - padding - 80; // Account for mobile bottom bar
-        left = padding;
+        // On mobile, position tooltip intelligently based on target element
+        if (!targetElement) {
+          // Center for steps without target
+          top = window.innerHeight / 2 - tooltipRect.height / 2;
+          left = padding;
+        } else {
+          const targetRect = targetElement.getBoundingClientRect();
+          const availableSpaceAbove = targetRect.top;
+          const availableSpaceBelow = window.innerHeight - targetRect.bottom;
+          
+          // If target is in bottom half of screen, position tooltip above target
+          if (targetRect.top > window.innerHeight / 2 && availableSpaceAbove > tooltipRect.height + padding) {
+            top = targetRect.top - tooltipRect.height - padding;
+          } 
+          // If target is in top half, position tooltip below target  
+          else if (targetRect.bottom < window.innerHeight / 2 && availableSpaceBelow > tooltipRect.height + padding) {
+            top = targetRect.bottom + padding;
+          }
+          // Otherwise, position at top of screen if target is at bottom
+          else if (targetRect.top > window.innerHeight / 2) {
+            top = padding;
+          }
+          // Or at bottom of screen if target is at top
+          else {
+            top = window.innerHeight - tooltipRect.height - padding - 80; // Account for mobile bottom bar
+          }
+          
+          left = padding;
+        }
         
         setTooltipStyle({
           position: 'fixed',
-          top: `${Math.max(padding, top)}px`,
+          top: `${Math.max(padding, Math.min(top, window.innerHeight - tooltipRect.height - padding - 80))}px`,
           left: `${left}px`,
           right: `${padding}px`,
           zIndex: 10002,
@@ -257,7 +283,7 @@ const TutorialTooltip: React.FC<{
   }, [targetElement, step.position, isMobile]);
 
   const tooltipClasses = isMobile 
-    ? "w-full bg-white rounded-lg shadow-2xl border border-gray-200 p-4 animate-in slide-in-from-bottom-4 fade-in-0 duration-700 ease-out"
+    ? "w-full bg-white rounded-lg shadow-2xl border border-gray-200 p-3 animate-in slide-in-from-bottom-4 fade-in-0 duration-700 ease-out"
     : "max-w-sm bg-white rounded-xl shadow-xl border border-gray-200 p-6 animate-in fade-in-0 zoom-in-95 duration-700 ease-out transform";
 
   return (
@@ -268,9 +294,9 @@ const TutorialTooltip: React.FC<{
       className={tooltipClasses}
     >
       {/* Header */}
-      <div className={`flex items-center justify-between ${isMobile ? 'mb-3' : 'mb-4'}`}>
+      <div className={`flex items-center justify-between ${isMobile ? 'mb-2' : 'mb-4'}`}>
         <div className="flex items-center gap-2">
-          <div className={`${isMobile ? 'w-6 h-6' : 'w-8 h-8'} bg-blue-100 rounded-full flex items-center justify-center`}>
+          <div className={`${isMobile ? 'w-5 h-5' : 'w-8 h-8'} bg-blue-100 rounded-full flex items-center justify-center`}>
             <Lightbulb className={`${isMobile ? 'w-3 h-3' : 'w-4 h-4'} text-blue-600`} />
           </div>
           <span className={`${isMobile ? 'text-xs' : 'text-sm'} font-medium text-gray-500`}>
@@ -286,7 +312,7 @@ const TutorialTooltip: React.FC<{
       </div>
 
       {/* Progress bar */}
-      <div className={`w-full bg-gray-200 rounded-full ${isMobile ? 'h-1.5 mb-3' : 'h-2 mb-4'}`}>
+      <div className={`w-full bg-gray-200 rounded-full ${isMobile ? 'h-1 mb-2' : 'h-2 mb-4'}`}>
         <div
           className="bg-blue-600 rounded-full transition-all duration-300"
           style={{ 
@@ -297,11 +323,11 @@ const TutorialTooltip: React.FC<{
       </div>
 
       {/* Content */}
-      <div className={`${isMobile ? 'mb-4' : 'mb-6'}`}>
-        <h3 className={`${isMobile ? 'text-base' : 'text-lg'} font-semibold text-gray-900 ${isMobile ? 'mb-1.5' : 'mb-2'}`}>
+      <div className={`${isMobile ? 'mb-3' : 'mb-6'}`}>
+        <h3 className={`${isMobile ? 'text-sm' : 'text-lg'} font-semibold text-gray-900 ${isMobile ? 'mb-1' : 'mb-2'}`}>
           {step.title}
         </h3>
-        <p className={`text-gray-600 leading-relaxed ${isMobile ? 'text-sm' : ''}`}>
+        <p className={`text-gray-600 leading-relaxed ${isMobile ? 'text-xs' : ''}`}>
           {step.content}
         </p>
         
@@ -342,11 +368,11 @@ const TutorialTooltip: React.FC<{
           </div>
         )}
         
-        {step.tip && !isMobile && (
-          <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+        {step.tip && (
+          <div className={`${isMobile ? 'mt-2 p-2' : 'mt-4 p-3'} bg-blue-50 border border-blue-200 rounded-lg`}>
             <div className="flex items-start gap-2">
-              <Lightbulb className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
-              <p className="text-sm text-blue-800">{step.tip}</p>
+              <Lightbulb className={`${isMobile ? 'w-3 h-3' : 'w-4 h-4'} text-blue-600 mt-0.5 flex-shrink-0`} />
+              <p className={`${isMobile ? 'text-xs' : 'text-sm'} text-blue-800`}>{step.tip}</p>
             </div>
           </div>
         )}
@@ -373,9 +399,9 @@ const TutorialTooltip: React.FC<{
             {isMobile && currentStep > 2 && (
               <button
                 onClick={onPrevious}
-                className="flex items-center justify-center gap-1 px-4 py-2.5 text-sm font-medium text-gray-600 hover:text-gray-800 transition-colors bg-gray-100 rounded-lg flex-1"
+                className="flex items-center justify-center gap-1 px-3 py-2 text-xs font-medium text-gray-600 hover:text-gray-800 transition-colors bg-gray-100 rounded-lg flex-1"
               >
-                <ChevronLeft className="w-4 h-4" />
+                <ChevronLeft className="w-3 h-3" />
                 Back
               </button>
             )}
@@ -385,13 +411,13 @@ const TutorialTooltip: React.FC<{
               <button
                 onClick={step.id === 'profile-menu' && onFullyExit ? onFullyExit : onNext}
                 disabled={step.id === 'demo-form' && (!demoFormData?.name || demoFormData.name.trim() === '')}
-                className={`bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white px-4 ${isMobile ? 'py-2.5' : 'py-2'} rounded-lg font-medium transition-colors flex items-center justify-center gap-1 ${isMobile ? 'flex-1' : ''}`}
+                className={`bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white px-3 ${isMobile ? 'py-2 text-xs' : 'py-2'} rounded-lg font-medium transition-colors flex items-center justify-center gap-1 ${isMobile ? 'flex-1' : ''}`}
               >
                 {step.id === 'demo-save' ? 'Save River Walk' : 
                  step.id === 'profile-menu' ? 'Got It' :
                  ['print-template', 'export', 'collaborate', 'archive'].includes(step.id) ? 'Next' :
                  currentStep === totalSteps - 1 ? 'Finish' : 'Next'}
-                {currentStep < totalSteps - 1 && step.id !== 'demo-save' && step.id !== 'profile-menu' && <ChevronRight className="w-4 h-4" />}
+                {currentStep < totalSteps - 1 && step.id !== 'demo-save' && step.id !== 'profile-menu' && <ChevronRight className={`${isMobile ? 'w-3 h-3' : 'w-4 h-4'}`} />}
               </button>
             )}
           </div>
