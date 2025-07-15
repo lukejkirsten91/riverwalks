@@ -304,7 +304,7 @@ const TutorialTooltip: React.FC<{
             <Lightbulb className={`${isMobile ? 'w-3 h-3' : 'w-4 h-4'} text-blue-600`} />
           </div>
           <span className={`${isMobile ? 'text-xs' : 'text-sm'} font-medium text-gray-500`}>
-            Step {currentStep + 1} of {totalSteps}
+            {step.id === 'form-fill' && totalSteps === 1 ? 'Step 2.1 of 9' : `Step ${currentStep + 1} of ${totalSteps}`}
           </span>
         </div>
         <button

@@ -18,7 +18,8 @@ import { TermsGate } from '../components/auth/TermsGate';
 import { WelcomeFlow } from '../components/onboarding/WelcomeFlow';
 import { TutorialOverlay } from '../components/onboarding/TutorialOverlay';
 import { useOnboarding } from '../hooks/useOnboarding';
-import { useTutorial } from '../hooks/useTutorial';
+import { useIntroJsTutorial } from '../hooks/useIntroJsTutorial';
+import { IntroJsTutorial } from '../components/onboarding/IntroJsTutorial';
 import { resetModalStyles } from '../lib/utils/modal';
 import type { RiverWalk, RiverWalkFormData } from '../types';
 import type { User } from '@supabase/supabase-js';
@@ -43,10 +44,8 @@ export default function RiverWalksPage() {
     fullyExitTutorial,
     markStepComplete,
     canStartTutorial,
-    hasExitedThisSession,
-    demoFormData,
-    setDemoFormData
-  } = useTutorial();
+    hasExitedThisSession
+  } = useIntroJsTutorial();
   
   const [user, setUser] = useState<User | null>(null);
   const [showForm, setShowForm] = useState(false);
@@ -678,22 +677,18 @@ export default function RiverWalksPage() {
           />
         )}
 
-        {/* Tutorial Overlay */}
-        {tutorialActive && !showTutorialCompletionModal && (
-          <TutorialOverlay
-            steps={tutorialSteps}
-            currentStep={tutorialStep}
-            onNext={handleTutorialNext}
-            onPrevious={previousTutorialStep}
-            onSkip={skipTutorial}
-            onExit={exitTutorial}
-            onFullyExit={fullyExitTutorial}
-            onStepComplete={markStepComplete}
-            isVisible={tutorialActive}
-            demoFormData={demoFormData}
-            onDemoFormChange={setDemoFormData}
-          />
-        )}
+        {/* Tutorial with Intro.js */}
+        <IntroJsTutorial
+          enabled={tutorialActive && !showTutorialCompletionModal}
+          steps={tutorialSteps}
+          initialStep={tutorialStep}
+          onExit={exitTutorial}
+          onComplete={fullyExitTutorial}
+          onChange={nextTutorialStep}
+          onBeforeChange={(nextStepIndex) => {
+            console.log('Tutorial moving to step:', nextStepIndex);
+          }}
+        />
 
         {/* Tutorial Completion Modal */}
         {showTutorialCompletionModal && (

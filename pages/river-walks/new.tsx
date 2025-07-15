@@ -91,6 +91,20 @@ export default function NewRiverWalkPage() {
     router.push('/river-walks');
   };
 
+  const handleFormTutorialExit = () => {
+    // Cancel river walk creation and go to tutorial end
+    if (isTutorialMode) {
+      // Navigate back and show final tutorial step
+      router.push('/river-walks');
+      // Set tutorial to final step after navigation
+      setTimeout(() => {
+        exitTutorial(); // This goes to the profile-menu step
+      }, 100);
+    } else {
+      handleCancel();
+    }
+  };
+
   if (!user) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
@@ -115,28 +129,34 @@ export default function NewRiverWalkPage() {
         />
       </div>
       
-      {/* Tutorial Overlay for Form Steps */}
+      {/* Simple Tutorial Message for Form */}
       {isTutorialMode && formTutorialActive && (
-        <TutorialOverlay
-          steps={[
-            {
-              id: 'form-fill',
-              title: 'Fill in Your River Walk Details',
-              content: 'Complete all the form fields to create your first river walk study. Start with the name field, then add the date and location information. When you\'re done, click "Create River Walk" to save it.',
-              targetSelector: '[data-tutorial="river-walk-name"]',
-              position: 'bottom',
-              tip: 'Fill in all the required fields, then click "Create River Walk" to finish.',
-              actionRequired: true
-            }
-          ]}
-          currentStep={0}
-          onNext={() => {/* No next button - user must complete form */}}
-          onPrevious={() => {}}
-          onSkip={skipTutorial}
-          onExit={exitTutorial}
-          onFullyExit={fullyExitTutorial}
-          isVisible={true}
-        />
+        <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-[9999] px-4 w-full max-w-md">
+          <div className="bg-blue-600 text-white rounded-lg shadow-lg px-4 py-3 flex items-start gap-3">
+            <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+              <span className="text-xs font-bold">2.1</span>
+            </div>
+            <div className="flex-1">
+              <h3 className="font-semibold text-sm mb-1">Fill in Your River Walk Details</h3>
+              <p className="text-blue-100 text-xs leading-relaxed">
+                Complete all the form fields to create your first river walk study. When you're done, click "Create River Walk" to save it.
+              </p>
+              <p className="text-blue-200 text-xs mt-2 flex items-center gap-1">
+                <span>💡</span>
+                <span>Step 2.1 of 9 - Fill in all the required fields to continue</span>
+              </p>
+            </div>
+            <button
+              onClick={handleFormTutorialExit}
+              className="text-blue-200 hover:text-white transition-colors p-1 flex-shrink-0"
+              aria-label="Close tutorial"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        </div>
       )}
       
     </div>
