@@ -255,11 +255,12 @@ const TutorialTooltip: React.FC<{
   }, [targetElement, step.position, isMobile]);
 
   const tooltipClasses = isMobile 
-    ? "w-full bg-white rounded-lg shadow-2xl border border-gray-200 p-4 animate-in slide-in-from-bottom-4 fade-in-0 duration-500 ease-out"
-    : "max-w-sm bg-white rounded-xl shadow-xl border border-gray-200 p-6 animate-in fade-in-0 zoom-in-95 duration-500 ease-out";
+    ? "w-full bg-white rounded-lg shadow-2xl border border-gray-200 p-4 animate-in slide-in-from-bottom-4 fade-in-0 duration-700 ease-out"
+    : "max-w-sm bg-white rounded-xl shadow-xl border border-gray-200 p-6 animate-in fade-in-0 zoom-in-95 duration-700 ease-out transform";
 
   return (
     <div
+      key={`tutorial-tooltip-${step.id}`}
       ref={tooltipRef}
       style={tooltipStyle}
       className={tooltipClasses}
@@ -387,15 +388,18 @@ const TutorialTooltip: React.FC<{
               </button>
             )}
             
-            <button
-              onClick={onNext}
-              disabled={step.id === 'demo-form' && (!demoFormData?.name || demoFormData.name.trim() === '')}
-              className={`bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white px-4 ${isMobile ? 'py-2.5' : 'py-2'} rounded-lg font-medium transition-colors flex items-center justify-center gap-1 ${isMobile ? 'flex-1' : ''}`}
-            >
-              {step.id === 'demo-save' ? 'Save River Walk' : 
-               currentStep === totalSteps - 1 ? 'Finish' : 'Next'}
-              {currentStep < totalSteps - 1 && step.id !== 'demo-save' && <ChevronRight className="w-4 h-4" />}
-            </button>
+            {/* Only show Next button for steps that aren't action-required */}
+            {step.id !== 'new-river-walk' && (
+              <button
+                onClick={onNext}
+                disabled={step.id === 'demo-form' && (!demoFormData?.name || demoFormData.name.trim() === '')}
+                className={`bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white px-4 ${isMobile ? 'py-2.5' : 'py-2'} rounded-lg font-medium transition-colors flex items-center justify-center gap-1 ${isMobile ? 'flex-1' : ''}`}
+              >
+                {step.id === 'demo-save' ? 'Save River Walk' : 
+                 currentStep === totalSteps - 1 ? 'Finish' : 'Next'}
+                {currentStep < totalSteps - 1 && step.id !== 'demo-save' && <ChevronRight className="w-4 h-4" />}
+              </button>
+            )}
           </div>
         </div>
       </div>

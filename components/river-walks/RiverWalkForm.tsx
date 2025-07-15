@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { MapPin } from 'lucide-react';
 import { LoadingButton } from '../ui/LoadingSpinner';
 import type { RiverWalk, RiverWalkFormData } from '../../types';
@@ -9,6 +9,7 @@ interface RiverWalkFormProps {
   onCancel: () => void;
   loading: boolean;
   isTutorialMode?: boolean;
+  onFormInteraction?: () => void;
 }
 
 export function RiverWalkForm({
@@ -17,7 +18,9 @@ export function RiverWalkForm({
   onCancel,
   loading,
   isTutorialMode = false,
+  onFormInteraction,
 }: RiverWalkFormProps) {
+  const nameInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState<RiverWalkFormData>({
     name: currentRiverWalk?.name || '',
     date: currentRiverWalk?.date || new Date().toISOString().split('T')[0],
@@ -26,12 +29,26 @@ export function RiverWalkForm({
     notes: currentRiverWalk?.notes || '',
   });
 
+  // Auto-focus the name field when in tutorial mode
+  useEffect(() => {
+    if (isTutorialMode && nameInputRef.current) {
+      setTimeout(() => {
+        nameInputRef.current?.focus();
+      }, 1000); // Small delay to let tutorial overlay appear first
+    }
+  }, [isTutorialMode]);
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData({
       ...formData,
       [name]: value,
     });
+    
+    // Dismiss tutorial when user starts typing
+    if (isTutorialMode && onFormInteraction) {
+      onFormInteraction();
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -61,6 +78,7 @@ export function RiverWalkForm({
           <div data-tutorial="river-walk-name">
             <label className="block text-foreground mb-3 font-medium">Study Name</label>
             <input
+              ref={nameInputRef}
               type="text"
               name="name"
               value={formData.name}

@@ -1540,4 +1540,20 @@
       border-color: rgb(59, 130, 246);
     }
   }
+
+  /* Enhanced form field highlighting for tutorial */
+  [data-tutorial="river-walk-name"] input:focus {
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1), 0 0 20px rgba(59, 130, 246, 0.3);
+    border-color: rgb(59, 130, 246);
+  }
+
+  /* Tutorial form field animation */
+  @keyframes tutorial-field-pulse {
+    0%, 100% {
+      box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4);
+    }
+    50% {
+      box-shadow: 0 0 0 8px rgba(59, 130, 246, 0.1);
+    }
+  }
 }

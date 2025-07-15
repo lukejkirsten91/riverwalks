@@ -17,6 +17,7 @@ export default function NewRiverWalkPage() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(false);
   const [isTutorialMode, setIsTutorialMode] = useState(false);
+  const [formTutorialActive, setFormTutorialActive] = useState(false);
 
   const { createRiverWalk } = useOfflineRiverWalks();
   
@@ -45,6 +46,7 @@ export default function NewRiverWalkPage() {
       // Check if we're in tutorial mode
       const isTutorial = router.query.tutorial === 'true';
       setIsTutorialMode(isTutorial);
+      setFormTutorialActive(isTutorial);
     };
 
     checkAuth();
@@ -109,44 +111,22 @@ export default function NewRiverWalkPage() {
           onCancel={handleCancel}
           loading={loading}
           isTutorialMode={isTutorialMode}
+          onFormInteraction={() => setFormTutorialActive(false)}
         />
       </div>
       
       {/* Tutorial Overlay for Form Steps */}
-      {isTutorialMode && tutorialActive && (
+      {isTutorialMode && formTutorialActive && (
         <TutorialOverlay
           steps={[
             {
               id: 'form-name',
-              title: 'Name Your River Walk',
-              content: 'Give your study a descriptive name. This helps you identify it later when you have multiple river walks.',
+              title: 'Fill in Your River Walk Details',
+              content: 'Start by entering a descriptive name for your river walk study. This will help you identify it later when you have multiple studies.',
               targetSelector: '[data-tutorial="river-walk-name"]',
               position: 'bottom',
-              tip: 'Use a name that describes the location or purpose of your study.'
-            },
-            {
-              id: 'form-date',
-              title: 'Set the Study Date',
-              content: 'Choose the date when you conducted or plan to conduct this river walk study.',
-              targetSelector: '[data-tutorial="river-walk-date"]',
-              position: 'bottom',
-              tip: 'This date helps organize your studies chronologically.'
-            },
-            {
-              id: 'form-location',
-              title: 'Add Location Details',
-              content: 'Specify the county and country where your river walk takes place. This helps with data organization and reporting.',
-              targetSelector: '[data-tutorial="river-walk-location"]',
-              position: 'bottom',
-              tip: 'Accurate location data is important for environmental studies.'
-            },
-            {
-              id: 'form-save',
-              title: 'Save Your River Walk',
-              content: 'Click "Create River Walk" to save your study. You can then add measurement sites and collect data.',
-              targetSelector: '[data-tutorial="river-walk-save"]',
-              position: 'top',
-              tip: 'Once saved, you\'ll be able to add sites where you\'ll take measurements.'
+              tip: 'The name field is highlighted and waiting for your input.',
+              actionRequired: true
             }
           ]}
           currentStep={0}

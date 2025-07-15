@@ -144,20 +144,22 @@ export function useTutorial(): UseTutorialReturn {
     setCurrentStep(0);
   }, []);
 
-  const exitTutorial = useCallback(() => {
+  const exitTutorial = useCallback(async () => {
     setIsActive(false);
     setCurrentStep(0);
-  }, []);
+    await updateTutorialState({ hasSeenTutorial: true });
+  }, [updateTutorialState]);
 
-  const nextStep = useCallback(() => {
+  const nextStep = useCallback(async () => {
     if (currentStep < TUTORIAL_STEPS.length - 1) {
       setCurrentStep(prev => prev + 1);
     } else {
       // Tutorial complete
-      exitTutorial();
-      updateTutorialState({ hasSeenTutorial: true });
+      setIsActive(false);
+      setCurrentStep(0);
+      await updateTutorialState({ hasSeenTutorial: true });
     }
-  }, [currentStep, exitTutorial, updateTutorialState]);
+  }, [currentStep, updateTutorialState]);
 
   const previousStep = useCallback(() => {
     if (currentStep > 0) {
