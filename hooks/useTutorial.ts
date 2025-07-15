@@ -29,6 +29,7 @@ interface UseTutorialReturn {
   exitTutorial: () => void;
   markStepComplete: (stepId: string) => void;
   canStartTutorial: boolean;
+  hasExitedThisSession: boolean;
   demoFormData: {
     name: string;
     date: string;
@@ -56,6 +57,15 @@ const TUTORIAL_STEPS: TutorialStep[] = [
     position: 'bottom',
     actionRequired: true,
     tip: 'A river walk is a complete study session where you\'ll collect data from multiple sites along a river.'
+  },
+  {
+    id: 'profile-menu',
+    title: 'Access Tutorial Anytime',
+    content: 'You can restart this tutorial anytime by clicking your profile menu here and selecting "Tutorial". Feel free to explore the features on your own!',
+    targetSelector: '[data-profile-dropdown] > button',
+    position: 'bottom',
+    skipable: true,
+    tip: 'The profile menu also contains account settings, feedback options, and sign out.'
   }
 ];
 
@@ -70,6 +80,7 @@ export function useTutorial(): UseTutorialReturn {
   const [currentStep, setCurrentStep] = useState(0);
   const [tutorialState, setTutorialState] = useState<TutorialState>(DEFAULT_TUTORIAL_STATE);
   const [canStartTutorial, setCanStartTutorial] = useState(false);
+  const [hasExitedThisSession, setHasExitedThisSession] = useState(false);
   const [demoFormData, setDemoFormData] = useState({
     name: '',
     date: new Date().toISOString().split('T')[0],
@@ -139,6 +150,7 @@ export function useTutorial(): UseTutorialReturn {
   const exitTutorial = useCallback(async () => {
     setIsActive(false);
     setCurrentStep(0);
+    setHasExitedThisSession(true);
     await updateTutorialState({ hasSeenTutorial: true });
   }, [updateTutorialState]);
 
@@ -184,6 +196,7 @@ export function useTutorial(): UseTutorialReturn {
     exitTutorial,
     markStepComplete,
     canStartTutorial,
+    hasExitedThisSession,
     demoFormData,
     setDemoFormData
   };

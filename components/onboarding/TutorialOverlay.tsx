@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, ChevronLeft, ChevronRight, SkipForward, Lightbulb } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, Lightbulb } from 'lucide-react';
 
 interface TutorialStep {
   id: string;
@@ -367,16 +367,6 @@ const TutorialTooltip: React.FC<{
         )}
 
         <div className={`flex ${isMobile ? 'w-full' : 'items-center'} gap-2`}>
-          {step.skipable && (
-            <button
-              onClick={onSkip}
-              className={`flex items-center gap-1 px-3 py-2 text-sm font-medium text-gray-500 hover:text-gray-700 transition-colors ${isMobile ? 'flex-1 justify-center' : ''}`}
-            >
-              <SkipForward className="w-4 h-4" />
-              {isMobile ? 'Skip' : 'Skip Tutorial'}
-            </button>
-          )}
-          
           <div className={`flex gap-2 ${isMobile ? 'flex-1' : ''}`}>
             {isMobile && currentStep > 0 && (
               <button
@@ -462,16 +452,16 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
             });
           }, 100);
         } else {
-          // Retry with exponential backoff, max 10 retries
-          if (retryCount < 10) {
-            const delay = Math.min(1000, 100 * Math.pow(2, retryCount));
+          // Retry with shorter delays, max 5 retries
+          if (retryCount < 5) {
+            const delay = 200; // Fixed 200ms delay
             console.log(`Element not found, retrying in ${delay}ms (attempt ${retryCount + 1})`);
             setTimeout(() => {
               setRetryCount(prev => prev + 1);
               findTargetElement();
             }, delay);
           } else {
-            console.warn('Element not found after 10 retries, showing centered tutorial');
+            console.warn('Element not found after 5 retries, showing centered tutorial');
             setTargetElement(null);
             setIsReady(true);
             setRetryCount(0);
@@ -491,7 +481,7 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
     setRetryCount(0);
     
     // Small delay to ensure DOM is ready
-    setTimeout(findTargetElement, 50);
+    setTimeout(findTargetElement, 100);
   }, [currentStepData, isVisible, retryCount]);
 
   useEffect(() => {
@@ -509,8 +499,8 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
       {/* Dark overlay with spotlight */}
       <Spotlight targetElement={targetElement} overlayRef={overlayRef} />
       
-      {/* Tooltip - show even if not ready to prevent fade issues */}
-      {(isReady || retryCount > 0) && (
+      {/* Tooltip - show when ready or after small delay */}
+      {isReady && (
         <div className="pointer-events-auto">
           <TutorialTooltip
             step={currentStepData}
@@ -524,16 +514,6 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
             demoFormData={demoFormData}
             onDemoFormChange={onDemoFormChange}
           />
-        </div>
-      )}
-      
-      {/* Loading indicator while finding target */}
-      {!isReady && retryCount > 2 && (
-        <div className="fixed top-4 right-4 bg-white rounded-lg shadow-lg p-3 z-[10003] pointer-events-auto">
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-            <span className="text-sm text-gray-600">Loading tutorial...</span>
-          </div>
         </div>
       )}
     </div>

@@ -18,7 +18,6 @@ export default function NewRiverWalkPage() {
   const [loading, setLoading] = useState(false);
   const [isTutorialMode, setIsTutorialMode] = useState(false);
   const [formTutorialActive, setFormTutorialActive] = useState(false);
-  const [showCompletionModal, setShowCompletionModal] = useState(false);
 
   const { createRiverWalk } = useOfflineRiverWalks();
   
@@ -68,9 +67,9 @@ export default function NewRiverWalkPage() {
         showSuccess('River Walk Created', 'Your new river walk has been created successfully!');
         markFirstRiverWalkCreated();
         
-        // If in tutorial mode, show completion modal instead of normal navigation
+        // If in tutorial mode, navigate back with completion flag
         if (isTutorialMode) {
-          setShowCompletionModal(true);
+          router.push('/river-walks?tutorialComplete=true');
         } else {
           router.push('/river-walks');
         }
@@ -138,37 +137,6 @@ export default function NewRiverWalkPage() {
         />
       )}
       
-      {/* Tutorial Completion Modal */}
-      {showCompletionModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[10001] p-4">
-          <div className="bg-white rounded-2xl p-6 max-w-md w-full mx-4 animate-in fade-in-0 zoom-in-95 duration-500">
-            <div className="text-center">
-              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-                </svg>
-              </div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                Well Done! 🎉
-              </h2>
-              <p className="text-gray-600 mb-6">
-                You've successfully completed the tutorial and created your first river walk! 
-                You can now add measurement sites, collect data, and explore all the other features.
-              </p>
-              <button
-                onClick={() => {
-                  setShowCompletionModal(false);
-                  exitTutorial();
-                  router.push('/river-walks');
-                }}
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
-              >
-                Explore Features
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

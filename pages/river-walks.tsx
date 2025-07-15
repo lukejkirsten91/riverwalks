@@ -42,6 +42,7 @@ export default function RiverWalksPage() {
     exitTutorial,
     markStepComplete,
     canStartTutorial,
+    hasExitedThisSession,
     demoFormData,
     setDemoFormData
   } = useTutorial();
@@ -54,9 +55,10 @@ export default function RiverWalksPage() {
   const [templateLoading, setTemplateLoading] = useState<string | null>(null);
   const [showJoinCollaboration, setShowJoinCollaboration] = useState(false);
   const [joinCollabLink, setJoinCollabLink] = useState('');
+  const [showTutorialCompletionModal, setShowTutorialCompletionModal] = useState(false);
 
   // Apply scroll lock when any modal is open
-  useScrollLock(!!showForm || !!showJoinCollaboration || !!shouldShowWelcome || tutorialActive);
+  useScrollLock(!!showForm || !!showJoinCollaboration || !!shouldShowWelcome || tutorialActive || showTutorialCompletionModal);
 
   const {
     riverWalks,
@@ -115,23 +117,28 @@ export default function RiverWalksPage() {
         }
       }
 
+      // Check for tutorial completion from query parameter
+      if (router.query.tutorialComplete === 'true') {
+        setShowTutorialCompletionModal(true);
+        // Clean up the query parameter
+        router.replace('/river-walks', undefined, { shallow: true });
+      }
+
       // Auto-start tutorial for new users after welcome (only if they haven't seen it)
-      if (shouldShowTutorial && canStartTutorial && !tutorialActive) {
+      if (shouldShowTutorial && canStartTutorial && !tutorialActive && !hasExitedThisSession) {
         // Additional check: only start if tutorial hasn't been seen
         const userTutorial = user?.user_metadata?.tutorial;
         if (!userTutorial?.hasSeenTutorial) {
           setTimeout(() => startTutorial(), 1000); // Small delay to let page load
         }
       }
-      
-      // No longer need to handle tutorial completion here - handled in form page
     };
 
     checkUser();
     
     // Reset any modal styles that might be blocking interactions
     resetModalStyles();
-  }, [router, collaborationEnabled, acceptInvite, showSuccess, showError, refetch, shouldShowTutorial, canStartTutorial, tutorialActive, startTutorial]);
+  }, [router, collaborationEnabled, acceptInvite, showSuccess, showError, refetch, shouldShowTutorial, canStartTutorial, tutorialActive, hasExitedThisSession, startTutorial]);
 
   // One-time sync queue cleanup (remove after deployment)
   useEffect(() => {
@@ -331,13 +338,13 @@ export default function RiverWalksPage() {
   };
 
   const handleAddNewRiverWalk = async () => {
-    // If tutorial is active and we're on the new-river-walk step, navigate to form and complete tutorial
+    // If tutorial is active and we're on the new-river-walk step, navigate to form and continue tutorial
     if (tutorialActive && tutorialSteps[tutorialStep]?.id === 'new-river-walk') {
       // Navigate to the actual form
       router.push('/river-walks/new?tutorial=true');
-      // Tutorial will be completed in the form page, so exit here
+      // Continue to next step (profile-menu step)
       setTimeout(() => {
-        exitTutorial();
+        nextTutorialStep();
       }, 500);
       return;
     }
@@ -661,6 +668,49 @@ export default function RiverWalksPage() {
             demoFormData={demoFormData}
             onDemoFormChange={setDemoFormData}
           />
+        )}
+
+        {/* Tutorial Completion Modal */}
+        {showTutorialCompletionModal && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[10001] p-4">
+            <div className="bg-white rounded-2xl p-6 max-w-md w-full mx-4 animate-in fade-in-0 zoom-in-95 duration-500">
+              <div className="text-center">
+                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+                <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                  Well Done! 🎉
+                </h2>
+                <p className="text-gray-600 mb-6">
+                  You've successfully completed the tutorial and created your first river walk! 
+                  You can now add measurement sites, collect data, and explore all the other features.
+                </p>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => {
+                      setShowTutorialCompletionModal(false);
+                      // Reset tutorial state and start from beginning
+                      startTutorial();
+                    }}
+                    className="flex-1 bg-blue-100 hover:bg-blue-200 text-blue-700 px-4 py-3 rounded-lg font-medium transition-colors"
+                  >
+                    Continue Tutorial
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowTutorialCompletionModal(false);
+                      exitTutorial();
+                    }}
+                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-lg font-medium transition-colors"
+                  >
+                    Explore Features
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
         )}
       </div>
       
