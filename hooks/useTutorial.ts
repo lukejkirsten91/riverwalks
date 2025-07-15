@@ -72,8 +72,8 @@ const TUTORIAL_STEPS: TutorialStep[] = [
     id: 'created-river-walk',
     title: 'Your Created River Walk',
     content: 'Great! This is your newly created river walk. Here you can see all the details and actions available for your study.',
-    targetSelector: '[data-tutorial="manage-sites"]',
-    position: 'top',
+    targetSelector: '[data-tutorial="created-river-walk"]',
+    position: 'bottom',
     skipable: true,
     tip: 'Each river walk card shows the study name, date, location, and your access level.'
   },

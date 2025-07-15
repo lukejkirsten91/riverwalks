@@ -124,10 +124,22 @@ export default function RiverWalksPage() {
         // Clean up the query parameter
         router.replace('/river-walks', undefined, { shallow: true });
         // Continue tutorial with premium features instead of showing completion modal
-        if (tutorialActive) {
-          // Tutorial is still active, advance to the created-river-walk step
+        if (tutorialActive || canStartTutorial) {
+          // Tutorial should continue - advance to the created-river-walk step
+          console.log('🎯 Advancing tutorial after form completion. Current step:', tutorialStep);
           setTimeout(() => {
-            nextTutorialStep();
+            if (!tutorialActive) {
+              // Restart tutorial if it's not active but should be
+              startTutorial();
+              setTimeout(() => {
+                // Advance to step 3 (created-river-walk)
+                for (let i = 0; i < 3; i++) {
+                  nextTutorialStep();
+                }
+              }, 100);
+            } else {
+              nextTutorialStep();
+            }
           }, 500);
         } else {
           // Tutorial was not active, show completion modal
