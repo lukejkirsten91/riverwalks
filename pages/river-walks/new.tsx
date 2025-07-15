@@ -119,7 +119,7 @@ export default function NewRiverWalkPage() {
       {isTutorialMode && formTutorialActive && (
         <TutorialOverlay
           steps={tutorialSteps}
-          currentStep={tutorialStep}
+          currentStep={tutorialSteps.findIndex(step => step.id === 'form-fill')}
           onNext={() => {/* No next button - user must complete form */}}
           onPrevious={() => {}}
           onSkip={skipTutorial}
