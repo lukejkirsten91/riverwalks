@@ -68,6 +68,7 @@ export function SimpleToast({
     <div
       className={`
         fixed top-4 left-1/2 transform -translate-x-1/2 z-[9999] transition-all duration-200 ease-in-out
+        px-4 w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg xl:max-w-xl
         ${isVisible && !isLeaving
           ? 'translate-y-0 opacity-100 scale-100'
           : '-translate-y-2 opacity-0 scale-95'
@@ -77,13 +78,13 @@ export function SimpleToast({
       <div
         className={`
           ${config.bgColor} ${config.textColor}
-          rounded-full shadow-lg px-4 py-2 flex items-center gap-2 text-sm font-medium
-          min-w-max max-w-xs cursor-pointer backdrop-blur-sm
+          rounded-full shadow-lg px-3 py-2 flex items-center gap-2 text-xs sm:text-sm font-medium
+          cursor-pointer backdrop-blur-sm w-full
         `}
         onClick={handleClose}
       >
-        <Icon className="w-4 h-4 shrink-0" />
-        <span className="truncate">{message}</span>
+        <Icon className="w-3 h-3 sm:w-4 sm:h-4 shrink-0" />
+        <span className="truncate flex-1 text-left">{message}</span>
       </div>
     </div>
   );

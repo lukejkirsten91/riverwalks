@@ -77,7 +77,8 @@ export function Toast({
   return (
     <div
       className={`
-        fixed top-4 right-4 z-50 max-w-sm w-full transform transition-all duration-300 ease-in-out
+        fixed top-4 right-4 z-50 max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg xl:max-w-xl
+        w-full transform transition-all duration-300 ease-in-out px-4 sm:px-0
         ${isVisible && !isLeaving
           ? 'translate-x-0 opacity-100 scale-100'
           : 'translate-x-full opacity-0 scale-95'
@@ -87,19 +88,19 @@ export function Toast({
       <div
         className={`
           ${config.bgColor} ${config.borderColor} border rounded-lg shadow-modern-lg
-          p-4 flex items-start gap-3
+          p-3 sm:p-4 flex items-start gap-2 sm:gap-3
         `}
       >
         {/* Icon */}
-        <Icon className={`w-5 h-5 ${config.iconColor} shrink-0 mt-0.5`} />
+        <Icon className={`w-4 h-4 sm:w-5 sm:h-5 ${config.iconColor} shrink-0 mt-0.5`} />
 
         {/* Content */}
         <div className="flex-1 min-w-0">
-          <h4 className={`font-semibold ${config.titleColor} text-sm`}>
+          <h4 className={`font-semibold ${config.titleColor} text-xs sm:text-sm`}>
             {title}
           </h4>
           {message && (
-            <p className="text-gray-700 text-xs mt-1 font-medium">
+            <p className="text-gray-700 text-xs mt-1 font-medium break-words">
               {message}
             </p>
           )}
@@ -108,10 +109,10 @@ export function Toast({
         {/* Close button */}
         <button
           onClick={handleClose}
-          className="text-muted-foreground hover:text-foreground transition-colors p-1 rounded"
+          className="text-muted-foreground hover:text-foreground transition-colors p-1 rounded shrink-0"
           aria-label="Close notification"
         >
-          <X className="w-4 h-4" />
+          <X className="w-3 h-3 sm:w-4 sm:h-4" />
         </button>
       </div>
     </div>

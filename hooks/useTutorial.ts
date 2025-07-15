@@ -71,11 +71,11 @@ const TUTORIAL_STEPS: TutorialStep[] = [
   {
     id: 'export',
     title: 'Export Data',
-    content: 'Export your river walk data to Excel format for further analysis or sharing with teachers.',
+    content: 'Export your river walk data to Excel format for analysis. Basic accounts get Excel export, while premium accounts get detailed PDF reports with charts and analysis.',
     targetSelector: '[data-tutorial="export"]',
     position: 'top',
     skipable: true,
-    tip: 'Premium feature - requires a subscription for full access.'
+    tip: 'Basic: Excel export included. Premium: Advanced PDF reports with charts.'
   },
   {
     id: 'collaborate',
