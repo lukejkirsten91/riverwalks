@@ -78,9 +78,13 @@ export function RiverWalkList({
       key={riverWalk.id}
       className="card-modern-xl p-4 sm:p-6 hover:scale-[1.02] transition-transform duration-200"
       data-tutorial={(() => {
-        const shouldHaveTutorial = tutorialActive && !isArchived && index === 0;
+        // For tutorial, target the first river walk in the "My River Walks" section
+        const isInMyRiverWalks = riverWalk.collaboration_role === 'owner' || 
+                                (!riverWalk.collaboration_role && riverWalk.access_type === 'owned') ||
+                                (!riverWalk.collaboration_role && !riverWalk.access_type);
+        const shouldHaveTutorial = tutorialActive && !isArchived && index === 0 && isInMyRiverWalks;
         if (shouldHaveTutorial) {
-          console.log('Setting tutorial attribute on river walk:', riverWalk.name, 'at index:', index);
+          console.log('✅ Setting tutorial attribute on river walk:', riverWalk.name, 'at index:', index, 'tutorialActive:', tutorialActive);
         }
         return shouldHaveTutorial ? "created-river-walk" : undefined;
       })()}

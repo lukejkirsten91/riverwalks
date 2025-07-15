@@ -52,6 +52,10 @@ const Spotlight: React.FC<SpotlightProps> = ({ targetElement, overlayRef }) => {
       const rect = targetElement.getBoundingClientRect();
       const padding = 12;
       
+      console.log('Spotlight target element:', targetElement);
+      console.log('Element rect:', rect);
+      console.log('Window dimensions:', window.innerWidth, 'x', window.innerHeight);
+      
       // Create multiple overlay divs that cover everything except the highlighted area
       const elements = [
         // Top overlay
