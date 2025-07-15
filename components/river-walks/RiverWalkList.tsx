@@ -77,6 +77,7 @@ export function RiverWalkList({
     <div
       key={riverWalk.id}
       className="card-modern-xl p-4 sm:p-6 hover:scale-[1.02] transition-transform duration-200"
+      data-tutorial={tutorialActive && !isArchived ? "created-river-walk" : undefined}
     >
       {/* Header with inline editing - disable editing for archived items */}
       <div className="flex-1 min-w-0 mb-4">
