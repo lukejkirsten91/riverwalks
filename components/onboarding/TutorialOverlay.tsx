@@ -193,13 +193,8 @@ const TutorialTooltip: React.FC<{
           const availableSpaceAbove = targetRect.top;
           const availableSpaceBelow = window.innerHeight - targetRect.bottom;
           
-          // Special handling for river walk card - always position at top to avoid covering
-          if (step.id === 'created-river-walk') {
-            top = padding + 60; // Extra space from top on mobile
-            left = padding;
-          }
           // If target is in bottom half of screen, position tooltip above target
-          else if (targetRect.top > window.innerHeight / 2 && availableSpaceAbove > tooltipRect.height + padding) {
+          if (targetRect.top > window.innerHeight / 2 && availableSpaceAbove > tooltipRect.height + padding) {
             top = targetRect.top - tooltipRect.height - padding;
           } 
           // If target is in top half, position tooltip below target  
@@ -215,9 +210,7 @@ const TutorialTooltip: React.FC<{
             top = window.innerHeight - tooltipRect.height - padding - 80; // Account for mobile bottom bar
           }
           
-          if (step.id !== 'created-river-walk') {
-            left = padding;
-          }
+          left = padding;
         }
         
         setTooltipStyle({
@@ -483,18 +476,24 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
           setTargetElement(element);
           setRetryCount(0);
           
-          // Scroll element into view if needed
-          setTimeout(() => {
-            element.scrollIntoView({
-              behavior: 'smooth',
-              block: 'center',
-              inline: 'center',
-            });
-            // Set ready after scrolling is complete
+          // Gentle scroll element into view if needed, only if it's not already visible
+          const rect = element.getBoundingClientRect();
+          const isVisible = rect.top >= 0 && rect.bottom <= window.innerHeight;
+          
+          if (!isVisible) {
             setTimeout(() => {
-              setIsReady(true);
-              setIsTransitioning(false);
-            }, 600);
+              element.scrollIntoView({
+                behavior: 'smooth',
+                block: 'nearest',
+                inline: 'nearest',
+              });
+            }, 100);
+          }
+          
+          // Set ready after a shorter delay
+          setTimeout(() => {
+            setIsReady(true);
+            setIsTransitioning(false);
           }, 300);
         } else {
           // Retry with shorter delays, max retries based on step type
