@@ -56,14 +56,6 @@ const TUTORIAL_STEPS: TutorialStep[] = [
     position: 'bottom',
     actionRequired: true,
     tip: 'A river walk is a complete study session where you\'ll collect data from multiple sites along a river.'
-  },
-  {
-    id: 'tutorial-complete',
-    title: 'Tutorial Complete!',
-    content: 'Great! You\'ve learned the basics of River Walks. You can now create river walks, add measurement sites, collect data, and export reports. Feel free to explore all the features!',
-    targetSelector: 'center',
-    position: 'center',
-    tip: 'Happy studying! If you need help, use the feedback option in your profile menu to get support.'
   }
 ];
 

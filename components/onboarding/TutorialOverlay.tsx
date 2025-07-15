@@ -389,7 +389,7 @@ const TutorialTooltip: React.FC<{
             )}
             
             {/* Only show Next button for steps that aren't action-required */}
-            {step.id !== 'new-river-walk' && (
+            {step.id !== 'new-river-walk' && step.id !== 'form-fill' && (
               <button
                 onClick={onNext}
                 disabled={step.id === 'demo-form' && (!demoFormData?.name || demoFormData.name.trim() === '')}

@@ -115,18 +115,16 @@ export default function RiverWalksPage() {
         }
       }
 
-      // Auto-start tutorial for new users after welcome
+      // Auto-start tutorial for new users after welcome (only if they haven't seen it)
       if (shouldShowTutorial && canStartTutorial && !tutorialActive) {
-        setTimeout(() => startTutorial(), 1000); // Small delay to let page load
+        // Additional check: only start if tutorial hasn't been seen
+        const userTutorial = user?.user_metadata?.tutorial;
+        if (!userTutorial?.hasSeenTutorial) {
+          setTimeout(() => startTutorial(), 1000); // Small delay to let page load
+        }
       }
       
-      // Check if returning from tutorial form completion
-      if (router.query.tutorial === 'complete' && tutorialActive) {
-        // Advance to final step
-        setTimeout(() => {
-          nextTutorialStep();
-        }, 500);
-      }
+      // No longer need to handle tutorial completion here - handled in form page
     };
 
     checkUser();
@@ -333,13 +331,13 @@ export default function RiverWalksPage() {
   };
 
   const handleAddNewRiverWalk = async () => {
-    // If tutorial is active and we're on the new-river-walk step, navigate to form and advance tutorial
+    // If tutorial is active and we're on the new-river-walk step, navigate to form and complete tutorial
     if (tutorialActive && tutorialSteps[tutorialStep]?.id === 'new-river-walk') {
       // Navigate to the actual form
       router.push('/river-walks/new?tutorial=true');
-      // Small delay to let navigation happen, then advance tutorial
+      // Tutorial will be completed in the form page, so exit here
       setTimeout(() => {
-        nextTutorialStep();
+        exitTutorial();
       }, 500);
       return;
     }
