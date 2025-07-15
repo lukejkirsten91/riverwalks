@@ -81,7 +81,7 @@ const TUTORIAL_STEPS: TutorialStep[] = [
     id: 'collaborate',
     title: 'Collaborate',
     content: 'Share your river walk with classmates or teachers to work together on data collection.',
-    targetSelector: 'button:has([data-lucide="users"])',
+    targetSelector: '[data-tutorial="collaborate"]',
     position: 'top',
     skipable: true,
     tip: 'Premium feature - ideal for group projects and teacher supervision.'

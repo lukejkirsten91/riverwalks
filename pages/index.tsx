@@ -380,7 +380,7 @@ export default function Home() {
             <div className="bg-green-600/40 border border-green-400/60 rounded-xl p-4 mb-8 max-w-2xl mx-auto backdrop-blur-sm">
               <p className="text-green-50 text-sm font-medium mb-2">💡 Transparent Pricing - No Surprises</p>
               <p className="text-green-100 text-sm">
-                Create your account and test all features for free. Basic data export is included - premium PDF reports and collaboration require a small one-off payment (£1.99/year or £3.49 lifetime) to support development.
+                Create your account and use basic features - input data and export to a basic excel template for free. Premium PDF reports and collaboration require a small one-off payment (£1.99/year or £3.49 lifetime) to support development.
               </p>
             </div>
 
@@ -437,7 +437,7 @@ export default function Home() {
                 <div className="feature-card glass rounded-xl p-6 text-center hover:scale-105 transition-transform bg-gray-900/80 backdrop-blur-md">
                   <BarChart3 className="w-10 h-10 text-green-300 mx-auto mb-4" />
                   <h3 className="font-semibold text-white mb-3">Charts That Wow</h3>
-                  <p className="text-gray-200">Transform depth readings into stunning cross-sections and 3D river profiles that tell stories.</p>
+                  <p className="text-gray-200">Transform depth readings into stunning cross-sections, and sediment measurements into wind rose charts that tell stories.</p>
                 </div>
                 
                 <div className="feature-card glass rounded-xl p-6 text-center hover:scale-105 transition-transform bg-gray-900/80 backdrop-blur-md">
@@ -461,7 +461,7 @@ export default function Home() {
                 Start your first river study in less than 2 minutes. No credit card required to get started.
               </p>
               <p className="text-gray-300 text-sm mb-6">
-                Test all features free, then pay just £1.99/year or £3.49 lifetime (one-off payment) for reports and data export.
+                Use basic features for free, then pay just £1.99/year or £3.49 lifetime (one-off payment) for reports and data export.
               </p>
               <AuthCard />
             </div>

@@ -136,7 +136,7 @@ export function LiveMetrics() {
         <div className="glass rounded-xl p-6 bg-blue-600/40 border border-blue-400/60 max-w-2xl mx-auto backdrop-blur-sm">
           <h3 className="font-semibold text-blue-50 mb-2">🌊 Join the UK River Research Community!</h3>
           <p className="text-blue-100 text-sm mb-4">
-            Be part of {metrics.measurementSites.toLocaleString()} active monitoring locations. Every river walk adds valuable data to UK waterway science!
+            Every river walk adds valuable data to UK waterway science!
           </p>
           <div className="flex justify-center gap-6 text-center">
             <div>

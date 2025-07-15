@@ -356,7 +356,7 @@ const TutorialTooltip: React.FC<{
       <div className={`flex ${isMobile ? 'flex-col gap-2' : 'items-center justify-between'}`}>
         {!isMobile && (
           <div className="flex gap-2">
-            {currentStep > 0 && (
+            {currentStep > 2 && (
               <button
                 onClick={onPrevious}
                 className="flex items-center gap-1 px-3 py-2 text-sm font-medium text-gray-600 hover:text-gray-800 transition-colors"
@@ -370,7 +370,7 @@ const TutorialTooltip: React.FC<{
 
         <div className={`flex ${isMobile ? 'w-full' : 'items-center'} gap-2`}>
           <div className={`flex gap-2 ${isMobile ? 'flex-1' : ''}`}>
-            {isMobile && currentStep > 0 && (
+            {isMobile && currentStep > 2 && (
               <button
                 onClick={onPrevious}
                 className="flex items-center justify-center gap-1 px-4 py-2.5 text-sm font-medium text-gray-600 hover:text-gray-800 transition-colors bg-gray-100 rounded-lg flex-1"
@@ -457,22 +457,12 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
               block: 'center',
               inline: 'center',
             });
-            // Also ensure the element is visible after scrolling
+            // Set ready after scrolling is complete
             setTimeout(() => {
-              const rect = element.getBoundingClientRect();
-              const isVisible = rect.top >= 0 && rect.bottom <= window.innerHeight;
-              if (!isVisible) {
-                element.scrollIntoView({
-                  behavior: 'smooth',
-                  block: 'center',
-                  inline: 'center',
-                });
-              }
-              // Set ready after scrolling is complete
               setIsReady(true);
               setIsTransitioning(false);
-            }, 300);
-          }, 200);
+            }, 600);
+          }, 300);
         } else {
           // Retry with shorter delays, max 5 retries
           if (retryCount < 5) {
@@ -506,7 +496,7 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
     setIsTransitioning(true);
     
     // Small delay to ensure DOM is ready
-    setTimeout(findTargetElement, 150);
+    setTimeout(findTargetElement, 300);
   }, [currentStepData, isVisible, retryCount]);
 
   useEffect(() => {
@@ -526,7 +516,7 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
       
       {/* Tooltip - show when ready and not transitioning */}
       {isReady && !isTransitioning && (
-        <div className="pointer-events-auto">
+        <div className="pointer-events-auto" key={`tooltip-${currentStepData.id}`}>
           <TutorialTooltip
             step={currentStepData}
             targetElement={targetElement}

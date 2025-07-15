@@ -57,6 +57,7 @@ export default function RiverWalksPage() {
   const [showJoinCollaboration, setShowJoinCollaboration] = useState(false);
   const [joinCollabLink, setJoinCollabLink] = useState('');
   const [showTutorialCompletionModal, setShowTutorialCompletionModal] = useState(false);
+  const [currentStep, setCurrentStep] = useState(0);
 
   // Apply scroll lock when any modal is open
   useScrollLock(!!showForm || !!showJoinCollaboration || !!shouldShowWelcome || tutorialActive || showTutorialCompletionModal);
@@ -701,8 +702,15 @@ export default function RiverWalksPage() {
                   <button
                     onClick={() => {
                       setShowTutorialCompletionModal(false);
-                      // Reset tutorial state and start from beginning
+                      // Continue from print-template step (step 2)
                       startTutorial();
+                      // Skip directly to print-template step
+                      setTimeout(() => {
+                        nextTutorialStep(); // Go to step 1 (new-river-walk)
+                        setTimeout(() => {
+                          nextTutorialStep(); // Go to step 2 (print-template)
+                        }, 50);
+                      }, 100);
                     }}
                     className="flex-1 bg-blue-100 hover:bg-blue-200 text-blue-700 px-4 py-3 rounded-lg font-medium transition-colors"
                   >
