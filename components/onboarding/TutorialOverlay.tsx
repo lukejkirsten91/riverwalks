@@ -193,8 +193,13 @@ const TutorialTooltip: React.FC<{
           const availableSpaceAbove = targetRect.top;
           const availableSpaceBelow = window.innerHeight - targetRect.bottom;
           
+          // Special handling for river walk card - always position at top to avoid covering
+          if (step.id === 'created-river-walk') {
+            top = padding;
+            left = padding;
+          }
           // If target is in bottom half of screen, position tooltip above target
-          if (targetRect.top > window.innerHeight / 2 && availableSpaceAbove > tooltipRect.height + padding) {
+          else if (targetRect.top > window.innerHeight / 2 && availableSpaceAbove > tooltipRect.height + padding) {
             top = targetRect.top - tooltipRect.height - padding;
           } 
           // If target is in top half, position tooltip below target  
@@ -210,7 +215,9 @@ const TutorialTooltip: React.FC<{
             top = window.innerHeight - tooltipRect.height - padding - 80; // Account for mobile bottom bar
           }
           
-          left = padding;
+          if (step.id !== 'created-river-walk') {
+            left = padding;
+          }
         }
         
         setTooltipStyle({

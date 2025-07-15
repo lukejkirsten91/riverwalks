@@ -60,15 +60,6 @@ const TUTORIAL_STEPS: TutorialStep[] = [
     tip: 'A river walk is a complete study session where you\'ll collect data from multiple sites along a river.'
   },
   {
-    id: 'fill-details',
-    title: 'Fill in Your River Walk Details',
-    content: 'Complete the form with your river walk information. The tutorial will continue once you save your details.',
-    targetSelector: 'center',
-    position: 'center',
-    skipable: true,
-    tip: 'Enter a descriptive name, select the date, and specify the location of your river walk study.'
-  },
-  {
     id: 'created-river-walk',
     title: 'Your Created River Walk',
     content: 'Great! This is your newly created river walk. Here you can see all the details and actions available for your study.',
