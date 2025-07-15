@@ -1,6 +1,11 @@
-import React, { useEffect } from 'react';
-import { Steps } from 'intro.js-react';
+import React, { useEffect, useState } from 'react';
+import dynamic from 'next/dynamic';
 import 'intro.js/introjs.css';
+
+// Dynamically import Steps to avoid SSR issues
+const Steps = dynamic(() => import('intro.js-react').then(mod => mod.Steps), {
+  ssr: false
+});
 
 interface IntroJsTutorialProps {
   enabled: boolean;
@@ -23,9 +28,16 @@ export function IntroJsTutorial({
   onChange,
   onAfterChange
 }: IntroJsTutorialProps) {
+  const [isMounted, setIsMounted] = useState(false);
   
   useEffect(() => {
-    // Add custom CSS for our tutorial styling
+    setIsMounted(true);
+  }, []);
+  
+  useEffect(() => {
+    // Add custom CSS for our tutorial styling (client-side only)
+    if (typeof window === 'undefined') return;
+    
     const style = document.createElement('style');
     style.textContent = `
       .tutorial-welcome h2, .tutorial-step h3 {
@@ -187,7 +199,7 @@ export function IntroJsTutorial({
     positionPrecedence: ['bottom', 'top', 'right', 'left']
   };
 
-  if (!enabled) {
+  if (!enabled || !isMounted) {
     return null;
   }
 
