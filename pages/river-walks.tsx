@@ -125,8 +125,10 @@ export default function RiverWalksPage() {
         router.replace('/river-walks', undefined, { shallow: true });
         // Continue tutorial with premium features instead of showing completion modal
         if (tutorialActive) {
-          // Tutorial is still active, continue with premium features
-          // The tutorial should be at the print-template step
+          // Tutorial is still active, advance to the created-river-walk step
+          setTimeout(() => {
+            nextTutorialStep();
+          }, 500);
         } else {
           // Tutorial was not active, show completion modal
           setShowTutorialCompletionModal(true);

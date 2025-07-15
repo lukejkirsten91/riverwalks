@@ -205,7 +205,12 @@ export function WelcomeFlow({ onComplete, userEmail }: WelcomeFlowProps) {
 
         {/* Content - Scrollable */}
         <div className="p-4 sm:p-6 overflow-y-auto flex-1 min-h-0">
-          {currentStepData.content}
+          <div 
+            key={currentStep}
+            className="animate-in fade-in-0 slide-in-from-right-4 duration-500 ease-out"
+          >
+            {currentStepData.content}
+          </div>
         </div>
 
         {/* Actions */}

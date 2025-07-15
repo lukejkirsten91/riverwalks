@@ -57,7 +57,7 @@ const Spotlight: React.FC<SpotlightProps> = ({ targetElement, overlayRef }) => {
         // Top overlay
         <div
           key="top-overlay"
-          className="fixed bg-black/50 z-[10000] pointer-events-auto"
+          className="fixed bg-black/50 z-[10000] pointer-events-auto transition-all duration-300 ease-out"
           style={{
             top: 0,
             left: 0,
@@ -68,7 +68,7 @@ const Spotlight: React.FC<SpotlightProps> = ({ targetElement, overlayRef }) => {
         // Bottom overlay
         <div
           key="bottom-overlay"
-          className="fixed bg-black/50 z-[10000] pointer-events-auto"
+          className="fixed bg-black/50 z-[10000] pointer-events-auto transition-all duration-300 ease-out"
           style={{
             top: `${Math.min(window.innerHeight, rect.bottom + padding)}px`,
             left: 0,
@@ -79,7 +79,7 @@ const Spotlight: React.FC<SpotlightProps> = ({ targetElement, overlayRef }) => {
         // Left overlay
         <div
           key="left-overlay"
-          className="fixed bg-black/50 z-[10000] pointer-events-auto"
+          className="fixed bg-black/50 z-[10000] pointer-events-auto transition-all duration-300 ease-out"
           style={{
             top: `${Math.max(0, rect.top - padding)}px`,
             left: 0,
@@ -90,7 +90,7 @@ const Spotlight: React.FC<SpotlightProps> = ({ targetElement, overlayRef }) => {
         // Right overlay
         <div
           key="right-overlay"
-          className="fixed bg-black/50 z-[10000] pointer-events-auto"
+          className="fixed bg-black/50 z-[10000] pointer-events-auto transition-all duration-300 ease-out"
           style={{
             top: `${Math.max(0, rect.top - padding)}px`,
             left: `${Math.min(window.innerWidth, rect.right + padding)}px`,
@@ -195,7 +195,7 @@ const TutorialTooltip: React.FC<{
           
           // Special handling for river walk card - always position at top to avoid covering
           if (step.id === 'created-river-walk') {
-            top = padding;
+            top = padding + 60; // Extra space from top on mobile
             left = padding;
           }
           // If target is in bottom half of screen, position tooltip above target
@@ -290,8 +290,8 @@ const TutorialTooltip: React.FC<{
   }, [targetElement, step.position, isMobile]);
 
   const tooltipClasses = isMobile 
-    ? "w-full bg-white rounded-lg shadow-2xl border border-gray-200 p-3 animate-in slide-in-from-bottom-4 fade-in-0 duration-700 ease-out"
-    : "max-w-sm bg-white rounded-xl shadow-xl border border-gray-200 p-6 animate-in fade-in-0 zoom-in-95 duration-700 ease-out transform";
+    ? "w-full bg-white rounded-lg shadow-2xl border border-gray-200 p-3 animate-in slide-in-from-bottom-4 fade-in-0 duration-500 ease-out"
+    : "max-w-sm bg-white rounded-xl shadow-xl border border-gray-200 p-6 animate-in fade-in-0 zoom-in-95 duration-500 ease-out transform";
 
   return (
     <div

@@ -86,8 +86,6 @@ export function TermsGate({ user, children }: TermsGateProps) {
         userAgent
       );
 
-      showSuccess('Welcome to Riverwalks!');
-      
       // Hide the terms gate
       setNeedsAcceptance(false);
       
