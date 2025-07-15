@@ -56,7 +56,7 @@ export function RiverWalkList({
   // Get subscription status
   const subscription = useSubscription();
 
-  const renderRiverWalk = (riverWalk: RiverWalk, isArchived: boolean = false) => {
+  const renderRiverWalk = (riverWalk: RiverWalk, isArchived: boolean = false, index: number = 0) => {
     // Permission checks for button visibility
     const canManageSites = !isArchived && riverWalk.collaboration_role !== 'viewer';
     const canShare = !isArchived && onShare && (
@@ -77,7 +77,13 @@ export function RiverWalkList({
     <div
       key={riverWalk.id}
       className="card-modern-xl p-4 sm:p-6 hover:scale-[1.02] transition-transform duration-200"
-      data-tutorial={tutorialActive && !isArchived ? "created-river-walk" : undefined}
+      data-tutorial={(() => {
+        const shouldHaveTutorial = tutorialActive && !isArchived && index === 0;
+        if (shouldHaveTutorial) {
+          console.log('Setting tutorial attribute on river walk:', riverWalk.name, 'at index:', index);
+        }
+        return shouldHaveTutorial ? "created-river-walk" : undefined;
+      })()}
     >
       {/* Header with inline editing - disable editing for archived items */}
       <div className="flex-1 min-w-0 mb-4">
@@ -387,7 +393,7 @@ export function RiverWalkList({
           </button>
           <div className={`accordion-content ${showMyRiverWalks ? 'accordion-content-visible' : 'accordion-content-hidden'}`}>
             <div className="space-y-3 sm:space-y-4 pl-3 sm:pl-4 border-l-2 border-blue-200">
-              {myRiverWalks.map((riverWalk) => renderRiverWalk(riverWalk, false))}
+              {myRiverWalks.map((riverWalk, index) => renderRiverWalk(riverWalk, false, index))}
             </div>
           </div>
         </div>
@@ -413,7 +419,7 @@ export function RiverWalkList({
           </button>
           <div className={`accordion-content ${showSharedWithMe ? 'accordion-content-visible' : 'accordion-content-hidden'}`}>
             <div className="space-y-3 sm:space-y-4 pl-3 sm:pl-4 border-l-2 border-blue-200">
-              {sharedWithMe.map((riverWalk) => renderRiverWalk(riverWalk, false))}
+              {sharedWithMe.map((riverWalk, index) => renderRiverWalk(riverWalk, false, index))}
             </div>
           </div>
         </div>
@@ -439,7 +445,7 @@ export function RiverWalkList({
           </button>
           <div className={`accordion-content ${showSharedByMe ? 'accordion-content-visible' : 'accordion-content-hidden'}`}>
             <div className="space-y-3 sm:space-y-4 pl-3 sm:pl-4 border-l-2 border-cyan-200">
-              {sharedByMe.map((riverWalk) => renderRiverWalk(riverWalk, false))}
+              {sharedByMe.map((riverWalk, index) => renderRiverWalk(riverWalk, false, index))}
             </div>
           </div>
         </div>
@@ -481,7 +487,7 @@ export function RiverWalkList({
           {/* Archived Items - Expandable */}
           <div className={`accordion-content ${showArchived ? 'accordion-content-visible' : 'accordion-content-hidden'}`}>
             <div className="mt-3 sm:mt-4 space-y-3 sm:space-y-4 pl-3 sm:pl-4 border-l-2 border-gray-200">
-              {archivedRiverWalks.map((riverWalk) => renderRiverWalk(riverWalk, true))}
+              {archivedRiverWalks.map((riverWalk, index) => renderRiverWalk(riverWalk, true, index))}
             </div>
           </div>
         </div>

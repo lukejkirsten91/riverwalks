@@ -497,16 +497,18 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
             }, 600);
           }, 300);
         } else {
-          // Retry with shorter delays, max 5 retries
-          if (retryCount < 5) {
-            const delay = 200; // Fixed 200ms delay
+          // Retry with shorter delays, max retries based on step type
+          const maxRetries = currentStepData.id === 'created-river-walk' ? 10 : 5;
+          const delay = currentStepData.id === 'created-river-walk' ? 300 : 200;
+          
+          if (retryCount < maxRetries) {
             console.log(`Element not found, retrying in ${delay}ms (attempt ${retryCount + 1})`);
             setTimeout(() => {
               setRetryCount(prev => prev + 1);
               findTargetElement();
             }, delay);
           } else {
-            console.warn('Element not found after 5 retries, showing centered tutorial');
+            console.warn(`Element not found after ${maxRetries} retries, showing centered tutorial`);
             setTargetElement(null);
             setIsReady(true);
             setRetryCount(0);
