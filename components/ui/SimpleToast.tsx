@@ -44,6 +44,15 @@ export function SimpleToast({
 
   const config = typeConfig[type];
   const Icon = config.icon;
+  
+  // Calculate dynamic width based on message length
+  const getMaxWidth = () => {
+    const messageLength = message.length;
+    if (messageLength < 30) return 'max-w-xs';
+    if (messageLength < 60) return 'max-w-sm';
+    if (messageLength < 100) return 'max-w-md';
+    return 'max-w-lg';
+  };
 
   useEffect(() => {
     // Trigger entrance animation
@@ -68,7 +77,7 @@ export function SimpleToast({
     <div
       className={`
         fixed top-4 left-1/2 transform -translate-x-1/2 z-[9999] transition-all duration-200 ease-in-out
-        px-4 w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg xl:max-w-xl
+        px-4 w-full ${getMaxWidth()} sm:${getMaxWidth()}
         ${isVisible && !isLeaving
           ? 'translate-y-0 opacity-100 scale-100'
           : '-translate-y-2 opacity-0 scale-95'
@@ -84,7 +93,7 @@ export function SimpleToast({
         onClick={handleClose}
       >
         <Icon className="w-3 h-3 sm:w-4 sm:h-4 shrink-0 mt-0.5" />
-        <span className="flex-1 text-left break-words leading-tight">{message}</span>
+        <span className="flex-1 text-center break-words leading-tight">{message}</span>
       </div>
     </div>
   );

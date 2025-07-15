@@ -84,9 +84,9 @@ export default function NewRiverWalkPage() {
   };
 
   const handleCancel = () => {
-    // If in tutorial mode, exit tutorial
+    // If in tutorial mode, fully exit tutorial and cancel walk creation
     if (isTutorialMode && tutorialActive) {
-      exitTutorial();
+      fullyExitTutorial();
     }
     router.push('/river-walks');
   };

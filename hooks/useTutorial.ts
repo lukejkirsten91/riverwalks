@@ -60,11 +60,20 @@ const TUTORIAL_STEPS: TutorialStep[] = [
     tip: 'A river walk is a complete study session where you\'ll collect data from multiple sites along a river.'
   },
   {
+    id: 'fill-details',
+    title: 'Fill in Your River Walk Details',
+    content: 'Complete the form with your river walk information. The tutorial will continue once you save your details.',
+    targetSelector: 'center',
+    position: 'center',
+    skipable: true,
+    tip: 'Enter a descriptive name, select the date, and specify the location of your river walk study.'
+  },
+  {
     id: 'created-river-walk',
     title: 'Your Created River Walk',
     content: 'Great! This is your newly created river walk. Here you can see all the details and actions available for your study.',
     targetSelector: '[data-tutorial="created-river-walk"]',
-    position: 'left',
+    position: 'top',
     skipable: true,
     tip: 'Each river walk card shows the study name, date, location, and your access level.'
   },
@@ -75,7 +84,7 @@ const TUTORIAL_STEPS: TutorialStep[] = [
     targetSelector: '[data-tutorial="manage-sites"]',
     position: 'top',
     skipable: true,
-    tip: 'Sites are specific locations along your river where you\'ll take measurements like pH, temperature, and wildlife counts.'
+    tip: 'Sites are specific locations along your river where you\'ll take measurements like river width, depth, velocity, and sediment size.'
   },
   {
     id: 'print-template',

@@ -100,7 +100,7 @@ export function Toast({
             {title}
           </h4>
           {message && (
-            <p className="text-gray-700 text-xs mt-1 font-medium break-words">
+            <p className="text-gray-700 text-xs mt-1 font-medium break-words text-center">
               {message}
             </p>
           )}
