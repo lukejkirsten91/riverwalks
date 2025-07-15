@@ -132,8 +132,8 @@ export default function RiverWalksPage() {
               // Restart tutorial if it's not active but should be
               startTutorial();
               setTimeout(() => {
-                // Advance to step 3 (created-river-walk)
-                for (let i = 0; i < 3; i++) {
+                // Advance to step 2 (created-river-walk) - form step is separate now
+                for (let i = 0; i < 2; i++) {
                   nextTutorialStep();
                 }
               }, 100);

@@ -118,8 +118,18 @@ export default function NewRiverWalkPage() {
       {/* Tutorial Overlay for Form Steps */}
       {isTutorialMode && formTutorialActive && (
         <TutorialOverlay
-          steps={tutorialSteps}
-          currentStep={tutorialSteps.findIndex(step => step.id === 'form-fill')}
+          steps={[
+            {
+              id: 'form-fill',
+              title: 'Fill in Your River Walk Details',
+              content: 'Complete all the form fields to create your first river walk study. Start with the name field, then add the date and location information. When you\'re done, click "Create River Walk" to save it.',
+              targetSelector: '[data-tutorial="river-walk-name"]',
+              position: 'bottom',
+              tip: 'Fill in all the required fields, then click "Create River Walk" to finish.',
+              actionRequired: true
+            }
+          ]}
+          currentStep={0}
           onNext={() => {/* No next button - user must complete form */}}
           onPrevious={() => {}}
           onSkip={skipTutorial}
