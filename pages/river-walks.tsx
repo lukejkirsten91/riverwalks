@@ -123,6 +123,8 @@ export default function RiverWalksPage() {
       if (router.query.tutorialComplete === 'true') {
         // Clean up the query parameter
         router.replace('/river-walks', undefined, { shallow: true });
+        // Hide the create first river walk popup if it's showing
+        setShowCreateFirstRiverWalk(false);
         // Start tutorial now that they have created their first river walk
         if (canStartTutorial) {
           console.log('🎯 Starting tutorial after first river walk creation');
@@ -130,6 +132,7 @@ export default function RiverWalksPage() {
             startTutorial();
           }, 1000);
         }
+        return; // Exit early to prevent other logic from running
       }
 
       // Show "create first river walk" popup for new users with no river walks
@@ -814,7 +817,13 @@ export default function RiverWalksPage() {
                 e.preventDefault();
                 e.stopPropagation();
                 setShowProfileDropdown(false);
-                startTutorial();
+                // If they have river walks, start tutorial directly
+                if (riverWalks.length > 0) {
+                  startTutorial();
+                } else {
+                  // If no river walks, show create first river walk popup
+                  setShowCreateFirstRiverWalk(true);
+                }
               }}
               className="w-full text-left px-4 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all duration-200 hover:scale-[1.02] flex items-center gap-2"
             >

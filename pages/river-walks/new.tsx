@@ -131,7 +131,7 @@ export default function NewRiverWalkPage() {
       
       {/* Simple Tutorial Message for Form */}
       {isTutorialMode && formTutorialActive && (
-        <div className="fixed top-32 left-1/2 transform -translate-x-1/2 z-[9999] px-4 w-full max-w-md">
+        <div className="fixed top-44 left-1/2 transform -translate-x-1/2 z-[9999] px-4 w-full max-w-md">
           <div className="bg-blue-600 text-white rounded-lg shadow-lg px-4 py-3 flex items-start gap-3">
             <div className="flex-1">
               <h3 className="font-semibold text-sm mb-1">Fill in Your River Walk Details</h3>

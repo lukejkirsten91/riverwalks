@@ -181,11 +181,12 @@ export function IntroJsTutorial({
         border: 2px solid white;
         color: white;
         font-weight: 700;
-        width: 28px;
-        height: 28px;
+        min-width: 24px;
+        height: 24px;
+        padding: 0 6px;
         line-height: 1;
-        font-size: 12px;
-        border-radius: 50%;
+        font-size: 11px;
+        border-radius: 12px;
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
@@ -263,9 +264,10 @@ export function IntroJsTutorial({
         }
         
         .introjs-helperNumberLayer {
-          width: 24px;
-          height: 24px;
-          font-size: 11px;
+          min-width: 20px;
+          height: 20px;
+          font-size: 10px;
+          padding: 0 4px;
         }
       }
     `;
@@ -299,11 +301,14 @@ export function IntroJsTutorial({
     highlightClass: 'introjs-custom-highlight'
   };
 
-  // Add data attribute for actionRequired steps
+  // Add data attribute for actionRequired steps and scroll to top
   const handleAfterChange = (stepIndex: number) => {
     setCurrentStepIndex(stepIndex);
     
     if (typeof window !== 'undefined') {
+      // Scroll to top for each tutorial step
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      
       const tooltip = document.querySelector('.introjs-tooltip');
       const currentStep = steps[stepIndex];
       
