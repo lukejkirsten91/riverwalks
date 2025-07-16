@@ -102,6 +102,8 @@ export function IntroJsTutorial({
         margin-left: -20px;
         margin-right: -20px;
         margin-bottom: -20px;
+        width: calc(100% + 40px);
+        box-sizing: border-box;
       }
       
       .introjs-button {
@@ -252,6 +254,8 @@ export function IntroJsTutorial({
           margin-left: -16px;
           margin-right: -16px;
           margin-bottom: -16px;
+          width: calc(100% + 32px);
+          box-sizing: border-box;
         }
         
         .introjs-button {
@@ -302,25 +306,23 @@ export function IntroJsTutorial({
     highlightClass: 'introjs-custom-highlight'
   };
 
-  // Add data attribute for actionRequired steps and scroll to top
+  // Add data attribute for actionRequired steps and scroll to popup
   const handleAfterChange = (stepIndex: number) => {
     setCurrentStepIndex(stepIndex);
     
     if (typeof window !== 'undefined') {
       const currentStep = steps[stepIndex];
       
-      // Scroll to top for each tutorial step with a longer delay to ensure it works reliably
+      // Scroll to the popup (not page top) with a delay to ensure it's rendered
       setTimeout(() => {
-        window.scrollTo({ 
-          top: 0, 
-          behavior: 'smooth' 
-        });
-        // Double-check scroll position after a short delay
-        setTimeout(() => {
-          if (window.scrollY > 0) {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-          }
-        }, 200);
+        const tooltip = document.querySelector('.introjs-tooltip');
+        if (tooltip) {
+          tooltip.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'start',
+            inline: 'nearest'
+          });
+        }
       }, 100);
       
       const tooltip = document.querySelector('.introjs-tooltip');
