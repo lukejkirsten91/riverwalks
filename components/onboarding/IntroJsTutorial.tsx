@@ -80,6 +80,7 @@ export function IntroJsTutorial({
       
       .introjs-tooltip {
         max-width: 400px;
+        min-width: 300px;
         border-radius: 12px;
         box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
         border: 1px solid #e5e7eb;
@@ -88,6 +89,7 @@ export function IntroJsTutorial({
       
       .introjs-tooltiptext {
         padding: 20px;
+        min-height: 60px;
       }
       
       .introjs-tooltipbuttons {
@@ -100,6 +102,7 @@ export function IntroJsTutorial({
         margin-left: -20px;
         margin-right: -20px;
         margin-bottom: -20px;
+        min-width: 260px;
       }
       
       .introjs-button {
@@ -177,16 +180,18 @@ export function IntroJsTutorial({
         background: #3b82f6;
         border: 2px solid white;
         color: white;
-        font-weight: 600;
-        width: 32px;
-        height: 32px;
-        line-height: 28px;
-        font-size: 14px;
+        font-weight: 700;
+        width: 28px;
+        height: 28px;
+        line-height: 1;
+        font-size: 12px;
         border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
         z-index: 10000;
+        text-align: center;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
       }
       
       .introjs-overlay {
@@ -218,6 +223,7 @@ export function IntroJsTutorial({
       @media (max-width: 768px) {
         .introjs-tooltip {
           max-width: calc(100vw - 24px);
+          min-width: calc(100vw - 48px);
           margin: 12px;
           border-radius: 8px;
         }
@@ -243,6 +249,7 @@ export function IntroJsTutorial({
           margin-left: -16px;
           margin-right: -16px;
           margin-bottom: -16px;
+          min-width: calc(100vw - 80px);
         }
         
         .introjs-button {
@@ -253,6 +260,12 @@ export function IntroJsTutorial({
         .introjs-skipbutton {
           right: 16px;
           top: 16px;
+        }
+        
+        .introjs-helperNumberLayer {
+          width: 24px;
+          height: 24px;
+          font-size: 11px;
         }
       }
     `;
@@ -275,13 +288,15 @@ export function IntroJsTutorial({
     exitOnOverlayClick: false,
     exitOnEsc: true,
     scrollToElement: true,
-    scrollPadding: 30,
+    scrollPadding: 50,
     disableInteraction: false, // Allow interaction with highlighted elements
     tooltipPosition: 'auto',
     overlayOpacity: 0.5,
     autoPosition: true,
     positionPrecedence: ['bottom', 'top', 'right', 'left'],
-    tooltipClass: 'custom-introjs-tooltip'
+    tooltipClass: 'custom-introjs-tooltip',
+    helperElementPadding: 10,
+    highlightClass: 'introjs-custom-highlight'
   };
 
   // Add data attribute for actionRequired steps

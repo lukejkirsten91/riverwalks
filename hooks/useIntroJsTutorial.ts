@@ -42,7 +42,7 @@ const INTRO_JS_STEPS: TutorialStep[] = [
     element: 'body',
     intro: `
       <div class="tutorial-welcome">
-        <p>Let's take a quick tour to help you get started with creating and managing your river walk studies. This tutorial will guide you through the essential features.</p>
+        <p>Now that you've created your first river walk, let's take a quick tour of the key features you can use to manage your field studies.</p>
         <small class="tutorial-tip">💡 You can access this tutorial anytime from your profile menu.</small>
       </div>
     `,
@@ -51,28 +51,15 @@ const INTRO_JS_STEPS: TutorialStep[] = [
     skipable: true
   },
   {
-    id: 'new-river-walk',
-    element: '[data-tutorial="new-river-walk"]',
-    intro: `
-      <div class="tutorial-step">
-        <p>Click this button to start creating a new river walk study. This is where all your data collection begins!</p>
-        <small class="tutorial-tip">💡 A river walk is a complete study session where you'll collect data from multiple sites along a river.</small>
-      </div>
-    `,
-    title: 'Create Your First River Walk',
-    position: 'bottom',
-    actionRequired: true
-  },
-  {
     id: 'created-river-walk',
     element: '[data-tutorial="created-river-walk"]',
     intro: `
       <div class="tutorial-step">
-        <p>Great! This is your newly created river walk. Here you can see all the details and actions available for your study.</p>
+        <p>This is your river walk card. Here you can see all the details and actions available for your study.</p>
         <small class="tutorial-tip">💡 Each river walk card shows the study name, date, location, and your access level.</small>
       </div>
     `,
-    title: 'Your Created River Walk',
+    title: 'Your River Walk',
     position: 'bottom',
     skipable: true
   },

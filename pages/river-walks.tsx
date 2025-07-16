@@ -56,10 +56,11 @@ export default function RiverWalksPage() {
   const [showJoinCollaboration, setShowJoinCollaboration] = useState(false);
   const [joinCollabLink, setJoinCollabLink] = useState('');
   const [showTutorialCompletionModal, setShowTutorialCompletionModal] = useState(false);
+  const [showCreateFirstRiverWalk, setShowCreateFirstRiverWalk] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
 
   // Apply scroll lock when any modal is open
-  useScrollLock(!!showForm || !!showJoinCollaboration || !!shouldShowWelcome || tutorialActive || showTutorialCompletionModal);
+  useScrollLock(!!showForm || !!showJoinCollaboration || !!shouldShowWelcome || tutorialActive || showTutorialCompletionModal || showCreateFirstRiverWalk);
 
   const {
     riverWalks,
@@ -122,36 +123,28 @@ export default function RiverWalksPage() {
       if (router.query.tutorialComplete === 'true') {
         // Clean up the query parameter
         router.replace('/river-walks', undefined, { shallow: true });
-        // Continue tutorial with premium features instead of showing completion modal
-        if (tutorialActive || canStartTutorial) {
-          // Tutorial should continue - advance to the created-river-walk step
-          console.log('🎯 Advancing tutorial after form completion. Current step:', tutorialStep);
+        // Start tutorial now that they have created their first river walk
+        if (canStartTutorial) {
+          console.log('🎯 Starting tutorial after first river walk creation');
           setTimeout(() => {
-            if (!tutorialActive) {
-              // Restart tutorial if it's not active but should be
-              startTutorial();
-              setTimeout(() => {
-                // Advance to step 2 (created-river-walk) - form step is separate now
-                for (let i = 0; i < 2; i++) {
-                  nextTutorialStep();
-                }
-              }, 100);
-            } else {
-              nextTutorialStep();
-            }
-          }, 500);
-        } else {
-          // Tutorial was not active, show completion modal
-          setShowTutorialCompletionModal(true);
+            startTutorial();
+          }, 1000);
         }
       }
 
-      // Auto-start tutorial for new users after welcome (only if they haven't seen it)
+      // Show "create first river walk" popup for new users with no river walks
       if (shouldShowTutorial && canStartTutorial && !tutorialActive && !hasExitedThisSession) {
-        // Additional check: only start if tutorial hasn't been seen
+        // Additional check: only start if tutorial hasn't been seen and they have river walks
         const userTutorial = user?.user_metadata?.tutorial;
         if (!userTutorial?.hasSeenTutorial) {
-          setTimeout(() => startTutorial(), 1000); // Small delay to let page load
+          // Check if user has any river walks
+          if (riverWalks.length === 0) {
+            // Show create first river walk modal
+            setShowCreateFirstRiverWalk(true);
+          } else {
+            // They have river walks, start tutorial
+            setTimeout(() => startTutorial(), 1000);
+          }
         }
       }
     };
@@ -360,19 +353,9 @@ export default function RiverWalksPage() {
   };
 
   const handleAddNewRiverWalk = async () => {
-    // If tutorial is active and we're on the new-river-walk step, navigate to form and continue tutorial
-    if (tutorialActive && tutorialSteps[tutorialStep]?.id === 'new-river-walk') {
-      // Navigate to the actual form
-      router.push('/river-walks/new?tutorial=true');
-      // Continue to next step (created-river-walk step)
-      setTimeout(() => {
-        nextTutorialStep();
-      }, 500);
-      return;
-    }
-    
+    // During tutorial, don't allow creating new river walks
     if (tutorialActive) {
-      return; // Don't navigate during any other tutorial step
+      return;
     }
     
     router.push('/river-walks/new');
@@ -689,6 +672,44 @@ export default function RiverWalksPage() {
             console.log('Tutorial moving to step:', nextStepIndex);
           }}
         />
+
+        {/* Create First River Walk Modal */}
+        {showCreateFirstRiverWalk && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[10001] p-4">
+            <div className="bg-white rounded-2xl p-6 max-w-md w-full mx-4 animate-in fade-in-0 zoom-in-95 duration-500">
+              <div className="text-center">
+                <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
+                  </svg>
+                </div>
+                <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                  Welcome to River Walks! 🌊
+                </h2>
+                <p className="text-gray-600 mb-6">
+                  To get started, create your first river walk study. Once you've created it, we'll show you around with a quick tutorial.
+                </p>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setShowCreateFirstRiverWalk(false)}
+                    className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-3 rounded-lg font-medium transition-colors"
+                  >
+                    Maybe Later
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowCreateFirstRiverWalk(false);
+                      router.push('/river-walks/new?tutorial=true');
+                    }}
+                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-lg font-medium transition-colors"
+                  >
+                    Create River Walk
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Tutorial Completion Modal */}
         {showTutorialCompletionModal && (
