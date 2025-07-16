@@ -102,8 +102,6 @@ export function IntroJsTutorial({
         margin-left: -20px;
         margin-right: -20px;
         margin-bottom: -20px;
-        width: calc(100% + 40px);
-        box-sizing: border-box;
       }
       
       .introjs-button {
@@ -254,8 +252,6 @@ export function IntroJsTutorial({
           margin-left: -16px;
           margin-right: -16px;
           margin-bottom: -16px;
-          width: calc(100% + 32px);
-          box-sizing: border-box;
         }
         
         .introjs-button {
@@ -313,8 +309,19 @@ export function IntroJsTutorial({
     if (typeof window !== 'undefined') {
       const currentStep = steps[stepIndex];
       
-      // Scroll to top for each tutorial step
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      // Scroll to top for each tutorial step with a longer delay to ensure it works reliably
+      setTimeout(() => {
+        window.scrollTo({ 
+          top: 0, 
+          behavior: 'smooth' 
+        });
+        // Double-check scroll position after a short delay
+        setTimeout(() => {
+          if (window.scrollY > 0) {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }
+        }, 200);
+      }, 100);
       
       const tooltip = document.querySelector('.introjs-tooltip');
       
