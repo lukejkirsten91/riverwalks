@@ -364,7 +364,7 @@ export default function RiverWalksPage() {
     if (tutorialActive && tutorialSteps[tutorialStep]?.id === 'new-river-walk') {
       // Navigate to the actual form
       router.push('/river-walks/new?tutorial=true');
-      // Continue to next step (print-template step)
+      // Continue to next step (created-river-walk step)
       setTimeout(() => {
         nextTutorialStep();
       }, 500);

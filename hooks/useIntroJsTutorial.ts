@@ -9,6 +9,8 @@ interface TutorialStep {
   position?: 'top' | 'bottom' | 'left' | 'right' | 'auto';
   tooltipClass?: string;
   highlightClass?: string;
+  actionRequired?: boolean;
+  skipable?: boolean;
 }
 
 interface TutorialState {
@@ -46,7 +48,8 @@ const INTRO_JS_STEPS: TutorialStep[] = [
       </div>
     `,
     title: 'Welcome to River Walks!',
-    position: 'auto'
+    position: 'auto',
+    skipable: true
   },
   {
     id: 'new-river-walk',
@@ -59,7 +62,8 @@ const INTRO_JS_STEPS: TutorialStep[] = [
       </div>
     `,
     title: 'Create Your First River Walk',
-    position: 'bottom'
+    position: 'bottom',
+    actionRequired: true
   },
   {
     id: 'created-river-walk',
@@ -72,7 +76,8 @@ const INTRO_JS_STEPS: TutorialStep[] = [
       </div>
     `,
     title: 'Your Created River Walk',
-    position: 'bottom'
+    position: 'bottom',
+    skipable: true
   },
   {
     id: 'manage-sites',
@@ -85,7 +90,8 @@ const INTRO_JS_STEPS: TutorialStep[] = [
       </div>
     `,
     title: 'Sites & Measurements',
-    position: 'top'
+    position: 'top',
+    skipable: true
   },
   {
     id: 'print-template',
@@ -98,7 +104,8 @@ const INTRO_JS_STEPS: TutorialStep[] = [
       </div>
     `,
     title: 'Print Template',
-    position: 'top'
+    position: 'top',
+    skipable: true
   },
   {
     id: 'export',
@@ -111,7 +118,8 @@ const INTRO_JS_STEPS: TutorialStep[] = [
       </div>
     `,
     title: 'Export Data',
-    position: 'top'
+    position: 'top',
+    skipable: true
   },
   {
     id: 'collaborate',
@@ -124,7 +132,8 @@ const INTRO_JS_STEPS: TutorialStep[] = [
       </div>
     `,
     title: 'Collaborate',
-    position: 'top'
+    position: 'top',
+    skipable: true
   },
   {
     id: 'archive',
@@ -137,7 +146,8 @@ const INTRO_JS_STEPS: TutorialStep[] = [
       </div>
     `,
     title: 'Archive',
-    position: 'top'
+    position: 'top',
+    skipable: true
   },
   {
     id: 'profile-menu',
@@ -150,7 +160,8 @@ const INTRO_JS_STEPS: TutorialStep[] = [
       </div>
     `,
     title: 'Access Tutorial Anytime',
-    position: 'bottom'
+    position: 'bottom',
+    skipable: true
   }
 ];
 

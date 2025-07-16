@@ -7,9 +7,21 @@ const Steps = dynamic(() => import('intro.js-react').then(mod => mod.Steps), {
   ssr: false
 });
 
+interface TutorialStep {
+  id: string;
+  element: string;
+  intro: string;
+  title?: string;
+  position?: 'top' | 'bottom' | 'left' | 'right' | 'auto';
+  tooltipClass?: string;
+  highlightClass?: string;
+  actionRequired?: boolean;
+  skipable?: boolean;
+}
+
 interface IntroJsTutorialProps {
   enabled: boolean;
-  steps: any[];
+  steps: TutorialStep[];
   initialStep?: number;
   onExit: () => void;
   onComplete: () => void;
@@ -29,6 +41,7 @@ export function IntroJsTutorial({
   onAfterChange
 }: IntroJsTutorialProps) {
   const [isMounted, setIsMounted] = useState(false);
+  const [currentStepIndex, setCurrentStepIndex] = useState(initialStep);
   
   useEffect(() => {
     setIsMounted(true);
@@ -70,10 +83,23 @@ export function IntroJsTutorial({
         border-radius: 12px;
         box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
         border: 1px solid #e5e7eb;
+        background: white;
       }
       
       .introjs-tooltiptext {
         padding: 20px;
+      }
+      
+      .introjs-tooltipbuttons {
+        text-align: right;
+        border-top: 1px solid #e5e7eb;
+        padding: 16px 20px;
+        margin-top: 16px;
+        background: #f9fafb;
+        border-radius: 0 0 12px 12px;
+        margin-left: -20px;
+        margin-right: -20px;
+        margin-bottom: -20px;
       }
       
       .introjs-button {
@@ -81,11 +107,14 @@ export function IntroJsTutorial({
         padding: 8px 16px;
         font-weight: 500;
         transition: all 0.2s;
+        margin-left: 8px;
+        border: none;
+        cursor: pointer;
+        font-size: 14px;
       }
       
       .introjs-nextbutton {
         background: #3b82f6;
-        border: none;
         color: white;
       }
       
@@ -105,13 +134,32 @@ export function IntroJsTutorial({
       
       .introjs-skipbutton {
         background: transparent;
-        border: none;
         color: #6b7280;
-        text-decoration: underline;
+        text-decoration: none;
+        border: none;
+        padding: 8px 0;
+        margin-left: 0;
+        margin-right: auto;
+        position: absolute;
+        right: 20px;
+        top: 20px;
+        width: 24px;
+        height: 24px;
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
       }
       
       .introjs-skipbutton:hover {
+        background: #f3f4f6;
         color: #374151;
+      }
+      
+      .introjs-skipbutton::before {
+        content: '✕';
+        font-size: 14px;
+        line-height: 1;
       }
       
       .introjs-bullets {
@@ -121,6 +169,7 @@ export function IntroJsTutorial({
       .introjs-progress {
         background: #e5e7eb;
         border-radius: 10px;
+        margin-bottom: 16px;
       }
       
       .introjs-progressbar {
@@ -133,26 +182,33 @@ export function IntroJsTutorial({
         border: 2px solid white;
         color: white;
         font-weight: 600;
-        width: 24px;
-        height: 24px;
-        line-height: 20px;
-        font-size: 12px;
+        width: 28px;
+        height: 28px;
+        line-height: 24px;
+        font-size: 14px;
+        border-radius: 50%;
       }
       
       .introjs-overlay {
-        background: rgba(0, 0, 0, 0.4);
+        background: rgba(0, 0, 0, 0.5);
       }
       
       .introjs-helperLayer {
         border-radius: 8px;
-        border: 2px solid #3b82f6;
-        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        border: 3px solid #3b82f6;
+        box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+      }
+      
+      /* Hide next button for actionRequired steps */
+      .introjs-tooltip[data-action-required="true"] .introjs-nextbutton {
+        display: none !important;
       }
       
       @media (max-width: 768px) {
         .introjs-tooltip {
-          max-width: calc(100vw - 32px);
-          margin: 16px;
+          max-width: calc(100vw - 24px);
+          margin: 12px;
+          border-radius: 8px;
         }
         
         .tutorial-welcome h2, .tutorial-step h3 {
@@ -170,6 +226,23 @@ export function IntroJsTutorial({
         .introjs-tooltiptext {
           padding: 16px;
         }
+        
+        .introjs-tooltipbuttons {
+          padding: 12px 16px;
+          margin-left: -16px;
+          margin-right: -16px;
+          margin-bottom: -16px;
+        }
+        
+        .introjs-button {
+          padding: 6px 12px;
+          font-size: 13px;
+        }
+        
+        .introjs-skipbutton {
+          right: 16px;
+          top: 16px;
+        }
       }
     `;
     
@@ -184,7 +257,7 @@ export function IntroJsTutorial({
     showStepNumbers: true,
     showBullets: false,
     showProgress: true,
-    skipLabel: 'Skip Tour',
+    skipLabel: '✕',
     nextLabel: 'Next →',
     prevLabel: '← Back',
     doneLabel: 'Finish Tour',
@@ -194,9 +267,32 @@ export function IntroJsTutorial({
     scrollPadding: 30,
     disableInteraction: false,
     tooltipPosition: 'auto',
-    overlayOpacity: 0.4,
+    overlayOpacity: 0.5,
     autoPosition: true,
-    positionPrecedence: ['bottom', 'top', 'right', 'left']
+    positionPrecedence: ['bottom', 'top', 'right', 'left'],
+    tooltipClass: 'custom-introjs-tooltip'
+  };
+
+  // Add data attribute for actionRequired steps
+  const handleAfterChange = (stepIndex: number) => {
+    setCurrentStepIndex(stepIndex);
+    
+    if (typeof window !== 'undefined') {
+      const tooltip = document.querySelector('.introjs-tooltip');
+      const currentStep = steps[stepIndex];
+      
+      if (tooltip && currentStep) {
+        if (currentStep.actionRequired) {
+          tooltip.setAttribute('data-action-required', 'true');
+        } else {
+          tooltip.removeAttribute('data-action-required');
+        }
+      }
+    }
+    
+    if (onAfterChange) {
+      onAfterChange(stepIndex);
+    }
   };
 
   if (!enabled || !isMounted) {
@@ -213,7 +309,7 @@ export function IntroJsTutorial({
       onComplete={onComplete}
       onBeforeChange={onBeforeChange}
       onChange={onChange}
-      onAfterChange={onAfterChange}
+      onAfterChange={handleAfterChange}
     />
   );
 }
