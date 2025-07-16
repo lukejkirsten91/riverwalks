@@ -133,13 +133,13 @@ export default function RiverWalksPage() {
       }
 
       // Show "create first river walk" popup for new users with no river walks
-      if (shouldShowTutorial && canStartTutorial && !tutorialActive && !hasExitedThisSession) {
-        // Additional check: only start if tutorial hasn't been seen and they have river walks
+      if (shouldShowTutorial && canStartTutorial && !tutorialActive && !hasExitedThisSession && !showCreateFirstRiverWalk) {
+        // Additional check: only start if tutorial hasn't been seen
         const userTutorial = user?.user_metadata?.tutorial;
         if (!userTutorial?.hasSeenTutorial) {
           // Check if user has any river walks
           if (riverWalks.length === 0) {
-            // Show create first river walk modal
+            // Show create first river walk modal (only if not already showing)
             setShowCreateFirstRiverWalk(true);
           } else {
             // They have river walks, start tutorial
@@ -153,7 +153,7 @@ export default function RiverWalksPage() {
     
     // Reset any modal styles that might be blocking interactions
     resetModalStyles();
-  }, [router, collaborationEnabled, acceptInvite, showSuccess, showError, refetch, shouldShowTutorial, canStartTutorial, tutorialActive, hasExitedThisSession, startTutorial]);
+  }, [router, collaborationEnabled, acceptInvite, showSuccess, showError, refetch, shouldShowTutorial, canStartTutorial, tutorialActive, hasExitedThisSession, startTutorial, riverWalks.length]);
 
   // One-time sync queue cleanup (remove after deployment)
   useEffect(() => {

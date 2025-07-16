@@ -131,19 +131,12 @@ export default function NewRiverWalkPage() {
       
       {/* Simple Tutorial Message for Form */}
       {isTutorialMode && formTutorialActive && (
-        <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-[9999] px-4 w-full max-w-md">
+        <div className="fixed top-32 left-1/2 transform -translate-x-1/2 z-[9999] px-4 w-full max-w-md">
           <div className="bg-blue-600 text-white rounded-lg shadow-lg px-4 py-3 flex items-start gap-3">
-            <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-              <span className="text-xs font-bold">2.1</span>
-            </div>
             <div className="flex-1">
               <h3 className="font-semibold text-sm mb-1">Fill in Your River Walk Details</h3>
               <p className="text-blue-100 text-xs leading-relaxed">
                 Complete all the form fields to create your first river walk study. When you're done, click "Create River Walk" to save it.
-              </p>
-              <p className="text-blue-200 text-xs mt-2 flex items-center gap-1">
-                <span>💡</span>
-                <span>Step 2.1 of 9 - Fill in all the required fields to continue</span>
               </p>
             </div>
             <button

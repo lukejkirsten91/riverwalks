@@ -280,7 +280,7 @@ export function IntroJsTutorial({
   const options = {
     showStepNumbers: true,
     showBullets: false,
-    showProgress: true,
+    showProgress: false, // Hide the progress bar to remove step counter
     skipLabel: '✕',
     nextLabel: 'Next →',
     prevLabel: '← Back',
