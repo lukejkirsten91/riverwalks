@@ -136,18 +136,19 @@ export default function RiverWalksPage() {
       }
 
       // Show "create first river walk" popup for new users with no river walks
-      if (shouldShowTutorial && canStartTutorial && !tutorialActive && !hasExitedThisSession && !showCreateFirstRiverWalk) {
+      // IMPORTANT: Never show if they already have river walks
+      if (riverWalks.length === 0 && shouldShowTutorial && canStartTutorial && !tutorialActive && !hasExitedThisSession && !showCreateFirstRiverWalk) {
         // Additional check: only start if tutorial hasn't been seen
         const userTutorial = user?.user_metadata?.tutorial;
         if (!userTutorial?.hasSeenTutorial) {
-          // Check if user has any river walks
-          if (riverWalks.length === 0) {
-            // Show create first river walk modal (only if not already showing)
-            setShowCreateFirstRiverWalk(true);
-          } else {
-            // They have river walks, start tutorial
-            setTimeout(() => startTutorial(), 1000);
-          }
+          // Show create first river walk modal (only if not already showing)
+          setShowCreateFirstRiverWalk(true);
+        }
+      } else if (riverWalks.length > 0 && shouldShowTutorial && canStartTutorial && !tutorialActive && !hasExitedThisSession) {
+        // They have river walks but haven't seen tutorial, start it
+        const userTutorial = user?.user_metadata?.tutorial;
+        if (!userTutorial?.hasSeenTutorial) {
+          setTimeout(() => startTutorial(), 1000);
         }
       }
     };

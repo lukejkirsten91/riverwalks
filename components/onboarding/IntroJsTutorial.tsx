@@ -167,13 +167,16 @@ export function IntroJsTutorial({
       
       .introjs-progress {
         background: #e5e7eb;
-        border-radius: 10px;
+        border-radius: 4px;
         margin-bottom: 16px;
+        height: 4px;
       }
       
       .introjs-progressbar {
         background: #3b82f6;
-        border-radius: 10px;
+        border-radius: 4px;
+        height: 4px;
+        transition: width 0.3s ease;
       }
       
       .introjs-helperNumberLayer {
@@ -282,7 +285,7 @@ export function IntroJsTutorial({
   const options = {
     showStepNumbers: true,
     showBullets: false,
-    showProgress: false, // Hide the progress bar to remove step counter
+    showProgress: true, // Show progress bar
     skipLabel: '✕',
     nextLabel: 'Next →',
     prevLabel: '← Back',
