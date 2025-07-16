@@ -56,7 +56,6 @@ const INTRO_JS_STEPS: TutorialStep[] = [
     intro: `
       <div class="tutorial-step">
         <p>This is your river walk card. Here you can see all the details and actions available for your study.</p>
-        <small class="tutorial-tip">💡 Each river walk card shows the study name, date, location, and your access level.</small>
       </div>
     `,
     title: 'Your River Walk',

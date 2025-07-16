@@ -102,6 +102,8 @@ export function IntroJsTutorial({
         margin-left: -20px;
         margin-right: -20px;
         margin-bottom: -20px;
+        width: calc(100% + 40px);
+        box-sizing: border-box;
       }
       
       .introjs-button {
@@ -252,6 +254,8 @@ export function IntroJsTutorial({
           margin-left: -16px;
           margin-right: -16px;
           margin-bottom: -16px;
+          width: calc(100% + 32px);
+          box-sizing: border-box;
         }
         
         .introjs-button {
@@ -307,11 +311,12 @@ export function IntroJsTutorial({
     setCurrentStepIndex(stepIndex);
     
     if (typeof window !== 'undefined') {
+      const currentStep = steps[stepIndex];
+      
       // Scroll to top for each tutorial step
       window.scrollTo({ top: 0, behavior: 'smooth' });
       
       const tooltip = document.querySelector('.introjs-tooltip');
-      const currentStep = steps[stepIndex];
       
       if (tooltip && currentStep) {
         if (currentStep.actionRequired) {
