@@ -102,7 +102,6 @@ export function IntroJsTutorial({
         margin-left: -20px;
         margin-right: -20px;
         margin-bottom: -20px;
-        min-width: 260px;
       }
       
       .introjs-button {
@@ -253,7 +252,6 @@ export function IntroJsTutorial({
           margin-left: -16px;
           margin-right: -16px;
           margin-bottom: -16px;
-          min-width: calc(100vw - 80px);
         }
         
         .introjs-button {

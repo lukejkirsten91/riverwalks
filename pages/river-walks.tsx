@@ -57,6 +57,7 @@ export default function RiverWalksPage() {
   const [joinCollabLink, setJoinCollabLink] = useState('');
   const [showTutorialCompletionModal, setShowTutorialCompletionModal] = useState(false);
   const [showCreateFirstRiverWalk, setShowCreateFirstRiverWalk] = useState(false);
+  const [justCompletedTutorialSetup, setJustCompletedTutorialSetup] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
 
   // Apply scroll lock when any modal is open
@@ -125,6 +126,8 @@ export default function RiverWalksPage() {
         router.replace('/river-walks', undefined, { shallow: true });
         // Hide the create first river walk popup if it's showing
         setShowCreateFirstRiverWalk(false);
+        // Mark that we just completed tutorial setup to prevent popup
+        setJustCompletedTutorialSetup(true);
         // Start tutorial now that they have created their first river walk
         if (canStartTutorial) {
           console.log('🎯 Starting tutorial after first river walk creation');
@@ -136,8 +139,8 @@ export default function RiverWalksPage() {
       }
 
       // Show "create first river walk" popup for new users with no river walks
-      // IMPORTANT: Never show if they already have river walks
-      if (riverWalks.length === 0 && shouldShowTutorial && canStartTutorial && !tutorialActive && !hasExitedThisSession && !showCreateFirstRiverWalk) {
+      // IMPORTANT: Never show if they already have river walks OR just completed tutorial setup
+      if (riverWalks.length === 0 && !justCompletedTutorialSetup && shouldShowTutorial && canStartTutorial && !tutorialActive && !hasExitedThisSession && !showCreateFirstRiverWalk) {
         // Additional check: only start if tutorial hasn't been seen
         const userTutorial = user?.user_metadata?.tutorial;
         if (!userTutorial?.hasSeenTutorial) {
