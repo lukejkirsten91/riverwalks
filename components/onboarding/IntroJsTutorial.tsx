@@ -137,9 +137,8 @@ export function IntroJsTutorial({
         color: #6b7280;
         text-decoration: none;
         border: none;
-        padding: 8px 0;
-        margin-left: 0;
-        margin-right: auto;
+        padding: 0;
+        margin: 0;
         position: absolute;
         right: 20px;
         top: 20px;
@@ -149,17 +148,14 @@ export function IntroJsTutorial({
         display: flex;
         align-items: center;
         justify-content: center;
+        font-size: 14px;
+        cursor: pointer;
+        text-indent: 0;
       }
       
       .introjs-skipbutton:hover {
         background: #f3f4f6;
         color: #374151;
-      }
-      
-      .introjs-skipbutton::before {
-        content: '✕';
-        font-size: 14px;
-        line-height: 1;
       }
       
       .introjs-bullets {
@@ -182,11 +178,15 @@ export function IntroJsTutorial({
         border: 2px solid white;
         color: white;
         font-weight: 600;
-        width: 28px;
-        height: 28px;
-        line-height: 24px;
+        width: 32px;
+        height: 32px;
+        line-height: 28px;
         font-size: 14px;
         border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
       }
       
       .introjs-overlay {
@@ -197,6 +197,17 @@ export function IntroJsTutorial({
         border-radius: 8px;
         border: 3px solid #3b82f6;
         box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+        pointer-events: auto !important;
+      }
+      
+      /* Enable clicking on highlighted elements during tutorial */
+      .introjs-showElement {
+        pointer-events: auto !important;
+        cursor: pointer !important;
+      }
+      
+      .introjs-showElement * {
+        pointer-events: auto !important;
       }
       
       /* Hide next button for actionRequired steps */
@@ -265,7 +276,7 @@ export function IntroJsTutorial({
     exitOnEsc: true,
     scrollToElement: true,
     scrollPadding: 30,
-    disableInteraction: false,
+    disableInteraction: false, // Allow interaction with highlighted elements
     tooltipPosition: 'auto',
     overlayOpacity: 0.5,
     autoPosition: true,

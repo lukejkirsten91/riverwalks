@@ -42,7 +42,6 @@ const INTRO_JS_STEPS: TutorialStep[] = [
     element: 'body',
     intro: `
       <div class="tutorial-welcome">
-        <h2>Welcome to River Walks!</h2>
         <p>Let's take a quick tour to help you get started with creating and managing your river walk studies. This tutorial will guide you through the essential features.</p>
         <small class="tutorial-tip">💡 You can access this tutorial anytime from your profile menu.</small>
       </div>
@@ -56,7 +55,6 @@ const INTRO_JS_STEPS: TutorialStep[] = [
     element: '[data-tutorial="new-river-walk"]',
     intro: `
       <div class="tutorial-step">
-        <h3>Create Your First River Walk</h3>
         <p>Click this button to start creating a new river walk study. This is where all your data collection begins!</p>
         <small class="tutorial-tip">💡 A river walk is a complete study session where you'll collect data from multiple sites along a river.</small>
       </div>
@@ -70,7 +68,6 @@ const INTRO_JS_STEPS: TutorialStep[] = [
     element: '[data-tutorial="created-river-walk"]',
     intro: `
       <div class="tutorial-step">
-        <h3>Your Created River Walk</h3>
         <p>Great! This is your newly created river walk. Here you can see all the details and actions available for your study.</p>
         <small class="tutorial-tip">💡 Each river walk card shows the study name, date, location, and your access level.</small>
       </div>
@@ -84,7 +81,6 @@ const INTRO_JS_STEPS: TutorialStep[] = [
     element: '[data-tutorial="manage-sites"]',
     intro: `
       <div class="tutorial-step">
-        <h3>Sites & Measurements</h3>
         <p>Click this button to create measurement locations along your river where you'll collect field data. This is your next step!</p>
         <small class="tutorial-tip">💡 Sites are specific locations along your river where you'll take measurements like river width, depth, velocity, and sediment size.</small>
       </div>
@@ -98,7 +94,6 @@ const INTRO_JS_STEPS: TutorialStep[] = [
     element: '[data-tutorial="export-template"]',
     intro: `
       <div class="tutorial-step">
-        <h3>Print Template</h3>
         <p>This button generates a PDF template that you can print and take into the field for recording measurements by hand.</p>
         <small class="tutorial-tip">💡 Perfect for when you need paper backups or want to record data offline.</small>
       </div>
@@ -112,7 +107,6 @@ const INTRO_JS_STEPS: TutorialStep[] = [
     element: '[data-tutorial="export"]',
     intro: `
       <div class="tutorial-step">
-        <h3>Export Data</h3>
         <p>Export your river walk data to Excel format for analysis. Basic accounts get Excel export, while premium accounts get detailed PDF reports with charts and analysis.</p>
         <small class="tutorial-tip">💡 Basic: Excel export included. Premium: Advanced PDF reports with charts.</small>
       </div>
@@ -126,7 +120,6 @@ const INTRO_JS_STEPS: TutorialStep[] = [
     element: '[data-tutorial="collaborate"]',
     intro: `
       <div class="tutorial-step">
-        <h3>Collaborate</h3>
         <p>Share your river walk with classmates or teachers to work together on data collection.</p>
         <small class="tutorial-tip">💡 Premium feature - ideal for group projects and teacher supervision.</small>
       </div>
@@ -140,7 +133,6 @@ const INTRO_JS_STEPS: TutorialStep[] = [
     element: '[data-tutorial="archive"]',
     intro: `
       <div class="tutorial-step">
-        <h3>Archive</h3>
         <p>Archive completed river walks to keep your workspace organized while preserving your data.</p>
         <small class="tutorial-tip">💡 Archived river walks can be restored anytime from the archived section.</small>
       </div>
@@ -154,7 +146,6 @@ const INTRO_JS_STEPS: TutorialStep[] = [
     element: '[data-profile-dropdown] > button',
     intro: `
       <div class="tutorial-step">
-        <h3>Access Tutorial Anytime</h3>
         <p>You can restart this tutorial anytime by clicking your profile menu here and selecting "Tutorial". Feel free to explore the features on your own!</p>
         <small class="tutorial-tip">💡 The profile menu also contains account settings, feedback options, and sign out.</small>
       </div>
