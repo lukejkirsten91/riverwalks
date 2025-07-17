@@ -85,7 +85,7 @@ export function IntroJsTutorial({
         box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
         border: 1px solid #e5e7eb;
         background: white;
-        padding: 16px 16px 0;
+        padding: 12px 16px 0;
       }
       
       .introjs-tooltiptext {
@@ -142,8 +142,8 @@ export function IntroJsTutorial({
         padding: 0;
         margin: 0;
         position: absolute;
-        right: 16px;
-        top: 16px;
+        right: 12px;
+        top: 12px;
         width: 24px;
         height: 24px;
         border-radius: 4px;
@@ -230,7 +230,7 @@ export function IntroJsTutorial({
           min-width: calc(100vw - 48px);
           margin: 12px;
           border-radius: 8px;
-          padding: 14px 14px 0;
+          padding: 12px 14px 0;
         }
         
         .tutorial-welcome h2, .tutorial-step h3 {
@@ -262,8 +262,8 @@ export function IntroJsTutorial({
         }
         
         .introjs-skipbutton {
-          right: 14px;
-          top: 14px;
+          right: 12px;
+          top: 12px;
         }
         
         .introjs-helperNumberLayer {
