@@ -48,10 +48,9 @@ export function SimpleToast({
   // Calculate dynamic width based on message length
   const getMaxWidth = () => {
     const messageLength = message.length;
-    if (messageLength < 20) return 'max-w-fit';
-    if (messageLength < 40) return 'max-w-xs';
-    if (messageLength < 80) return 'max-w-sm';
-    if (messageLength < 120) return 'max-w-md';
+    if (messageLength < 25) return 'max-w-xs';
+    if (messageLength < 50) return 'max-w-sm';
+    if (messageLength < 100) return 'max-w-md';
     return 'max-w-lg';
   };
 
