@@ -102,7 +102,6 @@ export function IntroJsTutorial({
         margin-left: -20px;
         margin-right: -20px;
         margin-bottom: -20px;
-        width: calc(100% + 40px);
         box-sizing: border-box;
       }
       
@@ -254,7 +253,6 @@ export function IntroJsTutorial({
           margin-left: -16px;
           margin-right: -16px;
           margin-bottom: -16px;
-          width: calc(100% + 32px);
           box-sizing: border-box;
         }
         
@@ -313,15 +311,24 @@ export function IntroJsTutorial({
     if (typeof window !== 'undefined') {
       const currentStep = steps[stepIndex];
       
-      // Scroll to the popup (not page top) with a delay to ensure it's rendered
+      // For the 'Access Tutorial Anytime' step, scroll to page top, otherwise scroll to popup
       setTimeout(() => {
-        const tooltip = document.querySelector('.introjs-tooltip');
-        if (tooltip) {
-          tooltip.scrollIntoView({ 
-            behavior: 'smooth', 
-            block: 'start',
-            inline: 'nearest'
+        if (currentStep && currentStep.id === 'profile-menu') {
+          // For the final step, scroll to page top
+          window.scrollTo({ 
+            top: 0, 
+            behavior: 'smooth' 
           });
+        } else {
+          // For all other steps, scroll to popup
+          const tooltip = document.querySelector('.introjs-tooltip');
+          if (tooltip) {
+            tooltip.scrollIntoView({ 
+              behavior: 'smooth', 
+              block: 'start',
+              inline: 'nearest'
+            });
+          }
         }
       }, 100);
       
