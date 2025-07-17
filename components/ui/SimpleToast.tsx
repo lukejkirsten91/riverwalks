@@ -87,12 +87,12 @@ export function SimpleToast({
       <div
         className={`
           ${config.bgColor} ${config.textColor}
-          rounded-lg shadow-lg px-3 py-2 flex items-start gap-2 text-xs sm:text-sm font-medium
-          cursor-pointer backdrop-blur-sm w-full min-h-[2.5rem] sm:min-h-[3rem]
+          rounded-lg shadow-lg px-3 py-2 flex items-center gap-2 text-xs sm:text-sm font-medium
+          cursor-pointer backdrop-blur-sm w-full
         `}
         onClick={handleClose}
       >
-        <Icon className="w-3 h-3 sm:w-4 sm:h-4 shrink-0 mt-0.5" />
+        <Icon className="w-3 h-3 sm:w-4 sm:h-4 shrink-0" />
         <span className="flex-1 text-center break-words leading-tight">{message}</span>
       </div>
     </div>
