@@ -70,7 +70,7 @@ export function SubscriptionStatusCard({ subscription, userEmail, className = ''
                 <li>• Enhanced visualizations</li>
               </ul>
               <div className="text-xs text-blue-600 font-medium">
-                Starting at £1.99/year (less than 40p/month!)
+                Starting at £1.99/year (less than 20p/month!)
               </div>
             </div>
           </div>

@@ -67,11 +67,14 @@ export function TermsAcceptance({ onAcceptance, loading = false, required = true
           onClick={() => !loading && setTermsAccepted(!termsAccepted)}
         >
           <label className="flex items-center cursor-pointer">
-            <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
-              termsAccepted 
-                ? 'bg-green-600 border-green-600' 
-                : 'border-gray-300 bg-white hover:border-green-300'
-            }`}>
+            <div 
+              className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors cursor-pointer ${
+                termsAccepted 
+                  ? 'bg-green-600 border-green-600' 
+                  : 'border-gray-300 bg-white hover:border-green-300'
+              }`}
+              onClick={() => setTermsAccepted(!termsAccepted)}
+            >
               {termsAccepted && (
                 <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
@@ -120,11 +123,14 @@ export function TermsAcceptance({ onAcceptance, loading = false, required = true
           onClick={() => !loading && setPrivacyAccepted(!privacyAccepted)}
         >
           <label className="flex items-center cursor-pointer">
-            <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
-              privacyAccepted 
-                ? 'bg-green-600 border-green-600' 
-                : 'border-gray-300 bg-white hover:border-green-300'
-            }`}>
+            <div 
+              className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors cursor-pointer ${
+                privacyAccepted 
+                  ? 'bg-green-600 border-green-600' 
+                  : 'border-gray-300 bg-white hover:border-green-300'
+              }`}
+              onClick={() => setPrivacyAccepted(!privacyAccepted)}
+            >
               {privacyAccepted && (
                 <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
@@ -173,11 +179,14 @@ export function TermsAcceptance({ onAcceptance, loading = false, required = true
           onClick={() => !loading && setMarketingConsent(!marketingConsent)}
         >
           <label className="flex items-center cursor-pointer">
-            <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
-              marketingConsent 
-                ? 'bg-green-600 border-green-600' 
-                : 'border-gray-300 bg-white hover:border-green-300'
-            }`}>
+            <div 
+              className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors cursor-pointer ${
+                marketingConsent 
+                  ? 'bg-green-600 border-green-600' 
+                  : 'border-gray-300 bg-white hover:border-green-300'
+              }`}
+              onClick={() => setMarketingConsent(!marketingConsent)}
+            >
               {marketingConsent && (
                 <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />

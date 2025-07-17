@@ -89,7 +89,7 @@ export function WelcomeFlow({ onComplete, userEmail }: WelcomeFlowProps) {
               <div>• River walk sharing and collaboration</div>
             </div>
             <div className="mt-2 text-sm text-blue-600">
-              Starting at just £1.99/year (less than 40p per month!)
+              Starting at just £1.99/year (less than 20p per month!)
             </div>
           </div>
         </div>

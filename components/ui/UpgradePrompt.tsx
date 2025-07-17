@@ -134,7 +134,7 @@ export function UpgradePrompt({ feature, inline = false, onClose }: UpgradePromp
                 <div className="text-sm text-blue-600">or £3.49 lifetime</div>
               </div>
               <div className="text-xs text-blue-700 bg-blue-200 px-2 py-1 rounded">
-                Less than 40p per month!
+                Less than 20p per month!
               </div>
             </div>
           </div>
