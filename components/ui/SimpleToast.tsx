@@ -45,14 +45,7 @@ export function SimpleToast({
   const config = typeConfig[type];
   const Icon = config.icon;
   
-  // Calculate dynamic width based on message length
-  const getMaxWidth = () => {
-    const messageLength = message.length;
-    if (messageLength < 25) return 'max-w-xs';
-    if (messageLength < 50) return 'max-w-sm';
-    if (messageLength < 100) return 'max-w-md';
-    return 'max-w-lg';
-  };
+  // No need for hard-coded width calculations - let it size naturally
 
   useEffect(() => {
     // Trigger entrance animation
@@ -77,7 +70,7 @@ export function SimpleToast({
     <div
       className={`
         fixed top-4 left-1/2 transform -translate-x-1/2 z-[9999] transition-all duration-200 ease-in-out
-        px-4 ${getMaxWidth()}
+        px-4 max-w-[90vw] sm:max-w-md
         ${isVisible && !isLeaving
           ? 'translate-y-0 opacity-100 scale-100'
           : '-translate-y-2 opacity-0 scale-95'
