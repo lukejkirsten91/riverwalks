@@ -48,9 +48,10 @@ export function SimpleToast({
   // Calculate dynamic width based on message length
   const getMaxWidth = () => {
     const messageLength = message.length;
-    if (messageLength < 30) return 'max-w-xs';
-    if (messageLength < 60) return 'max-w-sm';
-    if (messageLength < 100) return 'max-w-md';
+    if (messageLength < 20) return 'max-w-fit';
+    if (messageLength < 40) return 'max-w-xs';
+    if (messageLength < 80) return 'max-w-sm';
+    if (messageLength < 120) return 'max-w-md';
     return 'max-w-lg';
   };
 
@@ -77,7 +78,7 @@ export function SimpleToast({
     <div
       className={`
         fixed top-4 left-1/2 transform -translate-x-1/2 z-[9999] transition-all duration-200 ease-in-out
-        px-4 w-full ${getMaxWidth()} sm:${getMaxWidth()}
+        px-4 ${getMaxWidth()}
         ${isVisible && !isLeaving
           ? 'translate-y-0 opacity-100 scale-100'
           : '-translate-y-2 opacity-0 scale-95'
@@ -88,7 +89,7 @@ export function SimpleToast({
         className={`
           ${config.bgColor} ${config.textColor}
           rounded-lg shadow-lg px-3 py-2 flex items-center gap-2 text-xs sm:text-sm font-medium
-          cursor-pointer backdrop-blur-sm w-full
+          cursor-pointer backdrop-blur-sm
         `}
         onClick={handleClose}
       >
