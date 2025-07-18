@@ -12,9 +12,10 @@ import {
   CardContent,
   CardFooter,
 } from '../ui/card';
-import { LogIn, LogOut, MapPin, UserCheck, Mail } from 'lucide-react';
+import { LogIn, LogOut, MapPin, UserCheck, Mail, Lock } from 'lucide-react';
 import { TermsGate } from './TermsGate';
 import { EmailAuthForm } from './EmailAuthForm';
+import { PasswordAuthForm } from './PasswordAuthForm';
 import { trackSignup, trackButtonClick, trackEvent } from '../../lib/analytics';
 
 export default function AuthCard() {
@@ -22,6 +23,7 @@ export default function AuthCard() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [showEmailAuth, setShowEmailAuth] = useState<boolean>(false);
+  const [showPasswordAuth, setShowPasswordAuth] = useState<boolean>(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -254,6 +256,21 @@ export default function AuthCard() {
     );
   }
 
+  if (showPasswordAuth) {
+    return (
+      <div className="card-modern-xl backdrop-blur-sm bg-white/95 w-full">
+        <CardHeader className="text-center pb-4">
+          <CardTitle className="text-2xl text-foreground mb-2">
+            Get Started Now
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <PasswordAuthForm onBack={() => setShowPasswordAuth(false)} />
+        </CardContent>
+      </div>
+    );
+  }
+
   return (
     <div className="card-modern-xl backdrop-blur-sm bg-white/95 w-full">
       <CardHeader className="text-center pb-4">
@@ -326,10 +343,21 @@ export default function AuthCard() {
             trackButtonClick('continue_with_email', 'auth_card');
             setShowEmailAuth(true);
           }}
-          className="btn-primary w-full touch-manipulation text-base text-white"
+          className="btn-secondary w-full touch-manipulation text-base"
         >
           <Mail className="mr-3 h-5 w-5" />
           Continue with Email
+        </button>
+
+        <button 
+          onClick={() => {
+            trackButtonClick('continue_with_password', 'auth_card');
+            setShowPasswordAuth(true);
+          }}
+          className="btn-primary w-full touch-manipulation text-base text-white"
+        >
+          <Lock className="mr-3 h-5 w-5" />
+          Continue with Password
         </button>
         
         <div className="text-center space-y-3">
