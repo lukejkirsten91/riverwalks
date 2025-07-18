@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useRouter } from 'next/router';
 import { supabase } from '../../lib/supabase';
 import { Button } from '../ui/button';
 import { Lock, ArrowLeft, CheckCircle, Eye, EyeOff } from 'lucide-react';
@@ -9,6 +10,7 @@ interface PasswordAuthFormProps {
 }
 
 export function PasswordAuthForm({ onBack }: PasswordAuthFormProps) {
+  const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -18,6 +20,8 @@ export function PasswordAuthForm({ onBack }: PasswordAuthFormProps) {
   const [error, setError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [forgotPasswordSent, setForgotPasswordSent] = useState(false);
 
   const validatePassword = (password: string): string | null => {
     if (password.length < 8) {
@@ -94,7 +98,8 @@ export function PasswordAuthForm({ onBack }: PasswordAuthFormProps) {
           method: 'password'
         });
         
-        // Redirect will be handled by the auth state change in parent component
+        // Redirect to river-walks page
+        router.push('/river-walks');
       }
     } catch (error) {
       console.error('Password auth error:', error);
@@ -113,6 +118,79 @@ export function PasswordAuthForm({ onBack }: PasswordAuthFormProps) {
       setLoading(false);
     }
   };
+
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!email) {
+      setError('Please enter your email address first');
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: 'https://www.riverwalks.co.uk/reset-password',
+      });
+
+      if (error) throw error;
+
+      setForgotPasswordSent(true);
+    } catch (error) {
+      console.error('Error sending reset email:', error);
+      setError(error instanceof Error ? error.message : 'Failed to send reset email');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (forgotPasswordSent) {
+    return (
+      <div className="text-center">
+        <div className="mb-4">
+          <CheckCircle className="w-12 h-12 text-green-500 mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-foreground mb-2">Check your email!</h3>
+          <p className="text-muted-foreground text-sm">
+            We've sent password reset instructions to <strong>{email}</strong>
+          </p>
+        </div>
+        
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+          <p className="text-blue-800 text-xs font-medium mb-1">
+            📧 Click the link in your email to reset your password
+          </p>
+          <p className="text-blue-700 text-xs">
+            The link expires in 1 hour. Don't forget to check your spam folder!
+          </p>
+        </div>
+
+        <div className="space-y-2">
+          <Button
+            onClick={() => {
+              setForgotPasswordSent(false);
+              setShowForgotPassword(false);
+              setError(null);
+            }}
+            variant="outline"
+            className="w-full text-sm"
+          >
+            Back to sign in
+          </Button>
+          
+          <Button
+            onClick={onBack}
+            variant="ghost"
+            className="w-full text-sm"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to sign in options
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   if (success && isSignUp) {
     return (
@@ -178,17 +256,20 @@ export function PasswordAuthForm({ onBack }: PasswordAuthFormProps) {
       <div className="text-center mb-6">
         <Lock className="w-8 h-8 text-primary mx-auto mb-3" />
         <h3 className="text-lg font-semibold text-foreground mb-2">
-          {isSignUp ? 'Create Your Account' : 'Welcome Back'}
+          {showForgotPassword ? 'Reset Your Password' : (isSignUp ? 'Create Your Account' : 'Welcome Back')}
         </h3>
         <p className="text-muted-foreground text-sm">
-          {isSignUp 
-            ? 'Join thousands of users already using Riverwalks'
-            : 'Sign in to access your saved river studies'
+          {showForgotPassword 
+            ? 'Enter your email and we\'ll send you a reset link'
+            : (isSignUp 
+              ? 'Join thousands of users already using Riverwalks'
+              : 'Sign in to access your saved river studies'
+            )
           }
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={showForgotPassword ? handleForgotPassword : handleSubmit} className="space-y-4">
         <div>
           <label htmlFor="email" className="block text-sm font-medium text-foreground mb-2">
             Email address
@@ -205,37 +286,39 @@ export function PasswordAuthForm({ onBack }: PasswordAuthFormProps) {
           />
         </div>
 
-        <div>
-          <label htmlFor="password" className="block text-sm font-medium text-foreground mb-2">
-            Password
-          </label>
-          <div className="relative">
-            <input
-              id="password"
-              type={showPassword ? 'text' : 'password'}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder={isSignUp ? 'Choose a secure password' : 'Enter your password'}
-              className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
-              disabled={loading}
-              required
-            />
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
-            >
-              {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-            </button>
-          </div>
-          {isSignUp && (
-            <div className="mt-2 text-xs text-muted-foreground">
-              Choose a strong password with at least 8 characters, including uppercase, lowercase, and numbers
+        {!showForgotPassword && (
+          <div>
+            <label htmlFor="password" className="block text-sm font-medium text-foreground mb-2">
+              Password
+            </label>
+            <div className="relative">
+              <input
+                id="password"
+                type={showPassword ? 'text' : 'password'}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder={isSignUp ? 'Choose a secure password' : 'Enter your password'}
+                className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
+                disabled={loading}
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+              >
+                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
             </div>
-          )}
-        </div>
+            {isSignUp && (
+              <div className="mt-2 text-xs text-muted-foreground">
+                Choose a strong password with at least 8 characters, including uppercase, lowercase, and numbers
+              </div>
+            )}
+          </div>
+        )}
 
-        {isSignUp && (
+        {isSignUp && !showForgotPassword && (
           <div>
             <label htmlFor="confirmPassword" className="block text-sm font-medium text-foreground mb-2">
               Confirm Password
@@ -270,38 +353,65 @@ export function PasswordAuthForm({ onBack }: PasswordAuthFormProps) {
 
         <Button
           type="submit"
-          disabled={loading || !email || !password || (isSignUp && !confirmPassword)}
+          disabled={loading || !email || (!showForgotPassword && (!password || (isSignUp && !confirmPassword)))}
           className="w-full"
         >
           {loading ? (
             <div className="flex items-center">
               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-              {isSignUp ? 'Creating account...' : 'Signing in...'}
+              {showForgotPassword ? 'Sending reset link...' : (isSignUp ? 'Creating account...' : 'Signing in...')}
             </div>
           ) : (
             <div className="flex items-center">
               <Lock className="w-4 h-4 mr-2" />
-              {isSignUp ? 'Create Account' : 'Sign In'}
+              {showForgotPassword ? 'Send Reset Link' : (isSignUp ? 'Create Account' : 'Sign In')}
             </div>
           )}
         </Button>
       </form>
 
-      <div className="mt-4 text-center">
-        <button
-          onClick={() => {
-            setIsSignUp(!isSignUp);
-            setError(null);
-            setPassword('');
-            setConfirmPassword('');
-          }}
-          className="text-sm text-primary hover:text-primary/80 underline"
-        >
-          {isSignUp 
-            ? 'Already have an account? Sign in here'
-            : 'New to Riverwalks? Create your free account'
-          }
-        </button>
+      <div className="mt-4 text-center space-y-2">
+        {!showForgotPassword && !isSignUp && (
+          <button
+            type="button"
+            onClick={() => {
+              setShowForgotPassword(true);
+              setError(null);
+            }}
+            className="text-sm text-primary hover:text-primary/80 underline block w-full"
+          >
+            Forgot your password?
+          </button>
+        )}
+        
+        {showForgotPassword ? (
+          <button
+            type="button"
+            onClick={() => {
+              setShowForgotPassword(false);
+              setError(null);
+            }}
+            className="text-sm text-primary hover:text-primary/80 underline"
+          >
+            Back to sign in
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={() => {
+              setIsSignUp(!isSignUp);
+              setError(null);
+              setPassword('');
+              setConfirmPassword('');
+            }}
+            className="text-sm text-primary hover:text-primary/80 underline"
+          >
+            {isSignUp 
+              ? 'Already have an account? Sign in here'
+              : 'New to Riverwalks? Create your free account'
+            }
+          </button>
+        )}
       </div>
     </div>
   );
