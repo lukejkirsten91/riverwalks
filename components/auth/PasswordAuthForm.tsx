@@ -131,16 +131,39 @@ export function PasswordAuthForm({ onBack }: PasswordAuthFormProps) {
     setError(null);
 
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      console.log('Attempting to send password reset email to:', email);
+      
+      const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: 'https://www.riverwalks.co.uk/reset-password',
       });
 
-      if (error) throw error;
+      console.log('Reset password response:', { data, error });
 
+      if (error) {
+        console.error('Supabase reset password error:', error);
+        throw error;
+      }
+
+      console.log('Password reset email sent successfully');
       setForgotPasswordSent(true);
     } catch (error) {
       console.error('Error sending reset email:', error);
-      setError(error instanceof Error ? error.message : 'Failed to send reset email');
+      if (error instanceof Error) {
+        // Check for specific error messages
+        if (error.message.includes('User not found')) {
+          setError('No account found with this email address. Please check your email or create a new account.');
+        } else if (error.message.includes('Email not confirmed')) {
+          setError('Please check your email and click the confirmation link first, then try resetting your password.');
+        } else if (error.message.includes('too many requests') || error.message.includes('rate limit')) {
+          setError('Too many requests. Please wait a few minutes before trying again.');
+        } else if (error.message.includes('SMTP') || error.message.includes('email')) {
+          setError('Email service temporarily unavailable. Please try again later or contact support.');
+        } else {
+          setError(`Unable to send reset email: ${error.message}`);
+        }
+      } else {
+        setError('Email service temporarily unavailable. Please try again later.');
+      }
     } finally {
       setLoading(false);
     }
