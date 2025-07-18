@@ -21,16 +21,16 @@ export function PasswordAuthForm({ onBack }: PasswordAuthFormProps) {
 
   const validatePassword = (password: string): string | null => {
     if (password.length < 8) {
-      return 'Password must be at least 8 characters long';
+      return 'Please choose a password with at least 8 characters';
     }
     if (!/(?=.*[a-z])/.test(password)) {
-      return 'Password must contain at least one lowercase letter';
+      return 'Please add at least one lowercase letter (a-z)';
     }
     if (!/(?=.*[A-Z])/.test(password)) {
-      return 'Password must contain at least one uppercase letter';
+      return 'Please add at least one uppercase letter (A-Z)';
     }
     if (!/(?=.*\d)/.test(password)) {
-      return 'Password must contain at least one number';
+      return 'Please add at least one number (0-9)';
     }
     return null;
   };
@@ -39,17 +39,17 @@ export function PasswordAuthForm({ onBack }: PasswordAuthFormProps) {
     e.preventDefault();
     
     if (!email || !password) {
-      setError('Please fill in all fields');
+      setError('Please enter both your email and password');
       return;
     }
 
     if (isSignUp) {
       if (!confirmPassword) {
-        setError('Please confirm your password');
+        setError('Please confirm your password to continue');
         return;
       }
       if (password !== confirmPassword) {
-        setError('Passwords do not match');
+        setError('The passwords don\'t match. Please try again');
         return;
       }
       const passwordError = validatePassword(password);
@@ -100,14 +100,14 @@ export function PasswordAuthForm({ onBack }: PasswordAuthFormProps) {
       console.error('Password auth error:', error);
       if (error instanceof Error) {
         if (error.message.includes('Invalid login credentials')) {
-          setError('Invalid email or password');
+          setError('We couldn\'t find an account with those details. Please check your email and password, or create a new account.');
         } else if (error.message.includes('User already registered')) {
-          setError('An account with this email already exists. Try signing in instead.');
+          setError('Good news! You already have an account with this email. Please sign in instead.');
         } else {
           setError(error.message);
         }
       } else {
-        setError('Authentication failed. Please try again.');
+        setError('Something went wrong. Please try again in a moment.');
       }
     } finally {
       setLoading(false);
@@ -119,7 +119,7 @@ export function PasswordAuthForm({ onBack }: PasswordAuthFormProps) {
       <div className="text-center">
         <div className="mb-4">
           <CheckCircle className="w-12 h-12 text-green-500 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-foreground mb-2">Check your email!</h3>
+          <h3 className="text-lg font-semibold text-foreground mb-2">Almost there!</h3>
           <p className="text-muted-foreground text-sm">
             We've sent a confirmation link to <strong>{email}</strong>
           </p>
@@ -127,10 +127,10 @@ export function PasswordAuthForm({ onBack }: PasswordAuthFormProps) {
         
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
           <p className="text-blue-800 text-xs font-medium mb-1">
-            📧 Click the link in your email to verify your account
+            📧 Click the link in your email to complete your account setup
           </p>
           <p className="text-blue-700 text-xs">
-            The link will expire in 1 hour. Check your spam folder if you don't see it.
+            The link expires in 1 hour. Don't forget to check your spam folder!
           </p>
         </div>
 
@@ -178,12 +178,12 @@ export function PasswordAuthForm({ onBack }: PasswordAuthFormProps) {
       <div className="text-center mb-6">
         <Lock className="w-8 h-8 text-primary mx-auto mb-3" />
         <h3 className="text-lg font-semibold text-foreground mb-2">
-          {isSignUp ? 'Create Account' : 'Sign In'}
+          {isSignUp ? 'Create Your Account' : 'Welcome Back'}
         </h3>
         <p className="text-muted-foreground text-sm">
           {isSignUp 
-            ? 'Create a new account with your email and password'
-            : 'Sign in with your email and password'
+            ? 'Join thousands of users already using Riverwalks'
+            : 'Sign in to access your saved river studies'
           }
         </p>
       </div>
@@ -215,7 +215,7 @@ export function PasswordAuthForm({ onBack }: PasswordAuthFormProps) {
               type={showPassword ? 'text' : 'password'}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder={isSignUp ? 'Create a secure password' : 'Enter your password'}
+              placeholder={isSignUp ? 'Choose a secure password' : 'Enter your password'}
               className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
               disabled={loading}
               required
@@ -230,7 +230,7 @@ export function PasswordAuthForm({ onBack }: PasswordAuthFormProps) {
           </div>
           {isSignUp && (
             <div className="mt-2 text-xs text-muted-foreground">
-              Password must be at least 8 characters with uppercase, lowercase, and numbers
+              Choose a strong password with at least 8 characters, including uppercase, lowercase, and numbers
             </div>
           )}
         </div>
@@ -246,7 +246,7 @@ export function PasswordAuthForm({ onBack }: PasswordAuthFormProps) {
                 type={showConfirmPassword ? 'text' : 'password'}
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder="Confirm your password"
+                placeholder="Type your password again"
                 className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
                 disabled={loading}
                 required
@@ -298,8 +298,8 @@ export function PasswordAuthForm({ onBack }: PasswordAuthFormProps) {
           className="text-sm text-primary hover:text-primary/80 underline"
         >
           {isSignUp 
-            ? 'Already have an account? Sign in instead'
-            : 'New to Riverwalks? Create an account'
+            ? 'Already have an account? Sign in here'
+            : 'New to Riverwalks? Create your free account'
           }
         </button>
       </div>

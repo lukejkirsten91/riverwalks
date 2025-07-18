@@ -343,7 +343,7 @@ export default function AuthCard() {
             trackButtonClick('continue_with_email', 'auth_card');
             setShowEmailAuth(true);
           }}
-          className="btn-secondary w-full touch-manipulation text-base text-white"
+          className="btn-primary w-full touch-manipulation text-base text-white"
         >
           <Mail className="mr-3 h-5 w-5" />
           Continue with Email
