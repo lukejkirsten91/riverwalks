@@ -235,18 +235,39 @@ export default function PrivacyPolicy() {
               
               <h3>6.1 Where Your Data is Stored</h3>
               <p>
-                Your data is stored on secure servers within the European Union to ensure GDPR compliance. 
-                We use industry-standard security measures including encryption, access controls, and regular backups.
+                Your data is stored on secure servers provided by Supabase (database) and Vercel (application hosting). 
+                We use industry-standard security measures including encryption, access controls, and regular backups 
+                provided by our infrastructure partners.
               </p>
 
               <h3>6.2 Security Measures</h3>
               <ul>
-                <li>End-to-end encryption for data transmission</li>
-                <li>Encrypted database storage</li>
-                <li>Multi-factor authentication for admin access</li>
+                <li>HTTPS/TLS encryption for secure data transmission</li>
+                <li>Encrypted database storage at rest</li>
+                <li>Role-based authentication and access controls</li>
                 <li>Regular security audits and updates</li>
-                <li>Access controls and user permission systems</li>
+                <li>User permission systems and data isolation</li>
+                <li>Secure API endpoints with authentication</li>
+                <li>Industry-standard payment processing via Stripe</li>
               </ul>
+
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 not-prose">
+                <div className="flex items-start gap-3">
+                  <Shield className="w-5 h-5 text-blue-600 mt-0.5" />
+                  <div>
+                    <h4 className="font-semibold text-blue-900 mb-2">Technical Security Clarification</h4>
+                    <p className="text-sm text-blue-800">
+                      <strong>Data Encryption:</strong> We use HTTPS/TLS for data in transit and database encryption at rest, 
+                      which is standard for modern web applications. This is not end-to-end encryption (where only you hold the keys), 
+                      but provides strong protection against unauthorized access during transmission and storage.
+                    </p>
+                    <p className="text-sm text-blue-800 mt-2">
+                      <strong>Infrastructure:</strong> Our security depends on industry-leading providers (Supabase, Vercel, Stripe) 
+                      rather than custom implementations, ensuring proven security practices.
+                    </p>
+                  </div>
+                </div>
+              </div>
 
               <h3>6.3 Data Retention</h3>
               <ul>
