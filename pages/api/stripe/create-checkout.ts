@@ -2,6 +2,7 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import Stripe from 'stripe';
 import { supabase } from '../../../lib/supabase';
 import { getCurrentPrices, getStripeMode } from '../../../lib/stripe-config';
+import { logger } from '../../../lib/logger';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-06-30.basil',
@@ -12,7 +13,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  console.log('🚀 Create checkout session called');
+  logger.info('Create checkout session initiated');
 
   try {
     const { planType, voucherCode, successUrl, cancelUrl } = req.body;
@@ -41,7 +42,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(400).json({ error: 'Invalid plan type' });
     }
 
-    console.log('💰 Plan type:', planType, '→', dbPlanType, 'Price ID:', priceId);
+    logger.info('Checkout plan configured', { planType, dbPlanType });
 
     // Base checkout session parameters
     const sessionParams: Stripe.Checkout.SessionCreateParams = {
@@ -69,7 +70,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // Apply voucher if provided
     if (voucherCode) {
-      console.log('🎫 Checking voucher:', voucherCode);
+      logger.info('Validating voucher code');
 
       // Validate voucher from database
       const { data: voucher, error: voucherError } = await supabase
@@ -80,25 +81,25 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         .single();
 
       if (voucherError || !voucher) {
-        console.log('❌ Invalid voucher:', voucherCode);
+        logger.warn('Invalid voucher code provided');
         return res.status(400).json({ error: 'Invalid or expired voucher code' });
       }
 
       // Check if voucher is still valid
       if (voucher.valid_until && new Date(voucher.valid_until) < new Date()) {
-        console.log('❌ Expired voucher:', voucherCode);
+        logger.warn('Expired voucher code provided');
         return res.status(400).json({ error: 'Voucher has expired' });
       }
 
       // Check usage limits
       if (voucher.uses_count >= voucher.max_uses) {
-        console.log('❌ Voucher usage limit reached:', voucherCode);
+        logger.warn('Voucher usage limit reached');
         return res.status(400).json({ error: 'Voucher usage limit reached' });
       }
 
       // Check if voucher applies to this plan (use mapped plan type)
       if (!voucher.plan_types.includes(dbPlanType)) {
-        console.log('❌ Voucher not valid for plan:', voucherCode, planType, '→', dbPlanType, 'Valid for:', voucher.plan_types);
+        logger.warn('Voucher not valid for plan type', { planType: dbPlanType });
         return res.status(400).json({ error: `Voucher not valid for ${planType} plan` });
       }
 
@@ -109,10 +110,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         // Try to get existing coupon
         const existingCoupon = await stripe.coupons.retrieve(voucherCode.toUpperCase());
         stripeCouponId = existingCoupon.id;
-        console.log('✅ Using existing Stripe coupon:', stripeCouponId);
+        logger.debug('Using existing Stripe coupon');
       } catch (error) {
         // Create new Stripe coupon
-        console.log('🔨 Creating new Stripe coupon for voucher:', voucherCode);
+        logger.info('Creating new Stripe coupon');
         
         const couponParams: Stripe.CouponCreateParams = {
           id: voucherCode.toUpperCase(),
@@ -128,7 +129,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         const newCoupon = await stripe.coupons.create(couponParams);
         stripeCouponId = newCoupon.id;
-        console.log('✅ Created Stripe coupon:', stripeCouponId);
+        logger.info('Created new Stripe coupon');
       }
 
       // Add discount to session
@@ -141,19 +142,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       // Add voucher to metadata
       sessionParams.metadata!.voucher_code = voucherCode.toUpperCase();
 
-      console.log('🎯 Applied voucher to checkout session:', {
-        code: voucherCode,
+      logger.info('Applied voucher to checkout session', {
         discountType: voucher.discount_type,
-        discountValue: voucher.discount_value,
-        stripeCouponId
+        discountValue: voucher.discount_value
       });
     }
 
     // Create checkout session
-    console.log('🔄 Creating Stripe checkout session...');
+    logger.info('Creating Stripe checkout session');
     const session = await stripe.checkout.sessions.create(sessionParams);
 
-    console.log('✅ Checkout session created:', session.id);
+    logger.info('Checkout session created successfully');
 
     // If voucher was used, increment usage count
     if (voucherCode) {
@@ -170,10 +169,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         .eq('code', voucherCode.toUpperCase());
 
       if (updateError) {
-        console.error('❌ Failed to update voucher usage:', updateError);
+        logger.error('Failed to update voucher usage', { error: updateError.message });
         // Don't fail the checkout for this, just log it
       } else {
-        console.log('✅ Updated voucher usage count for:', voucherCode);
+        logger.info('Updated voucher usage count');
       }
     }
 
@@ -183,14 +182,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
 
   } catch (error) {
-    console.error('❌ Checkout session creation failed:', error);
-    
-    // Log more details for debugging
-    if (error instanceof Error) {
-      console.error('Error name:', error.name);
-      console.error('Error message:', error.message);
-      console.error('Error stack:', error.stack);
-    }
+    logger.error('Checkout session creation failed', {
+      error: error instanceof Error ? error.message : 'Unknown error',
+      errorName: error instanceof Error ? error.name : 'Unknown'
+    });
     
     return res.status(500).json({
       error: 'Failed to create checkout session',

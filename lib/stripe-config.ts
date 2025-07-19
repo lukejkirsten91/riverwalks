@@ -1,6 +1,8 @@
 // Stripe Configuration for Test and Live Modes
 // This file centralizes all Stripe-related configuration
 
+import { logger } from './logger';
+
 export const STRIPE_CONFIG = {
   // Environment detection - Default to live mode in production, explicit setting in development
   isLiveMode: process.env.NODE_ENV === 'production' ? 
@@ -79,18 +81,17 @@ export function logStripeConfig() {
   const mode = getStripeMode();
   const config = validateStripeConfig();
   
-  console.log(`🔧 Stripe Configuration (${mode.toUpperCase()} mode):`);
-  console.log(`   Environment Variables:`);
-  console.log(`     NODE_ENV: ${process.env.NODE_ENV}`);
-  console.log(`     STRIPE_LIVE_MODE: ${process.env.STRIPE_LIVE_MODE}`);
-  console.log(`     isLiveMode calculated: ${STRIPE_CONFIG.isLiveMode}`);
-  console.log(`   Valid: ${config.isValid ? '✅' : '❌'}`);
+  logger.info('Stripe Configuration', {
+    mode: mode.toUpperCase(),
+    environment: process.env.NODE_ENV,
+    isLiveMode: STRIPE_CONFIG.isLiveMode,
+    isValid: config.isValid,
+    missingKeys: config.missingKeys.length > 0 ? config.missingKeys : undefined
+  });
   
   if (!config.isValid) {
-    console.warn(`   Missing: ${config.missingKeys.join(', ')}`);
+    logger.warn('Stripe configuration incomplete', { 
+      missingKeys: config.missingKeys 
+    });
   }
-  
-  console.log(`   Annual Price: ${getCurrentPrices().annual}`);
-  console.log(`   Lifetime Price: ${getCurrentPrices().lifetime}`);
-  console.log(`   Publishable Key: ${getCurrentPublishableKey().substring(0, 12)}...`);
 }
