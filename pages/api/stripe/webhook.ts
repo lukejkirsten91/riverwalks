@@ -142,35 +142,42 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
   });
   
   try {
-    const customerEmail = session.customer_details?.email;
-    if (!customerEmail) {
-      throw new Error('No customer email found in session');
-    }
+    // Get user ID from session metadata (preferred method)
+    const userId = session.metadata?.user_id;
+    const userEmail = session.metadata?.user_email;
+    let foundUser = null;
+    
+    if (!userId) {
+      // Fallback to email lookup for older sessions
+      const customerEmail = session.customer_details?.email;
+      if (!customerEmail) {
+        throw new Error('No user ID in metadata and no customer email found in session');
+      }
 
-    // Get user by email using service role client
-    logger.info('Looking up user for checkout completion');
-    
-    if (!supabaseAdmin) {
-      throw new Error('Supabase service role client not configured - missing SUPABASE_SERVICE_ROLE_KEY');
+      logger.info('Using fallback email lookup for checkout completion');
+      
+      if (!supabaseAdmin) {
+        throw new Error('Supabase service role client not configured - missing SUPABASE_SERVICE_ROLE_KEY');
+      }
+      
+      const { data: user, error: userError } = await supabaseAdmin.auth.admin.listUsers();
+      
+      if (userError) {
+        logger.error('Error listing users during checkout', { error: userError.message });
+        throw new Error(`Error listing users: ${userError.message}`);
+      }
+      
+      foundUser = user?.users.find(u => u.email?.toLowerCase() === customerEmail.toLowerCase());
+      
+      if (!foundUser) {
+        logger.error('User not found for checkout completion');
+        throw new Error(`User not found for checkout email`);
+      }
+      
+      logger.info('User found via email lookup for subscription creation');
+    } else {
+      logger.info('Using user ID from session metadata for subscription creation');
     }
-    
-    const { data: user, error: userError } = await supabaseAdmin.auth.admin.listUsers();
-    
-    if (userError) {
-      logger.error('Error listing users during checkout', { error: userError.message });
-      throw new Error(`Error listing users: ${userError.message}`);
-    }
-    
-    logger.debug('User lookup completed', { userCount: user?.users?.length });
-    
-    const foundUser = user?.users.find(u => u.email?.toLowerCase() === customerEmail.toLowerCase());
-    
-    if (!foundUser) {
-      logger.error('User not found for checkout completion');
-      throw new Error(`User not found for checkout email`);
-    }
-    
-    logger.info('User found for subscription creation');
 
     // Determine subscription type from price ID using centralized config
     logger.info('Processing checkout line items');
@@ -205,15 +212,21 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
       throw new Error('Supabase service role client not configured');
     }
 
+    // Use userId from metadata or fallback to foundUser.id
+    const targetUserId = userId || foundUser?.id;
+    if (!targetUserId) {
+      throw new Error('No valid user ID found for subscription creation');
+    }
+
     // First check if user already has a subscription
     const { data: existingSubscription } = await supabaseAdmin
       .from('subscriptions')
       .select('id')
-      .eq('user_id', foundUser.id)
+      .eq('user_id', targetUserId)
       .single();
 
     const subscriptionData = {
-      user_id: foundUser.id,
+      user_id: targetUserId,
       subscription_type: subscriptionType,
       status: 'active',
       stripe_customer_id: session.customer as string,
@@ -232,7 +245,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
       const result = await supabaseAdmin
         .from('subscriptions')
         .update(subscriptionData)
-        .eq('user_id', foundUser.id);
+        .eq('user_id', targetUserId);
       subError = result.error;
     } else {
       // Create new subscription

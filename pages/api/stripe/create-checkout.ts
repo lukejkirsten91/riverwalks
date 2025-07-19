@@ -23,6 +23,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   logger.info('Create checkout session initiated');
 
   try {
+    // Get authenticated user to link subscription properly
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    
+    if (authError || !user) {
+      return res.status(401).json({ 
+        error: 'Authentication required',
+        details: 'You must be logged in to create a checkout session'
+      });
+    }
+
     const { planType, voucherCode, successUrl, cancelUrl } = req.body;
 
     // Validate required fields with better error handling
@@ -71,6 +81,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       metadata: {
         plan_type: dbPlanType,
         stripe_mode: getStripeMode(),
+        user_id: user.id,  // Add user ID to ensure subscription goes to correct user
+        user_email: user.email || '', // Add user email for reference
       },
     };
 
