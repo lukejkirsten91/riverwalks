@@ -23,8 +23,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   logger.info('Create checkout session initiated');
 
   try {
-    // Get authenticated user to link subscription properly
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    // Get authenticated user from request headers
+    const authToken = req.headers.authorization?.replace('Bearer ', '');
+    if (!authToken) {
+      return res.status(401).json({ 
+        error: 'Authentication required',
+        details: 'No authorization token provided'
+      });
+    }
+
+    const { data: { user }, error: authError } = await supabase.auth.getUser(authToken);
     
     if (authError || !user) {
       return res.status(401).json({ 
@@ -72,6 +80,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       mode: 'payment',
       success_url: successUrl,
       cancel_url: cancelUrl || `${new URL(successUrl).origin}/subscription`,
+      customer_email: user.email, // Pre-fill with user's email but allow them to change it
       invoice_creation: {
         enabled: true,
         invoice_data: {
