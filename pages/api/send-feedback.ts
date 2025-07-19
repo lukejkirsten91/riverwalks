@@ -2,6 +2,7 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import nodemailer from 'nodemailer';
 import { rateLimiters } from '../../lib/rate-limit';
 import { logger } from '../../lib/logger';
+import { sendErrorResponse, errors, requireFields, validateEmail } from '../../lib/error-handler';
 
 // Email configuration
 const createTransporter = () => {
@@ -97,14 +98,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     const { email, message, type } = req.body;
 
-    if (!email || !message || !type) {
-      return res.status(400).json({ error: 'Missing required fields: email, message, and type are required' });
-    }
+    // Validate required fields
+    requireFields(req.body, ['email', 'message', 'type']);
 
-    // Basic email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return res.status(400).json({ error: 'Invalid email address' });
+    // Validate email format
+    if (!validateEmail(email)) {
+      throw errors.badRequest('Invalid email address');
     }
 
     // Limit message length
@@ -127,10 +126,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
   } catch (error) {
-    logger.error('Feedback API error', { error: error instanceof Error ? error.message : 'Unknown error' });
-    return res.status(500).json({ 
-      error: 'Internal server error',
-      details: error instanceof Error ? error.message : 'Unknown error'
-    });
+    sendErrorResponse(res, error);
   }
 }

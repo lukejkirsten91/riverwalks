@@ -4,6 +4,7 @@ import { supabase } from '../../../lib/supabase';
 import { getCurrentPrices, getStripeMode } from '../../../lib/stripe-config';
 import { logger } from '../../../lib/logger';
 import { rateLimiters } from '../../../lib/rate-limit';
+import { sendErrorResponse, errors, requireFields } from '../../../lib/error-handler';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-06-30.basil',
@@ -24,9 +25,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     const { planType, voucherCode, successUrl, cancelUrl } = req.body;
 
-    if (!planType || !successUrl) {
-      return res.status(400).json({ error: 'Missing required fields' });
-    }
+    // Validate required fields with better error handling
+    requireFields(req.body, ['planType', 'successUrl']);
 
     // Map frontend plan types to database plan types
     const planTypeMapping: { [key: string]: string } = {
@@ -37,7 +37,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const dbPlanType = planTypeMapping[planType];
     if (!dbPlanType) {
-      return res.status(400).json({ error: 'Invalid plan type' });
+      throw errors.badRequest('Invalid plan type', { validTypes: Object.keys(planTypeMapping) });
     }
 
     // Get current prices
@@ -45,7 +45,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const priceId = dbPlanType === 'lifetime' ? currentPrices.lifetime : currentPrices.annual;
 
     if (!priceId) {
-      return res.status(400).json({ error: 'Invalid plan type' });
+      throw errors.internal('Price configuration error');
     }
 
     logger.info('Checkout plan configured', { planType, dbPlanType });
@@ -88,25 +88,25 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
       if (voucherError || !voucher) {
         logger.warn('Invalid voucher code provided');
-        return res.status(400).json({ error: 'Invalid or expired voucher code' });
+        throw errors.badRequest('Invalid or expired voucher code');
       }
 
       // Check if voucher is still valid
       if (voucher.valid_until && new Date(voucher.valid_until) < new Date()) {
         logger.warn('Expired voucher code provided');
-        return res.status(400).json({ error: 'Voucher has expired' });
+        throw errors.badRequest('Voucher has expired');
       }
 
       // Check usage limits
       if (voucher.uses_count >= voucher.max_uses) {
         logger.warn('Voucher usage limit reached');
-        return res.status(400).json({ error: 'Voucher usage limit reached' });
+        throw errors.badRequest('Voucher usage limit reached');
       }
 
       // Check if voucher applies to this plan (use mapped plan type)
       if (!voucher.plan_types.includes(dbPlanType)) {
         logger.warn('Voucher not valid for plan type', { planType: dbPlanType });
-        return res.status(400).json({ error: `Voucher not valid for ${planType} plan` });
+        throw errors.badRequest(`Voucher not valid for ${planType} plan`);
       }
 
       // Create or get Stripe coupon
@@ -188,15 +188,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
 
   } catch (error) {
-    logger.error('Checkout session creation failed', {
-      error: error instanceof Error ? error.message : 'Unknown error',
-      errorName: error instanceof Error ? error.name : 'Unknown'
-    });
-    
-    return res.status(500).json({
-      error: 'Failed to create checkout session',
-      details: error instanceof Error ? error.message : 'Unknown error',
-      name: error instanceof Error ? error.name : 'Unknown',
-    });
+    sendErrorResponse(res, error);
   }
 }
