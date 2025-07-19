@@ -93,8 +93,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       stack: error instanceof Error ? error.stack : undefined
     });
     
+    // TEMPORARY DEBUG: Also log to console for immediate debugging
+    console.error('🚨 WEBHOOK DEBUG - Error details:', {
+      error: error instanceof Error ? error.message : 'Unknown error',
+      eventType: event?.type,
+      eventId: event?.id,
+      timestamp: new Date().toISOString()
+    });
+    
     return res.status(500).json({ 
       error: 'Webhook handler failed',
+      details: error instanceof Error ? error.message : 'Unknown error',
       timestamp: new Date().toISOString()
     });
   }
@@ -102,6 +111,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
 async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
   logger.info('Stripe checkout completed', { sessionId: session.id });
+  
+  // TEMPORARY DEBUG: Add console logging for immediate debugging
+  console.log('🎉 WEBHOOK DEBUG - Checkout completed:', {
+    sessionId: session.id,
+    customerEmail: session.customer_details?.email,
+    paymentStatus: session.payment_status,
+    timestamp: new Date().toISOString()
+  });
   
   try {
     const customerEmail = session.customer_details?.email;
@@ -216,6 +233,15 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     logger.info('Subscription operation completed', { subscriptionType });
   } catch (error) {
     logger.error('Error handling checkout completion', { error: error instanceof Error ? error.message : 'Unknown error' });
+    
+    // TEMPORARY DEBUG: Add console logging for checkout errors
+    console.error('🚨 WEBHOOK DEBUG - Checkout completion error:', {
+      error: error instanceof Error ? error.message : 'Unknown error',
+      sessionId: session.id,
+      customerEmail: session.customer_details?.email,
+      timestamp: new Date().toISOString()
+    });
+    
     throw error;
   }
 }
