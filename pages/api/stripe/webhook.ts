@@ -20,9 +20,9 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 
 const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET!;
 
-// TEMPORARY DEBUG: Check if webhook secret exists
+// Check if webhook secret exists
 if (!endpointSecret) {
-  console.error('🚨 WEBHOOK DEBUG - Missing STRIPE_WEBHOOK_SECRET environment variable');
+  logger.error('Missing STRIPE_WEBHOOK_SECRET environment variable');
 }
 
 export const config = {
@@ -32,13 +32,6 @@ export const config = {
 };
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  // TEMPORARY DEBUG: Log immediately when webhook is called
-  console.log('🚨 WEBHOOK DEBUG - Handler called:', {
-    method: req.method,
-    timestamp: new Date().toISOString(),
-    hasSignature: !!req.headers['stripe-signature']
-  });
-  
   logger.info('Stripe webhook called', {
     method: req.method,
     endpoint: 'webhook',
@@ -53,7 +46,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const sig = req.headers['stripe-signature'];
   
   if (!sig) {
-    console.error('🚨 WEBHOOK DEBUG - Missing Stripe signature');
     logger.error('Missing Stripe signature in webhook request');
     return res.status(400).json({ error: 'Missing Stripe signature' });
   }
@@ -72,17 +64,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
   }
 
-  // TEMPORARY DEBUG: Log which event type we're processing
-  console.log('🚨 WEBHOOK DEBUG - Processing event:', {
-    eventType: event.type,
-    eventId: event.id,
-    timestamp: new Date().toISOString()
-  });
-
   try {
     switch (event.type) {
       case 'checkout.session.completed':
-        console.log('🚨 WEBHOOK DEBUG - Calling handleCheckoutCompleted');
         await handleCheckoutCompleted(event.data.object as Stripe.Checkout.Session);
         break;
       
@@ -114,17 +98,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       stack: error instanceof Error ? error.stack : undefined
     });
     
-    // TEMPORARY DEBUG: Also log to console for immediate debugging
-    console.error('🚨 WEBHOOK DEBUG - Error details:', {
-      error: error instanceof Error ? error.message : 'Unknown error',
-      eventType: event?.type,
-      eventId: event?.id,
-      timestamp: new Date().toISOString()
-    });
-    
     return res.status(500).json({ 
       error: 'Webhook handler failed',
-      details: error instanceof Error ? error.message : 'Unknown error',
       timestamp: new Date().toISOString()
     });
   }
@@ -132,14 +107,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
 async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
   logger.info('Stripe checkout completed', { sessionId: session.id });
-  
-  // TEMPORARY DEBUG: Add console logging for immediate debugging
-  console.log('🎉 WEBHOOK DEBUG - Checkout completed:', {
-    sessionId: session.id,
-    customerEmail: session.customer_details?.email,
-    paymentStatus: session.payment_status,
-    timestamp: new Date().toISOString()
-  });
   
   try {
     // Get user ID from session metadata (preferred method)
@@ -268,13 +235,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
   } catch (error) {
     logger.error('Error handling checkout completion', { error: error instanceof Error ? error.message : 'Unknown error' });
     
-    // TEMPORARY DEBUG: Add console logging for checkout errors
-    console.error('🚨 WEBHOOK DEBUG - Checkout completion error:', {
-      error: error instanceof Error ? error.message : 'Unknown error',
-      sessionId: session.id,
-      customerEmail: session.customer_details?.email,
-      timestamp: new Date().toISOString()
-    });
+    // Additional error context for checkout completion failures
     
     throw error;
   }
