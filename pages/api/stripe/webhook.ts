@@ -20,6 +20,11 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 
 const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET!;
 
+// TEMPORARY DEBUG: Check if webhook secret exists
+if (!endpointSecret) {
+  console.error('🚨 WEBHOOK DEBUG - Missing STRIPE_WEBHOOK_SECRET environment variable');
+}
+
 export const config = {
   api: {
     bodyParser: false,
@@ -48,6 +53,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const sig = req.headers['stripe-signature'];
   
   if (!sig) {
+    console.error('🚨 WEBHOOK DEBUG - Missing Stripe signature');
     logger.error('Missing Stripe signature in webhook request');
     return res.status(400).json({ error: 'Missing Stripe signature' });
   }
