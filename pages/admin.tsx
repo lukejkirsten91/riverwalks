@@ -3,6 +3,8 @@ import { useRouter } from 'next/router';
 import { supabase } from '../lib/supabase';
 import { Users, CreditCard, Tag, Activity, AlertCircle, Crown, Plus, Edit, Trash2, BarChart3, Mail } from 'lucide-react';
 import { AnalyticsDashboard } from '../components/analytics/AnalyticsDashboard';
+import { isCurrentUserAdmin } from '../lib/client-auth';
+import { logger } from '../lib/logger';
 
 interface AdminStats {
   totalUsers: number;
@@ -71,8 +73,12 @@ export default function AdminDashboard() {
         return;
       }
 
-      // Only allow luke.kirsten@gmail.com access
-      if (session.user.email !== 'luke.kirsten@gmail.com') {
+      // Check if user has admin privileges
+      const hasAdminAccess = await isCurrentUserAdmin();
+      if (!hasAdminAccess) {
+        logger.warn('Non-admin user attempted to access admin page', { 
+          userId: session.user.id 
+        });
         router.push('/river-walks');
         return;
       }

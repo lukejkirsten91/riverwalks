@@ -120,8 +120,6 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     const lineItems = await stripe.checkout.sessions.listLineItems(session.id);
     const priceId = lineItems.data[0]?.price?.id;
     
-    logger.debug('Processing subscription', { subscriptionType });
-    
     let subscriptionType: 'annual' | 'lifetime';
     if (priceId === 'price_1RgTO54CotGwBUxNPQl3SLAP') {
       subscriptionType = 'annual';
@@ -130,6 +128,8 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     } else {
       throw new Error(`Unknown price ID: ${priceId}`);
     }
+    
+    logger.debug('Processing subscription', { subscriptionType });
 
     // Create subscription record
     const { error: subError } = await supabaseAdmin

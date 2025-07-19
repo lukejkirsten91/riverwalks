@@ -1,6 +1,8 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { supabase } from '../../../lib/supabase';
 import { createClient } from '@supabase/supabase-js';
+import { requireAdmin } from '../../../lib/auth';
+import { logger } from '../../../lib/logger';
 
 // Create service role client for admin operations
 const supabaseAdmin = process.env.SUPABASE_SERVICE_ROLE_KEY 
@@ -25,8 +27,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const token = authHeader.replace('Bearer ', '');
     const { data: { user }, error: authError } = await supabase.auth.getUser(token);
     
-    if (authError || !user || user.email !== 'luke.kirsten@gmail.com') {
-      return res.status(403).json({ error: 'Admin access required' });
+    if (authError || !user) {
+      return res.status(403).json({ error: 'Authentication required' });
+    }
+
+    const adminCheck = await requireAdmin(user.id);
+    if (!adminCheck.isAdmin) {
+      return res.status(403).json({ error: adminCheck.error || 'Admin access required' });
     }
 
     if (!supabaseAdmin) {
@@ -37,7 +44,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const { data: usersData, error: usersError } = await supabaseAdmin.auth.admin.listUsers();
     
     if (usersError) {
-      console.error('Error loading users:', usersError);
+      logger.error('Error loading users for admin stats', { error: usersError.message });
       return res.status(500).json({ error: 'Failed to load users' });
     }
 

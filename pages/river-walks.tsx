@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { createPortal } from 'react-dom';
 import { supabase } from '../lib/supabase';
 import { LogOut, MapPin, User as UserIcon, Users, UserCheck, Crown, Settings, MessageCircle, Lightbulb } from 'lucide-react';
+import { isCurrentUserAdmin } from '../lib/client-auth';
 import {
   RiverWalkList,
 } from '../components/river-walks';
@@ -48,6 +49,7 @@ export default function RiverWalksPage() {
   } = useIntroJsTutorial();
   
   const [user, setUser] = useState<User | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const [dropdownPosition, setDropdownPosition] = useState<{top: number, right: number} | null>(null);
@@ -100,6 +102,10 @@ export default function RiverWalksPage() {
       }
 
       setUser(session.user);
+      
+      // Check admin status
+      const adminStatus = await isCurrentUserAdmin();
+      setIsAdmin(adminStatus);
 
       // Check for pending invite token from OAuth flow
       const storedToken = localStorage.getItem('pending_invite_token');
@@ -788,8 +794,8 @@ export default function RiverWalksPage() {
               {user?.email}
             </div>
           </div>
-          {/* Admin button - only visible to luke.kirsten@gmail.com */}
-          {user?.email === 'luke.kirsten@gmail.com' && (
+          {/* Admin button - only visible to admin users */}
+          {isAdmin && (
             <button
               onClick={(e) => {
                 e.preventDefault();
