@@ -14,18 +14,15 @@ const supabaseAdmin = createClient(
  */
 export async function isUserAdmin(userId: string): Promise<boolean> {
   try {
-    const { data, error } = await supabaseAdmin
-      .from('auth.users')
-      .select('raw_user_meta_data')
-      .eq('id', userId)
-      .single();
+    // Get user from Supabase Auth (simpler approach)
+    const { data, error } = await supabaseAdmin.auth.admin.getUserById(userId);
 
     if (error) {
       logger.error('Error checking admin status', { error: error.message, userId });
       return false;
     }
 
-    const isAdmin = data?.raw_user_meta_data?.is_admin === true;
+    const isAdmin = data?.user?.user_metadata?.is_admin === true;
     logger.debug('Admin status checked', { userId, isAdmin });
     
     return isAdmin;
@@ -91,10 +88,9 @@ export async function setAdminStatus(
       return false;
     }
 
-    // Use the database function to set admin status
-    const { error } = await supabaseAdmin.rpc('set_admin_status', {
-      target_user_id: targetUserId,
-      is_admin: isAdmin
+    // Update user metadata directly using Supabase Auth Admin API
+    const { error } = await supabaseAdmin.auth.admin.updateUserById(targetUserId, {
+      user_metadata: { is_admin: isAdmin }
     });
 
     if (error) {
