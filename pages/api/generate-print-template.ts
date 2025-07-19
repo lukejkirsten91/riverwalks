@@ -3,6 +3,8 @@ import chromium from '@sparticuz/chromium-min';
 import puppeteerCore from 'puppeteer-core';
 import { createClient } from '@supabase/supabase-js';
 import type { RiverWalk, Site } from '../../types';
+import { corsMiddleware } from '../../lib/cors';
+import { logger } from '../../lib/logger';
 
 export const dynamic = 'force-dynamic';
 
@@ -537,11 +539,9 @@ function createPrintTemplateHTML(riverWalk: RiverWalk | null, siteCount: number)
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method === 'OPTIONS') {
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-    return res.status(200).end();
+  // Handle CORS securely
+  if (!corsMiddleware(req, res)) {
+    return; // CORS handled the response
   }
   
   if (req.method !== 'POST') {

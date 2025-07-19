@@ -3,6 +3,8 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import PdfPrinter from 'pdfmake';
 import { supabase } from '../../lib/supabase';
 import type { RiverWalk, Site } from '../../types';
+import { corsMiddleware } from '../../lib/cors';
+import { logger } from '../../lib/logger';
 
 export const dynamic = 'force-dynamic';
 
@@ -230,11 +232,9 @@ function createPdfDocumentDefinition(riverWalk: RiverWalk, sites: Site[]) {
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method === 'OPTIONS') {
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-    return res.status(200).end();
+  // Handle CORS securely
+  if (!corsMiddleware(req, res)) {
+    return; // CORS handled the response
   }
   
   if (req.method !== 'POST') {
