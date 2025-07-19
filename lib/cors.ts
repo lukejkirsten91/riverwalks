@@ -1,5 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { logger } from './logger';
+import { getEnvironment, getBaseUrl } from './environment';
 
 /**
  * Secure CORS configuration for Riverwalks
@@ -8,19 +9,44 @@ import { logger } from './logger';
 
 // Define allowed origins based on environment
 const getAllowedOrigins = (): string[] => {
-  const production = [
-    'https://riverwalks.co.uk',
-    'https://www.riverwalks.co.uk'
-  ];
+  const environment = getEnvironment();
+  const baseUrl = getBaseUrl();
   
-  const development = [
-    'http://localhost:3000',
-    'http://127.0.0.1:3000',
-    'https://riverwalks.co.uk',
-    'https://www.riverwalks.co.uk'
-  ];
+  // Always include the current environment's base URL
+  const origins = [baseUrl];
   
-  return process.env.NODE_ENV === 'production' ? production : development;
+  switch (environment) {
+    case 'development':
+      origins.push(
+        'http://localhost:3000',
+        'http://127.0.0.1:3000',
+        'https://riverwalks.co.uk',
+        'https://www.riverwalks.co.uk'
+      );
+      break;
+      
+    case 'staging':
+      origins.push(
+        'http://localhost:3000', // For local testing against staging
+        'https://riverwalks-staging.vercel.app',
+        'https://riverwalks.co.uk' // In case staging needs to test against prod APIs
+      );
+      break;
+      
+    case 'production':
+      origins.push(
+        'https://riverwalks.co.uk',
+        'https://www.riverwalks.co.uk'
+      );
+      break;
+  }
+  
+  // Add any custom origins from environment variables
+  const customOrigins = process.env.ALLOWED_ORIGINS?.split(',') || [];
+  origins.push(...customOrigins);
+  
+  // Remove duplicates and filter out empty strings
+  return [...new Set(origins)].filter(Boolean);
 };
 
 /**
