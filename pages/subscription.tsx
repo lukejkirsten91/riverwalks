@@ -140,10 +140,17 @@ const SubscriptionPage: React.FC = () => {
 
       console.log('🔗 URLs:', { successUrl, cancelUrl });
 
+      // Get current session for authentication
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) {
+        throw new Error('Authentication required - please log in');
+      }
+
       const response = await fetch('/api/stripe/create-checkout', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({
           planType,
