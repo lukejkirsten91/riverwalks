@@ -3,6 +3,7 @@ import { buffer } from 'micro';
 import Stripe from 'stripe';
 import { createClient } from '@supabase/supabase-js';
 import { trackPurchase } from '../../../lib/analytics';
+import { logger } from '../../../lib/logger';
 
 // Create service role client for admin operations
 const supabaseAdmin = createClient(
@@ -23,22 +24,20 @@ export const config = {
 };
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  console.log('🔗 New webhook called:', {
+  logger.info('Stripe webhook received', {
     method: req.method,
-    url: req.url,
-    headers: Object.keys(req.headers),
-    timestamp: new Date().toISOString()
+    url: req.url?.substring(0, 50)
   });
 
   if (req.method !== 'POST') {
-    console.log('❌ Wrong method:', req.method);
+    logger.warn('Invalid webhook method', { method: req.method });
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
   const sig = req.headers['stripe-signature'];
   
   if (!sig) {
-    console.error('❌ Missing Stripe signature');
+    logger.error('Missing Stripe signature header');
     return res.status(400).json({ error: 'Missing Stripe signature' });
   }
 
@@ -46,11 +45,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   try {
     const buf = await buffer(req);
-    console.log('📦 Buffer received, length:', buf.length);
+    logger.debug('Webhook payload received', { bufferLength: buf.length });
     event = stripe.webhooks.constructEvent(buf, sig, endpointSecret);
-    console.log('✅ Webhook signature verified:', event.type, 'ID:', event.id);
+    logger.info('Webhook signature verified', { eventType: event.type });
   } catch (err) {
-    console.error('❌ Webhook signature verification failed:', err);
+    logger.error('Webhook signature verification failed', { error: err instanceof Error ? err.message : 'Unknown error' });
     return res.status(400).json({ 
       error: 'Webhook signature verification failed',
       details: err instanceof Error ? err.message : 'Unknown error'
@@ -64,18 +63,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         break;
       
       case 'payment_intent.succeeded':
-        console.log('💰 Payment succeeded:', (event.data.object as Stripe.PaymentIntent).id);
+        logger.info('Payment succeeded');
         break;
       
       case 'payment_intent.payment_failed':
-        console.log('❌ Payment failed:', (event.data.object as Stripe.PaymentIntent).id);
+        logger.warn('Payment failed');
         break;
       
       default:
-        console.log(`🔄 Unhandled event type: ${event.type}`);
+        logger.debug('Unhandled webhook event type', { eventType: event.type });
     }
 
-    console.log('✅ Webhook processed successfully:', event.type);
+    logger.info('Webhook processed successfully', { eventType: event.type });
     return res.status(200).json({ 
       received: true, 
       eventType: event.type,
@@ -83,7 +82,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       timestamp: new Date().toISOString()
     });
   } catch (error) {
-    console.error('❌ Webhook handler error:', error);
+    logger.error('Webhook handler error', { error: error instanceof Error ? error.message : 'Unknown error' });
     return res.status(500).json({ 
       error: 'Webhook handler failed',
       details: error instanceof Error ? error.message : 'Unknown error'
@@ -92,7 +91,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 }
 
 async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
-  console.log('🎉 Checkout completed:', session.id);
+  logger.info('Processing checkout completion');
   
   try {
     const customerEmail = session.customer_details?.email;
@@ -100,28 +99,28 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
       throw new Error('No customer email found in session');
     }
 
-    console.log('🔍 Looking for user with email:', customerEmail);
+    logger.info('Looking up user from checkout');
     const { data: user, error: userError } = await supabaseAdmin.auth.admin.listUsers();
     
     if (userError) {
-      console.error('❌ Error listing users:', userError);
+      logger.error('Error listing users', { error: userError.message });
       throw new Error(`Error listing users: ${userError.message}`);
     }
     
     const foundUser = user?.users.find(u => u.email === customerEmail);
     
     if (!foundUser) {
-      console.error('❌ User not found:', customerEmail);
+      logger.error('User not found for checkout');
       throw new Error(`User not found for email: ${customerEmail}`);
     }
     
-    console.log('✅ Found user:', { id: foundUser.id, email: foundUser.email });
+    logger.info('User found for checkout');
 
     // Get line items and determine subscription type
     const lineItems = await stripe.checkout.sessions.listLineItems(session.id);
     const priceId = lineItems.data[0]?.price?.id;
     
-    console.log('🏷️ Price ID:', priceId);
+    logger.debug('Processing subscription', { subscriptionType });
     
     let subscriptionType: 'annual' | 'lifetime';
     if (priceId === 'price_1RgTO54CotGwBUxNPQl3SLAP') {
@@ -155,7 +154,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
       throw subError;
     }
 
-    console.log(`✅ Subscription created for ${customerEmail}: ${subscriptionType}`);
+    logger.info('Subscription created successfully', { subscriptionType });
     
     // Track purchase in Google Analytics
     const amount = session.amount_total ? session.amount_total / 100 : 0; // Convert from cents
@@ -165,9 +164,9 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
       session.currency?.toUpperCase() || 'GBP'
     );
     
-    console.log(`📊 Analytics: Tracked purchase - ${amount} ${session.currency?.toUpperCase()}`);
+    logger.info('Purchase tracked in analytics', { amount, currency: session.currency?.toUpperCase() });
   } catch (error) {
-    console.error('❌ Error handling checkout completion:', error);
+    logger.error('Error handling checkout completion', { error: error instanceof Error ? error.message : 'Unknown error' });
     throw error;
   }
 }
