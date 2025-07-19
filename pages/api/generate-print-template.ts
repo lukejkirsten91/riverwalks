@@ -17,7 +17,7 @@ async function getBrowser() {
   }
 
   if (!!REMOTE_PATH) {
-    console.log('🌐 Using remote Chromium executable');
+    logger.info('Using remote Chromium executable');
     return await puppeteerCore.launch({
       args: chromium.args,
       executablePath: await chromium.executablePath(REMOTE_PATH),
@@ -26,7 +26,7 @@ async function getBrowser() {
     });
   }
 
-  console.log('💻 Using local Chromium executable');
+  logger.info('Using local Chromium executable');
   return await puppeteerCore.launch({
     executablePath: LOCAL_PATH,
     defaultViewport: null,
@@ -560,7 +560,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   let browser;
   try {
-    console.log('🔍 Generating print template for', siteCount, 'sites');
+    logger.info('Generating print template', { siteCount });
     
     let riverWalk = null;
     
@@ -590,40 +590,40 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
     }
 
-    console.log('🚀 Starting browser...');
+    logger.info('Starting browser');
     browser = await getBrowser();
     
-    console.log('📄 Creating new page...');
+    logger.debug('Creating new page');
     const page = await browser.newPage();
 
     // Error handling for page
     page.on('pageerror', (err: Error) => {
-      console.error('📄 Page error:', err);
+      logger.error('Page error', { errorMessage: err.message });
     });
     
     page.on('error', (err: Error) => {
-      console.error('📄 Page runtime error:', err);
+      logger.error('Page runtime error', { errorMessage: err.message });
     });
 
     // Create HTML content
-    console.log('🔧 Creating HTML content...');
+    logger.debug('Creating HTML content');
     const htmlContent = createPrintTemplateHTML(riverWalk, siteCount);
     
-    console.log('📄 Setting page content...');
+    logger.debug('Setting page content');
     await page.setContent(htmlContent, { 
       waitUntil: 'networkidle0',
       timeout: 30000
     });
 
-    console.log('📐 Setting viewport...');
+    logger.debug('Setting viewport');
     await page.setViewport({ width: 1080, height: 1024 });
 
     // Wait for content to render
-    console.log('⏳ Waiting for content to render...');
+    logger.debug('Waiting for content to render');
     await new Promise(resolve => setTimeout(resolve, 2000));
 
     // Generate PDF
-    console.log('📄 Generating PDF...');
+    logger.info('Generating PDF');
     const pdf = await page.pdf({
       format: 'A4',
       printBackground: true,
@@ -647,17 +647,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     res.setHeader('Content-Disposition', `attachment; filename="${download}"`);
     res.setHeader('Content-Length', pdfBuffer.length);
     
-    console.log('✅ Template generated successfully');
+    logger.info('Template generated successfully');
     res.status(200).send(pdfBuffer);
 
   } catch (err: any) {
-    console.error('❌ Template generation error:', err);
+    logger.error('Template generation error', { errorMessage: err?.message });
     
     if (browser) {
       try {
         await browser.close();
       } catch (closeErr) {
-        console.error('❌ Error closing browser:', closeErr);
+        logger.error('Error closing browser', { error: closeErr instanceof Error ? closeErr.message : 'Unknown error' });
       }
     }
     

@@ -1,5 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { createClient } from '@supabase/supabase-js';
+import { logger } from '../../lib/logger';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
@@ -42,7 +43,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(401).json({ error: 'Invalid or expired token' });
     }
 
-    console.log(`🗑️ Starting account deletion for user: ${user.email} (ID: ${user.id})`);
+    logger.info('Starting account deletion process');
 
     // Execute comprehensive user deletion using admin client
     const { data: deletionResult, error: deletionError } = await supabaseAdmin.rpc('delete_user_completely', { 
@@ -50,7 +51,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
 
     if (deletionError) {
-      console.error('❌ Database deletion error:', deletionError);
+      logger.error('Database deletion error', { error: deletionError.message });
       
       // Check if function doesn't exist
       if (deletionError.message.includes('function delete_user_completely') || 
@@ -64,13 +65,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (deletionResult && deletionResult.length > 0) {
       const result = deletionResult[0];
       if (result.status === 'error') {
-        console.error('❌ Database function error:', result.deleted_records);
+        logger.error('Database function error', { error: result.deleted_records });
         throw new Error(`Database function failed: ${result.deleted_records.error}`);
       }
-      console.log('✅ Database deletion successful:', result.deleted_records);
+      logger.info('Database deletion successful');
     }
 
-    console.log(`✅ Account deletion completed for user: ${user.email}`);
+    logger.info('Account deletion completed successfully');
     
     res.status(200).json({ 
       success: true, 
@@ -78,7 +79,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
 
   } catch (error) {
-    console.error('❌ Error deleting account:', error);
+    logger.error('Error deleting account', { error: error instanceof Error ? error.message : 'Unknown error' });
     res.status(500).json({ 
       error: 'Failed to delete account',
       details: error instanceof Error ? error.message : 'Unknown error'

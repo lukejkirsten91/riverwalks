@@ -1,5 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { createClient } from '@supabase/supabase-js';
+import { logger } from '../../lib/logger';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
@@ -30,7 +31,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(401).json({ error: 'Invalid or expired token' });
     }
 
-    console.log(`📁 Starting data export for user: ${user.email} (ID: ${user.id})`);
+    logger.info('Starting user data export');
 
     // Gather all user data
     const exportData = {
@@ -112,10 +113,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       exportData.collaborations.participated = participatedCollaborations || [];
     } catch (error) {
       // Collaboration features might not be available
-      console.log('Collaboration data not available for export');
+      logger.debug('Collaboration data not available for export');
     }
 
-    console.log(`✅ Data export completed for user: ${user.email}`);
+    logger.info('User data export completed successfully');
 
     // Return as downloadable JSON
     res.setHeader('Content-Type', 'application/json');
@@ -123,7 +124,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     res.status(200).json(exportData);
 
   } catch (error) {
-    console.error('❌ Error exporting user data:', error);
+    logger.error('Error exporting user data', { error: error instanceof Error ? error.message : 'Unknown error' });
     res.status(500).json({ 
       error: 'Failed to export data',
       details: error instanceof Error ? error.message : 'Unknown error'

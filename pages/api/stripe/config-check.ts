@@ -1,5 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { validateStripeConfig, getCurrentPrices, getStripeMode, getCurrentPublishableKey } from '../../../lib/stripe-config';
+import { logger } from '../../../lib/logger';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') {
@@ -54,15 +55,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     };
 
     // Log configuration status
-    console.log(`🔧 Stripe Configuration Check (${mode.toUpperCase()}):`);
-    console.log(`   Valid: ${config.isValid ? '✅' : '❌'}`);
-    console.log(`   Can Process Payments: ${response.readiness.canProcessPayments ? '✅' : '❌'}`);
-    console.log(`   Production Ready: ${response.readiness.isProductionReady ? '✅' : '❌'}`);
+    logger.info('Stripe Configuration Check', { stripeMode: mode.toUpperCase() });
+    logger.info('Stripe config validation', { isValid: config.isValid });
+    logger.info('Payment processing capability', { canProcessPayments: response.readiness.canProcessPayments });
+    logger.info('Production readiness', { isProductionReady: response.readiness.isProductionReady });
 
     res.status(200).json(response);
 
   } catch (error) {
-    console.error('❌ Stripe configuration check failed:', error);
+    logger.error('Stripe configuration check failed', { 
+      errorMessage: error instanceof Error ? error.message : 'Unknown error' 
+    });
     res.status(500).json({
       success: false,
       error: 'Configuration check failed',

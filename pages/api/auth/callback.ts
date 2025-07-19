@@ -1,18 +1,19 @@
 import { createClient } from '@supabase/supabase-js';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { sendWelcomeEmail } from '../../../lib/email';
+import { logger } from '../../../lib/logger';
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  console.log('OAuth callback received:', { method: req.method, query: req.query, headers: req.headers.referer });
+  logger.info('OAuth callback received', { method: req.method });
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
   if (!supabaseUrl || !supabaseAnonKey) {
-    console.error('Missing Supabase environment variables');
+    logger.error('Missing Supabase environment variables');
     throw new Error('Missing Supabase environment variables');
   }
 
@@ -20,18 +21,17 @@ export default async function handler(
 
   const { code } = req.query;
   const codeString = Array.isArray(code) ? code[0] : code;
-  console.log('OAuth code received:', !!codeString);
+  logger.info('OAuth code received for exchange');
 
   if (codeString) {
     try {
-      console.log('Exchanging OAuth code for session...');
+      logger.info('Exchanging OAuth code for session');
       const { data, error } =
         await supabase.auth.exchangeCodeForSession(codeString);
       if (error) {
-        console.error('Error exchanging code for session:', error);
-        console.error('Error details:', { message: error.message, status: error.status });
+        logger.error('Error exchanging OAuth code for session', { message: error.message, status: error.status });
       } else {
-        console.log('Session exchange successful:', { user: data?.user?.email, provider: data?.user?.app_metadata?.provider });
+        logger.info('OAuth session exchange successful');
         // Check if this is a new user and send welcome email
         if (data?.user && data?.session) {
           const user = data.user;
@@ -45,19 +45,19 @@ export default async function handler(
           if (isNewUser && userEmail) {
             // Send welcome email asynchronously (don't block the redirect)
             sendWelcomeEmail(userEmail).catch((emailError) => {
-              console.error('Welcome email error:', emailError);
+              logger.error('Welcome email error', { error: emailError instanceof Error ? emailError.message : 'Unknown error' });
             });
           }
         }
       }
     } catch (error) {
-      console.error('Exception during code exchange:', error);
+      logger.error('Exception during OAuth code exchange', { error: error instanceof Error ? error.message : 'Unknown error' });
     }
   }
 
   // Check for redirect_to parameter, default to river-walks
   const redirectTo = typeof req.query.redirect_to === 'string' ? req.query.redirect_to : '/river-walks';
   
-  console.log('OAuth completed, redirecting to:', redirectTo);
+  logger.info('OAuth completed, redirecting user');
   res.redirect(redirectTo);
 }

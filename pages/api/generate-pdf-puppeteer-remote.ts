@@ -18,7 +18,7 @@ async function getBrowser() {
   }
 
   if (!!REMOTE_PATH) {
-    console.log('🌐 Using remote Chromium executable');
+    logger.info('Using remote Chromium executable');
     return await puppeteerCore.launch({
       args: chromium.args,
       executablePath: await chromium.executablePath(REMOTE_PATH),
@@ -27,7 +27,7 @@ async function getBrowser() {
     });
   }
 
-  console.log('💻 Using local Chromium executable');
+  logger.info('Using local Chromium executable');
   return await puppeteerCore.launch({
     executablePath: LOCAL_PATH,
     defaultViewport: null,
@@ -1651,11 +1651,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   let browser;
   try {
-    console.log('🔍 Fetching real data with authentication for river walk ID:', riverWalkId);
+    logger.info('Fetching real data with authentication', { riverWalkId });
     
     // Create authenticated Supabase client
     const authToken = req.headers.authorization?.replace('Bearer ', '');
-    console.log('🔑 Auth token present:', !!authToken);
+    logger.debug('Auth token status', { hasAuthToken: !!authToken });
     
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -1677,7 +1677,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       .eq('id', riverWalkId)
       .maybeSingle();
 
-    console.log('📊 River walk query result:', { riverWalk, riverWalkError });
+    logger.debug('River walk query result', { 
+      hasRiverWalk: !!riverWalk,
+      errorMessage: riverWalkError?.message 
+    });
 
     // Fetch sites with authentication
     const { data: sites, error: sitesError } = await supabase
@@ -1689,7 +1692,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       .eq('river_walk_id', riverWalkId)
       .order('site_number', { ascending: true });
 
-    console.log('📍 Sites query result:', { sitesCount: sites?.length || 0, sitesError });
+    logger.debug('Sites query result', { 
+      sitesCount: sites?.length || 0,
+      hasError: !!sitesError 
+    });
     
     // Debug: log the actual site data structure
     if (sites && sites.length > 0) {
@@ -1703,62 +1709,61 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         velocityMeasurementsCount: sites[0].velocity_data?.measurements?.length || 0,
         velocityDataStructure: sites[0].velocity_data
       };
-      console.log('🔍 First site data structure:', debugInfo);
+      logger.debug('First site data structure', debugInfo);
       
       // Add debug info to response headers so we can see it in browser
       res.setHeader('X-Debug-Site-Info', JSON.stringify(debugInfo));
     }
 
-    console.log('📊 Data summary:', {
+    logger.info('Data summary', {
       hasRiverWalk: !!riverWalk,
       riverWalkName: riverWalk?.name,
       sitesCount: sites?.length || 0,
-      riverWalkError: riverWalkError?.message,
-      sitesError: sitesError?.message
+      hasErrors: !!(riverWalkError || sitesError)
     });
 
     if (riverWalk && !riverWalkError) {
-      console.log('✅ Using real river walk data:', riverWalk.name);
+      logger.info('Using real river walk data', { riverWalkName: riverWalk.name });
       if (sites && sites.length > 0) {
-        console.log('✅ Found', sites.length, 'real sites with data');
+        logger.info('Found real sites with data', { sitesCount: sites.length });
       } else {
-        console.log('ℹ️ No sites found for this river walk - will show empty state');
+        logger.info('No sites found for this river walk - will show empty state');
       }
     } else {
-      console.log('⚠️ Could not fetch river walk data, will use sample data');
+      logger.warn('Could not fetch river walk data, will use sample data');
     }
 
-    console.log('🚀 Starting browser...');
+    logger.info('Starting browser');
     browser = await getBrowser();
     
-    console.log('📄 Creating new page...');
+    logger.debug('Creating new page');
     const page = await browser.newPage();
 
     // Error handling for page
     page.on('pageerror', (err: Error) => {
-      console.error('📄 Page error:', err);
+      logger.error('Page error', { errorMessage: err.message });
     });
     
     page.on('error', (err: Error) => {
-      console.error('📄 Page runtime error:', err);
+      logger.error('Page runtime error', { errorMessage: err.message });
     });
 
     // Create HTML content directly with the data
-    console.log('🔧 Creating HTML content with fetched data...');
+    logger.debug('Creating HTML content with fetched data');
     
     const htmlContent = createReportHTML(riverWalk, sites);
     
-    console.log('📄 Setting page content...');
+    logger.debug('Setting page content');
     await page.setContent(htmlContent, { 
       waitUntil: 'networkidle0',
       timeout: 30000
     });
 
-    console.log('📐 Setting viewport...');
+    logger.debug('Setting viewport');
     await page.setViewport({ width: 1080, height: 1024 });
 
     // Wait for content to render and images to load
-    console.log('⏳ Waiting for content to render and images to load...');
+    logger.debug('Waiting for content to render and images to load');
     
     // Wait for all images to load
     await page.evaluate(() => {
@@ -1781,7 +1786,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     await new Promise(resolve => setTimeout(resolve, 2000));
 
     // Generate PDF with headers/footers and page numbers
-    console.log('📄 Generating PDF...');
+    logger.info('Generating PDF');
     const pdf = await page.pdf({
       format: 'A4',
       printBackground: true,
@@ -1822,17 +1827,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     res.setHeader('Content-Disposition', `attachment; filename="${download}"`);
     res.setHeader('Content-Length', pdfBuffer.length);
     
-    console.log('✅ PDF generated successfully');
+    logger.info('PDF generated successfully');
     res.status(200).send(pdfBuffer);
 
   } catch (err: any) {
-    console.error('❌ PDF generation error:', err);
+    logger.error('PDF generation error', { errorMessage: err?.message });
     
     if (browser) {
       try {
         await browser.close();
       } catch (closeErr) {
-        console.error('❌ Error closing browser:', closeErr);
+        logger.error('Error closing browser', { error: closeErr instanceof Error ? closeErr.message : 'Unknown error' });
       }
     }
     

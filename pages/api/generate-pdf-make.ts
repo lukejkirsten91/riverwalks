@@ -247,7 +247,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    console.log('🔍 Fetching river walk with ID:', riverWalkId);
+    logger.info('Fetching river walk', { riverWalkId });
     
     // Fetch river walk data
     const { data: riverWalk, error: riverWalkError } = await supabase
@@ -256,10 +256,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       .eq('id', riverWalkId)
       .maybeSingle();
 
-    console.log('📊 Database response:', { riverWalk, riverWalkError });
+    logger.debug('River walk database response', { 
+      hasRiverWalk: !!riverWalk,
+      errorMessage: riverWalkError?.message 
+    });
 
     if (riverWalkError || !riverWalk) {
-      console.error('❌ River walk not found:', riverWalkError);
+      logger.error('River walk not found', { 
+        errorMessage: riverWalkError?.message,
+        riverWalkId 
+      });
       return res.status(404).json({ 
         error: 'River walk not found',
         details: riverWalkError?.message || 'No data returned',
@@ -267,7 +273,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
     }
 
-    console.log('🏞️ Fetching sites for river walk:', riverWalkId);
+    logger.info('Fetching sites for river walk', { riverWalkId });
     
     // Fetch sites with measurement points
     const { data: sites, error: sitesError } = await supabase
@@ -279,10 +285,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       .eq('river_walk_id', riverWalkId)
       .order('site_number');
 
-    console.log('📍 Sites response:', { sitesCount: sites?.length || 0, sitesError });
+    logger.debug('Sites database response', { 
+      sitesCount: sites?.length || 0,
+      hasError: !!sitesError 
+    });
 
     if (sitesError) {
-      console.error('❌ Sites query error:', sitesError);
+      logger.error('Sites query error', { 
+        errorMessage: sitesError?.message 
+      });
       throw sitesError;
     }
 
@@ -309,14 +320,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
       
       pdfDoc.on('error', (err: any) => {
-        console.error('PDF generation error:', err);
+        logger.error('PDF generation error', { 
+          errorMessage: err?.message 
+        });
         reject(err);
       });
       
       pdfDoc.end();
     });
   } catch (err: any) {
-    console.error('PDF generation error:', err);
+    logger.error('PDF generation error', { 
+      errorMessage: err?.message 
+    });
     return res.status(500).json({
       error: 'Failed to generate PDF',
       details: err?.message ?? 'Unknown error',

@@ -4,6 +4,7 @@ import Stripe from 'stripe';
 import { supabase } from '../../../lib/supabase';
 import { createClient } from '@supabase/supabase-js';
 import { getCurrentPrices, getStripeMode } from '../../../lib/stripe-config';
+import { logger } from '../../../lib/logger';
 
 // Create service role client for admin operations
 const supabaseAdmin = process.env.SUPABASE_SERVICE_ROLE_KEY 
@@ -26,22 +27,21 @@ export const config = {
 };
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  console.log('🔗 Webhook called:', {
+  logger.info('Stripe webhook called', {
     method: req.method,
-    url: req.url,
-    headers: Object.keys(req.headers),
+    endpoint: 'webhook',
     timestamp: new Date().toISOString()
   });
 
   if (req.method !== 'POST') {
-    console.log('❌ Wrong method:', req.method);
+    logger.warn('Invalid HTTP method for webhook', { method: req.method });
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
   const sig = req.headers['stripe-signature'];
   
   if (!sig) {
-    console.error('❌ Missing Stripe signature');
+    logger.error('Missing Stripe signature in webhook request');
     return res.status(400).json({ error: 'Missing Stripe signature' });
   }
 
@@ -49,11 +49,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   try {
     const buf = await buffer(req);
-    console.log('📦 Buffer received, length:', buf.length);
     event = stripe.webhooks.constructEvent(buf, sig, endpointSecret);
-    console.log('✅ Webhook signature verified:', event.type, 'ID:', event.id);
+    logger.info('Stripe webhook signature verified', { eventType: event.type, eventId: event.id });
   } catch (err) {
-    console.error('❌ Webhook signature verification failed:', err);
+    logger.error('Stripe webhook signature verification failed', { error: err instanceof Error ? err.message : 'Unknown error' });
     return res.status(400).json({ 
       error: 'Webhook signature verification failed',
       details: err instanceof Error ? err.message : 'Unknown error'
@@ -75,13 +74,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         break;
       
       default:
-        console.log(`🔄 Unhandled event type: ${event.type}`);
+        logger.info('Unhandled Stripe event type', { eventType: event.type });
     }
 
     // Log the event for debugging
     await logPaymentEvent(event);
 
-    console.log('✅ Webhook processed successfully:', event.type);
+    logger.info('Stripe webhook processed successfully', { eventType: event.type, eventId: event.id });
     return res.status(200).json({ 
       received: true, 
       eventType: event.type,
@@ -89,41 +88,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       timestamp: new Date().toISOString()
     });
   } catch (error) {
-    console.error('❌ Webhook handler error:', error);
-    
-    let errorDetails = 'Unknown error';
-    let errorType = typeof error;
-    
-    if (error instanceof Error) {
-      errorDetails = error.message;
-      console.error('❌ Error stack:', error.stack);
-    } else if (error && typeof error === 'object') {
-      try {
-        errorDetails = JSON.stringify(error);
-      } catch (stringifyError) {
-        errorDetails = error.toString();
-      }
-    } else {
-      errorDetails = String(error);
-    }
-    
-    console.error('❌ Error details:', {
-      details: errorDetails,
-      type: errorType,
-      originalError: error
+    logger.error('Stripe webhook handler error', { 
+      error: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined
     });
     
     return res.status(500).json({ 
       error: 'Webhook handler failed',
-      details: errorDetails,
-      type: errorType,
       timestamp: new Date().toISOString()
     });
   }
 }
 
 async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
-  console.log('🎉 Checkout completed:', session.id);
+  logger.info('Stripe checkout completed', { sessionId: session.id });
   
   try {
     const customerEmail = session.customer_details?.email;
@@ -132,7 +110,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     }
 
     // Get user by email using service role client
-    console.log('🔍 Looking for user with checkout email');
+    logger.info('Looking up user for checkout completion');
     
     if (!supabaseAdmin) {
       throw new Error('Supabase service role client not configured - missing SUPABASE_SERVICE_ROLE_KEY');
@@ -141,33 +119,31 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     const { data: user, error: userError } = await supabaseAdmin.auth.admin.listUsers();
     
     if (userError) {
-      console.error('❌ Error listing users:', userError);
+      logger.error('Error listing users during checkout', { error: userError.message });
       throw new Error(`Error listing users: ${userError.message}`);
     }
     
-    console.log('👥 Found users count:', user?.users?.length);
+    logger.debug('User lookup completed', { userCount: user?.users?.length });
     
     const foundUser = user?.users.find(u => u.email?.toLowerCase() === customerEmail.toLowerCase());
     
     if (!foundUser) {
-      console.error('❌ User not found for checkout email');
+      logger.error('User not found for checkout completion');
       throw new Error(`User not found for checkout email`);
     }
     
-    console.log('✅ Found user for subscription creation');
+    logger.info('User found for subscription creation');
 
     // Determine subscription type from price ID using centralized config
-    console.log('💰 Getting line items for session:', session.id);
+    logger.info('Processing checkout line items');
     const lineItems = await stripe.checkout.sessions.listLineItems(session.id);
     const priceId = lineItems.data[0]?.price?.id;
     
-    console.log('🏷️ Price ID from session:', priceId);
-    console.log('🔧 Stripe mode:', getStripeMode());
-    console.log('📋 Line items:', lineItems.data.map(item => ({
-      price_id: item.price?.id,
-      description: item.description,
-      amount_total: item.amount_total
-    })));
+    logger.debug('Checkout pricing details', { 
+      priceId, 
+      stripeMode: getStripeMode(),
+      itemCount: lineItems.data.length
+    });
     
     // Get current price configuration
     const currentPrices = getCurrentPrices();
@@ -175,18 +151,17 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     let subscriptionType: 'annual' | 'lifetime';
     if (priceId === currentPrices.annual || priceId === currentPrices.annualSecondary) {
       subscriptionType = 'annual';
-      console.log('✅ Detected annual subscription');
+      logger.info('Detected annual subscription type');
     } else if (priceId === currentPrices.lifetime) {
       subscriptionType = 'lifetime';
-      console.log('✅ Detected lifetime subscription');
+      logger.info('Detected lifetime subscription type');
     } else {
-      console.error('❌ Unknown price ID:', priceId);
-      console.error('Expected prices:', currentPrices);
+      logger.error('Unknown price ID in checkout', { priceId, stripeMode: getStripeMode() });
       throw new Error(`Unknown price ID: ${priceId} (mode: ${getStripeMode()})`);
     }
 
     // Create subscription record using service role client
-    console.log('💾 Creating subscription record for user:', foundUser.id);
+    logger.info('Creating subscription record', { subscriptionType });
     
     if (!supabaseAdmin) {
       throw new Error('Supabase service role client not configured');
@@ -215,7 +190,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     let subError;
     if (existingSubscription) {
       // Update existing subscription
-      console.log('📝 Updating existing subscription');
+      logger.info('Updating existing subscription');
       const result = await supabaseAdmin
         .from('subscriptions')
         .update(subscriptionData)
@@ -223,7 +198,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
       subError = result.error;
     } else {
       // Create new subscription
-      console.log('➕ Creating new subscription');
+      logger.info('Creating new subscription');
       const result = await supabaseAdmin
         .from('subscriptions')
         .insert({
@@ -234,24 +209,24 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     }
 
     if (subError) {
-      console.error('❌ Subscription operation failed:', subError);
+      logger.error('Subscription operation failed', { error: subError.message });
       throw subError;
     }
 
-    console.log(`✅ Subscription created: ${subscriptionType}`);
+    logger.info('Subscription operation completed', { subscriptionType });
   } catch (error) {
-    console.error('❌ Error handling checkout completion:', error);
+    logger.error('Error handling checkout completion', { error: error instanceof Error ? error.message : 'Unknown error' });
     throw error;
   }
 }
 
 async function handlePaymentSucceeded(paymentIntent: Stripe.PaymentIntent) {
-  console.log('💰 Payment succeeded:', paymentIntent.id);
+  logger.info('Stripe payment succeeded', { paymentIntentId: paymentIntent.id });
   // Additional logic if needed
 }
 
 async function handlePaymentFailed(paymentIntent: Stripe.PaymentIntent) {
-  console.log('❌ Payment failed:', paymentIntent.id);
+  logger.warn('Stripe payment failed', { paymentIntentId: paymentIntent.id });
   // Additional logic if needed
 }
 
@@ -281,9 +256,9 @@ async function logPaymentEvent(event: Stripe.Event) {
         processed_at: new Date(),
         });
 
-      console.log('📝 Payment event logged:', event.type);
+      logger.info('Payment event logged', { eventType: event.type });
     }
   } catch (error) {
-    console.error('❌ Error logging payment event:', error);
+    logger.error('Error logging payment event', { error: error instanceof Error ? error.message : 'Unknown error' });
   }
 }

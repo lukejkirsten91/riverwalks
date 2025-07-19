@@ -1,5 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { createClient } from '@supabase/supabase-js';
+import { logger } from '../../../lib/logger';
 
 // Create service role client for voucher operations (bypass RLS)
 const supabaseAdmin = process.env.SUPABASE_SERVICE_ROLE_KEY 
@@ -15,10 +16,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    console.log('🔧 Voucher redeem API called with:', req.body);
+    logger.info('Voucher redeem API called');
     
     if (!supabaseAdmin) {
-      console.error('❌ Service role not configured');
+      logger.error('Service role not configured for voucher redemption');
       return res.status(500).json({ error: 'Service role not configured' });
     }
 
@@ -28,7 +29,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(400).json({ error: 'Voucher code, email, and plan type are required' });
     }
 
-    console.log('🎫 Redeeming voucher:', { code, email, planType });
+    logger.info('Processing voucher redemption', { planType });
 
     // Get voucher from database and validate
     const { data: voucher, error: voucherError } = await supabaseAdmin
@@ -39,7 +40,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       .single();
 
     if (voucherError || !voucher) {
-      console.log('❌ Voucher not found:', code);
+      logger.info('Voucher not found during redemption');
       return res.status(400).json({ 
         error: 'Invalid voucher code' 
       });
@@ -47,7 +48,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // Check if voucher has expired
     if (voucher.valid_until && new Date(voucher.valid_until) < new Date()) {
-      console.log('❌ Voucher expired:', code);
+      logger.info('Voucher has expired');
       return res.status(400).json({ 
         error: 'Voucher has expired' 
       });
@@ -55,7 +56,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // Check usage limits
     if (voucher.uses_count >= voucher.max_uses) {
-      console.log('❌ Voucher usage limit reached:', code);
+      logger.info('Voucher usage limit reached');
       return res.status(400).json({ 
         error: 'Voucher usage limit reached' 
       });
@@ -63,7 +64,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // Check if voucher applies to this plan type
     if (voucher.plan_types && voucher.plan_types.length > 0 && !voucher.plan_types.includes(planType)) {
-      console.log('❌ Voucher not valid for plan type:', { code, planType, validPlans: voucher.plan_types });
+      logger.info('Voucher not valid for plan type', { planType, validPlans: voucher.plan_types });
       return res.status(400).json({ 
         error: `Voucher is not valid for ${planType} plan` 
       });
@@ -78,7 +79,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       .eq('id', voucher.id);
 
     if (updateError) {
-      console.error('❌ Error updating voucher usage:', updateError);
+      logger.error('Error updating voucher usage', { error: updateError.message });
       return res.status(500).json({ error: 'Failed to redeem voucher' });
     }
 
@@ -96,13 +97,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
 
     if (logError) {
-      console.error('❌ Error logging voucher usage:', logError);
+      logger.error('Error logging voucher usage', { error: logError.message });
       // Don't fail the request, just log the error
     }
 
-    console.log('✅ Voucher redeemed successfully:', {
-      code: voucher.code,
-      email,
+    logger.info('Voucher redeemed successfully', {
       planType,
       usesRemaining: voucher.max_uses - (voucher.uses_count + 1)
     });
@@ -119,9 +118,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
 
   } catch (error) {
-    console.error('❌ Voucher redemption error:', error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    console.error('❌ Error details:', errorMessage);
+    logger.error('Voucher redemption error', { error: errorMessage });
     return res.status(500).json({
       error: 'Failed to redeem voucher',
       details: errorMessage

@@ -1,5 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { createClient } from '@supabase/supabase-js';
+import { logger } from '../../../lib/logger';
 
 // Create service role client for voucher operations (bypass RLS)
 const supabaseAdmin = process.env.SUPABASE_SERVICE_ROLE_KEY 
@@ -25,7 +26,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(400).json({ error: 'Voucher code is required' });
     }
 
-    console.log('🎫 Validating voucher:', code);
+    logger.info('Validating voucher code');
 
     // Get voucher from database
     const { data: voucher, error } = await supabaseAdmin
@@ -36,7 +37,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       .single();
 
     if (error || !voucher) {
-      console.log('❌ Voucher not found:', code);
+      logger.info('Voucher not found');
       return res.status(200).json({ 
         valid: false, 
         error: 'Invalid voucher code' 
@@ -45,7 +46,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // Check if voucher has expired
     if (voucher.valid_until && new Date(voucher.valid_until) < new Date()) {
-      console.log('❌ Voucher expired:', code);
+      logger.info('Voucher has expired');
       return res.status(200).json({ 
         valid: false, 
         error: 'Voucher has expired' 
@@ -54,19 +55,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // Check usage limits
     if (voucher.uses_count >= voucher.max_uses) {
-      console.log('❌ Voucher usage limit reached:', code);
+      logger.info('Voucher usage limit reached');
       return res.status(200).json({ 
         valid: false, 
         error: 'Voucher usage limit reached' 
       });
     }
 
-    console.log('✅ Voucher is valid:', {
-      code: voucher.code,
-      discount_type: voucher.discount_type,
-      discount_value: voucher.discount_value,
-      plan_types: voucher.plan_types,
-      uses_remaining: voucher.max_uses - voucher.uses_count
+    logger.info('Voucher validation successful', {
+      discountType: voucher.discount_type,
+      usesRemaining: voucher.max_uses - voucher.uses_count
     });
 
     return res.status(200).json({
@@ -81,7 +79,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
 
   } catch (error) {
-    console.error('❌ Voucher validation error:', error);
+    logger.error('Voucher validation error', { error: error instanceof Error ? error.message : 'Unknown error' });
     return res.status(500).json({
       valid: false,
       error: 'Failed to validate voucher'
