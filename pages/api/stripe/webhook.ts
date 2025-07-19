@@ -27,6 +27,13 @@ export const config = {
 };
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  // TEMPORARY DEBUG: Log immediately when webhook is called
+  console.log('🚨 WEBHOOK DEBUG - Handler called:', {
+    method: req.method,
+    timestamp: new Date().toISOString(),
+    hasSignature: !!req.headers['stripe-signature']
+  });
+  
   logger.info('Stripe webhook called', {
     method: req.method,
     endpoint: 'webhook',
@@ -59,9 +66,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
   }
 
+  // TEMPORARY DEBUG: Log which event type we're processing
+  console.log('🚨 WEBHOOK DEBUG - Processing event:', {
+    eventType: event.type,
+    eventId: event.id,
+    timestamp: new Date().toISOString()
+  });
+
   try {
     switch (event.type) {
       case 'checkout.session.completed':
+        console.log('🚨 WEBHOOK DEBUG - Calling handleCheckoutCompleted');
         await handleCheckoutCompleted(event.data.object as Stripe.Checkout.Session);
         break;
       
