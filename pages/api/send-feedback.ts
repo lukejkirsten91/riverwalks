@@ -1,10 +1,12 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import nodemailer from 'nodemailer';
+import { rateLimiters } from '../../lib/rate-limit';
+import { logger } from '../../lib/logger';
 
 // Email configuration
 const createTransporter = () => {
   if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
-    console.warn('SMTP credentials not configured - feedback email sending disabled');
+    logger.warn('SMTP credentials not configured - feedback email sending disabled');
     return null;
   }
   
@@ -24,7 +26,7 @@ const sendFeedbackEmail = async (userEmail: string, message: string, type: strin
     const transporter = createTransporter();
     
     if (!transporter) {
-      console.warn('Email transporter not configured - skipping feedback email');
+      logger.warn('Email transporter not configured - skipping feedback email');
       return false;
     }
 
@@ -73,16 +75,21 @@ Reply directly to this email to respond to the user.
     };
 
     const info = await transporter.sendMail(mailOptions);
-    console.log('Feedback email sent successfully:', info.messageId);
+    logger.info('Feedback email sent successfully');
     return true;
     
   } catch (error) {
-    console.error('Failed to send feedback email:', error);
+    logger.error('Failed to send feedback email', { error: error instanceof Error ? error.message : 'Unknown error' });
     return false;
   }
 };
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  // Apply rate limiting for contact forms
+  if (!rateLimiters.contact(req, res)) {
+    return; // Rate limit exceeded
+  }
+
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
@@ -120,7 +127,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
   } catch (error) {
-    console.error('Feedback API error:', error);
+    logger.error('Feedback API error', { error: error instanceof Error ? error.message : 'Unknown error' });
     return res.status(500).json({ 
       error: 'Internal server error',
       details: error instanceof Error ? error.message : 'Unknown error'

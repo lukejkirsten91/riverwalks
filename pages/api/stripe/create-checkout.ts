@@ -3,12 +3,18 @@ import Stripe from 'stripe';
 import { supabase } from '../../../lib/supabase';
 import { getCurrentPrices, getStripeMode } from '../../../lib/stripe-config';
 import { logger } from '../../../lib/logger';
+import { rateLimiters } from '../../../lib/rate-limit';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-06-30.basil',
 });
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  // Apply rate limiting for payment endpoints
+  if (!rateLimiters.payment(req, res)) {
+    return; // Rate limit exceeded
+  }
+
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
