@@ -133,7 +133,7 @@ export function ShareModal({ riverWalk, isOpen, onClose }: ShareModalProps) {
   };
 
   return (
-    <div className="bg-white w-full h-full sm:rounded-lg sm:shadow-modern-lg sm:max-w-2xl sm:w-full sm:max-h-[80vh] overflow-y-auto flex flex-col">
+    <div className="bg-white w-full h-full sm:rounded-lg sm:shadow-modern-lg sm:max-w-2xl sm:w-full sm:max-h-[80vh] flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-border bg-gradient-to-r from-blue-50 to-teal-50">
           <div>
