@@ -11,11 +11,11 @@ const createTransporter = () => {
   }
   
   return nodemailer.createTransport({
-    host: process.env.SMTP_HOST || 'smtp.gmail.com',
+    host: process.env.SMTP_HOST || 'smtp.resend.com',
     port: parseInt(process.env.SMTP_PORT || '587'),
     secure: false,
     auth: {
-      user: process.env.SMTP_USER,
+      user: process.env.SMTP_USER || 'resend',
       pass: process.env.SMTP_PASS,
     },
   });
@@ -131,7 +131,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const transporter = createTransporter();
     
     const mailOptions = {
-      from: process.env.SMTP_USER,
+      from: process.env.RESEND_FROM_EMAIL || process.env.SMTP_USER || 'support@riverwalks.co.uk',
       to: to,
       subject: subject,
       html: emailHtml,
