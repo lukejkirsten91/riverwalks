@@ -383,7 +383,8 @@ export default function AdminDashboard() {
               { id: 'users', name: 'Users', icon: Users },
               { id: 'vouchers', name: 'Vouchers', icon: Tag },
               { id: 'voucher-usage', name: 'Usage', icon: Activity },
-              { id: 'events', name: 'Events', icon: CreditCard }
+              { id: 'events', name: 'Events', icon: CreditCard },
+              { id: 'email', name: 'Email', icon: Mail }
             ].map((tab) => {
               const Icon = tab.icon;
               return (
@@ -704,6 +705,10 @@ export default function AdminDashboard() {
             </div>
           )}
 
+          {activeTab === 'email' && (
+            <EmailForm />
+          )}
+
           {activeTab === 'overview' && (
             <div className="p-6">
               <h3 className="text-lg font-medium text-gray-900 mb-4">Platform Overview</h3>
@@ -738,6 +743,152 @@ export default function AdminDashboard() {
 
       {/* Voucher Creation Modal */}
       {showVoucherModal && <VoucherCreationModal onClose={() => setShowVoucherModal(false)} onCreate={createVoucher} />}
+    </div>
+  );
+}
+
+// Email Form Component
+function EmailForm() {
+  const [formData, setFormData] = useState({
+    to: '',
+    subject: '',
+    body: ''
+  });
+  const [sending, setSending] = useState(false);
+  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSending(true);
+    setMessage(null);
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error('No session found');
+      }
+
+      const response = await fetch('/api/admin/send-email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to send email');
+      }
+
+      setMessage({ type: 'success', text: 'Email sent successfully!' });
+      setFormData({ to: '', subject: '', body: '' });
+    } catch (error) {
+      console.error('Email send error:', error);
+      setMessage({ 
+        type: 'error', 
+        text: error instanceof Error ? error.message : 'Failed to send email' 
+      });
+    } finally {
+      setSending(false);
+    }
+  };
+
+  return (
+    <div className="p-6">
+      <div className="max-w-2xl mx-auto">
+        <h3 className="text-lg font-medium text-gray-900 mb-4">Send Email</h3>
+        <p className="text-sm text-gray-600 mb-6">Send a custom email to any email address.</p>
+        
+        {message && (
+          <div className={`mb-4 p-4 rounded-lg ${
+            message.type === 'success' 
+              ? 'bg-green-50 text-green-700 border border-green-200' 
+              : 'bg-red-50 text-red-700 border border-red-200'
+          }`}>
+            {message.text}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div>
+            <label htmlFor="email-to" className="block text-sm font-medium text-gray-700 mb-2">
+              To Email Address
+            </label>
+            <input
+              id="email-to"
+              type="email"
+              value={formData.to}
+              onChange={(e) => setFormData({ ...formData, to: e.target.value })}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="recipient@example.com"
+              required
+            />
+          </div>
+
+          <div>
+            <label htmlFor="email-subject" className="block text-sm font-medium text-gray-700 mb-2">
+              Subject
+            </label>
+            <input
+              id="email-subject"
+              type="text"
+              value={formData.subject}
+              onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="Email subject..."
+              required
+            />
+          </div>
+
+          <div>
+            <label htmlFor="email-body" className="block text-sm font-medium text-gray-700 mb-2">
+              Message Body
+            </label>
+            <textarea
+              id="email-body"
+              rows={12}
+              value={formData.body}
+              onChange={(e) => setFormData({ ...formData, body: e.target.value })}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-vertical"
+              placeholder="Enter your message here..."
+              required
+            />
+            <p className="mt-1 text-sm text-gray-500">
+              The message will be formatted with line breaks preserved and styled in a professional template.
+            </p>
+          </div>
+
+          <div className="flex justify-end space-x-3">
+            <button
+              type="button"
+              onClick={() => {
+                setFormData({ to: '', subject: '', body: '' });
+                setMessage(null);
+              }}
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              disabled={sending}
+            >
+              Clear
+            </button>
+            <button
+              type="submit"
+              disabled={sending}
+              className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+            >
+              {sending && (
+                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+              )}
+              {sending ? 'Sending...' : 'Send Email'}
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }
