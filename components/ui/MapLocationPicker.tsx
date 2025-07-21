@@ -271,19 +271,22 @@ export function MapLocationPicker({
       <div className="space-y-2 sm:space-y-3">
         {/* Find Location Button */}
         <div className="flex flex-col sm:flex-row gap-3">
-          <button
-            type="button"
-            onClick={handleFindLocation}
-            disabled={isLocating}
-            className="btn-primary flex items-center justify-center gap-2 flex-1 sm:flex-none touch-manipulation"
-          >
-            {isLocating ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
-            ) : (
-              <Navigation className="w-4 h-4" />
-            )}
-            {isLocating ? 'Finding Location...' : 'Find My Location'}
-          </button>
+          <div className="flex flex-col gap-1">
+            <button
+              type="button"
+              onClick={handleFindLocation}
+              disabled={isLocating}
+              className="btn-primary flex items-center justify-center gap-2 flex-1 sm:flex-none touch-manipulation"
+            >
+              {isLocating ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Navigation className="w-4 h-4" />
+              )}
+              {isLocating ? 'Finding Location...' : 'Find My Location'}
+            </button>
+            <p className="text-xs text-gray-500 text-center sm:hidden">GPS location works best on mobile devices</p>
+          </div>
           
           {/* Status Indicator */}
           {locationStatus !== 'idle' && (
