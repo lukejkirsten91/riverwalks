@@ -12,7 +12,7 @@ interface ShareModalProps {
 }
 
 export function ShareModal({ riverWalk, isOpen, onClose }: ShareModalProps) {
-  useScrollLock(isOpen);
+  // useScrollLock(isOpen); // Temporarily disabled to fix modal scrolling
   
   const {
     collaborators,
