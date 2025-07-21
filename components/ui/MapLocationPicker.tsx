@@ -285,7 +285,7 @@ export function MapLocationPicker({
               )}
               {isLocating ? 'Finding Location...' : 'Find My Location'}
             </button>
-            <p className="text-xs text-gray-500 text-center sm:hidden">GPS location works best on mobile devices</p>
+            <p className="text-xs text-gray-500 text-center hidden sm:block">GPS location only works on mobile devices</p>
           </div>
           
           {/* Status Indicator */}
