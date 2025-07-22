@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { supabase } from '../lib/supabase';
-import { Users, CreditCard, Tag, Activity, AlertCircle, Crown, Plus, Edit, Trash2, BarChart3, Mail } from 'lucide-react';
+import { Users, CreditCard, Tag, Activity, AlertCircle, Crown, Plus, Edit, Trash2, BarChart3, Mail, MessageSquare } from 'lucide-react';
 import { AnalyticsDashboard } from '../components/analytics/AnalyticsDashboard';
 import { isCurrentUserAdmin } from '../lib/client-auth';
 import { logger } from '../lib/logger';
@@ -551,7 +551,9 @@ export default function AdminDashboard() {
               { id: 'vouchers', name: 'Vouchers', icon: Tag },
               { id: 'voucher-usage', name: 'Usage', icon: Activity },
               { id: 'events', name: 'Events', icon: CreditCard },
-              { id: 'email', name: 'Email', icon: Mail }
+              { id: 'email', name: 'Email', icon: Mail },
+              { id: 'email-templates', name: 'Templates', icon: Edit },
+              { id: 'feedback', name: 'Feedback', icon: MessageSquare }
             ].map((tab) => {
               const Icon = tab.icon;
               return (
@@ -1101,6 +1103,14 @@ export default function AdminDashboard() {
             <EmailForm />
           )}
 
+          {activeTab === 'email-templates' && (
+            <EmailTemplatesManager />
+          )}
+
+          {activeTab === 'feedback' && (
+            <FeedbackManager />
+          )}
+
           {activeTab === 'overview' && (
             <div className="p-6">
               <h3 className="text-lg font-medium text-gray-900 mb-4">Platform Overview</h3>
@@ -1293,6 +1303,424 @@ function EmailForm() {
           </div>
         </form>
       </div>
+    </div>
+  );
+}
+
+// Email Templates Manager Component
+function EmailTemplatesManager() {
+  const [templates, setTemplates] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [editingTemplate, setEditingTemplate] = useState<any>(null);
+  const [showEditor, setShowEditor] = useState(false);
+  const [previewMode, setPreviewMode] = useState(false);
+
+  useEffect(() => {
+    loadTemplates();
+  }, []);
+
+  const loadTemplates = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
+      const response = await fetch('/api/admin/email-templates', {
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setTemplates(data.templates);
+      }
+    } catch (error) {
+      console.error('Failed to load email templates:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleEdit = (template: any) => {
+    setEditingTemplate(template);
+    setShowEditor(true);
+  };
+
+  const handleNew = () => {
+    setEditingTemplate({
+      name: '',
+      type: 'welcome',
+      subject: '',
+      content: '',
+      variables: ['name', 'email'],
+      is_active: true
+    });
+    setShowEditor(true);
+  };
+
+  if (loading) {
+    return (
+      <div className="p-6">
+        <div className="text-center">
+          <div className="animate-spin w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading email templates...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (showEditor) {
+    return (
+      <EmailTemplateEditor
+        template={editingTemplate}
+        onSave={() => {
+          loadTemplates();
+          setShowEditor(false);
+          setEditingTemplate(null);
+        }}
+        onCancel={() => {
+          setShowEditor(false);
+          setEditingTemplate(null);
+        }}
+      />
+    );
+  }
+
+  return (
+    <div className="p-6">
+      <div className="flex justify-between items-center mb-6">
+        <div>
+          <h3 className="text-lg font-medium text-gray-900">Email Templates</h3>
+          <p className="text-sm text-gray-600">Manage customizable email templates for automated messages</p>
+        </div>
+        <button
+          onClick={handleNew}
+          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2"
+        >
+          <Edit className="w-4 h-4" />
+          New Template
+        </button>
+      </div>
+
+      <div className="grid gap-6">
+        {templates.map((template) => (
+          <div key={template.id} className="bg-white border border-gray-200 rounded-lg p-6">
+            <div className="flex justify-between items-start mb-4">
+              <div>
+                <h4 className="text-lg font-medium text-gray-900">{template.name}</h4>
+                <div className="flex items-center gap-2 mt-1">
+                  <span className={`px-2 py-1 text-xs rounded-full ${
+                    template.type === 'welcome' ? 'bg-green-100 text-green-800' :
+                    template.type === 'feedback_request' ? 'bg-blue-100 text-blue-800' :
+                    'bg-gray-100 text-gray-800'
+                  }`}>
+                    {template.type}
+                  </span>
+                  <span className={`px-2 py-1 text-xs rounded-full ${
+                    template.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                  }`}>
+                    {template.is_active ? 'Active' : 'Inactive'}
+                  </span>
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => handleEdit(template)}
+                  className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                >
+                  Edit
+                </button>
+              </div>
+            </div>
+            
+            <div className="mb-4">
+              <p className="text-sm font-medium text-gray-700 mb-1">Subject:</p>
+              <p className="text-sm text-gray-600">{template.subject}</p>
+            </div>
+
+            <div className="mb-4">
+              <p className="text-sm font-medium text-gray-700 mb-2">Variables:</p>
+              <div className="flex flex-wrap gap-1">
+                {(template.variables || []).map((variable: string, index: number) => (
+                  <span key={index} className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded">
+                    {`{{${variable}}}`}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            <div className="text-xs text-gray-500">
+              Created: {new Date(template.created_at).toLocaleDateString()}
+              {template.updated_at !== template.created_at && 
+                ` • Updated: ${new Date(template.updated_at).toLocaleDateString()}`
+              }
+            </div>
+          </div>
+        ))}
+
+        {templates.length === 0 && (
+          <div className="text-center py-12 bg-gray-50 rounded-lg">
+            <Edit className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+            <p className="text-gray-600 mb-4">No email templates found</p>
+            <button
+              onClick={handleNew}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium"
+            >
+              Create Your First Template
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// Email Template Editor Component
+function EmailTemplateEditor({ template, onSave, onCancel }: {
+  template: any,
+  onSave: () => void,
+  onCancel: () => void
+}) {
+  const [formData, setFormData] = useState({
+    name: template?.name || '',
+    type: template?.type || 'welcome',
+    subject: template?.subject || '',
+    content: template?.content || '',
+    variables: template?.variables || ['name', 'email'],
+    is_active: template?.is_active ?? true
+  });
+  const [saving, setSaving] = useState(false);
+  const [previewMode, setPreviewMode] = useState(false);
+  const [testEmail, setTestEmail] = useState('');
+  const [sending, setSending] = useState(false);
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
+      const url = template?.id ? '/api/admin/email-templates' : '/api/admin/email-templates';
+      const method = template?.id ? 'PUT' : 'POST';
+      const body = template?.id 
+        ? { id: template.id, ...formData }
+        : formData;
+
+      const response = await fetch(url, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify(body),
+      });
+
+      if (response.ok) {
+        onSave();
+      } else {
+        const error = await response.json();
+        alert('Failed to save template: ' + error.error);
+      }
+    } catch (error) {
+      console.error('Error saving template:', error);
+      alert('Error saving template');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleTestSend = async () => {
+    if (!testEmail) {
+      alert('Please enter a test email address');
+      return;
+    }
+
+    setSending(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
+      // For welcome emails, we can test using the welcome email API
+      if (formData.type === 'welcome') {
+        const response = await fetch('/api/admin/send-welcome-email', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify({
+            userId: 'test',
+            userEmail: testEmail,
+            userName: 'Test User',
+            templateId: template?.id,
+            manual: true
+          }),
+        });
+
+        if (response.ok) {
+          alert('Test email sent successfully!');
+        } else {
+          const error = await response.json();
+          alert('Failed to send test email: ' + error.error);
+        }
+      }
+    } catch (error) {
+      console.error('Error sending test email:', error);
+      alert('Error sending test email');
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const replaceVariables = (text: string) => {
+    let result = text;
+    const sampleVars = {
+      name: 'John Doe',
+      email: 'john@example.com',
+      first_name: 'John',
+      last_name: 'Doe',
+      site_url: 'https://riverwalks.co.uk'
+    };
+    
+    Object.keys(sampleVars).forEach(key => {
+      const regex = new RegExp(`{{${key}}}`, 'g');
+      result = result.replace(regex, sampleVars[key as keyof typeof sampleVars]);
+    });
+    
+    return result;
+  };
+
+  return (
+    <div className="p-6">
+      <div className="flex justify-between items-center mb-6">
+        <div>
+          <h3 className="text-lg font-medium text-gray-900">
+            {template?.id ? 'Edit Email Template' : 'New Email Template'}
+          </h3>
+          <p className="text-sm text-gray-600">Create and customize email templates with variables</p>
+        </div>
+        <div className="flex gap-2">
+          <button
+            onClick={() => setPreviewMode(!previewMode)}
+            className="bg-gray-600 hover:bg-gray-700 text-white px-3 py-2 rounded text-sm"
+          >
+            {previewMode ? 'Edit Mode' : 'Preview'}
+          </button>
+          <button
+            onClick={onCancel}
+            className="bg-gray-600 hover:bg-gray-700 text-white px-3 py-2 rounded text-sm"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleSave}
+            disabled={saving || !formData.name || !formData.subject || !formData.content}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded text-sm disabled:opacity-50"
+          >
+            {saving ? 'Saving...' : 'Save Template'}
+          </button>
+        </div>
+      </div>
+
+      {previewMode ? (
+        <div className="bg-white border border-gray-200 rounded-lg p-6">
+          <h4 className="text-lg font-medium text-gray-900 mb-4">Email Preview</h4>
+          <div className="mb-4">
+            <strong>Subject:</strong> {replaceVariables(formData.subject)}
+          </div>
+          <div 
+            className="border border-gray-200 rounded p-4 bg-gray-50"
+            dangerouslySetInnerHTML={{ __html: replaceVariables(formData.content) }}
+          />
+        </div>
+      ) : (
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Template Name</label>
+              <input
+                type="text"
+                value={formData.name}
+                onChange={(e) => setFormData({...formData, name: e.target.value})}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                placeholder="Welcome Email Template"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Type</label>
+              <select
+                value={formData.type}
+                onChange={(e) => setFormData({...formData, type: e.target.value})}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2"
+              >
+                <option value="welcome">Welcome Email</option>
+                <option value="feedback_request">Feedback Request</option>
+                <option value="newsletter">Newsletter</option>
+                <option value="notification">Notification</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Subject Line</label>
+            <input
+              type="text"
+              value={formData.subject}
+              onChange={(e) => setFormData({...formData, subject: e.target.value})}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2"
+              placeholder="Welcome to Riverwalks, {{name}}!"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Email Content (HTML)</label>
+            <textarea
+              value={formData.content}
+              onChange={(e) => setFormData({...formData, content: e.target.value})}
+              rows={20}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 font-mono text-sm"
+              placeholder="Enter your HTML email content here..."
+            />
+            <p className="text-sm text-gray-500 mt-1">
+              Use variables like name, email, first_name, last_name in your content
+            </p>
+          </div>
+
+          <div className="flex items-center gap-4">
+            <label className="flex items-center">
+              <input
+                type="checkbox"
+                checked={formData.is_active}
+                onChange={(e) => setFormData({...formData, is_active: e.target.checked})}
+                className="mr-2"
+              />
+              <span className="text-sm text-gray-700">Template is active</span>
+            </label>
+          </div>
+
+          {formData.type === 'welcome' && (
+            <div className="bg-blue-50 p-4 rounded-lg">
+              <h4 className="font-medium text-blue-900 mb-2">Test Email</h4>
+              <div className="flex gap-2">
+                <input
+                  type="email"
+                  value={testEmail}
+                  onChange={(e) => setTestEmail(e.target.value)}
+                  placeholder="test@example.com"
+                  className="flex-1 border border-gray-300 rounded px-3 py-2 text-sm"
+                />
+                <button
+                  onClick={handleTestSend}
+                  disabled={sending || !testEmail}
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm disabled:opacity-50"
+                >
+                  {sending ? 'Sending...' : 'Send Test'}
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -1576,6 +2004,1009 @@ function VoucherCreationModal({ onClose, onCreate }: { onClose: () => void; onCr
             </button>
           </div>
         </form>
+      </div>
+    </div>
+  );
+}
+
+// Feedback Manager Component
+function FeedbackManager() {
+  const [forms, setForms] = useState<any[]>([]);
+  const [campaigns, setCampaigns] = useState<any[]>([]);
+  const [responses, setResponses] = useState<any[]>([]);
+  const [analytics, setAnalytics] = useState<any>(null);
+  const [activeSubTab, setActiveSubTab] = useState('forms');
+  const [loading, setLoading] = useState(false);
+  const [showFormEditor, setShowFormEditor] = useState(false);
+  const [editingForm, setEditingForm] = useState<any>(null);
+  const [showCampaignCreator, setShowCampaignCreator] = useState(false);
+  const [selectedForm, setSelectedForm] = useState<any>(null);
+
+  useEffect(() => {
+    loadFeedbackData();
+  }, [activeSubTab]);
+
+  const loadFeedbackData = async () => {
+    setLoading(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
+      const authHeader = { 'Authorization': `Bearer ${session.access_token}` };
+
+      if (activeSubTab === 'forms' || activeSubTab === 'overview') {
+        // Load forms
+        const formsResponse = await fetch('/api/admin/feedback-forms?include_questions=true', {
+          headers: authHeader
+        });
+        if (formsResponse.ok) {
+          const formsData = await formsResponse.json();
+          setForms(formsData.forms || []);
+        }
+      }
+
+      if (activeSubTab === 'campaigns' || activeSubTab === 'overview') {
+        // Load campaigns
+        const campaignsResponse = await fetch('/api/admin/feedback-campaigns', {
+          headers: authHeader
+        });
+        if (campaignsResponse.ok) {
+          const campaignsData = await campaignsResponse.json();
+          setCampaigns(campaignsData.campaigns || []);
+        }
+      }
+
+      if (activeSubTab === 'analytics' || activeSubTab === 'overview') {
+        // Load analytics
+        const analyticsResponse = await fetch('/api/admin/feedback-responses?analytics=true', {
+          headers: authHeader
+        });
+        if (analyticsResponse.ok) {
+          const analyticsData = await analyticsResponse.json();
+          setAnalytics(analyticsData.analytics);
+        }
+
+        // Load responses
+        const responsesResponse = await fetch('/api/admin/feedback-responses', {
+          headers: authHeader
+        });
+        if (responsesResponse.ok) {
+          const responsesData = await responsesResponse.json();
+          setResponses(responsesData.responses || []);
+        }
+      }
+    } catch (error) {
+      console.error('Error loading feedback data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const createForm = async (formData: any) => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
+      const response = await fetch('/api/admin/feedback-forms', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        },
+        body: JSON.stringify(formData)
+      });
+
+      if (response.ok) {
+        loadFeedbackData();
+        setShowFormEditor(false);
+        setEditingForm(null);
+      }
+    } catch (error) {
+      console.error('Error creating form:', error);
+    }
+  };
+
+  const updateForm = async (formData: any) => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
+      const response = await fetch('/api/admin/feedback-forms', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        },
+        body: JSON.stringify(formData)
+      });
+
+      if (response.ok) {
+        loadFeedbackData();
+        setShowFormEditor(false);
+        setEditingForm(null);
+      }
+    } catch (error) {
+      console.error('Error updating form:', error);
+    }
+  };
+
+  const deleteForm = async (formId: string) => {
+    if (!confirm('Are you sure you want to delete this form?')) return;
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
+      const response = await fetch(`/api/admin/feedback-forms?id=${formId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`
+        }
+      });
+
+      if (response.ok) {
+        loadFeedbackData();
+      }
+    } catch (error) {
+      console.error('Error deleting form:', error);
+    }
+  };
+
+  const subTabs = [
+    { id: 'forms', name: 'Forms', count: forms.length },
+    { id: 'campaigns', name: 'Campaigns', count: campaigns.length },
+    { id: 'analytics', name: 'Analytics', count: responses.length },
+    { id: 'overview', name: 'Overview', count: null }
+  ];
+
+  return (
+    <div className="p-6">
+      <div className="flex justify-between items-center mb-6">
+        <h3 className="text-lg font-medium text-gray-900">Feedback Management</h3>
+        <button
+          onClick={() => setShowFormEditor(true)}
+          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2"
+        >
+          <Plus className="w-4 h-4" />
+          New Form
+        </button>
+      </div>
+
+      {/* Sub Tabs */}
+      <div className="border-b border-gray-200 mb-6">
+        <nav className="flex space-x-8">
+          {subTabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveSubTab(tab.id)}
+              className={`${
+                activeSubTab === tab.id
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700'
+              } whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm flex items-center gap-2`}
+            >
+              {tab.name}
+              {tab.count !== null && (
+                <span className={`${
+                  activeSubTab === tab.id ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-600'
+                } rounded-full px-2 py-1 text-xs font-medium`}>
+                  {tab.count}
+                </span>
+              )}
+            </button>
+          ))}
+        </nav>
+      </div>
+
+      {loading ? (
+        <div className="flex items-center justify-center py-12">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        </div>
+      ) : (
+        <>
+          {/* Overview Tab */}
+          {activeSubTab === 'overview' && (
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <div className="bg-blue-50 p-4 rounded-lg">
+                  <div className="flex items-center">
+                    <div className="p-2 bg-blue-100 rounded-lg">
+                      <MessageSquare className="w-5 h-5 text-blue-600" />
+                    </div>
+                    <div className="ml-3">
+                      <p className="text-sm font-medium text-blue-900">Total Forms</p>
+                      <p className="text-2xl font-bold text-blue-600">{forms.length}</p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="bg-green-50 p-4 rounded-lg">
+                  <div className="flex items-center">
+                    <div className="p-2 bg-green-100 rounded-lg">
+                      <Activity className="w-5 h-5 text-green-600" />
+                    </div>
+                    <div className="ml-3">
+                      <p className="text-sm font-medium text-green-900">Campaigns</p>
+                      <p className="text-2xl font-bold text-green-600">{campaigns.length}</p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="bg-purple-50 p-4 rounded-lg">
+                  <div className="flex items-center">
+                    <div className="p-2 bg-purple-100 rounded-lg">
+                      <BarChart3 className="w-5 h-5 text-purple-600" />
+                    </div>
+                    <div className="ml-3">
+                      <p className="text-sm font-medium text-purple-900">Responses</p>
+                      <p className="text-2xl font-bold text-purple-600">{responses.length}</p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="bg-yellow-50 p-4 rounded-lg">
+                  <div className="flex items-center">
+                    <div className="p-2 bg-yellow-100 rounded-lg">
+                      <Crown className="w-5 h-5 text-yellow-600" />
+                    </div>
+                    <div className="ml-3">
+                      <p className="text-sm font-medium text-yellow-900">NPS Score</p>
+                      <p className="text-2xl font-bold text-yellow-600">
+                        {analytics?.npsScore !== null ? analytics.npsScore : 'N/A'}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="bg-white border rounded-lg p-4">
+                  <h4 className="font-medium text-gray-900 mb-3">Recent Forms</h4>
+                  <div className="space-y-2">
+                    {forms.slice(0, 5).map((form) => (
+                      <div key={form.id} className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                        <span className="text-sm text-gray-900">{form.name}</span>
+                        <span className={`text-xs px-2 py-1 rounded-full ${
+                          form.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                        }`}>
+                          {form.is_active ? 'Active' : 'Inactive'}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="bg-white border rounded-lg p-4">
+                  <h4 className="font-medium text-gray-900 mb-3">Recent Responses</h4>
+                  <div className="space-y-2">
+                    {responses.slice(0, 5).map((response) => (
+                      <div key={response.id} className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                        <span className="text-sm text-gray-900">{response.user_name || response.user_email}</span>
+                        <span className="text-xs text-gray-500">
+                          {new Date(response.submitted_at).toLocaleDateString()}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Forms Tab */}
+          {activeSubTab === 'forms' && (
+            <div className="space-y-4">
+              {forms.length === 0 ? (
+                <div className="text-center py-12">
+                  <MessageSquare className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                  <p className="text-gray-500">No feedback forms yet. Create your first form to get started!</p>
+                </div>
+              ) : (
+                <div className="grid gap-4">
+                  {forms.map((form) => (
+                    <div key={form.id} className="border rounded-lg p-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h4 className="font-medium text-gray-900">{form.name}</h4>
+                          <p className="text-sm text-gray-600 mt-1">{form.description}</p>
+                          <div className="flex items-center gap-4 mt-2">
+                            <span className={`text-xs px-2 py-1 rounded-full ${
+                              form.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                            }`}>
+                              {form.is_active ? 'Active' : 'Inactive'}
+                            </span>
+                            <span className="text-xs text-gray-500">
+                              {form.questions?.length || 0} questions
+                            </span>
+                            <span className="text-xs text-gray-500">
+                              Created {new Date(form.created_at).toLocaleDateString()}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => {
+                              setEditingForm(form);
+                              setShowFormEditor(true);
+                            }}
+                            className="text-blue-600 hover:text-blue-800"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => deleteForm(form.id)}
+                            className="text-red-600 hover:text-red-800"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => {
+                              setSelectedForm(form);
+                              setShowCampaignCreator(true);
+                            }}
+                            className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm"
+                          >
+                            Send
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Analytics Tab */}
+          {activeSubTab === 'analytics' && (
+            <div className="space-y-6">
+              {analytics && (
+                <>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="bg-white border rounded-lg p-4">
+                      <h4 className="font-medium text-gray-900 mb-2">Net Promoter Score</h4>
+                      <p className="text-3xl font-bold text-blue-600">
+                        {analytics.npsScore !== null ? analytics.npsScore : 'N/A'}
+                      </p>
+                      <p className="text-sm text-gray-500 mt-1">
+                        Based on {analytics.npsResponses?.length || 0} responses
+                      </p>
+                    </div>
+
+                    <div className="bg-white border rounded-lg p-4">
+                      <h4 className="font-medium text-gray-900 mb-2">Satisfaction</h4>
+                      <p className="text-3xl font-bold text-green-600">
+                        {analytics.satisfactionMetrics?.average ? 
+                          `${analytics.satisfactionMetrics.average}/5` : 'N/A'}
+                      </p>
+                      <p className="text-sm text-gray-500 mt-1">
+                        {analytics.satisfactionMetrics?.satisfied || 0} satisfied users
+                      </p>
+                    </div>
+
+                    <div className="bg-white border rounded-lg p-4">
+                      <h4 className="font-medium text-gray-900 mb-2">Total Responses</h4>
+                      <p className="text-3xl font-bold text-purple-600">{analytics.totalResponses}</p>
+                      <p className="text-sm text-gray-500 mt-1">Across all forms</p>
+                    </div>
+                  </div>
+
+                  <div className="bg-white border rounded-lg p-6">
+                    <h4 className="font-medium text-gray-900 mb-4">Question Analytics</h4>
+                    <div className="space-y-4">
+                      {Object.values(analytics.questionAnalytics || {}).map((q: any) => (
+                        <div key={q.question} className="border-b pb-4">
+                          <h5 className="text-sm font-medium text-gray-900 mb-2">{q.question}</h5>
+                          <div className="flex items-center gap-4">
+                            {q.average && (
+                              <span className="text-sm text-gray-600">
+                                Average: <span className="font-medium">{q.average.toFixed(1)}</span>
+                              </span>
+                            )}
+                            <span className="text-sm text-gray-600">
+                              Responses: <span className="font-medium">{q.totalResponses}</span>
+                            </span>
+                          </div>
+                          {Object.keys(q.distribution || {}).length > 0 && (
+                            <div className="mt-2">
+                              <div className="flex flex-wrap gap-2">
+                                {Object.entries(q.distribution).map(([option, count]: [string, any]) => (
+                                  <span key={option} className="text-xs bg-gray-100 px-2 py-1 rounded">
+                                    {option}: {count}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+
+          {/* Campaigns Tab */}
+          {activeSubTab === 'campaigns' && (
+            <div className="space-y-4">
+              {campaigns.length === 0 ? (
+                <div className="text-center py-12">
+                  <Activity className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                  <p className="text-gray-500">No campaigns yet. Send a form to users to create your first campaign!</p>
+                </div>
+              ) : (
+                <div className="grid gap-4">
+                  {campaigns.map((campaign) => (
+                    <div key={campaign.id} className="border rounded-lg p-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h4 className="font-medium text-gray-900">{campaign.name}</h4>
+                          <p className="text-sm text-gray-600 mt-1">{campaign.description}</p>
+                          <div className="flex items-center gap-4 mt-2">
+                            <span className="text-xs text-gray-500">
+                              Form: {campaign.feedback_forms?.name}
+                            </span>
+                            <span className="text-xs text-gray-500">
+                              Sent to: {campaign.sent_count} users
+                            </span>
+                            <span className="text-xs text-gray-500">
+                              Responses: {campaign.response_count}
+                            </span>
+                            <span className="text-xs text-gray-500">
+                              Response Rate: {campaign.sent_count > 0 ? 
+                                Math.round((campaign.response_count / campaign.sent_count) * 100) : 0}%
+                            </span>
+                          </div>
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          {new Date(campaign.created_at).toLocaleDateString()}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </>
+      )}
+
+      {/* Modals */}
+      {showFormEditor && (
+        <FeedbackFormEditor
+          form={editingForm}
+          onSave={editingForm ? updateForm : createForm}
+          onClose={() => {
+            setShowFormEditor(false);
+            setEditingForm(null);
+          }}
+        />
+      )}
+
+      {showCampaignCreator && selectedForm && (
+        <FeedbackCampaignCreator
+          form={selectedForm}
+          onClose={() => {
+            setShowCampaignCreator(false);
+            setSelectedForm(null);
+          }}
+          onSuccess={() => {
+            loadFeedbackData();
+            setShowCampaignCreator(false);
+            setSelectedForm(null);
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+// Feedback Form Editor Component
+function FeedbackFormEditor({ form, onSave, onClose }: { 
+  form: any, 
+  onSave: (data: any) => void, 
+  onClose: () => void 
+}) {
+  const [formData, setFormData] = useState({
+    name: form?.name || '',
+    description: form?.description || '',
+    is_active: form?.is_active !== false,
+    questions: form?.questions || []
+  });
+  const [saving, setSaving] = useState(false);
+
+  const addQuestion = () => {
+    const newQuestion = {
+      id: Date.now().toString(),
+      question_text: '',
+      question_type: 'rating',
+      options: { scale: 5, labels: ['Poor', 'Fair', 'Good', 'Very Good', 'Excellent'] },
+      required: true,
+      order_index: formData.questions.length + 1
+    };
+    setFormData({
+      ...formData,
+      questions: [...formData.questions, newQuestion]
+    });
+  };
+
+  const updateQuestion = (index: number, updates: any) => {
+    const updatedQuestions = formData.questions.map((q: any, i: number) => 
+      i === index ? { ...q, ...updates } : q
+    );
+    setFormData({ ...formData, questions: updatedQuestions });
+  };
+
+  const removeQuestion = (index: number) => {
+    setFormData({
+      ...formData,
+      questions: formData.questions.filter((_: any, i: number) => i !== index)
+    });
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+    
+    const submitData = {
+      ...formData,
+      id: form?.id
+    };
+    
+    await onSave(submitData);
+    setSaving(false);
+  };
+
+  const questionTypes = [
+    { value: 'rating', label: 'Rating Scale' },
+    { value: 'multiple_choice', label: 'Multiple Choice' },
+    { value: 'text', label: 'Text Response' },
+    { value: 'yes_no', label: 'Yes/No' }
+  ];
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+      <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="p-6">
+          <div className="flex justify-between items-center mb-6">
+            <h3 className="text-lg font-medium text-gray-900">
+              {form ? 'Edit Feedback Form' : 'Create New Feedback Form'}
+            </h3>
+            <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Form Name</label>
+                <input
+                  type="text"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="e.g., User Experience Survey"
+                  required
+                />
+              </div>
+
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="is_active"
+                  checked={formData.is_active}
+                  onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
+                  className="h-4 w-4 text-blue-600 border-gray-300 rounded"
+                />
+                <label htmlFor="is_active" className="ml-2 text-sm font-medium text-gray-700">
+                  Active (can be sent to users)
+                </label>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
+              <textarea
+                value={formData.description}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                rows={3}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Brief description of this feedback form..."
+              />
+            </div>
+
+            <div>
+              <div className="flex justify-between items-center mb-4">
+                <h4 className="text-md font-medium text-gray-900">Questions</h4>
+                <button
+                  type="button"
+                  onClick={addQuestion}
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm flex items-center gap-1"
+                >
+                  <Plus className="w-4 h-4" />
+                  Add Question
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                {formData.questions.map((question: any, index: number) => (
+                  <div key={question.id || index} className="border rounded-lg p-4 bg-gray-50">
+                    <div className="flex justify-between items-start mb-3">
+                      <div className="text-sm font-medium text-gray-900">Question {index + 1}</div>
+                      <button
+                        type="button"
+                        onClick={() => removeQuestion(index)}
+                        className="text-red-600 hover:text-red-800"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
+                      <div>
+                        <label className="block text-xs font-medium text-gray-700 mb-1">Question Text</label>
+                        <input
+                          type="text"
+                          value={question.question_text}
+                          onChange={(e) => updateQuestion(index, { question_text: e.target.value })}
+                          className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
+                          placeholder="Enter your question..."
+                          required
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-medium text-gray-700 mb-1">Question Type</label>
+                        <select
+                          value={question.question_type}
+                          onChange={(e) => {
+                            const newType = e.target.value;
+                            let newOptions = {};
+                            
+                            if (newType === 'rating') {
+                              newOptions = { scale: 5, labels: ['Poor', 'Fair', 'Good', 'Very Good', 'Excellent'] };
+                            } else if (newType === 'multiple_choice') {
+                              newOptions = { options: ['Option 1', 'Option 2', 'Option 3'] };
+                            } else if (newType === 'text') {
+                              newOptions = { placeholder: 'Enter your response...' };
+                            }
+                            
+                            updateQuestion(index, { 
+                              question_type: newType,
+                              options: newOptions
+                            });
+                          }}
+                          className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
+                        >
+                          {questionTypes.map(type => (
+                            <option key={type.value} value={type.value}>{type.label}</option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+
+                    {question.question_type === 'rating' && (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-xs font-medium text-gray-700 mb-1">Rating Scale</label>
+                          <select
+                            value={question.options?.scale || 5}
+                            onChange={(e) => updateQuestion(index, {
+                              options: { 
+                                ...question.options, 
+                                scale: parseInt(e.target.value),
+                                nps: parseInt(e.target.value) === 10
+                              }
+                            })}
+                            className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
+                          >
+                            <option value={5}>1-5 Scale</option>
+                            <option value={10}>1-10 Scale (NPS)</option>
+                          </select>
+                        </div>
+                        <div className="flex items-center">
+                          <input
+                            type="checkbox"
+                            id={`nps-${index}`}
+                            checked={question.options?.nps || false}
+                            onChange={(e) => updateQuestion(index, {
+                              options: { ...question.options, nps: e.target.checked }
+                            })}
+                            className="h-4 w-4 text-blue-600 border-gray-300 rounded"
+                          />
+                          <label htmlFor={`nps-${index}`} className="ml-2 text-xs text-gray-700">
+                            Use for NPS calculation
+                          </label>
+                        </div>
+                      </div>
+                    )}
+
+                    {question.question_type === 'multiple_choice' && (
+                      <div>
+                        <label className="block text-xs font-medium text-gray-700 mb-1">Options (one per line)</label>
+                        <textarea
+                          value={(question.options?.options || []).join('\n')}
+                          onChange={(e) => updateQuestion(index, {
+                            options: { 
+                              ...question.options, 
+                              options: e.target.value.split('\n').filter(o => o.trim()) 
+                            }
+                          })}
+                          rows={3}
+                          className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
+                          placeholder="Option 1&#10;Option 2&#10;Option 3"
+                        />
+                      </div>
+                    )}
+
+                    <div className="flex items-center mt-3">
+                      <input
+                        type="checkbox"
+                        id={`required-${index}`}
+                        checked={question.required !== false}
+                        onChange={(e) => updateQuestion(index, { required: e.target.checked })}
+                        className="h-4 w-4 text-blue-600 border-gray-300 rounded"
+                      />
+                      <label htmlFor={`required-${index}`} className="ml-2 text-xs text-gray-700">
+                        Required question
+                      </label>
+                    </div>
+                  </div>
+                ))}
+
+                {formData.questions.length === 0 && (
+                  <div className="text-center py-8 text-gray-500">
+                    No questions yet. Click "Add Question" to get started!
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="flex justify-end space-x-3 pt-6 border-t">
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
+                disabled={saving}
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={saving || formData.questions.length === 0}
+                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50"
+              >
+                {saving ? 'Saving...' : (form ? 'Update Form' : 'Create Form')}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Feedback Campaign Creator Component
+function FeedbackCampaignCreator({ form, onClose, onSuccess }: { 
+  form: any, 
+  onClose: () => void,
+  onSuccess: () => void 
+}) {
+  const [users, setUsers] = useState<any[]>([]);
+  const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
+  const [campaignData, setCampaignData] = useState({
+    name: `${form.name} - ${new Date().toLocaleDateString()}`,
+    description: `Survey campaign for ${form.name}`
+  });
+  const [loading, setLoading] = useState(true);
+  const [sending, setSending] = useState(false);
+
+  useEffect(() => {
+    loadUsers();
+  }, []);
+
+  const loadUsers = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
+      const response = await fetch('/api/admin/stats', {
+        headers: { 'Authorization': `Bearer ${session.access_token}` }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setUsers(data.users || []);
+      }
+    } catch (error) {
+      console.error('Error loading users:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSending(true);
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
+      const response = await fetch('/api/admin/feedback-campaigns', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        },
+        body: JSON.stringify({
+          form_id: form.id,
+          name: campaignData.name,
+          description: campaignData.description,
+          user_ids: selectedUsers
+        })
+      });
+
+      if (response.ok) {
+        onSuccess();
+      }
+    } catch (error) {
+      console.error('Error creating campaign:', error);
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const toggleUser = (userId: string) => {
+    setSelectedUsers(prev => 
+      prev.includes(userId) 
+        ? prev.filter(id => id !== userId)
+        : [...prev, userId]
+    );
+  };
+
+  const selectAll = () => {
+    const eligibleUsers = users.filter(u => u.marketing_consent);
+    setSelectedUsers(eligibleUsers.map(u => u.id));
+  };
+
+  const selectNone = () => {
+    setSelectedUsers([]);
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+      <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="p-6">
+          <div className="flex justify-between items-center mb-6">
+            <h3 className="text-lg font-medium text-gray-900">Send Feedback Form</h3>
+            <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+
+          <div className="mb-6 p-4 bg-blue-50 rounded-lg">
+            <h4 className="font-medium text-blue-900 mb-2">{form.name}</h4>
+            <p className="text-blue-800">{form.description}</p>
+            <p className="text-sm text-blue-600 mt-1">{form.questions?.length || 0} questions</p>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Campaign Name</label>
+                <input
+                  type="text"
+                  value={campaignData.name}
+                  onChange={(e) => setCampaignData({ ...campaignData, name: e.target.value })}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  required
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
+              <textarea
+                value={campaignData.description}
+                onChange={(e) => setCampaignData({ ...campaignData, description: e.target.value })}
+                rows={3}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+
+            <div>
+              <div className="flex justify-between items-center mb-4">
+                <h4 className="text-md font-medium text-gray-900">Select Users</h4>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={selectAll}
+                    className="text-blue-600 hover:text-blue-800 text-sm"
+                  >
+                    Select All Eligible
+                  </button>
+                  <button
+                    type="button"
+                    onClick={selectNone}
+                    className="text-gray-600 hover:text-gray-800 text-sm"
+                  >
+                    Select None
+                  </button>
+                </div>
+              </div>
+
+              {loading ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                </div>
+              ) : (
+                <div className="border rounded-lg max-h-96 overflow-y-auto">
+                  <div className="p-4 bg-gray-50 border-b text-sm text-gray-600">
+                    {selectedUsers.length} of {users.filter(u => u.marketing_consent).length} eligible users selected
+                  </div>
+                  
+                  <div className="divide-y">
+                    {users.map((user) => (
+                      <div key={user.id} className="p-3 flex items-center justify-between">
+                        <div className="flex items-center">
+                          <input
+                            type="checkbox"
+                            checked={selectedUsers.includes(user.id)}
+                            onChange={() => toggleUser(user.id)}
+                            disabled={!user.marketing_consent}
+                            className="h-4 w-4 text-blue-600 border-gray-300 rounded disabled:opacity-50"
+                          />
+                          <div className="ml-3">
+                            <div className="text-sm font-medium text-gray-900">
+                              {user.display_name || user.first_name || user.email}
+                            </div>
+                            <div className="text-sm text-gray-500">{user.email}</div>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {user.marketing_consent ? (
+                            <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">
+                              Marketing OK
+                            </span>
+                          ) : (
+                            <span className="text-xs bg-gray-100 text-gray-800 px-2 py-1 rounded">
+                              No Marketing Consent
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="flex justify-end space-x-3 pt-6 border-t">
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
+                disabled={sending}
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={sending || selectedUsers.length === 0}
+                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50"
+              >
+                {sending ? 'Sending...' : `Send to ${selectedUsers.length} Users`}
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   );

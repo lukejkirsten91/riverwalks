@@ -43,9 +43,27 @@ export default async function handler(
           const isNewUser = userCreatedAt > tenMinutesAgo;
           
           if (isNewUser && userEmail) {
-            // Send welcome email asynchronously (don't block the redirect)
-            sendWelcomeEmail(userEmail).catch((emailError) => {
-              logger.error('Welcome email error', { error: emailError instanceof Error ? emailError.message : 'Unknown error' });
+            // Send welcome email using template system asynchronously (don't block the redirect)
+            const userName = user.user_metadata?.full_name || user.user_metadata?.name || userEmail.split('@')[0];
+            
+            // Call our new template-based welcome email API
+            fetch(`${process.env.NEXT_PUBLIC_APP_DOMAIN || 'https://riverwalks.co.uk'}/api/admin/send-welcome-email`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                userId: user.id,
+                userEmail: userEmail,
+                userName: userName,
+                manual: false // This is automatic, not manual admin send
+              })
+            }).catch((emailError) => {
+              logger.error('Welcome email error', { 
+                error: emailError instanceof Error ? emailError.message : 'Unknown error',
+                userId: user.id,
+                userEmail 
+              });
             });
           }
         }
