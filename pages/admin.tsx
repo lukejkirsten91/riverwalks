@@ -1784,10 +1784,37 @@ function BulkEmailModal({ selectedUsers, onClose, onSuccess }: {
 
   const handleTemplateSelect = (template: any) => {
     setSelectedTemplate(template);
-    // Set default content from template for user to modify
+    
+    // Extract text content from HTML template for editing
+    let bodyContent = '';
+    if (template.content) {
+      // Convert HTML to readable text and extract the main message area
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = template.content;
+      
+      // Find content between {{content}} placeholders or extract key sections
+      if (template.content.includes('{{content}}')) {
+        // For templates with {{content}} placeholder, provide helpful starter text
+        bodyContent = template.type === 'feedback_request' 
+          ? "Your experience with Riverwalks matters to us! As a valued member of our geography community, your feedback helps us improve and create better resources for students like yourself.\n\nWe'd love to hear about your experience with our platform, what features you find most valuable, and any suggestions you might have for improvements."
+          : "Here's an update from the Riverwalks team...";
+      } else {
+        // Extract readable content from template
+        const paragraphs = tempDiv.querySelectorAll('p');
+        const contentParts: string[] = [];
+        paragraphs.forEach(p => {
+          const text = p.textContent?.trim();
+          if (text && !text.includes('{{') && text.length > 20) {
+            contentParts.push(text);
+          }
+        });
+        bodyContent = contentParts.join('\n\n');
+      }
+    }
+    
     setFormData({
       subject: template.subject || '',
-      body: '' // Start empty, user can add their custom content
+      body: bodyContent
     });
   };
 
@@ -1818,8 +1845,12 @@ function BulkEmailModal({ selectedUsers, onClose, onSuccess }: {
           if (selectedTemplate.type === 'feedback_request' && feedbackForms.length > 0) {
             const defaultForm = feedbackForms[0]; // Use first available form
             const formUrl = `${window.location.origin}/feedback/${defaultForm.id}`;
-            const formLink = `\n\n<div style="text-align: center; margin: 30px 0;"><a href="${formUrl}" style="display: inline-block; background: #10b981; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: 600;">Share Your Feedback</a></div>`;
-            templateContent = templateContent.replace('{{content}}', (formData.body || 'Your thoughts matter to us!') + formLink);
+            
+            // Add the form link as "this form" at the end of user content
+            const userContent = formData.body || 'Your thoughts matter to us!';
+            const formLinkText = `\n\nPlease take a moment to fill out <a href="${formUrl}" style="color: #3b82f6; text-decoration: underline; font-weight: 600;">this form</a> - it only takes 3-5 minutes and helps us make Riverwalks even better for geography students.`;
+            
+            templateContent = templateContent.replace('{{content}}', userContent + formLinkText);
           }
           
           return fetch('/api/admin/send-bulk-email', {
@@ -1990,7 +2021,7 @@ function BulkEmailModal({ selectedUsers, onClose, onSuccess }: {
                         <div className="text-xs text-gray-600 mt-1">{template.subject}</div>
                         {template.type === 'feedback_request' && feedbackForms.length > 0 && (
                           <div className="text-xs text-green-600 mt-1">
-                            ✅ Will automatically include feedback form link
+                            ✅ Will automatically add "Please fill out <u>this form</u>" link
                           </div>
                         )}
                       </div>
@@ -2038,7 +2069,9 @@ function BulkEmailModal({ selectedUsers, onClose, onSuccess }: {
               />
               <p className="mt-1 text-sm text-gray-500">
                 {emailMode === 'template' 
-                  ? '📄 Your content will be inserted into the selected template. Templates with forms will automatically include the form link.'
+                  ? selectedTemplate?.type === 'feedback_request' 
+                    ? '📄 Your message + automatic "this form" link will be inserted into the beautiful template.'
+                    : '📄 Your content will be inserted into the selected template with professional styling.'
                   : 'Your message will be formatted with line breaks preserved and styled in a professional template.'
                 }
               </p>
