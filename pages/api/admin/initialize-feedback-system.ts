@@ -58,7 +58,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     <style>
         body { 
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
-            line-height: 1.6; 
+            line-height: 1.4; 
             color: #333; 
             margin: 0; 
             padding: 20px; 
@@ -79,7 +79,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             text-align: center; 
         }
         .content { 
-            padding: 30px 20px; 
+            padding: 25px 20px; 
+        }
+        .content p { 
+            margin: 0 0 12px 0; 
+        }
+        .content ul { 
+            margin: 12px 0; 
+        }
+        .content li { 
+            margin: 4px 0; 
         }
         .footer { 
             background: #f8f9fa; 
@@ -289,7 +298,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     <style>
         body { 
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
-            line-height: 1.6; 
+            line-height: 1.4; 
             color: #333; 
             margin: 0; 
             padding: 20px; 
@@ -310,7 +319,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             text-align: center; 
         }
         .content { 
-            padding: 30px 20px; 
+            padding: 25px 20px; 
+        }
+        .content p { 
+            margin: 0 0 12px 0; 
+        }
+        .content ul { 
+            margin: 12px 0; 
+        }
+        .content li { 
+            margin: 4px 0; 
         }
         .footer { 
             background: #f8f9fa; 
@@ -373,7 +391,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     <style>
         body { 
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
-            line-height: 1.6; 
+            line-height: 1.4; 
             color: #333; 
             margin: 0; 
             padding: 20px; 
@@ -394,7 +412,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             text-align: center; 
         }
         .content { 
-            padding: 30px 20px; 
+            padding: 25px 20px; 
+        }
+        .content p { 
+            margin: 0 0 12px 0; 
+        }
+        .content ul { 
+            margin: 12px 0; 
+        }
+        .content li { 
+            margin: 4px 0; 
         }
         .footer { 
             background: #f8f9fa; 

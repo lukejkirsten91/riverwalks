@@ -1735,6 +1735,7 @@ function BulkEmailModal({ selectedUsers, onClose, onSuccess }: {
   const [templates, setTemplates] = useState<any[]>([]);
   const [feedbackForms, setFeedbackForms] = useState<any[]>([]);
   const [selectedTemplate, setSelectedTemplate] = useState<any>(null);
+  const [viewMode, setViewMode] = useState<'visual' | 'code'>('visual');
   const [formData, setFormData] = useState({
     subject: '',
     body: ''
@@ -2086,50 +2087,103 @@ function BulkEmailModal({ selectedUsers, onClose, onSuccess }: {
             </div>
 
             <div>
-              <label htmlFor="bulk-body" className="block text-sm font-medium text-gray-700 mb-2">
-                Message Body
-              </label>
-              <textarea
-                id="bulk-body"
-                rows={emailMode === 'template' ? 20 : 12}
-                value={formData.body}
-                onChange={(e) => setFormData({ ...formData, body: e.target.value })}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-vertical font-mono text-sm"
-                placeholder={emailMode === 'template' ? "The full template HTML will appear here for editing..." : "Enter your message here..."}
-                required
-              />
-              
-              {/* Placeholder buttons */}
-              <div className="mt-2 flex flex-wrap gap-2">
-                <p className="text-xs text-gray-600 w-full mb-1">Click to insert placeholders:</p>
-                <button
-                  type="button"
-                  onClick={() => insertPlaceholder('{{name}}')}
-                  className="px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition-colors"
-                >
-                  + Name
-                </button>
-                <button
-                  type="button"
-                  onClick={() => insertPlaceholder('{{email}}')}
-                  className="px-2 py-1 text-xs bg-green-100 text-green-700 rounded hover:bg-green-200 transition-colors"
-                >
-                  + Email
-                </button>
-                <button
-                  type="button"
-                  onClick={() => insertPlaceholder('{{first_name}}')}
-                  className="px-2 py-1 text-xs bg-purple-100 text-purple-700 rounded hover:bg-purple-200 transition-colors"
-                >
-                  + First Name
-                </button>
+              <div className="flex items-center justify-between mb-2">
+                <label htmlFor="bulk-body" className="block text-sm font-medium text-gray-700">
+                  Message Body
+                </label>
+                {emailMode === 'template' && (
+                  <div className="flex bg-gray-100 rounded-lg p-1">
+                    <button
+                      type="button"
+                      onClick={() => setViewMode('visual')}
+                      className={`px-3 py-1 text-xs font-medium rounded transition-colors ${
+                        viewMode === 'visual'
+                          ? 'bg-white text-gray-900 shadow-sm'
+                          : 'text-gray-500 hover:text-gray-700'
+                      }`}
+                    >
+                      👁️ Visual
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setViewMode('code')}
+                      className={`px-3 py-1 text-xs font-medium rounded transition-colors ${
+                        viewMode === 'code'
+                          ? 'bg-white text-gray-900 shadow-sm'
+                          : 'text-gray-500 hover:text-gray-700'
+                      }`}
+                    >
+                      </> Code
+                    </button>
+                  </div>
+                )}
               </div>
+
+              {emailMode === 'template' && viewMode === 'visual' ? (
+                <div className="border border-gray-300 rounded-lg">
+                  <div 
+                    className="w-full h-80 overflow-y-auto bg-white rounded-lg p-4"
+                    dangerouslySetInnerHTML={{ 
+                      __html: formData.body
+                        .replace(/{{name}}/g, 'John Doe')
+                        .replace(/{{email}}/g, 'john@example.com')
+                        .replace(/{{first_name}}/g, 'John')
+                        .replace(/{{content}}/g, '<p style="color: #3b82f6; font-style: italic;">Your custom message will appear here...</p>')
+                    }}
+                  />
+                  <div className="border-t bg-gray-50 px-4 py-2 rounded-b-lg">
+                    <p className="text-xs text-gray-500">
+                      ✨ Visual preview with sample data. Switch to Code view to edit the template HTML.
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <textarea
+                  id="bulk-body"
+                  rows={emailMode === 'template' ? 20 : 12}
+                  value={formData.body}
+                  onChange={(e) => setFormData({ ...formData, body: e.target.value })}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-vertical font-mono text-sm"
+                  placeholder={emailMode === 'template' ? "The full template HTML will appear here for editing..." : "Enter your message here..."}
+                  required
+                />
+              )}
+              
+              {/* Placeholder buttons - only show in code view */}
+              {(emailMode !== 'template' || viewMode === 'code') && (
+                <div className="mt-2 flex flex-wrap gap-2">
+                  <p className="text-xs text-gray-600 w-full mb-1">Click to insert placeholders:</p>
+                  <button
+                    type="button"
+                    onClick={() => insertPlaceholder('{{name}}')}
+                    className="px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition-colors"
+                  >
+                    + Name
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => insertPlaceholder('{{email}}')}
+                    className="px-2 py-1 text-xs bg-green-100 text-green-700 rounded hover:bg-green-200 transition-colors"
+                  >
+                    + Email
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => insertPlaceholder('{{first_name}}')}
+                    className="px-2 py-1 text-xs bg-purple-100 text-purple-700 rounded hover:bg-purple-200 transition-colors"
+                  >
+                    + First Name
+                  </button>
+                </div>
+              )}
               
               <p className="mt-2 text-sm text-gray-500">
                 {emailMode === 'template' 
-                  ? selectedTemplate?.type === 'feedback_request' 
-                    ? '📄 Edit the full template HTML above. For feedback forms, add {{content}} where you want the form link inserted, or it will be added automatically.'
-                    : '📄 Edit the full template HTML above. Use placeholders like {{name}}, {{email}}, {{first_name}} for personalization.'
+                  ? viewMode === 'visual'
+                    ? '👁️ Visual preview with sample data. Switch to Code view to edit HTML or use placeholder buttons.'
+                    : selectedTemplate?.type === 'feedback_request' 
+                      ? '📄 Edit the template HTML. For feedback forms, add {{content}} where you want the form link, or it will be added automatically.'
+                      : '📄 Edit the template HTML. Use placeholders like {{name}}, {{email}}, {{first_name}} for personalization.'
                   : 'Your message will be formatted with line breaks preserved and styled in a professional template.'
                 }
               </p>
