@@ -1,6 +1,14 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { supabase } from '../../../../lib/supabase';
+import { createClient } from '@supabase/supabase-js';
 import { logger } from '../../../../lib/logger';
+
+// Use service role client to bypass RLS for public form access
+const supabaseAdmin = process.env.SUPABASE_SERVICE_ROLE_KEY 
+  ? createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY
+    )
+  : null;
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') {
@@ -13,9 +21,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(400).json({ error: 'Form ID is required' });
   }
 
+  if (!supabaseAdmin) {
+    return res.status(500).json({ error: 'Server configuration error' });
+  }
+
   try {
     // Get the feedback form with its questions
-    const { data: form, error: formError } = await supabase
+    const { data: form, error: formError } = await supabaseAdmin
       .from('feedback_forms')
       .select(`
         id,

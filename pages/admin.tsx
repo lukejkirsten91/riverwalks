@@ -1725,15 +1725,16 @@ function EmailTemplateEditor({ template, onSave, onCancel }: {
   );
 }
 
-// Simplified Bulk Email Modal Component
+// Enhanced Bulk Email Modal Component
 function BulkEmailModal({ selectedUsers, onClose, onSuccess }: { 
   selectedUsers: Array<{email: string, name: string}>, 
   onClose: () => void,
   onSuccess: () => void
 }) {
-  const [emailMode, setEmailMode] = useState<'email' | 'form'>('email');
+  const [emailMode, setEmailMode] = useState<'custom' | 'template'>('custom');
+  const [templates, setTemplates] = useState<any[]>([]);
   const [feedbackForms, setFeedbackForms] = useState<any[]>([]);
-  const [selectedForm, setSelectedForm] = useState<any>(null);
+  const [selectedTemplate, setSelectedTemplate] = useState<any>(null);
   const [formData, setFormData] = useState({
     subject: '',
     body: ''
@@ -1743,17 +1744,29 @@ function BulkEmailModal({ selectedUsers, onClose, onSuccess }: {
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   useEffect(() => {
-    loadFeedbackForms();
+    loadTemplatesAndForms();
   }, []);
 
-  const loadFeedbackForms = async () => {
+  const loadTemplatesAndForms = async () => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return;
 
       const authHeader = { 'Authorization': `Bearer ${session.access_token}` };
 
-      // Load feedback forms
+      // Load email templates (newsletter, welcome, feedback_request)
+      const templatesResponse = await fetch('/api/admin/email-templates', {
+        headers: authHeader
+      });
+      if (templatesResponse.ok) {
+        const templatesData = await templatesResponse.json();
+        const activeTemplates = (templatesData.templates || []).filter((t: any) => 
+          t.is_active && (t.type === 'newsletter' || t.type === 'feedback_request')
+        );
+        setTemplates(activeTemplates);
+      }
+
+      // Load feedback forms to associate with templates
       const formsResponse = await fetch('/api/admin/feedback-forms', {
         headers: authHeader
       });
@@ -1763,10 +1776,19 @@ function BulkEmailModal({ selectedUsers, onClose, onSuccess }: {
         setFeedbackForms(activeForms);
       }
     } catch (error) {
-      console.error('Error loading feedback forms:', error);
+      console.error('Error loading templates and forms:', error);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleTemplateSelect = (template: any) => {
+    setSelectedTemplate(template);
+    // Set default content from template for user to modify
+    setFormData({
+      subject: template.subject || '',
+      body: '' // Start empty, user can add their custom content
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -1780,31 +1802,65 @@ function BulkEmailModal({ selectedUsers, onClose, onSuccess }: {
         throw new Error('No session found');
       }
 
-      let emailContent = formData.body;
-      
-      // If sending with form, add the form link
-      if (emailMode === 'form' && selectedForm) {
-        const formUrl = `${window.location.origin}/feedback/${selectedForm.id}`;
-        const formLink = `\n\nWe'd love to hear your feedback! Please take a moment to fill out our survey: ${formUrl}`;
-        emailContent = formData.body + formLink;
-      }
+      if (emailMode === 'template' && selectedTemplate) {
+        // Use template with personalization for each user
+        const sendPromises = selectedUsers.map(async (user) => {
+          let templateContent = selectedTemplate.content;
+          const userName = user.name || user.email.split('@')[0];
+          
+          // Replace template variables
+          templateContent = templateContent
+            .replace(/{{name}}/g, userName)
+            .replace(/{{email}}/g, user.email)
+            .replace(/{{content}}/g, formData.body || '');
 
-      const response = await fetch('/api/admin/send-bulk-email', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`,
-        },
-        body: JSON.stringify({
-          emails: selectedUsers.map(u => u.email),
-          subject: formData.subject,
-          body: emailContent
-        }),
-      });
+          // Add form link if it's a feedback_request template and we have forms
+          if (selectedTemplate.type === 'feedback_request' && feedbackForms.length > 0) {
+            const defaultForm = feedbackForms[0]; // Use first available form
+            const formUrl = `${window.location.origin}/feedback/${defaultForm.id}`;
+            const formLink = `\n\n<div style="text-align: center; margin: 30px 0;"><a href="${formUrl}" style="display: inline-block; background: #10b981; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: 600;">Share Your Feedback</a></div>`;
+            templateContent = templateContent.replace('{{content}}', (formData.body || 'Your thoughts matter to us!') + formLink);
+          }
+          
+          return fetch('/api/admin/send-bulk-email', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${session.access_token}`,
+            },
+            body: JSON.stringify({
+              emails: [user.email],
+              subject: selectedTemplate.subject.replace(/{{name}}/g, userName),
+              body: templateContent
+            }),
+          });
+        });
 
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || 'Failed to send bulk email');
+        const results = await Promise.all(sendPromises);
+        const failedCount = results.filter(r => !r.ok).length;
+        
+        if (failedCount > 0) {
+          throw new Error(`Failed to send ${failedCount} out of ${selectedUsers.length} emails`);
+        }
+      } else {
+        // Regular email mode - send as bulk
+        const response = await fetch('/api/admin/send-bulk-email', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify({
+            emails: selectedUsers.map(u => u.email),
+            subject: formData.subject,
+            body: formData.body
+          }),
+        });
+
+        if (!response.ok) {
+          const data = await response.json();
+          throw new Error(data.error || 'Failed to send bulk email');
+        }
       }
 
       setMessage({ type: 'success', text: `Email sent successfully to ${selectedUsers.length} recipients!` });
@@ -1860,14 +1916,14 @@ function BulkEmailModal({ selectedUsers, onClose, onSuccess }: {
             </div>
           </div>
 
-          {/* Email Type Selection */}
+          {/* Email Mode Selection */}
           <div className="mb-6">
             <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
               <button
                 type="button"
-                onClick={() => setEmailMode('email')}
+                onClick={() => setEmailMode('custom')}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  emailMode === 'email'
+                  emailMode === 'custom'
                     ? 'bg-blue-600 text-white'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
@@ -1876,20 +1932,20 @@ function BulkEmailModal({ selectedUsers, onClose, onSuccess }: {
               </button>
               <button
                 type="button"
-                onClick={() => setEmailMode('form')}
+                onClick={() => setEmailMode('template')}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  emailMode === 'form'
-                    ? 'bg-green-600 text-white'
+                  emailMode === 'template'
+                    ? 'bg-purple-600 text-white'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
-                📋 Email with Feedback Form
+                📄 Use Template
               </button>
             </div>
             <p className="text-sm text-gray-500 mt-2">
-              {emailMode === 'email' 
-                ? 'Send a regular email message'
-                : 'Send an email with a feedback form link automatically added'
+              {emailMode === 'custom' 
+                ? 'Send a custom email message you write yourself'
+                : 'Use a pre-designed template with professional styling'
               }
             </p>
           </div>
@@ -1905,43 +1961,47 @@ function BulkEmailModal({ selectedUsers, onClose, onSuccess }: {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            {emailMode === 'form' && (
+            {emailMode === 'template' && (
               <div className="mb-6">
                 <label className="block text-sm font-medium text-gray-700 mb-3">
-                  Select Feedback Form
+                  Select Template
                 </label>
-                <div className="space-y-2">
-                  {feedbackForms.map((form) => (
-                    <label key={form.id} className="flex items-start space-x-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
+                <div className="space-y-3">
+                  {templates.map((template) => (
+                    <label key={template.id} className="flex items-start space-x-3 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
                       <input
                         type="radio"
-                        name="selectedForm"
-                        value={form.id}
-                        checked={selectedForm?.id === form.id}
-                        onChange={() => setSelectedForm(form)}
-                        className="mt-1 border-gray-300 text-green-600 focus:ring-green-500"
+                        name="selectedTemplate"
+                        value={template.id}
+                        checked={selectedTemplate?.id === template.id}
+                        onChange={() => handleTemplateSelect(template)}
+                        className="mt-1 border-gray-300 text-purple-600 focus:ring-purple-500"
                       />
-                      <div>
-                        <div className="font-medium text-sm text-gray-900">{form.name}</div>
-                        <div className="text-xs text-gray-500">{form.description}</div>
-                        <div className="text-xs text-green-600 mt-1">{form.questions?.length || 0} questions</div>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <div className="font-medium text-sm text-gray-900">{template.name}</div>
+                          {template.type === 'feedback_request' && feedbackForms.length > 0 && (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+                              📋 Has Form
+                            </span>
+                          )}
+                        </div>
+                        <div className="text-xs text-gray-500 mt-1 capitalize">{template.type.replace('_', ' ')}</div>
+                        <div className="text-xs text-gray-600 mt-1">{template.subject}</div>
+                        {template.type === 'feedback_request' && feedbackForms.length > 0 && (
+                          <div className="text-xs text-green-600 mt-1">
+                            ✅ Will automatically include feedback form link
+                          </div>
+                        )}
                       </div>
                     </label>
                   ))}
-                  {feedbackForms.length === 0 && (
-                    <p className="text-gray-500 text-sm p-3 border border-gray-200 rounded-lg">No feedback forms available</p>
+                  {templates.length === 0 && (
+                    <p className="text-gray-500 text-sm p-3 border border-gray-200 rounded-lg">
+                      No email templates available. Click "Initialize System" in the Feedback tab first.
+                    </p>
                   )}
                 </div>
-                {selectedForm && (
-                  <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
-                    <p className="text-sm text-green-700">
-                      ✅ Form link will be automatically added to your email: 
-                      <code className="ml-1 text-xs bg-white px-1 py-0.5 rounded">
-                        {window.location.origin}/feedback/{selectedForm.id}
-                      </code>
-                    </p>
-                  </div>
-                )}
               </div>
             )}
 
@@ -1958,8 +2018,8 @@ function BulkEmailModal({ selectedUsers, onClose, onSuccess }: {
                 placeholder="Email subject..."
                 required
               />
-              {emailMode === 'form' && (
-                <p className="text-xs text-gray-500 mt-1">💡 Perfect for feedback requests like "Help us improve Riverwalks - Your input matters!"</p>
+              {emailMode === 'template' && selectedTemplate && (
+                <p className="text-xs text-gray-500 mt-1">📄 From template: "{selectedTemplate.subject}"</p>
               )}
             </div>
 
@@ -1977,8 +2037,8 @@ function BulkEmailModal({ selectedUsers, onClose, onSuccess }: {
                 required
               />
               <p className="mt-1 text-sm text-gray-500">
-                {emailMode === 'form' 
-                  ? '📋 The feedback form link will be automatically added at the bottom of your message.'
+                {emailMode === 'template' 
+                  ? '📄 Your content will be inserted into the selected template. Templates with forms will automatically include the form link.'
                   : 'Your message will be formatted with line breaks preserved and styled in a professional template.'
                 }
               </p>
@@ -1995,9 +2055,11 @@ function BulkEmailModal({ selectedUsers, onClose, onSuccess }: {
               </button>
               <button
                 type="submit"
-                disabled={sending || selectedUsers.length === 0 || (emailMode === 'form' && !selectedForm)}
-                className={`px-4 py-2 text-sm font-medium text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center ${
-                  emailMode === 'form' ? 'bg-green-600 hover:bg-green-700' : 'bg-blue-600 hover:bg-blue-700'
+                disabled={sending || selectedUsers.length === 0 || (emailMode === 'template' && !selectedTemplate)}
+                className={`px-4 py-2 text-sm font-medium text-white rounded-lg focus:outline-none focus:ring-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center ${
+                  emailMode === 'template' 
+                    ? 'bg-purple-600 hover:bg-purple-700 focus:ring-purple-500' 
+                    : 'bg-blue-600 hover:bg-blue-700 focus:ring-blue-500'
                 }`}
               >
                 {sending && (
@@ -2006,7 +2068,7 @@ function BulkEmailModal({ selectedUsers, onClose, onSuccess }: {
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
                 )}
-                {sending ? 'Sending...' : emailMode === 'form' ? `📋 Send with Form to ${selectedUsers.length}` : `📧 Send to ${selectedUsers.length} Recipients`}
+                {sending ? 'Sending...' : emailMode === 'template' ? `📄 Send Template to ${selectedUsers.length}` : `📧 Send to ${selectedUsers.length} Recipients`}
               </button>
             </div>
           </form>
