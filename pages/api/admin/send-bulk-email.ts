@@ -143,6 +143,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Send bulk email using BCC
     const transporter = createTransporter();
     
+    logger.info('Starting bulk email send', {
+      adminId: user.id,
+      totalRecipients: emails.length,
+      subject: subject,
+      smtpHost: process.env.SMTP_HOST,
+      fromAddress: process.env.RESEND_FROM_EMAIL || process.env.SMTP_USER
+    });
+    
     // Split into batches to avoid overwhelming the server
     const batchSize = 50;
     const batches = [];
@@ -160,6 +168,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       try {
         const mailOptions = {
           from: process.env.RESEND_FROM_EMAIL || process.env.SMTP_USER || 'luke@riverwalks.co.uk',
+          to: process.env.RESEND_FROM_EMAIL || process.env.SMTP_USER || 'luke@riverwalks.co.uk', // Required for BCC
           bcc: batch, // Using BCC so recipients can't see each other
           subject: subject,
           html: emailHtml,
@@ -183,8 +192,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
       } catch (batchError) {
         logger.error(`Failed to send bulk email batch ${i + 1}`, { 
-          batchError,
-          batch: batch.length 
+          batchError: batchError instanceof Error ? batchError.message : batchError,
+          batchSize: batch.length,
+          recipients: batch,
+          mailOptions: {
+            from: process.env.RESEND_FROM_EMAIL || process.env.SMTP_USER || 'luke@riverwalks.co.uk',
+            to: process.env.RESEND_FROM_EMAIL || process.env.SMTP_USER || 'luke@riverwalks.co.uk',
+            subject: subject
+          }
         });
         errors.push(`Batch ${i + 1}: ${batchError instanceof Error ? batchError.message : 'Unknown error'}`);
       }
