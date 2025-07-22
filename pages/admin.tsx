@@ -2124,16 +2124,44 @@ function BulkEmailModal({ selectedUsers, onClose, onSuccess }: {
                   <div 
                     className="w-full h-80 overflow-y-auto bg-white rounded-lg p-4"
                     dangerouslySetInnerHTML={{ 
-                      __html: formData.body
-                        .replace(/{{name}}/g, 'John Doe')
-                        .replace(/{{email}}/g, 'john@example.com')
-                        .replace(/{{first_name}}/g, 'John')
-                        .replace(/{{content}}/g, '<p style="color: #3b82f6; font-style: italic;">Your custom message will appear here...</p>')
+                      __html: (() => {
+                        let content = formData.body;
+                        
+                        // If it's a feedback template, show exactly what will be sent
+                        if (selectedTemplate?.type === 'feedback_request' && feedbackForms.length > 0) {
+                          const defaultForm = feedbackForms[0];
+                          const formUrl = `${window.location.origin}/feedback/${defaultForm.id}`;
+                          const formLinkText = `            <p style="margin-top: 30px; padding: 20px; background: #f0f9ff; border-radius: 8px; border-left: 4px solid #3b82f6;">
+                <strong>📋 We'd love your feedback!</strong><br>
+                Please take a moment to fill out <a href="${formUrl}" style="color: #3b82f6; text-decoration: underline; font-weight: 600;">this form</a> - it only takes 3-5 minutes and helps us make Riverwalks even better for geography students.
+            </p>`;
+                          
+                          if (content.includes('{{content}}')) {
+                            content = content.replace(/{{content}}/g, formLinkText);
+                          } else if (content.includes('</div>')) {
+                            const lastContentDivIndex = content.lastIndexOf('</div>');
+                            if (lastContentDivIndex !== -1) {
+                              content = content.substring(0, lastContentDivIndex) + 
+                                      formLinkText + '\n        ' + 
+                                      content.substring(lastContentDivIndex);
+                            }
+                          }
+                        } else {
+                          // Clean up any remaining {{content}} placeholders for non-feedback templates
+                          content = content.replace(/{{content}}/g, '');
+                        }
+                        
+                        // Replace with sample data for preview
+                        return content
+                          .replace(/{{name}}/g, 'John Doe')
+                          .replace(/{{email}}/g, 'john@example.com')
+                          .replace(/{{first_name}}/g, 'John');
+                      })()
                     }}
                   />
                   <div className="border-t bg-gray-50 px-4 py-2 rounded-b-lg">
                     <p className="text-xs text-gray-500">
-                      ✨ Visual preview with sample data. Switch to Code view to edit the template HTML.
+                      ✨ Exact preview of what recipients will see (with sample data). Switch to Code view to edit.
                     </p>
                   </div>
                 </div>
