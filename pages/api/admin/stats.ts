@@ -81,9 +81,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       conversionRate: totalUsers > 0 ? (activeSubscriptions / totalUsers) * 100 : 0
     };
 
-    // Create users array with subscription data
+    // Create users array with subscription data and name information
     const users = usersData.users.map(user => {
       const subscription = subscriptionsData?.find(s => s.user_id === user.id);
+      const metadata = user.user_metadata || {};
+      
+      // Extract names from metadata or full_name
+      let first_name = metadata.first_name;
+      let last_name = metadata.last_name;
+      
+      // If no separate first/last name, try to split full_name
+      if (!first_name && !last_name && metadata.full_name) {
+        const nameParts = metadata.full_name.trim().split(' ');
+        first_name = nameParts[0] || null;
+        last_name = nameParts.slice(1).join(' ') || null;
+      }
       
       return {
         id: user.id,
@@ -91,7 +103,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         subscription_type: subscription?.subscription_type || null,
         status: subscription?.status || null,
         created_at: user.created_at,
-        current_period_end: subscription?.current_period_end || null
+        current_period_end: subscription?.current_period_end || null,
+        first_name: first_name || null,
+        last_name: last_name || null,
+        display_name: metadata.display_name || null
       };
     });
 

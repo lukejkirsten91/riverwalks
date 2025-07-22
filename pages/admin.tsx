@@ -20,6 +20,9 @@ interface UserSubscription {
   status: string | null;
   created_at: string;
   current_period_end: string | null;
+  first_name?: string | null;
+  last_name?: string | null;
+  display_name?: string | null;
 }
 
 interface Voucher {
@@ -70,6 +73,8 @@ export default function AdminDashboard() {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [selectedUsers, setSelectedUsers] = useState<Set<string>>(new Set());
   const [showBulkEmail, setShowBulkEmail] = useState(false);
+  const [editingUser, setEditingUser] = useState<string | null>(null);
+  const [editingNames, setEditingNames] = useState({ first_name: '', last_name: '', display_name: '' });
 
   // Check admin access
   useEffect(() => {
@@ -304,8 +309,14 @@ export default function AdminDashboard() {
   // User filtering and selection helper functions
   const filteredAndSortedUsers = () => {
     let filtered = users.filter(user => {
-      // Search filter
-      const matchesSearch = user.email.toLowerCase().includes(searchQuery.toLowerCase());
+      // Search filter - search by email, first name, last name, or display name
+      const searchLower = searchQuery.toLowerCase();
+      const matchesSearch = 
+        user.email.toLowerCase().includes(searchLower) ||
+        (user.first_name && user.first_name.toLowerCase().includes(searchLower)) ||
+        (user.last_name && user.last_name.toLowerCase().includes(searchLower)) ||
+        (user.display_name && user.display_name.toLowerCase().includes(searchLower)) ||
+        getDisplayName(user).toLowerCase().includes(searchLower);
       
       // Subscription filter
       const matchesSubscription = filterSubscription === 'all' || 
@@ -376,6 +387,60 @@ export default function AdminDashboard() {
 
   const getSelectedUserEmails = () => {
     return users.filter(user => selectedUsers.has(user.id)).map(user => user.email);
+  };
+
+  const getDisplayName = (user: UserSubscription) => {
+    if (user.display_name) return user.display_name;
+    if (user.first_name && user.last_name) return `${user.first_name} ${user.last_name}`;
+    if (user.first_name) return user.first_name;
+    return user.email.split('@')[0];
+  };
+
+  const getSelectedUsersWithNames = () => {
+    return users.filter(user => selectedUsers.has(user.id)).map(user => ({
+      email: user.email,
+      name: getDisplayName(user)
+    }));
+  };
+
+  const startEditingName = (user: UserSubscription) => {
+    setEditingUser(user.id);
+    setEditingNames({
+      first_name: user.first_name || '',
+      last_name: user.last_name || '',
+      display_name: user.display_name || ''
+    });
+  };
+
+  const saveUserName = async (userId: string) => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
+      const response = await fetch('/api/admin/update-user-name', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        },
+        body: JSON.stringify({
+          userId,
+          ...editingNames
+        })
+      });
+
+      if (response.ok) {
+        setEditingUser(null);
+        await loadDashboardData(); // Refresh data
+      } else {
+        const error = await response.json();
+        console.error('Failed to update user name:', error);
+        alert('Failed to update user name: ' + (error.error || 'Unknown error'));
+      }
+    } catch (error) {
+      console.error('Error updating user name:', error);
+      alert('Error updating user name: ' + (error instanceof Error ? error.message : 'Unknown error'));
+    }
   };
 
   if (loading) {
@@ -558,7 +623,7 @@ export default function AdminDashboard() {
                     <label className="block text-sm font-medium text-gray-700 mb-1">Search Users</label>
                     <input
                       type="text"
-                      placeholder="Search by email..."
+                      placeholder="Search by email or name..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -662,6 +727,7 @@ export default function AdminDashboard() {
                           className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                         />
                       </th>
+                      <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
                       <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
                       <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subscription</th>
                       <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
@@ -680,7 +746,61 @@ export default function AdminDashboard() {
                             className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                           />
                         </td>
-                        <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 truncate max-w-[150px] sm:max-w-none">
+                        <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                          {editingUser === user.id ? (
+                            <div className="space-y-1">
+                              <div className="flex gap-1">
+                                <input
+                                  type="text"
+                                  placeholder="First"
+                                  value={editingNames.first_name}
+                                  onChange={(e) => setEditingNames({...editingNames, first_name: e.target.value})}
+                                  className="w-20 px-1 py-1 text-xs border border-gray-300 rounded"
+                                />
+                                <input
+                                  type="text"
+                                  placeholder="Last"
+                                  value={editingNames.last_name}
+                                  onChange={(e) => setEditingNames({...editingNames, last_name: e.target.value})}
+                                  className="w-20 px-1 py-1 text-xs border border-gray-300 rounded"
+                                />
+                              </div>
+                              <input
+                                type="text"
+                                placeholder="Display name (optional)"
+                                value={editingNames.display_name}
+                                onChange={(e) => setEditingNames({...editingNames, display_name: e.target.value})}
+                                className="w-full px-1 py-1 text-xs border border-gray-300 rounded"
+                              />
+                              <div className="flex gap-1">
+                                <button
+                                  onClick={() => saveUserName(user.id)}
+                                  className="bg-green-600 text-white px-2 py-1 text-xs rounded hover:bg-green-700"
+                                >
+                                  Save
+                                </button>
+                                <button
+                                  onClick={() => setEditingUser(null)}
+                                  className="bg-gray-600 text-white px-2 py-1 text-xs rounded hover:bg-gray-700"
+                                >
+                                  Cancel
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="flex items-center space-x-2">
+                              <span>{getDisplayName(user)}</span>
+                              <button
+                                onClick={() => startEditingName(user)}
+                                className="text-blue-600 hover:text-blue-800 text-xs opacity-50 hover:opacity-100"
+                                title="Edit name"
+                              >
+                                ✏️
+                              </button>
+                            </div>
+                          )}
+                        </td>
+                        <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-600 truncate max-w-[150px] sm:max-w-none">
                           {user.email}
                         </td>
                         <td className="px-3 sm:px-6 py-4 whitespace-nowrap">
@@ -966,7 +1086,7 @@ export default function AdminDashboard() {
       {/* Bulk Email Modal */}
       {showBulkEmail && (
         <BulkEmailModal 
-          selectedEmails={getSelectedUserEmails()} 
+          selectedUsers={getSelectedUsersWithNames()} 
           onClose={() => setShowBulkEmail(false)}
           onSuccess={() => {
             setShowBulkEmail(false);
@@ -1125,8 +1245,8 @@ function EmailForm() {
 }
 
 // Bulk Email Modal Component
-function BulkEmailModal({ selectedEmails, onClose, onSuccess }: { 
-  selectedEmails: string[], 
+function BulkEmailModal({ selectedUsers, onClose, onSuccess }: { 
+  selectedUsers: Array<{email: string, name: string}>, 
   onClose: () => void,
   onSuccess: () => void
 }) {
@@ -1155,7 +1275,7 @@ function BulkEmailModal({ selectedEmails, onClose, onSuccess }: {
           'Authorization': `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({
-          emails: selectedEmails,
+          emails: selectedUsers.map(u => u.email),
           subject: formData.subject,
           body: formData.body
         }),
@@ -1167,7 +1287,7 @@ function BulkEmailModal({ selectedEmails, onClose, onSuccess }: {
         throw new Error(data.error || 'Failed to send bulk email');
       }
 
-      setMessage({ type: 'success', text: `Email sent successfully to ${selectedEmails.length} recipients!` });
+      setMessage({ type: 'success', text: `Email sent successfully to ${selectedUsers.length} recipients!` });
       setTimeout(() => onSuccess(), 2000);
     } catch (error) {
       console.error('Bulk email send error:', error);
@@ -1197,12 +1317,12 @@ function BulkEmailModal({ selectedEmails, onClose, onSuccess }: {
           </div>
 
           <div className="mb-4 p-4 bg-blue-50 rounded-lg">
-            <h4 className="font-medium text-blue-900 mb-2">Recipients ({selectedEmails.length})</h4>
+            <h4 className="font-medium text-blue-900 mb-2">Recipients ({selectedUsers.length})</h4>
             <div className="max-h-32 overflow-y-auto">
               <div className="flex flex-wrap gap-1">
-                {selectedEmails.map((email, index) => (
-                  <span key={index} className="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">
-                    {email}
+                {selectedUsers.map((user, index) => (
+                  <span key={index} className="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded" title={user.email}>
+                    {user.name}
                   </span>
                 ))}
               </div>
@@ -1267,7 +1387,7 @@ function BulkEmailModal({ selectedEmails, onClose, onSuccess }: {
               </button>
               <button
                 type="submit"
-                disabled={sending || selectedEmails.length === 0}
+                disabled={sending || selectedUsers.length === 0}
                 className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
               >
                 {sending && (
@@ -1276,7 +1396,7 @@ function BulkEmailModal({ selectedEmails, onClose, onSuccess }: {
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
                 )}
-                {sending ? 'Sending...' : `Send to ${selectedEmails.length} Recipients`}
+                {sending ? 'Sending...' : `Send to ${selectedUsers.length} Recipients`}
               </button>
             </div>
           </form>
