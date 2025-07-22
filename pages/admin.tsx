@@ -1848,23 +1848,32 @@ function BulkEmailModal({ selectedUsers, onClose, onSuccess }: {
           let templateContent = formData.body; // Use the edited template content from the form
           const userName = user.name || user.email.split('@')[0];
           
-          // Add form link if it's a feedback_request template and we have forms
+          // Add form link for feedback_request templates (ALWAYS append at end)
           if (selectedTemplate.type === 'feedback_request' && feedbackForms.length > 0) {
             const defaultForm = feedbackForms[0]; // Use first available form
             const formUrl = `${window.location.origin}/feedback/${defaultForm.id}`;
             
-            // Add the form link as "this form" - look for {{content}} or add at the end
-            const formLinkText = `<p>Please take a moment to fill out <a href="${formUrl}" style="color: #3b82f6; text-decoration: underline; font-weight: 600;">this form</a> - it only takes 3-5 minutes and helps us make Riverwalks even better for geography students.</p>`;
+            // Simple approach: always add form link before closing content div
+            const formLinkText = `            <p style="margin-top: 30px; padding: 20px; background: #f0f9ff; border-radius: 8px; border-left: 4px solid #3b82f6;">
+                <strong>📋 We'd love your feedback!</strong><br>
+                Please take a moment to fill out <a href="${formUrl}" style="color: #3b82f6; text-decoration: underline; font-weight: 600;">this form</a> - it only takes 3-5 minutes and helps us make Riverwalks even better for geography students.
+            </p>`;
             
+            // Replace {{content}} if it exists, otherwise add before closing content div
             if (templateContent.includes('{{content}}')) {
               templateContent = templateContent.replace(/{{content}}/g, formLinkText);
-            } else {
-              // Add form link before the closing content div or at the end
-              if (templateContent.includes('</div>')) {
-                templateContent = templateContent.replace('</div>', formLinkText + '\n        </div>');
+            } else if (templateContent.includes('</div>')) {
+              // Find the last content div closing tag and insert before it
+              const lastContentDivIndex = templateContent.lastIndexOf('</div>');
+              if (lastContentDivIndex !== -1) {
+                templateContent = templateContent.substring(0, lastContentDivIndex) + 
+                                formLinkText + '\n        ' + 
+                                templateContent.substring(lastContentDivIndex);
               } else {
                 templateContent += '\n' + formLinkText;
               }
+            } else {
+              templateContent += '\n' + formLinkText;
             }
           }
           
