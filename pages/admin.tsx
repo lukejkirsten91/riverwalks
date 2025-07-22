@@ -62,6 +62,14 @@ export default function AdminDashboard() {
   const [showVoucherModal, setShowVoucherModal] = useState(false);
   const [editingVoucher, setEditingVoucher] = useState<string | null>(null);
   const [editMaxUses, setEditMaxUses] = useState<number>(0);
+  
+  // User filtering and selection state
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterSubscription, setFilterSubscription] = useState('all');
+  const [sortBy, setSortBy] = useState<'email' | 'created_at' | 'subscription_type'>('created_at');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  const [selectedUsers, setSelectedUsers] = useState<Set<string>>(new Set());
+  const [showBulkEmail, setShowBulkEmail] = useState(false);
 
   // Check admin access
   useEffect(() => {
@@ -293,6 +301,82 @@ export default function AdminDashboard() {
     }
   };
 
+  // User filtering and selection helper functions
+  const filteredAndSortedUsers = () => {
+    let filtered = users.filter(user => {
+      // Search filter
+      const matchesSearch = user.email.toLowerCase().includes(searchQuery.toLowerCase());
+      
+      // Subscription filter
+      const matchesSubscription = filterSubscription === 'all' || 
+        (filterSubscription === 'free' && (!user.subscription_type || user.subscription_type === 'free')) ||
+        (filterSubscription === 'annual' && user.subscription_type === 'annual') ||
+        (filterSubscription === 'lifetime' && user.subscription_type === 'lifetime');
+      
+      return matchesSearch && matchesSubscription;
+    });
+
+    // Sort users
+    filtered.sort((a, b) => {
+      let aValue, bValue;
+      
+      if (sortBy === 'email') {
+        aValue = a.email.toLowerCase();
+        bValue = b.email.toLowerCase();
+      } else if (sortBy === 'created_at') {
+        aValue = new Date(a.created_at).getTime();
+        bValue = new Date(b.created_at).getTime();
+      } else if (sortBy === 'subscription_type') {
+        aValue = a.subscription_type || 'free';
+        bValue = b.subscription_type || 'free';
+      }
+      
+      if (sortOrder === 'asc') {
+        return aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
+      } else {
+        return aValue > bValue ? -1 : aValue < bValue ? 1 : 0;
+      }
+    });
+
+    return filtered;
+  };
+
+  const handleUserSelect = (userId: string) => {
+    const newSelected = new Set(selectedUsers);
+    if (newSelected.has(userId)) {
+      newSelected.delete(userId);
+    } else {
+      newSelected.add(userId);
+    }
+    setSelectedUsers(newSelected);
+  };
+
+  const handleBulkSelect = (subscriptionType: string) => {
+    const usersToSelect = users.filter(user => 
+      subscriptionType === 'free' ? (!user.subscription_type || user.subscription_type === 'free') :
+      user.subscription_type === subscriptionType
+    );
+    
+    const newSelected = new Set(selectedUsers);
+    usersToSelect.forEach(user => newSelected.add(user.id));
+    setSelectedUsers(newSelected);
+  };
+
+  const handleSelectAll = () => {
+    const filtered = filteredAndSortedUsers();
+    const newSelected = new Set(selectedUsers);
+    filtered.forEach(user => newSelected.add(user.id));
+    setSelectedUsers(newSelected);
+  };
+
+  const handleDeselectAll = () => {
+    setSelectedUsers(new Set());
+  };
+
+  const getSelectedUserEmails = () => {
+    return users.filter(user => selectedUsers.has(user.id)).map(user => user.email);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -452,11 +536,131 @@ export default function AdminDashboard() {
 
           {activeTab === 'users' && (
             <div className="p-4 sm:p-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">User Management</h3>
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+                <h3 className="text-lg font-medium text-gray-900">User Management & Bulk Email</h3>
+                {selectedUsers.size > 0 && (
+                  <button
+                    onClick={() => setShowBulkEmail(true)}
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2"
+                  >
+                    <Mail className="w-4 h-4" />
+                    Email {selectedUsers.size} Selected Users
+                  </button>
+                )}
+              </div>
+
+              {/* Search and Filter Controls */}
+              <div className="bg-gray-50 p-4 rounded-lg mb-6 space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  {/* Search */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Search Users</label>
+                    <input
+                      type="text"
+                      placeholder="Search by email..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+
+                  {/* Subscription Filter */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Filter by Subscription</label>
+                    <select
+                      value={filterSubscription}
+                      onChange={(e) => setFilterSubscription(e.target.value)}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="all">All Users</option>
+                      <option value="free">Free Users</option>
+                      <option value="annual">Annual Subscribers</option>
+                      <option value="lifetime">Lifetime Members</option>
+                    </select>
+                  </div>
+
+                  {/* Sort By */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Sort By</label>
+                    <select
+                      value={sortBy}
+                      onChange={(e) => setSortBy(e.target.value as any)}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="created_at">Date Joined</option>
+                      <option value="email">Email Address</option>
+                      <option value="subscription_type">Subscription Type</option>
+                    </select>
+                  </div>
+
+                  {/* Sort Order */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Sort Order</label>
+                    <select
+                      value={sortOrder}
+                      onChange={(e) => setSortOrder(e.target.value as any)}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="desc">Newest First</option>
+                      <option value="asc">Oldest First</option>
+                    </select>
+                  </div>
+                </div>
+
+                {/* Bulk Selection Controls */}
+                <div className="flex flex-wrap gap-2 items-center">
+                  <span className="text-sm font-medium text-gray-700">Quick Select:</span>
+                  <button
+                    onClick={() => handleBulkSelect('free')}
+                    className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1 rounded-lg text-sm"
+                  >
+                    All Free Users
+                  </button>
+                  <button
+                    onClick={() => handleBulkSelect('annual')}
+                    className="bg-green-100 hover:bg-green-200 text-green-700 px-3 py-1 rounded-lg text-sm"
+                  >
+                    All Annual Subscribers
+                  </button>
+                  <button
+                    onClick={() => handleBulkSelect('lifetime')}
+                    className="bg-amber-100 hover:bg-amber-200 text-amber-700 px-3 py-1 rounded-lg text-sm"
+                  >
+                    All Lifetime Members
+                  </button>
+                  <button
+                    onClick={handleSelectAll}
+                    className="bg-blue-100 hover:bg-blue-200 text-blue-700 px-3 py-1 rounded-lg text-sm"
+                  >
+                    Select All Visible
+                  </button>
+                  <button
+                    onClick={handleDeselectAll}
+                    className="bg-red-100 hover:bg-red-200 text-red-700 px-3 py-1 rounded-lg text-sm"
+                  >
+                    Clear Selection
+                  </button>
+                  {selectedUsers.size > 0 && (
+                    <span className="text-sm text-gray-600">
+                      {selectedUsers.size} users selected
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* Users Table */}
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-50">
                     <tr>
+                      <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <input
+                          type="checkbox"
+                          checked={filteredAndSortedUsers().length > 0 && filteredAndSortedUsers().every(user => selectedUsers.has(user.id))}
+                          onChange={(e) => e.target.checked ? handleSelectAll() : handleDeselectAll()}
+                          className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                        />
+                      </th>
                       <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
                       <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subscription</th>
                       <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
@@ -465,8 +669,16 @@ export default function AdminDashboard() {
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {users.map((user) => (
-                      <tr key={user.id}>
+                    {filteredAndSortedUsers().map((user) => (
+                      <tr key={user.id} className={selectedUsers.has(user.id) ? 'bg-blue-50' : ''}>
+                        <td className="px-3 sm:px-6 py-4 whitespace-nowrap">
+                          <input
+                            type="checkbox"
+                            checked={selectedUsers.has(user.id)}
+                            onChange={() => handleUserSelect(user.id)}
+                            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                          />
+                        </td>
                         <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 truncate max-w-[150px] sm:max-w-none">
                           {user.email}
                         </td>
@@ -509,6 +721,12 @@ export default function AdminDashboard() {
                   </tbody>
                 </table>
               </div>
+
+              {filteredAndSortedUsers().length === 0 && (
+                <div className="text-center py-12">
+                  <p className="text-gray-500">No users found matching your criteria.</p>
+                </div>
+              )}
             </div>
           )}
 
@@ -743,6 +961,18 @@ export default function AdminDashboard() {
 
       {/* Voucher Creation Modal */}
       {showVoucherModal && <VoucherCreationModal onClose={() => setShowVoucherModal(false)} onCreate={createVoucher} />}
+      
+      {/* Bulk Email Modal */}
+      {showBulkEmail && (
+        <BulkEmailModal 
+          selectedEmails={getSelectedUserEmails()} 
+          onClose={() => setShowBulkEmail(false)}
+          onSuccess={() => {
+            setShowBulkEmail(false);
+            setSelectedUsers(new Set());
+          }}
+        />
+      )}
     </div>
   );
 }
@@ -888,6 +1118,168 @@ function EmailForm() {
             </button>
           </div>
         </form>
+      </div>
+    </div>
+  );
+}
+
+// Bulk Email Modal Component
+function BulkEmailModal({ selectedEmails, onClose, onSuccess }: { 
+  selectedEmails: string[], 
+  onClose: () => void,
+  onSuccess: () => void
+}) {
+  const [formData, setFormData] = useState({
+    subject: '',
+    body: ''
+  });
+  const [sending, setSending] = useState(false);
+  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSending(true);
+    setMessage(null);
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error('No session found');
+      }
+
+      const response = await fetch('/api/admin/send-bulk-email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({
+          emails: selectedEmails,
+          subject: formData.subject,
+          body: formData.body
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to send bulk email');
+      }
+
+      setMessage({ type: 'success', text: `Email sent successfully to ${selectedEmails.length} recipients!` });
+      setTimeout(() => onSuccess(), 2000);
+    } catch (error) {
+      console.error('Bulk email send error:', error);
+      setMessage({ 
+        type: 'error', 
+        text: error instanceof Error ? error.message : 'Failed to send bulk email' 
+      });
+    } finally {
+      setSending(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+      <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="p-6">
+          <div className="flex justify-between items-center mb-6">
+            <h3 className="text-lg font-medium text-gray-900">Send Bulk Email</h3>
+            <button
+              onClick={onClose}
+              className="text-gray-400 hover:text-gray-600"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+
+          <div className="mb-4 p-4 bg-blue-50 rounded-lg">
+            <h4 className="font-medium text-blue-900 mb-2">Recipients ({selectedEmails.length})</h4>
+            <div className="max-h-32 overflow-y-auto">
+              <div className="flex flex-wrap gap-1">
+                {selectedEmails.map((email, index) => (
+                  <span key={index} className="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">
+                    {email}
+                  </span>
+                ))}
+              </div>
+            </div>
+            <p className="text-sm text-blue-700 mt-2">
+              📧 Each recipient will receive the email individually via BCC (no shared addresses)
+            </p>
+          </div>
+
+          {message && (
+            <div className={`mb-4 p-4 rounded-lg ${
+              message.type === 'success' 
+                ? 'bg-green-50 text-green-700 border border-green-200' 
+                : 'bg-red-50 text-red-700 border border-red-200'
+            }`}>
+              {message.text}
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label htmlFor="bulk-subject" className="block text-sm font-medium text-gray-700 mb-2">
+                Subject
+              </label>
+              <input
+                id="bulk-subject"
+                type="text"
+                value={formData.subject}
+                onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="Email subject..."
+                required
+              />
+            </div>
+
+            <div>
+              <label htmlFor="bulk-body" className="block text-sm font-medium text-gray-700 mb-2">
+                Message Body
+              </label>
+              <textarea
+                id="bulk-body"
+                rows={12}
+                value={formData.body}
+                onChange={(e) => setFormData({ ...formData, body: e.target.value })}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-vertical"
+                placeholder="Enter your message here..."
+                required
+              />
+              <p className="mt-1 text-sm text-gray-500">
+                The message will be formatted with line breaks preserved and styled in a professional template.
+              </p>
+            </div>
+
+            <div className="flex justify-end space-x-3 pt-4">
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                disabled={sending}
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={sending || selectedEmails.length === 0}
+                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+              >
+                {sending && (
+                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                )}
+                {sending ? 'Sending...' : `Send to ${selectedEmails.length} Recipients`}
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   );
