@@ -23,6 +23,8 @@ interface UserSubscription {
   first_name?: string | null;
   last_name?: string | null;
   display_name?: string | null;
+  marketing_consent?: boolean;
+  marketing_consent_date?: string | null;
 }
 
 interface Voucher {
@@ -69,6 +71,7 @@ export default function AdminDashboard() {
   // User filtering and selection state
   const [searchQuery, setSearchQuery] = useState('');
   const [filterSubscription, setFilterSubscription] = useState('all');
+  const [filterMarketingConsent, setFilterMarketingConsent] = useState('all');
   const [sortBy, setSortBy] = useState<'email' | 'created_at' | 'subscription_type'>('created_at');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [selectedUsers, setSelectedUsers] = useState<Set<string>>(new Set());
@@ -324,7 +327,12 @@ export default function AdminDashboard() {
         (filterSubscription === 'annual' && user.subscription_type === 'annual') ||
         (filterSubscription === 'lifetime' && user.subscription_type === 'lifetime');
       
-      return matchesSearch && matchesSubscription;
+      // Marketing consent filter
+      const matchesMarketingConsent = filterMarketingConsent === 'all' ||
+        (filterMarketingConsent === 'consented' && user.marketing_consent) ||
+        (filterMarketingConsent === 'not-consented' && !user.marketing_consent);
+      
+      return matchesSearch && matchesSubscription && matchesMarketingConsent;
     });
 
     // Sort users
@@ -354,6 +362,12 @@ export default function AdminDashboard() {
   };
 
   const handleUserSelect = (userId: string) => {
+    const user = users.find(u => u.id === userId);
+    if (!user?.marketing_consent) {
+      // Don't allow selection of users without marketing consent
+      return;
+    }
+    
     const newSelected = new Set(selectedUsers);
     if (newSelected.has(userId)) {
       newSelected.delete(userId);
@@ -365,8 +379,10 @@ export default function AdminDashboard() {
 
   const handleBulkSelect = (subscriptionType: string) => {
     const usersToSelect = users.filter(user => 
-      subscriptionType === 'free' ? (!user.subscription_type || user.subscription_type === 'free') :
-      user.subscription_type === subscriptionType
+      user.marketing_consent && ( // Only include users with marketing consent
+        subscriptionType === 'free' ? (!user.subscription_type || user.subscription_type === 'free') :
+        user.subscription_type === subscriptionType
+      )
     );
     
     const newSelected = new Set(selectedUsers);
@@ -377,7 +393,8 @@ export default function AdminDashboard() {
   const handleSelectAll = () => {
     const filtered = filteredAndSortedUsers();
     const newSelected = new Set(selectedUsers);
-    filtered.forEach(user => newSelected.add(user.id));
+    // Only select users with marketing consent
+    filtered.filter(user => user.marketing_consent).forEach(user => newSelected.add(user.id));
     setSelectedUsers(newSelected);
   };
 
@@ -397,7 +414,7 @@ export default function AdminDashboard() {
   };
 
   const getSelectedUsersWithNames = () => {
-    return users.filter(user => selectedUsers.has(user.id)).map(user => ({
+    return users.filter(user => selectedUsers.has(user.id) && user.marketing_consent).map(user => ({
       email: user.email,
       name: getDisplayName(user)
     }));
@@ -617,7 +634,7 @@ export default function AdminDashboard() {
 
               {/* Search and Filter Controls */}
               <div className="bg-gray-50 p-4 rounded-lg mb-6 space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
                   {/* Search */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Search Users</label>
@@ -642,6 +659,20 @@ export default function AdminDashboard() {
                       <option value="free">Free Users</option>
                       <option value="annual">Annual Subscribers</option>
                       <option value="lifetime">Lifetime Members</option>
+                    </select>
+                  </div>
+
+                  {/* Marketing Consent Filter */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Marketing Consent</label>
+                    <select
+                      value={filterMarketingConsent}
+                      onChange={(e) => setFilterMarketingConsent(e.target.value)}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="all">All Users</option>
+                      <option value="consented">✓ Consented Only</option>
+                      <option value="not-consented">✗ Not Consented</option>
                     </select>
                   </div>
 
@@ -680,25 +711,25 @@ export default function AdminDashboard() {
                     onClick={() => handleBulkSelect('free')}
                     className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1 rounded-lg text-sm"
                   >
-                    All Free Users
+                    Free Users (✓ Consented)
                   </button>
                   <button
                     onClick={() => handleBulkSelect('annual')}
                     className="bg-green-100 hover:bg-green-200 text-green-700 px-3 py-1 rounded-lg text-sm"
                   >
-                    All Annual Subscribers
+                    Annual (✓ Consented)
                   </button>
                   <button
                     onClick={() => handleBulkSelect('lifetime')}
                     className="bg-amber-100 hover:bg-amber-200 text-amber-700 px-3 py-1 rounded-lg text-sm"
                   >
-                    All Lifetime Members
+                    Lifetime (✓ Consented)
                   </button>
                   <button
                     onClick={handleSelectAll}
                     className="bg-blue-100 hover:bg-blue-200 text-blue-700 px-3 py-1 rounded-lg text-sm"
                   >
-                    Select All Visible
+                    Select All (✓ Consented)
                   </button>
                   <button
                     onClick={handleDeselectAll}
@@ -730,7 +761,7 @@ export default function AdminDashboard() {
                       <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
                       <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
                       <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subscription</th>
-                      <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                      <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Marketing</th>
                       <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden sm:table-cell">Joined</th>
                       <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                     </tr>
@@ -743,7 +774,13 @@ export default function AdminDashboard() {
                             type="checkbox"
                             checked={selectedUsers.has(user.id)}
                             onChange={() => handleUserSelect(user.id)}
-                            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                            disabled={!user.marketing_consent}
+                            className={`h-4 w-4 focus:ring-blue-500 border-gray-300 rounded ${
+                              user.marketing_consent 
+                                ? 'text-blue-600' 
+                                : 'text-gray-400 cursor-not-allowed opacity-50'
+                            }`}
+                            title={user.marketing_consent ? 'User has consented to marketing emails' : 'User has not consented to marketing emails - cannot be selected'}
                           />
                         </td>
                         <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
@@ -813,6 +850,22 @@ export default function AdminDashboard() {
                           }`}>
                             {user.subscription_type || 'Free'}
                           </span>
+                        </td>
+                        <td className="px-3 sm:px-6 py-4 whitespace-nowrap">
+                          <div className="flex items-center space-x-1">
+                            <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                              user.marketing_consent
+                                ? 'bg-green-100 text-green-800'
+                                : 'bg-red-100 text-red-800'
+                            }`}>
+                              {user.marketing_consent ? '✓ Yes' : '✗ No'}
+                            </span>
+                            {user.marketing_consent && (
+                              <span className="text-xs text-gray-500" title={`Consented: ${user.marketing_consent_date ? new Date(user.marketing_consent_date).toLocaleDateString() : 'Unknown'}`}>
+                                📧
+                              </span>
+                            )}
+                          </div>
                         </td>
                         <td className="px-3 sm:px-6 py-4 whitespace-nowrap">
                           <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${

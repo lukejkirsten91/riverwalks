@@ -59,9 +59,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       .from('subscriptions')
       .select('*');
 
+    // Load user agreements for marketing consent
+    const { data: agreementsData, error: agreementsError } = await supabaseAdmin
+      .from('user_agreements')
+      .select('user_id, marketing_consent, terms_accepted_at');
+
     if (subsError) {
       console.error('Error loading subscriptions:', subsError);
       return res.status(500).json({ error: 'Failed to load subscriptions' });
+    }
+
+    if (agreementsError) {
+      console.error('Error loading user agreements:', agreementsError);
+      // Don't fail completely, just log the error and continue without marketing consent data
     }
 
     // Calculate stats
@@ -84,6 +94,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Create users array with subscription data and name information
     const users = usersData.users.map(user => {
       const subscription = subscriptionsData?.find(s => s.user_id === user.id);
+      const agreement = agreementsData?.find(a => a.user_id === user.id);
       const metadata = user.user_metadata || {};
       
       // Extract names from metadata or full_name
@@ -106,7 +117,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         current_period_end: subscription?.current_period_end || null,
         first_name: first_name || null,
         last_name: last_name || null,
-        display_name: metadata.display_name || null
+        display_name: metadata.display_name || null,
+        marketing_consent: agreement?.marketing_consent || false,
+        marketing_consent_date: agreement?.terms_accepted_at || null
       };
     });
 
