@@ -76,9 +76,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(400).json({ error: 'Too many recipients. Maximum 500 emails per bulk send.' });
     }
 
-    // Create email template
-    const emailHtml = `
-<!DOCTYPE html>
+    // Check if body is already a full HTML document (template) or just content
+    const isFullHtmlTemplate = body.trim().toLowerCase().startsWith('<!doctype') || body.trim().toLowerCase().startsWith('<html');
+    
+    const emailHtml = isFullHtmlTemplate 
+      ? body // Use the template as-is
+      : `<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -87,7 +90,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     <style>
         body { 
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
-            line-height: 1.6; 
+            line-height: 1.4; 
             color: #333; 
             margin: 0; 
             padding: 20px; 
@@ -108,7 +111,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             text-align: center; 
         }
         .content { 
-            padding: 30px; 
+            padding: 25px 30px; 
+        }
+        .content p { 
+            margin: 0 0 12px 0; 
+        }
+        .content ul { 
+            margin: 12px 0; 
+        }
+        .content li { 
+            margin: 4px 0; 
         }
         .footer { 
             background: #f8f9fa; 
