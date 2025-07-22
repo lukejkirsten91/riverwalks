@@ -357,11 +357,136 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       logger.error('Failed to create newsletter template', { error: newsletterError });
     }
 
+    // Create feedback request template
+    const { data: feedbackTemplate, error: feedbackTemplateError } = await supabaseAdmin
+      .from('email_templates')
+      .upsert([{
+        name: 'Feedback Request Template',
+        type: 'feedback_request',
+        subject: 'Help us improve Riverwalks - Your feedback matters! 💡',
+        content: `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feedback Request - Riverwalks</title>
+    <style>
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+            line-height: 1.6; 
+            color: #333; 
+            margin: 0; 
+            padding: 20px; 
+            background-color: #f8f9fa; 
+        }
+        .container { 
+            max-width: 600px; 
+            margin: 0 auto; 
+            background: white; 
+            border-radius: 12px; 
+            overflow: hidden; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1); 
+        }
+        .header { 
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%); 
+            color: white; 
+            padding: 30px 20px; 
+            text-align: center; 
+        }
+        .content { 
+            padding: 30px 20px; 
+        }
+        .footer { 
+            background: #f8f9fa; 
+            padding: 20px; 
+            text-align: center; 
+            color: #6b7280; 
+            font-size: 14px; 
+        }
+        .cta-button { 
+            display: inline-block; 
+            background: #10b981; 
+            color: white; 
+            padding: 12px 24px; 
+            text-decoration: none; 
+            border-radius: 8px; 
+            font-weight: 600; 
+            margin: 20px 0; 
+        }
+        .highlight-box {
+            background: #f0f9ff;
+            border-left: 4px solid #3b82f6;
+            padding: 16px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        @media (max-width: 600px) {
+            .container { margin: 10px; border-radius: 8px; }
+            .header { padding: 20px 15px; }
+            .content { padding: 20px 15px; }
+            .footer { padding: 15px; }
+            .cta-button { display: block; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 style="margin: 0; font-size: 24px;">💡 Your Voice Matters</h1>
+            <p style="margin: 8px 0 0; opacity: 0.9;">Help us make Riverwalks even better</p>
+        </div>
+        <div class="content">
+            <p style="font-size: 18px; margin-bottom: 24px;">Hi {{name}},</p>
+            
+            <p>Your experience with Riverwalks is incredibly important to us! As someone who's been exploring our geography resources, your insights could help shape the future of the platform.</p>
+            
+            <div class="highlight-box">
+                <p style="margin: 0; font-weight: 600;">⏱️ Just 3-5 minutes of your time could make a huge difference!</p>
+            </div>
+            
+            <p>We'd love to hear about:</p>
+            <ul>
+                <li>📊 How satisfied you are with Riverwalks</li>
+                <li>🎯 Which features you find most valuable</li>
+                <li>💡 Ideas for improvements or new features</li>
+                <li>📚 How Riverwalks has helped your geography studies</li>
+            </ul>
+            
+            <p>{{content}}</p>
+            
+            <p>As a thank you for your time, everyone who completes our feedback will be entered into a draw for Amazon vouchers! 🎁</p>
+            
+            <p>Thank you for helping us build something amazing together!</p>
+            
+            <p style="margin-top: 30px;"><strong>Luke Kirsten</strong><br>
+            <span style="color: #6b7280;">Founder & Geography Enthusiast</span><br>
+            <span style="color: #6b7280;">luke@riverwalks.co.uk</span></p>
+        </div>
+        <div class="footer">
+            <p>This feedback is completely anonymous and will take less than 5 minutes.</p>
+            <p style="margin: 5px 0 0;">© 2025 Riverwalks. Made with ❤️ for geography students.</p>
+        </div>
+    </div>
+</body>
+</html>`,
+        variables: ['name', 'email', 'content'],
+        is_active: true
+      }], { 
+        onConflict: 'name',
+        ignoreDuplicates: false 
+      })
+      .select();
+
+    if (feedbackTemplateError) {
+      logger.error('Failed to create feedback request template', { error: feedbackTemplateError });
+    }
+
     logger.info('Feedback system initialized successfully', { 
       adminId: user.id,
       welcomeTemplateId: welcomeTemplate?.[0]?.id,
       feedbackFormId: feedbackForm.id,
-      newsletterTemplateId: newsletterTemplate?.[0]?.id
+      newsletterTemplateId: newsletterTemplate?.[0]?.id,
+      feedbackTemplateId: feedbackTemplate?.[0]?.id
     });
 
     res.status(200).json({ 
@@ -370,7 +495,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       data: {
         welcomeTemplate: welcomeTemplate?.[0],
         feedbackForm: feedbackForm,
-        newsletterTemplate: newsletterTemplate?.[0]
+        newsletterTemplate: newsletterTemplate?.[0],
+        feedbackTemplate: feedbackTemplate?.[0]
       }
     });
 
