@@ -66,7 +66,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // Prepare updated metadata
     const currentMetadata = userData.user.user_metadata || {};
-    const updatedMetadata = {
+    const updatedMetadata: { [key: string]: any } = {
       ...currentMetadata,
       first_name: first_name?.trim() || null,
       last_name: last_name?.trim() || null,
