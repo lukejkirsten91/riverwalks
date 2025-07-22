@@ -2282,6 +2282,42 @@ function FeedbackManager() {
     }
   };
 
+  const initializeFeedbackSystem = async () => {
+    setLoading(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
+      const response = await fetch('/api/admin/initialize-feedback-system', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        }
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        console.log('Feedback system initialized:', result);
+        
+        // Reload data to show the new templates and forms
+        loadFeedbackData();
+        
+        // Show success message
+        alert('Feedback system initialized successfully! Default templates and forms have been created.');
+      } else {
+        const error = await response.json();
+        console.error('Initialization failed:', error);
+        alert('Failed to initialize feedback system. Check console for details.');
+      }
+    } catch (error) {
+      console.error('Error initializing feedback system:', error);
+      alert('Error initializing feedback system. Check console for details.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const createForm = async (formData: any) => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
@@ -2363,13 +2399,23 @@ function FeedbackManager() {
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
         <h3 className="text-lg font-medium text-gray-900">Feedback Management</h3>
-        <button
-          onClick={() => setShowFormEditor(true)}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2"
-        >
-          <Plus className="w-4 h-4" />
-          New Form
-        </button>
+        <div className="flex gap-3">
+          <button
+            onClick={initializeFeedbackSystem}
+            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center gap-2"
+            disabled={loading}
+          >
+            <Activity className="w-4 h-4" />
+            Initialize System
+          </button>
+          <button
+            onClick={() => setShowFormEditor(true)}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2"
+          >
+            <Plus className="w-4 h-4" />
+            New Form
+          </button>
+        </div>
       </div>
 
       {/* Sub Tabs */}
