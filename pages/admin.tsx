@@ -1762,7 +1762,7 @@ function BulkEmailModal({ selectedUsers, onClose, onSuccess }: {
       if (templatesResponse.ok) {
         const templatesData = await templatesResponse.json();
         const activeTemplates = (templatesData.templates || []).filter((t: any) => 
-          t.is_active && (t.type === 'newsletter' || t.type === 'announcement')
+          t.is_active && (t.type === 'newsletter' || t.type === 'announcement' || t.type === 'feedback_request')
         );
         setTemplates(activeTemplates);
       }
