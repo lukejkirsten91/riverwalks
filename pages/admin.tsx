@@ -1785,12 +1785,25 @@ function BulkEmailModal({ selectedUsers, onClose, onSuccess }: {
   const handleTemplateSelect = (template: any) => {
     setSelectedTemplate(template);
     
-    // For templates with {{content}} placeholder, provide clean starter text
+    // Extract the actual template content for editing
     let bodyContent = '';
-    if (template.content && template.content.includes('{{content}}')) {
-      bodyContent = template.type === 'feedback_request' 
-        ? "<p>We'd love to hear about:</p>\n<ul>\n<li>📊 How satisfied you are with Riverwalks</li>\n<li>🎯 Which features you find most valuable</li>\n<li>💡 Ideas for improvements or new features</li>\n<li>📚 How Riverwalks has helped your geography studies</li>\n</ul>\n<p>Your experience with Riverwalks matters to us! As a valued member of our geography community, your feedback helps us improve and create better resources for students like yourself.</p>"
-        : "<p>Here's an update from the Riverwalks team...</p>";
+    if (template.content) {
+      // If template has {{content}} placeholder, show the full template HTML for editing
+      if (template.content.includes('{{content}}')) {
+        bodyContent = template.content;
+      } else {
+        // For templates without {{content}}, extract the main content
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = template.content;
+        
+        // Try to extract meaningful content from the template
+        const contentDiv = tempDiv.querySelector('.content');
+        if (contentDiv) {
+          bodyContent = contentDiv.innerHTML;
+        } else {
+          bodyContent = template.content;
+        }
+      }
     }
     
     setFormData({
@@ -1832,26 +1845,35 @@ function BulkEmailModal({ selectedUsers, onClose, onSuccess }: {
       if (emailMode === 'template' && selectedTemplate) {
         // Use template with personalization for each user
         const sendPromises = selectedUsers.map(async (user) => {
-          let templateContent = selectedTemplate.content;
+          let templateContent = formData.body; // Use the edited template content from the form
           const userName = user.name || user.email.split('@')[0];
           
-          // Replace template variables
-          templateContent = templateContent
-            .replace(/{{name}}/g, userName)
-            .replace(/{{email}}/g, user.email)
-            .replace(/{{content}}/g, formData.body || '');
-
           // Add form link if it's a feedback_request template and we have forms
           if (selectedTemplate.type === 'feedback_request' && feedbackForms.length > 0) {
             const defaultForm = feedbackForms[0]; // Use first available form
             const formUrl = `${window.location.origin}/feedback/${defaultForm.id}`;
             
-            // Add the form link as "this form" at the end of user content
-            const userContent = formData.body || 'Your thoughts matter to us!';
-            const formLinkText = `\n\nPlease take a moment to fill out <a href="${formUrl}" style="color: #3b82f6; text-decoration: underline; font-weight: 600;">this form</a> - it only takes 3-5 minutes and helps us make Riverwalks even better for geography students.`;
+            // Add the form link as "this form" - look for {{content}} or add at the end
+            const formLinkText = `<p>Please take a moment to fill out <a href="${formUrl}" style="color: #3b82f6; text-decoration: underline; font-weight: 600;">this form</a> - it only takes 3-5 minutes and helps us make Riverwalks even better for geography students.</p>`;
             
-            templateContent = templateContent.replace('{{content}}', userContent + formLinkText);
+            if (templateContent.includes('{{content}}')) {
+              templateContent = templateContent.replace(/{{content}}/g, formLinkText);
+            } else {
+              // Add form link before the closing content div or at the end
+              if (templateContent.includes('</div>')) {
+                templateContent = templateContent.replace('</div>', formLinkText + '\n        </div>');
+              } else {
+                templateContent += '\n' + formLinkText;
+              }
+            }
           }
+          
+          // Replace template variables in the final content
+          templateContent = templateContent
+            .replace(/{{name}}/g, userName)
+            .replace(/{{email}}/g, user.email)
+            .replace(/{{first_name}}/g, userName.split(' ')[0])
+            .replace(/{{content}}/g, ''); // Clean up any remaining {{content}} placeholders
           
           return fetch('/api/admin/send-bulk-email', {
             method: 'POST',
@@ -2060,11 +2082,11 @@ function BulkEmailModal({ selectedUsers, onClose, onSuccess }: {
               </label>
               <textarea
                 id="bulk-body"
-                rows={12}
+                rows={emailMode === 'template' ? 20 : 12}
                 value={formData.body}
                 onChange={(e) => setFormData({ ...formData, body: e.target.value })}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-vertical"
-                placeholder="Enter your message here..."
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-vertical font-mono text-sm"
+                placeholder={emailMode === 'template' ? "The full template HTML will appear here for editing..." : "Enter your message here..."}
                 required
               />
               
@@ -2097,8 +2119,8 @@ function BulkEmailModal({ selectedUsers, onClose, onSuccess }: {
               <p className="mt-2 text-sm text-gray-500">
                 {emailMode === 'template' 
                   ? selectedTemplate?.type === 'feedback_request' 
-                    ? '📄 Your message + automatic "this form" link will be inserted into the beautiful template.'
-                    : '📄 Your content will be inserted into the selected template with professional styling.'
+                    ? '📄 Edit the full template HTML above. For feedback forms, add {{content}} where you want the form link inserted, or it will be added automatically.'
+                    : '📄 Edit the full template HTML above. Use placeholders like {{name}}, {{email}}, {{first_name}} for personalization.'
                   : 'Your message will be formatted with line breaks preserved and styled in a professional template.'
                 }
               </p>
