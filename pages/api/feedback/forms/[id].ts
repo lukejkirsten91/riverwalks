@@ -46,10 +46,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // Rename the questions field to match expected structure
     const formWithQuestions = {
-      ...form,
+      id: form.id,
+      name: form.name,
+      description: form.description,
+      is_active: form.is_active,
       questions: form.feedback_questions || []
     };
-    delete formWithQuestions.feedback_questions;
 
     logger.info('Feedback form retrieved', { formId: id, questionCount: formWithQuestions.questions.length });
 
