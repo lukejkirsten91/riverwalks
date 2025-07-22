@@ -1785,37 +1785,37 @@ function BulkEmailModal({ selectedUsers, onClose, onSuccess }: {
   const handleTemplateSelect = (template: any) => {
     setSelectedTemplate(template);
     
-    // Extract text content from HTML template for editing
+    // For templates with {{content}} placeholder, provide clean starter text
     let bodyContent = '';
-    if (template.content) {
-      // Convert HTML to readable text and extract the main message area
-      const tempDiv = document.createElement('div');
-      tempDiv.innerHTML = template.content;
-      
-      // Find content between {{content}} placeholders or extract key sections
-      if (template.content.includes('{{content}}')) {
-        // For templates with {{content}} placeholder, provide helpful starter text
-        bodyContent = template.type === 'feedback_request' 
-          ? "Your experience with Riverwalks matters to us! As a valued member of our geography community, your feedback helps us improve and create better resources for students like yourself.\n\nWe'd love to hear about your experience with our platform, what features you find most valuable, and any suggestions you might have for improvements."
-          : "Here's an update from the Riverwalks team...";
-      } else {
-        // Extract readable content from template
-        const paragraphs = tempDiv.querySelectorAll('p');
-        const contentParts: string[] = [];
-        paragraphs.forEach(p => {
-          const text = p.textContent?.trim();
-          if (text && !text.includes('{{') && text.length > 20) {
-            contentParts.push(text);
-          }
-        });
-        bodyContent = contentParts.join('\n\n');
-      }
+    if (template.content && template.content.includes('{{content}}')) {
+      bodyContent = template.type === 'feedback_request' 
+        ? "<p>We'd love to hear about:</p>\n<ul>\n<li>📊 How satisfied you are with Riverwalks</li>\n<li>🎯 Which features you find most valuable</li>\n<li>💡 Ideas for improvements or new features</li>\n<li>📚 How Riverwalks has helped your geography studies</li>\n</ul>\n<p>Your experience with Riverwalks matters to us! As a valued member of our geography community, your feedback helps us improve and create better resources for students like yourself.</p>"
+        : "<p>Here's an update from the Riverwalks team...</p>";
     }
     
     setFormData({
       subject: template.subject || '',
       body: bodyContent
     });
+  };
+
+  // Function to insert placeholder at cursor position
+  const insertPlaceholder = (placeholder: string) => {
+    const textarea = document.getElementById('bulk-body') as HTMLTextAreaElement;
+    if (textarea) {
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const currentValue = formData.body;
+      const newValue = currentValue.substring(0, start) + placeholder + currentValue.substring(end);
+      
+      setFormData({ ...formData, body: newValue });
+      
+      // Restore cursor position
+      setTimeout(() => {
+        textarea.focus();
+        textarea.setSelectionRange(start + placeholder.length, start + placeholder.length);
+      }, 0);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -2067,7 +2067,34 @@ function BulkEmailModal({ selectedUsers, onClose, onSuccess }: {
                 placeholder="Enter your message here..."
                 required
               />
-              <p className="mt-1 text-sm text-gray-500">
+              
+              {/* Placeholder buttons */}
+              <div className="mt-2 flex flex-wrap gap-2">
+                <p className="text-xs text-gray-600 w-full mb-1">Click to insert placeholders:</p>
+                <button
+                  type="button"
+                  onClick={() => insertPlaceholder('{{name}}')}
+                  className="px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition-colors"
+                >
+                  + Name
+                </button>
+                <button
+                  type="button"
+                  onClick={() => insertPlaceholder('{{email}}')}
+                  className="px-2 py-1 text-xs bg-green-100 text-green-700 rounded hover:bg-green-200 transition-colors"
+                >
+                  + Email
+                </button>
+                <button
+                  type="button"
+                  onClick={() => insertPlaceholder('{{first_name}}')}
+                  className="px-2 py-1 text-xs bg-purple-100 text-purple-700 rounded hover:bg-purple-200 transition-colors"
+                >
+                  + First Name
+                </button>
+              </div>
+              
+              <p className="mt-2 text-sm text-gray-500">
                 {emailMode === 'template' 
                   ? selectedTemplate?.type === 'feedback_request' 
                     ? '📄 Your message + automatic "this form" link will be inserted into the beautiful template.'

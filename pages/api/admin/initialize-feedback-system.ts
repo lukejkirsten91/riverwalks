@@ -444,15 +444,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 <p style="margin: 0; font-weight: 600;">⏱️ Just 3-5 minutes of your time could make a huge difference!</p>
             </div>
             
-            <p>We'd love to hear about:</p>
-            <ul>
-                <li>📊 How satisfied you are with Riverwalks</li>
-                <li>🎯 Which features you find most valuable</li>
-                <li>💡 Ideas for improvements or new features</li>
-                <li>📚 How Riverwalks has helped your geography studies</li>
-            </ul>
-            
-            <p>{{content}}</p>
+            {{content}}
             
             <p>As a thank you for your time, everyone who completes our feedback will be entered into a draw for Amazon vouchers! 🎁</p>
             
