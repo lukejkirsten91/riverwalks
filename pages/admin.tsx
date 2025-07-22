@@ -318,7 +318,8 @@ export default function AdminDashboard() {
 
     // Sort users
     filtered.sort((a, b) => {
-      let aValue, bValue;
+      let aValue: string | number;
+      let bValue: string | number;
       
       if (sortBy === 'email') {
         aValue = a.email.toLowerCase();
@@ -326,7 +327,7 @@ export default function AdminDashboard() {
       } else if (sortBy === 'created_at') {
         aValue = new Date(a.created_at).getTime();
         bValue = new Date(b.created_at).getTime();
-      } else if (sortBy === 'subscription_type') {
+      } else {
         aValue = a.subscription_type || 'free';
         bValue = b.subscription_type || 'free';
       }
