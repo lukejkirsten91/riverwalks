@@ -85,7 +85,31 @@ BEGIN
   SELECT COUNT(*) INTO deleted_count FROM user_agreements WHERE user_id = target_user_id;
   deletion_log := deletion_log || jsonb_build_object('user_agreements', deleted_count);
 
-  -- 8. Delete the user (this will CASCADE delete river_walks, sites, measurement_points, subscriptions, user_agreements)
+  -- Count feedback and communication tracking data
+  SELECT COUNT(*) INTO deleted_count FROM feedback_responses WHERE user_id = target_user_id;
+  deletion_log := deletion_log || jsonb_build_object('feedback_responses', deleted_count);
+
+  SELECT COUNT(*) INTO deleted_count FROM feedback_sent_tracking WHERE user_id = target_user_id;
+  deletion_log := deletion_log || jsonb_build_object('feedback_sent_tracking', deleted_count);
+
+  SELECT COUNT(*) INTO deleted_count FROM communication_log WHERE user_id = target_user_id;
+  deletion_log := deletion_log || jsonb_build_object('communication_log', deleted_count);
+
+  SELECT COUNT(*) INTO deleted_count FROM email_communications WHERE user_id = target_user_id;
+  deletion_log := deletion_log || jsonb_build_object('email_communications', deleted_count);
+
+  SELECT COUNT(*) INTO deleted_count FROM form_interactions WHERE user_id = target_user_id;
+  deletion_log := deletion_log || jsonb_build_object('form_interactions', deleted_count);
+
+  SELECT COUNT(*) INTO deleted_count FROM user_activity_log WHERE user_id = target_user_id;
+  deletion_log := deletion_log || jsonb_build_object('user_activity_log', deleted_count);
+
+  SELECT COUNT(*) INTO deleted_count FROM gdpr_requests WHERE user_id = target_user_id;
+  deletion_log := deletion_log || jsonb_build_object('gdpr_requests', deleted_count);
+
+  -- 8. Delete the user (this will CASCADE delete river_walks, sites, measurement_points, subscriptions, user_agreements, 
+  --    feedback_responses, feedback_sent_tracking, communication_log, email_communications, form_interactions, 
+  --    user_activity_log, gdpr_requests)
   DELETE FROM auth.users WHERE id = target_user_id;
   GET DIAGNOSTICS deleted_count = ROW_COUNT;
   deletion_log := deletion_log || jsonb_build_object('auth_users', deleted_count);
