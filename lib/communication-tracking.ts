@@ -115,7 +115,7 @@ export async function logEmailCommunication(
 
   try {
     // If no communication log ID provided, create one
-    let logId = communicationLogId;
+    let logId: string | null = communicationLogId || null;
     if (!logId) {
       logId = await logCommunication({
         userId: email.userId,
@@ -134,6 +134,11 @@ export async function logEmailCommunication(
           ...email.metadata
         }
       });
+      
+      if (!logId) {
+        logger.error('Failed to create communication log entry for email');
+        return null;
+      }
     }
 
     const { data, error } = await supabaseAdmin
@@ -180,7 +185,7 @@ export async function logFormInteraction(
 
   try {
     // If no communication log ID provided, create one
-    let logId = communicationLogId;
+    let logId: string | null = communicationLogId || null;
     if (!logId) {
       logId = await logCommunication({
         userId: interaction.userId,
@@ -195,6 +200,11 @@ export async function logFormInteraction(
           ...interaction.metadata
         }
       });
+      
+      if (!logId) {
+        logger.error('Failed to create communication log entry for form interaction');
+        return null;
+      }
     }
 
     const { data, error } = await supabaseAdmin
@@ -244,7 +254,7 @@ export async function logUserActivity(
     const userEmail = userData.user?.email || 'unknown@system';
 
     // If no communication log ID provided, create one
-    let logId = communicationLogId;
+    let logId: string | null = communicationLogId || null;
     if (!logId) {
       logId = await logCommunication({
         userId: activity.userId,
@@ -256,6 +266,11 @@ export async function logUserActivity(
         subject: activity.activityDescription,
         metadata: activity.metadata
       });
+      
+      if (!logId) {
+        logger.error('Failed to create communication log entry for user activity');
+        return null;
+      }
     }
 
     const { data, error } = await supabaseAdmin
