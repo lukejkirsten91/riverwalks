@@ -91,29 +91,42 @@ self.addEventListener('fetch', (event) => {
 // Handle API requests with offline fallback
 async function handleApiRequest(request) {
   try {
-    const response = await fetch(request);
+    // Set a reasonable timeout for API requests
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Request timeout')), 8000)
+    );
+    
+    const response = await Promise.race([fetch(request), timeoutPromise]);
     
     // Cache successful responses for future offline use
     if (response.ok) {
       const cache = await caches.open(DYNAMIC_CACHE_NAME);
-      cache.put(request, response.clone());
+      // Only cache GET requests to avoid caching mutations
+      if (request.method === 'GET') {
+        cache.put(request, response.clone());
+      }
     }
     
     return response;
   } catch (error) {
-    console.log('Service Worker: API request failed, checking cache');
+    console.log('Service Worker: API request failed, checking cache:', error.message);
     
-    // Try to serve from cache
-    const cachedResponse = await caches.match(request);
-    if (cachedResponse) {
-      return cachedResponse;
+    // Try to serve from cache for GET requests
+    if (request.method === 'GET') {
+      const cachedResponse = await caches.match(request);
+      if (cachedResponse) {
+        console.log('Service Worker: Serving cached API response');
+        return cachedResponse;
+      }
     }
     
-    // Return offline response for API calls
+    // For non-GET requests or when no cache is available, return a proper error
+    // that the offline service can handle gracefully
     return new Response(
       JSON.stringify({
         error: 'offline',
-        message: 'This request requires an internet connection'
+        message: 'This request requires an internet connection',
+        offline: true
       }),
       {
         status: 503,

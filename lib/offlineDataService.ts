@@ -112,9 +112,27 @@ export class OfflineDataService {
     }
   }
 
-  // Check if we're online
+  // Check if we're online - be more conservative to avoid false positives
   private checkOnline(): boolean {
-    return this.isOnline && typeof window !== 'undefined' && navigator.onLine;
+    if (typeof window === 'undefined') return false;
+    
+    // Base online check
+    const basicOnline = this.isOnline && navigator.onLine;
+    
+    // If basic check fails, definitely offline
+    if (!basicOnline) return false;
+    
+    // Additional checks for more accurate online detection
+    // Check if we're on a limited connection
+    if ('connection' in navigator && (navigator as any).connection) {
+      const connection = (navigator as any).connection;
+      // If connection type indicates no connection, consider offline
+      if (connection.effectiveType === 'slow-2g' && connection.downlink < 0.1) {
+        return false;
+      }
+    }
+    
+    return true;
   }
 
   // Periodic sync check to catch missed sync opportunities
@@ -845,35 +863,50 @@ export class OfflineDataService {
 
   // River Walks methods
   async getRiverWalks(): Promise<RiverWalk[]> {
+    // Always try offline data first for faster loading
+    const offlineData = await offlineDB.getRiverWalks();
+    const offlineRiverWalks = offlineData.map(rw => fromOfflineRiverWalk(rw) as RiverWalk);
+
     if (this.checkOnline()) {
       try {
         const { data: { user } } = await supabase.auth.getUser();
-        if (!user) return [];
+        if (!user) {
+          // No user, return offline data if available
+          return offlineRiverWalks;
+        }
 
+        // Try to fetch fresh data from server
         const { data, error } = await supabase
           .from('river_walks')
           .select('*')
           .eq('user_id', user.id)
           .order('created_at', { ascending: false });
 
-        if (error) throw error;
+        if (error) {
+          console.warn('API fetch failed, using offline data:', error);
+          return offlineRiverWalks;
+        }
 
-        // Cache data locally
+        // Cache fresh data locally (but don't block UI)
         if (data) {
-          for (const rw of data) {
-            await offlineDB.addRiverWalk(toOfflineRiverWalk(rw));
+          try {
+            for (const rw of data) {
+              await offlineDB.addRiverWalk(toOfflineRiverWalk(rw));
+            }
+          } catch (cacheError) {
+            console.warn('Failed to cache river walks:', cacheError);
           }
         }
 
-        return data || [];
+        return data || offlineRiverWalks;
       } catch (error) {
-        console.error('Online fetch failed, using offline data:', error);
+        console.warn('Network request failed, using offline data:', error);
+        return offlineRiverWalks;
       }
     }
 
-    // Use offline data
-    const offlineData = await offlineDB.getRiverWalks();
-    return offlineData.map(rw => fromOfflineRiverWalk(rw) as RiverWalk);
+    // Offline - return cached data
+    return offlineRiverWalks;
   }
 
   async createRiverWalk(riverWalkData: Partial<RiverWalk>): Promise<RiverWalk> {
