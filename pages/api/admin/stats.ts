@@ -104,7 +104,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Create users array with subscription data and name information
     const users = usersData.users.map(user => {
       const subscription = subscriptionsData?.find(s => s.user_id === user.id);
-      const agreement = agreementsData?.find(a => a.user_id === user.id);
+      // Get the LATEST agreement for this user (in case of duplicates)
+      const userAgreements = agreementsData?.filter(a => a.user_id === user.id) || [];
+      const agreement = userAgreements.length > 0 
+        ? userAgreements.sort((a, b) => new Date(b.terms_accepted_at).getTime() - new Date(a.terms_accepted_at).getTime())[0]
+        : null;
       const metadata = user.user_metadata || {};
       
       // Extract names from metadata or full_name
