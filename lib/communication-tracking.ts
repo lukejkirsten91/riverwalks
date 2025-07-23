@@ -121,8 +121,9 @@ export async function logEmailCommunication(
         userId: email.userId,
         userEmail: email.toEmail,
         communicationType: 'email',
-        communicationSubtype: email.emailType,
         direction: 'outbound',
+        userName: undefined,
+        communicationSubtype: email.emailType,
         status: 'sent',
         subject: email.subject,
         content: email.bodyText || email.bodyHtml,
@@ -191,8 +192,9 @@ export async function logFormInteraction(
         userId: interaction.userId,
         userEmail: interaction.userId ? 'user@system' : 'anonymous@system', // This should be resolved from user ID
         communicationType: 'form_response',
-        communicationSubtype: interaction.interactionType,
         direction: interaction.interactionType === 'form_submitted' ? 'inbound' : 'internal',
+        userName: undefined,
+        communicationSubtype: interaction.interactionType,
         status: 'received',
         metadata: {
           formId: interaction.formId,
@@ -260,8 +262,9 @@ export async function logUserActivity(
         userId: activity.userId,
         userEmail: userEmail,
         communicationType: 'account_action',
-        communicationSubtype: activity.activityType,
         direction: 'internal',
+        userName: undefined,
+        communicationSubtype: activity.activityType,
         status: 'received',
         subject: activity.activityDescription,
         metadata: activity.metadata

@@ -280,10 +280,10 @@ CREATE TRIGGER trigger_update_gdpr_requests_updated_at
 CREATE OR REPLACE FUNCTION log_communication(
     p_user_id UUID,
     p_user_email TEXT,
-    p_user_name TEXT DEFAULT NULL,
     p_communication_type VARCHAR(50),
-    p_communication_subtype VARCHAR(100) DEFAULT NULL,
     p_direction VARCHAR(20),
+    p_user_name TEXT DEFAULT NULL,
+    p_communication_subtype VARCHAR(100) DEFAULT NULL,
     p_status VARCHAR(20) DEFAULT 'sent',
     p_subject TEXT DEFAULT NULL,
     p_content TEXT DEFAULT NULL,
