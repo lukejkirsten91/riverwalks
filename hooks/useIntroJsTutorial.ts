@@ -171,7 +171,27 @@ export function useIntroJsTutorial(): UseIntroJsTutorialReturn {
 
       setCanStartTutorial(true);
 
-      // Load from user metadata
+      // Check if user has existing river walks - if so, mark tutorial as seen
+      const { data: riverWalks, error } = await supabase
+        .from('river_walks')
+        .select('id')
+        .eq('user_id', user?.id)
+        .limit(1);
+
+      if (!error && riverWalks && riverWalks.length > 0) {
+        // User has river walks - they're an existing user, mark tutorial as seen
+        const state: TutorialState = {
+          hasSeenTutorial: true,
+          completedSteps: [],
+          lastUpdated: new Date().toISOString()
+        };
+        setTutorialState(state);
+        // Update metadata to prevent future issues
+        await updateTutorialState(state);
+        return;
+      }
+
+      // Load from user metadata for new users
       const userTutorial = user.user_metadata?.tutorial;
       if (userTutorial) {
         setTutorialState({ ...DEFAULT_TUTORIAL_STATE, ...userTutorial });
@@ -180,6 +200,8 @@ export function useIntroJsTutorial(): UseIntroJsTutorialReturn {
       }
     } catch (error) {
       console.error('Error loading tutorial state:', error);
+      // On error, assume existing user and mark tutorial as seen
+      setTutorialState({ ...DEFAULT_TUTORIAL_STATE, hasSeenTutorial: true });
       setCanStartTutorial(false);
     }
   };

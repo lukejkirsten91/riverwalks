@@ -13,7 +13,6 @@ import { CookieConsentProvider } from '../contexts/CookieConsentContext';
 import { ErrorBoundary } from '../components/ui/ErrorBoundary';
 import { usePerformanceMonitoring } from '../hooks/usePerformanceMonitoring';
 import { trackPageView } from '../lib/analytics';
-import { serviceWorker } from '../lib/serviceWorker';
 import Head from 'next/head';
 
 function MyApp({ Component, pageProps }: AppProps) {
@@ -33,13 +32,6 @@ function MyApp({ Component, pageProps }: AppProps) {
       router.events.off('routeChangeComplete', handleRouteChange);
     };
   }, [router.events]);
-
-  // Register service worker for PWA functionality
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      serviceWorker.register();
-    }
-  }, []);
 
   return (
     <ErrorBoundary>

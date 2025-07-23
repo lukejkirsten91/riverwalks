@@ -45,15 +45,7 @@ export function useOnboarding(): OnboardingStatus {
         return;
       }
 
-      // Try to load from user metadata first (fastest)
-      const userOnboarding = user.user_metadata?.onboarding;
-      if (userOnboarding) {
-        setOnboardingState({ ...DEFAULT_ONBOARDING_STATE, ...userOnboarding });
-        setLoading(false);
-        return;
-      }
-
-      // Fallback: Check if user has any river walks (indicates they've used the app)
+      // Check if user has any river walks first (most reliable indicator)
       const { data: riverWalks, error } = await supabase
         .from('river_walks')
         .select('id, created_at')
@@ -61,25 +53,42 @@ export function useOnboarding(): OnboardingStatus {
         .limit(1);
 
       if (!error && riverWalks && riverWalks.length > 0) {
-        // User has river walks, they've been onboarded
+        // User has river walks - they're an existing user, mark as fully onboarded
         const state: OnboardingState = {
           hasSeenWelcome: true,
           hasCreatedFirstRiverWalk: true,
-          hasAddedFirstSite: false, // We'll check this separately if needed
-          hasGeneratedFirstReport: false, // This requires premium
+          hasAddedFirstSite: true, // Assume existing users have used the app
+          hasGeneratedFirstReport: true, // Assume existing users have used the app
           lastUpdated: new Date().toISOString()
         };
         
         setOnboardingState(state);
-        // Save to user metadata for faster future loads
+        // Always update metadata for existing users to prevent future issues
         await updateUserMetadata(state);
+        setLoading(false);
+        return;
+      }
+
+      // If no river walks, try to load from user metadata  
+      const userOnboarding = user.user_metadata?.onboarding;
+      if (userOnboarding) {
+        setOnboardingState({ ...DEFAULT_ONBOARDING_STATE, ...userOnboarding });
       } else {
-        // New user, show onboarding
+        // New user with no metadata and no river walks
         setOnboardingState(DEFAULT_ONBOARDING_STATE);
       }
 
     } catch (error) {
       console.error('Error loading onboarding state:', error);
+      // On error, assume existing user to prevent tutorial spam
+      const state: OnboardingState = {
+        hasSeenWelcome: true,
+        hasCreatedFirstRiverWalk: true,
+        hasAddedFirstSite: true,
+        hasGeneratedFirstReport: true,
+        lastUpdated: new Date().toISOString()
+      };
+      setOnboardingState(state);
     } finally {
       setLoading(false);
     }
