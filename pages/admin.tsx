@@ -883,9 +883,9 @@ export default function AdminDashboard() {
                         <td className="px-3 sm:px-6 py-4 whitespace-nowrap hidden md:table-cell">
                           <div className="flex flex-col items-start space-y-1">
                             <div className="flex items-center space-x-1">
-                              {user.emails_sent_count > 0 ? (
-                                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800" title={`${user.emails_sent_count} emails sent. Last: ${user.last_email_sent ? new Date(user.last_email_sent).toLocaleDateString() : 'Unknown'}`}>
-                                  📧 {user.emails_sent_count}
+                              {(user.emails_sent_count || 0) > 0 ? (
+                                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800" title={`${user.emails_sent_count || 0} emails sent. Last: ${user.last_email_sent ? new Date(user.last_email_sent).toLocaleDateString() : 'Unknown'}`}>
+                                  📧 {user.emails_sent_count || 0}
                                 </span>
                               ) : (
                                 <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
@@ -895,8 +895,8 @@ export default function AdminDashboard() {
                             </div>
                             <div className="flex items-center space-x-1">
                               {user.has_completed_forms ? (
-                                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800" title={`${user.forms_completed_count} forms completed. Last: ${user.last_form_completed ? new Date(user.last_form_completed).toLocaleDateString() : 'Unknown'}`}>
-                                  ✅ {user.forms_completed_count}
+                                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800" title={`${user.forms_completed_count || 0} forms completed. Last: ${user.last_form_completed ? new Date(user.last_form_completed).toLocaleDateString() : 'Unknown'}`}>
+                                  ✅ {user.forms_completed_count || 0}
                                 </span>
                               ) : (
                                 <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
