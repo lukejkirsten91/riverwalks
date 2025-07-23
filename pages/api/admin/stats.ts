@@ -63,11 +63,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const { data: agreementsData, error: agreementsError } = await supabaseAdmin
       .from('user_agreements')
       .select('user_id, marketing_consent, terms_accepted_at');
-    
-    // Debug logging for marketing consent
-    console.log('Total users loaded:', usersData.users.length);
-    console.log('User agreements loaded:', agreementsData?.length || 0);
-    console.log('Users with marketing consent in agreements:', agreementsData?.filter(a => a.marketing_consent).length || 0);
 
     // Load email sending history
     const { data: emailHistory, error: emailError } = await supabaseAdmin
@@ -128,11 +123,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                                   metadata.marketing_consent === true ||
                                   metadata.marketing_consent === 'true' ||
                                   false;
-      
-      // Debug logging for individual users
-      if (metadata.marketing_consent || agreement?.marketing_consent) {
-        console.log(`User ${user.email}: agreement=${agreement?.marketing_consent}, metadata=${metadata.marketing_consent}, final=${hasMarketingConsent}`);
-      }
 
       // Get email sending history for this user
       const userEmailHistory = emailHistory?.filter(e => e.user_id === user.id) || [];
@@ -173,10 +163,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // Sort users by creation date (newest first)
     users.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-
-    // Debug final count
-    const finalMarketingConsentCount = users.filter(u => u.marketing_consent).length;
-    console.log('Final users with marketing consent:', finalMarketingConsentCount);
 
     return res.status(200).json({
       stats,
