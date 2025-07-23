@@ -64,6 +64,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       .from('user_agreements')
       .select('user_id, marketing_consent, terms_accepted_at');
 
+    // Load email sending history
+    const { data: emailHistory, error: emailError } = await supabaseAdmin
+      .from('feedback_sent_tracking')
+      .select('user_id, sent_at, form_id');
+
+    // Load feedback responses 
+    const { data: feedbackResponses, error: feedbackError } = await supabaseAdmin
+      .from('feedback_responses')
+      .select('user_id, form_id, submitted_at');
+
     if (subsError) {
       console.error('Error loading subscriptions:', subsError);
       return res.status(500).json({ error: 'Failed to load subscriptions' });
@@ -108,9 +118,28 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         last_name = nameParts.slice(1).join(' ') || null;
       }
       
+      // Check marketing consent from both sources
+      const hasMarketingConsent = agreement?.marketing_consent || 
+                                  metadata.marketing_consent || 
+                                  false;
+
+      // Get email sending history for this user
+      const userEmailHistory = emailHistory?.filter(e => e.user_id === user.id) || [];
+      const lastEmailSent = userEmailHistory.length > 0 
+        ? userEmailHistory.sort((a, b) => new Date(b.sent_at).getTime() - new Date(a.sent_at).getTime())[0]
+        : null;
+
+      // Get feedback responses for this user  
+      const userResponses = feedbackResponses?.filter(r => r.user_id === user.id) || [];
+      const hasCompletedForms = userResponses.length > 0;
+      const lastFormCompleted = userResponses.length > 0
+        ? userResponses.sort((a, b) => new Date(b.submitted_at).getTime() - new Date(a.submitted_at).getTime())[0]
+        : null;
+
       return {
         id: user.id,
         email: user.email || 'No email',
+        email_confirmed_at: user.email_confirmed_at,
         subscription_type: subscription?.subscription_type || null,
         status: subscription?.status || null,
         created_at: user.created_at,
@@ -118,8 +147,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         first_name: first_name || null,
         last_name: last_name || null,
         display_name: metadata.display_name || null,
-        marketing_consent: agreement?.marketing_consent || false,
-        marketing_consent_date: agreement?.terms_accepted_at || null
+        marketing_consent: hasMarketingConsent,
+        marketing_consent_date: agreement?.terms_accepted_at || null,
+        // Email and form tracking data
+        emails_sent_count: userEmailHistory.length,
+        last_email_sent: lastEmailSent?.sent_at || null,
+        last_email_form_id: lastEmailSent?.form_id || null,
+        forms_completed_count: userResponses.length,
+        has_completed_forms: hasCompletedForms,
+        last_form_completed: lastFormCompleted?.submitted_at || null,
+        last_completed_form_id: lastFormCompleted?.form_id || null
       };
     });
 

@@ -16,6 +16,7 @@ interface AdminStats {
 interface UserSubscription {
   id: string;
   email: string;
+  email_confirmed_at?: string | null;
   subscription_type: string | null;
   status: string | null;
   created_at: string;
@@ -25,6 +26,14 @@ interface UserSubscription {
   display_name?: string | null;
   marketing_consent?: boolean;
   marketing_consent_date?: string | null;
+  // Email and form tracking fields
+  emails_sent_count?: number;
+  last_email_sent?: string | null;
+  last_email_form_id?: string | null;
+  forms_completed_count?: number;
+  has_completed_forms?: boolean;
+  last_form_completed?: string | null;
+  last_completed_form_id?: string | null;
 }
 
 interface Voucher {
@@ -764,6 +773,8 @@ export default function AdminDashboard() {
                       <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
                       <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subscription</th>
                       <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Marketing</th>
+                      <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">Email Status</th>
+                      <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden sm:table-cell">Signup Date</th>
                       <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden sm:table-cell">Joined</th>
                       <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                     </tr>
@@ -869,6 +880,32 @@ export default function AdminDashboard() {
                             )}
                           </div>
                         </td>
+                        <td className="px-3 sm:px-6 py-4 whitespace-nowrap hidden md:table-cell">
+                          <div className="flex flex-col items-start space-y-1">
+                            <div className="flex items-center space-x-1">
+                              {user.emails_sent_count > 0 ? (
+                                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800" title={`${user.emails_sent_count} emails sent. Last: ${user.last_email_sent ? new Date(user.last_email_sent).toLocaleDateString() : 'Unknown'}`}>
+                                  📧 {user.emails_sent_count}
+                                </span>
+                              ) : (
+                                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                  ➖ No emails
+                                </span>
+                              )}
+                            </div>
+                            <div className="flex items-center space-x-1">
+                              {user.has_completed_forms ? (
+                                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800" title={`${user.forms_completed_count} forms completed. Last: ${user.last_form_completed ? new Date(user.last_form_completed).toLocaleDateString() : 'Unknown'}`}>
+                                  ✅ {user.forms_completed_count}
+                                </span>
+                              ) : (
+                                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                  ⏳ No forms
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </td>
                         <td className="px-3 sm:px-6 py-4 whitespace-nowrap">
                           <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
                             user.status === 'active'
@@ -877,6 +914,9 @@ export default function AdminDashboard() {
                           }`}>
                             {user.status || 'Basic'}
                           </span>
+                        </td>
+                        <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500 hidden sm:table-cell">
+                          {user.email_confirmed_at ? new Date(user.email_confirmed_at).toLocaleDateString() : 'Not confirmed'}
                         </td>
                         <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500 hidden sm:table-cell">
                           {new Date(user.created_at).toLocaleDateString()}
