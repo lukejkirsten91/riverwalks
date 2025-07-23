@@ -2429,7 +2429,9 @@ function FeedbackManager() {
           const analyticsData = await analyticsResponse.json();
           setAnalytics(analyticsData.analytics);
         }
+      }
 
+      if (activeSubTab === 'responses' || activeSubTab === 'analytics' || activeSubTab === 'overview') {
         // Load responses
         const responsesResponse = await fetch('/api/admin/feedback-responses', {
           headers: authHeader
@@ -2553,10 +2555,11 @@ function FeedbackManager() {
   };
 
   const subTabs = [
+    { id: 'overview', name: 'Overview', count: null },
     { id: 'forms', name: 'Forms', count: forms.length },
-    { id: 'campaigns', name: 'Campaigns', count: campaigns.length },
+    { id: 'responses', name: 'Responses', count: responses.length },
     { id: 'analytics', name: 'Analytics', count: responses.length },
-    { id: 'overview', name: 'Overview', count: null }
+    { id: 'campaigns', name: 'Campaigns', count: campaigns.length }
   ];
 
   return (
@@ -2762,6 +2765,133 @@ function FeedbackManager() {
                       </div>
                     </div>
                   ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Responses Tab */}
+          {activeSubTab === 'responses' && (
+            <div className="space-y-4">
+              {responses.length === 0 ? (
+                <div className="text-center py-12">
+                  <MessageSquare className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                  <p className="text-gray-500">No responses yet. Send feedback forms to users to see responses here!</p>
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  {/* Filters */}
+                  <div className="bg-white border rounded-lg p-4">
+                    <h4 className="font-medium text-gray-900 mb-3">Filter Responses</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <select className="border border-gray-300 rounded-lg px-3 py-2">
+                        <option value="">All Forms</option>
+                        {forms.map(form => (
+                          <option key={form.id} value={form.id}>{form.name}</option>
+                        ))}
+                      </select>
+                      <select className="border border-gray-300 rounded-lg px-3 py-2">
+                        <option value="">All Time</option>
+                        <option value="today">Today</option>
+                        <option value="week">This Week</option>
+                        <option value="month">This Month</option>
+                      </select>
+                      <input 
+                        type="text" 
+                        placeholder="Search by name or email..."
+                        className="border border-gray-300 rounded-lg px-3 py-2"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Individual Responses */}
+                  <div className="space-y-4">
+                    {responses.map((response) => (
+                      <div key={response.id} className="bg-white border rounded-lg overflow-hidden">
+                        {/* Response Header */}
+                        <div className="bg-gradient-to-r from-blue-50 to-green-50 px-6 py-4 border-b">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <h4 className="font-medium text-gray-900">
+                                {response.user_name || 'Anonymous User'}
+                              </h4>
+                              <p className="text-sm text-gray-600">{response.user_email}</p>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-sm font-medium text-blue-600">
+                                {response.feedback_forms?.name || 'Unknown Form'}
+                              </p>
+                              <p className="text-xs text-gray-500">
+                                {new Date(response.submitted_at).toLocaleString()}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Response Content */}
+                        <div className="px-6 py-4">
+                          {response.responses && response.responses.length > 0 ? (
+                            <div className="space-y-4">
+                              {response.responses.map((answer: any, index: number) => {
+                                // Find the corresponding form to get question details
+                                const form = forms.find(f => f.id === response.form_id);
+                                const question = form?.questions?.find((q: any) => q.id === answer.question_id);
+                                
+                                return (
+                                  <div key={index} className="border-l-4 border-blue-200 pl-4">
+                                    <h5 className="font-medium text-gray-900 mb-2">
+                                      {question?.question_text || `Question ${index + 1}`}
+                                    </h5>
+                                    <div className="text-gray-700">
+                                      {question?.question_type === 'rating' ? (
+                                        <div className="flex items-center gap-2">
+                                          <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded font-medium">
+                                            {answer.answer}
+                                          </span>
+                                          {question.options?.scale && (
+                                            <span className="text-sm text-gray-500">
+                                              / {question.options.scale}
+                                            </span>
+                                          )}
+                                          {question.options?.nps && (
+                                            <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">
+                                              NPS
+                                            </span>
+                                          )}
+                                        </div>
+                                      ) : question?.question_type === 'multiple_choice' ? (
+                                        <div>
+                                          {Array.isArray(answer.answer) ? (
+                                            <div className="flex flex-wrap gap-2">
+                                              {answer.answer.map((choice: string, idx: number) => (
+                                                <span key={idx} className="bg-green-100 text-green-800 px-2 py-1 rounded text-sm">
+                                                  {choice}
+                                                </span>
+                                              ))}
+                                            </div>
+                                          ) : (
+                                            <span className="bg-green-100 text-green-800 px-2 py-1 rounded text-sm">
+                                              {answer.answer}
+                                            </span>
+                                          )}
+                                        </div>
+                                      ) : (
+                                        <div className="bg-gray-50 rounded p-3">
+                                          <p className="text-gray-700 whitespace-pre-wrap">{answer.answer}</p>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          ) : (
+                            <p className="text-gray-500 italic">No responses recorded</p>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
