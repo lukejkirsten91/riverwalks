@@ -887,9 +887,22 @@ export class OfflineDataService {
           return offlineRiverWalks;
         }
 
-        // Cache fresh data locally (but don't block UI)
+        // Cache fresh data locally and clean up deleted items
         if (data) {
           try {
+            // Get current offline data to compare
+            const currentOfflineData = await offlineDB.getRiverWalks();
+            const serverIds = new Set(data.map(rw => rw.id));
+            
+            // Remove offline items that no longer exist on server
+            for (const offlineRw of currentOfflineData) {
+              if (offlineRw.id && !offlineRw.id.startsWith('local_') && !serverIds.has(offlineRw.id)) {
+                console.log('Cleaning up deleted river walk from cache:', offlineRw.id);
+                await offlineDB.deleteRiverWalk(offlineRw.localId);
+              }
+            }
+            
+            // Add/update fresh server data
             for (const rw of data) {
               await offlineDB.addRiverWalk(toOfflineRiverWalk(rw));
             }
@@ -2015,6 +2028,27 @@ export class OfflineDataService {
     this.cachedUserId = null;
     if (typeof window !== 'undefined') {
       localStorage.removeItem('riverwalks_user_id');
+    }
+  }
+
+  // Clear all offline data (for debugging or user switching)
+  async clearAllOfflineData(): Promise<void> {
+    console.log('Clearing all offline data...');
+    try {
+      // Clear all IndexedDB data
+      await offlineDB.clearAll();
+      
+      // Clear user cache
+      this.clearUserCache();
+      
+      // Clear any relevant localStorage items
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('riverwalks_sync_queue_cleared');
+      }
+      
+      console.log('All offline data cleared successfully');
+    } catch (error) {
+      console.error('Error clearing offline data:', error);
     }
   }
 

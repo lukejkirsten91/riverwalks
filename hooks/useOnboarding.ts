@@ -137,11 +137,20 @@ export function useOnboarding(): OnboardingStatus {
     await updateUserMetadata({ hasGeneratedFirstReport: true });
   };
 
-  // Should show welcome if user hasn't seen it and doesn't have any river walks
-  const shouldShowWelcome = !loading && !onboardingState.hasSeenWelcome;
+  // Should show welcome only if user is genuinely new AND we're sure they have no river walks
+  // Be conservative - only show welcome for truly new users to prevent welcome spam
+  const shouldShowWelcome = !loading && 
+    !onboardingState.hasSeenWelcome && 
+    !onboardingState.hasCreatedFirstRiverWalk && 
+    !onboardingState.hasAddedFirstSite && 
+    !onboardingState.hasGeneratedFirstReport;
   
   // Should show tutorial after welcome is complete but no first river walk created
-  const shouldShowTutorial = !loading && onboardingState.hasSeenWelcome && !onboardingState.hasCreatedFirstRiverWalk;
+  // Also be conservative here to prevent tutorial spam
+  const shouldShowTutorial = !loading && 
+    onboardingState.hasSeenWelcome && 
+    !onboardingState.hasCreatedFirstRiverWalk &&
+    !onboardingState.hasAddedFirstSite;
 
   return {
     shouldShowWelcome,

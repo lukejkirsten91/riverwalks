@@ -1,4 +1,5 @@
 import { supabase } from '../supabase';
+import { offlineDataService } from '../offlineDataService';
 import type { RiverWalk, RiverWalkFormData } from '../../types';
 
 // Get all river walks for the current user (excluding archived by default)
@@ -42,20 +43,24 @@ export async function getArchivedRiverWalks(
   return data || [];
 }
 
-// Get a single river walk by ID
+// Get a single river walk by ID (offline-aware)
 export async function getRiverWalkById(id: string): Promise<RiverWalk> {
-  const { data, error } = await supabase
-    .from('river_walks')
-    .select('*')
-    .eq('id', id)
-    .single();
-
-  if (error) {
+  try {
+    // First try to get all river walks from offline service (includes online fetch + cache)
+    const allRiverWalks = await offlineDataService.getRiverWalks();
+    
+    // Find the specific river walk by ID
+    const riverWalk = allRiverWalks.find(rw => rw.id === id);
+    
+    if (!riverWalk) {
+      throw new Error(`River walk with id ${id} not found`);
+    }
+    
+    return riverWalk;
+  } catch (error) {
     console.error(`Error fetching river walk with id ${id}:`, error);
     throw error;
   }
-
-  return data;
 }
 
 // Create a new river walk
