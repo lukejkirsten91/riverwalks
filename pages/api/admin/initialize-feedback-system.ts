@@ -192,42 +192,44 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(500).json({ error: 'Failed to create feedback form' });
     }
 
-    // Create default feedback questions
+    // Create default feedback questions focused on Riverwalks
     const defaultQuestions = [
       {
         form_id: feedbackForm.id,
-        question_text: 'How satisfied are you with Riverwalks overall?',
+        question_text: 'How would you rate your overall experience with Riverwalks?',
         question_type: 'rating',
         options: { 
           scale: 5, 
-          labels: ['Very Dissatisfied', 'Dissatisfied', 'Neutral', 'Satisfied', 'Very Satisfied'] 
+          labels: ['Poor', 'Fair', 'Good', 'Very Good', 'Excellent'] 
         },
         order_index: 1,
         required: true
       },
       {
         form_id: feedbackForm.id,
-        question_text: 'How likely are you to recommend Riverwalks to a friend or classmate?',
+        question_text: 'How likely are you to recommend Riverwalks to other geography students or teachers?',
         question_type: 'rating',
-        options: { 
-          scale: 10, 
-          labels: ['Not at all likely', 'Extremely likely'], 
-          nps: true 
+        options: {
+          scale: 10,
+          nps: true,
+          labels: ['Not at all likely', 'Extremely likely']
         },
         order_index: 2,
         required: true
       },
       {
         form_id: feedbackForm.id,
-        question_text: 'Which features do you find most valuable?',
+        question_text: 'Which Riverwalks features have been most helpful for your geography studies?',
         question_type: 'multiple_choice',
         options: { 
           options: [
-            'Interactive river walks', 
-            'Data collection tools', 
-            'Educational resources', 
-            'Progress tracking', 
-            'Collaboration features'
+            'Interactive river walk maps', 
+            'Data collection and analysis tools', 
+            'GCSE-aligned educational content', 
+            'Field study planning resources',
+            'River process explanations',
+            'Case study materials',
+            'Assessment and progress tracking'
           ],
           multiple: true 
         },
@@ -236,32 +238,57 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       },
       {
         form_id: feedbackForm.id,
-        question_text: 'How often do you use Riverwalks?',
+        question_text: 'How has Riverwalks helped improve your understanding of geography?',
         question_type: 'multiple_choice',
         options: { 
-          options: ['Daily', 'Several times a week', 'Weekly', 'Monthly', 'Rarely'] 
+          options: [
+            'Better understanding of river processes',
+            'Improved field study skills', 
+            'Enhanced data analysis abilities',
+            'Stronger exam preparation',
+            'More engaging learning experience',
+            'Clearer connection between theory and practice'
+          ],
+          multiple: true 
         },
         order_index: 4,
-        required: true
+        required: false
       },
       {
         form_id: feedbackForm.id,
-        question_text: 'What would you like to see improved or added to Riverwalks?',
-        question_type: 'text',
+        question_text: 'What type of geography student/teacher are you?',
+        question_type: 'multiple_choice',
         options: { 
-          placeholder: 'Share your suggestions for new features or improvements...' 
+          options: [
+            'GCSE Geography student',
+            'A-Level Geography student', 
+            'Geography teacher',
+            'Homeschool educator',
+            'University geography student',
+            'Geography enthusiast'
+          ]
         },
         order_index: 5,
         required: false
       },
       {
         form_id: feedbackForm.id,
-        question_text: 'Would you like to share a brief testimonial about your Riverwalks experience?',
+        question_text: 'What additional geography topics would you like to see covered in Riverwalks?',
         question_type: 'text',
         options: { 
-          placeholder: 'Feel free to share what you love about Riverwalks...' 
+          placeholder: 'e.g., coastal processes, urban geography, climate change impacts...' 
         },
         order_index: 6,
+        required: false
+      },
+      {
+        form_id: feedbackForm.id,
+        question_text: 'Any other feedback or suggestions to help us improve Riverwalks?',
+        question_type: 'text',
+        options: { 
+          placeholder: 'Share any thoughts on features, content, or user experience...' 
+        },
+        order_index: 7,
         required: false
       }
     ];

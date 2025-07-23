@@ -300,25 +300,52 @@ export default function FeedbackFormPage() {
 
   if (submitted) {
     return (
-      <div className="min-h-screen bg-gray-50 py-12">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 py-12">
         <div className="max-w-3xl mx-auto px-4">
-          <div className="bg-white rounded-lg shadow-sm p-8">
-            <div className="text-center">
-              <div className="w-16 h-16 mx-auto mb-4 bg-green-100 rounded-full flex items-center justify-center">
+          <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+            {/* Success Header */}
+            <div className="bg-gradient-to-r from-green-600 to-blue-600 p-8 text-white">
+              <div className="text-center">
+                <div className="text-4xl mb-3">🎉</div>
+                <h1 className="text-2xl font-bold mb-2">Thank You!</h1>
+                <p className="text-green-100">Your feedback has been received</p>
+              </div>
+            </div>
+            
+            <div className="p-8 text-center">
+              <div className="w-16 h-16 mx-auto mb-6 bg-green-100 rounded-full flex items-center justify-center">
                 <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
               </div>
-              <h1 className="text-2xl font-bold text-gray-900 mb-2">Thank You!</h1>
-              <p className="text-gray-600 mb-6">
-                Your feedback has been submitted successfully. We appreciate you taking the time to help us improve Riverwalks!
-              </p>
-              <button
-                onClick={() => router.push('/')}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg"
-              >
-                Return to Home
-              </button>
+              
+              <h2 className="text-xl font-bold text-gray-900 mb-4">Your Voice Makes a Difference!</h2>
+              
+              <div className="mb-8 p-6 bg-blue-50 border border-blue-200 rounded-lg">
+                <p className="text-gray-700 mb-3">
+                  <strong>🌊 What happens next?</strong>
+                </p>
+                <ul className="text-sm text-gray-600 text-left space-y-2">
+                  <li>• Your feedback will be reviewed by our education team</li>
+                  <li>• We'll use your insights to improve Riverwalks for all users</li>
+                  <li>• Major updates will be shared in our newsletter</li>
+                </ul>
+              </div>
+              
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <button
+                  onClick={() => router.push('/river-walks')}
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+                >
+                  🗺️ Explore River Walks
+                </button>
+                <button
+                  onClick={() => router.push('/')}
+                  className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-6 py-3 rounded-lg font-medium transition-colors"
+                >
+                  Return to Home
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -361,14 +388,28 @@ export default function FeedbackFormPage() {
   });
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 py-12">
       <div className="max-w-3xl mx-auto px-4">
-        <div className="bg-white rounded-lg shadow-sm">
+        <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+          {/* Riverwalks Header */}
+          <div className="bg-gradient-to-r from-blue-600 to-green-600 p-8 text-white">
+            <div className="text-center">
+              <div className="text-4xl mb-3">🌊</div>
+              <h1 className="text-2xl font-bold mb-2">Riverwalks Feedback</h1>
+              <p className="text-blue-100">Help us improve geography education for everyone</p>
+            </div>
+          </div>
+          
           <div className="p-8 border-b border-gray-200">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">{form.name}</h1>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">{form.name}</h2>
             {form.description && (
               <p className="text-gray-600">{form.description}</p>
             )}
+            <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <p className="text-sm text-blue-800">
+                <strong>💡 Your voice matters!</strong> This feedback helps us create better resources for geography students and teachers.
+              </p>
+            </div>
           </div>
 
           <form onSubmit={handleSubmit} className="p-8">
