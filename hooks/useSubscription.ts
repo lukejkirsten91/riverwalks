@@ -16,6 +16,35 @@ export function useSubscription() {
     loading: true,
   });
 
+  // Helper to get cached subscription status
+  const getCachedSubscription = (userId: string): SubscriptionStatus | null => {
+    if (typeof window === 'undefined') return null;
+    try {
+      const cached = localStorage.getItem(`riverwalks_subscription_${userId}`);
+      return cached ? JSON.parse(cached) : null;
+    } catch {
+      return null;
+    }
+  };
+
+  // Helper to cache subscription status
+  const cacheSubscription = (userId: string, subscription: SubscriptionStatus) => {
+    if (typeof window === 'undefined') return;
+    try {
+      localStorage.setItem(`riverwalks_subscription_${userId}`, JSON.stringify({
+        ...subscription,
+        cachedAt: Date.now()
+      }));
+    } catch (error) {
+      console.warn('Failed to cache subscription status:', error);
+    }
+  };
+
+  // Helper to check if we're online
+  const isOnline = () => {
+    return typeof navigator !== 'undefined' && navigator.onLine;
+  };
+
   useEffect(() => {
     const checkSubscription = async () => {
       try {
@@ -29,6 +58,29 @@ export function useSubscription() {
             loading: false,
           });
           return;
+        }
+
+        // If offline, try to use cached subscription data
+        if (!isOnline()) {
+          console.log('🔌 Offline - checking for cached subscription data');
+          const cachedStatus = getCachedSubscription(user.id);
+          if (cachedStatus) {
+            console.log('✅ Using cached subscription status:', cachedStatus);
+            setStatus({
+              ...cachedStatus,
+              loading: false
+            });
+            return;
+          } else {
+            console.log('⚠️ No cached subscription data available, defaulting to free');
+            setStatus({
+              isSubscribed: false,
+              hasLifetimeAccess: false,
+              subscriptionType: 'free',
+              loading: false,
+            });
+            return;
+          }
         }
 
         // Check if user has a subscription record
@@ -88,14 +140,35 @@ export function useSubscription() {
           subscriptionType
         });
 
-        setStatus({
+        const finalStatus = {
           isSubscribed,
           hasLifetimeAccess,
           subscriptionType: subscriptionType as 'free' | 'annual' | 'lifetime',
           loading: false,
-        });
+        };
+
+        // Cache the subscription status for offline use
+        cacheSubscription(user.id, finalStatus);
+
+        setStatus(finalStatus);
       } catch (error) {
         console.error('Error checking subscription status:', error);
+        
+        // Try to use cached data if available, otherwise default to free
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const cachedStatus = getCachedSubscription(user.id);
+          if (cachedStatus) {
+            console.log('⚠️ Using cached subscription status due to error:', cachedStatus);
+            setStatus({
+              ...cachedStatus,
+              loading: false
+            });
+            return;
+          }
+        }
+        
+        // No cached data available, default to free
         setStatus({
           isSubscribed: false,
           hasLifetimeAccess: false,
@@ -122,4 +195,25 @@ export function canExportData(subscription: SubscriptionStatus): boolean {
 
 export function canAccessAdvancedFeatures(subscription: SubscriptionStatus): boolean {
   return subscription.isSubscribed;
+}
+
+// Helper function to clear cached subscription data (call on sign out)
+export function clearCachedSubscription(userId?: string): void {
+  if (typeof window === 'undefined') return;
+  
+  try {
+    if (userId) {
+      localStorage.removeItem(`riverwalks_subscription_${userId}`);
+    } else {
+      // Clear all subscription caches if no specific user ID
+      const keys = Object.keys(localStorage);
+      keys.forEach(key => {
+        if (key.startsWith('riverwalks_subscription_')) {
+          localStorage.removeItem(key);
+        }
+      });
+    }
+  } catch (error) {
+    console.warn('Failed to clear cached subscription data:', error);
+  }
 }

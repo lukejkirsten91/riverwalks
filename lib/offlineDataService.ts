@@ -2124,6 +2124,10 @@ export class OfflineDataService {
       // Clear user cache
       this.clearUserCache();
       
+      // Clear cached subscription data
+      const { clearCachedSubscription } = await import('../hooks/useSubscription');
+      clearCachedSubscription();
+      
       // Clear any relevant localStorage items
       if (typeof window !== 'undefined') {
         localStorage.removeItem('riverwalks_sync_queue_cleared');

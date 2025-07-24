@@ -1,7 +1,7 @@
 // Riverwalks Service Worker for Offline Capabilities
-const CACHE_NAME = 'riverwalks-v5';
-const STATIC_CACHE_NAME = 'riverwalks-static-v5';
-const DYNAMIC_CACHE_NAME = 'riverwalks-dynamic-v5';
+const CACHE_NAME = 'riverwalks-v6';
+const STATIC_CACHE_NAME = 'riverwalks-static-v6';
+const DYNAMIC_CACHE_NAME = 'riverwalks-dynamic-v6';
 
 // App shell - critical files for offline functionality
 const APP_SHELL = [
@@ -246,9 +246,25 @@ async function handleRiverWalksPageRequest(request) {
     console.log('Service Worker: Creating generic river-walks page for offline access');
     const genericRiverWalksResponse = await caches.match('/river-walks');
     if (genericRiverWalksResponse) {
-      // Clone and modify the response to preserve the original URL
+      // Clone and modify the response to inject offline mode flag
       const clonedResponse = genericRiverWalksResponse.clone();
-      return new Response(await clonedResponse.text(), {
+      let htmlContent = await clonedResponse.text();
+      
+      // Inject script to set offline mode flag before any other scripts run
+      const offlineModeScript = `
+        <script>
+          // Set offline mode flag to prevent onboarding flows
+          if (typeof sessionStorage !== 'undefined') {
+            sessionStorage.setItem('riverwalks_offline_mode', 'true');
+            console.log('Service Worker: Set offline mode flag for fallback navigation');
+          }
+        </script>
+      `;
+      
+      // Insert the script right after the <head> tag
+      htmlContent = htmlContent.replace('<head>', '<head>' + offlineModeScript);
+      
+      return new Response(htmlContent, {
         status: 200,
         statusText: 'OK',
         headers: {

@@ -36,6 +36,33 @@ export function useOnboarding(): OnboardingStatus {
     loadOnboardingState();
   }, []);
 
+  // Monitor online/offline state changes
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const handleOnline = () => {
+      // When coming back online, clear the offline mode flag if it was set by navigation
+      if (sessionStorage.getItem('riverwalks_offline_mode') === 'true') {
+        console.log('Back online - clearing offline mode flag');
+        sessionStorage.removeItem('riverwalks_offline_mode');
+      }
+    };
+
+    const handleOffline = () => {
+      // When going offline, set the offline mode flag to prevent onboarding
+      sessionStorage.setItem('riverwalks_offline_mode', 'true');
+      console.log('Gone offline - set offline mode flag');
+    };
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
+
   const loadOnboardingState = async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -137,9 +164,11 @@ export function useOnboarding(): OnboardingStatus {
     await updateUserMetadata({ hasGeneratedFirstReport: true });
   };
 
-  // Check if we're in offline mode (prevents onboarding on offline page)
-  const isOfflineMode = typeof window !== 'undefined' && 
-    sessionStorage.getItem('riverwalks_offline_mode') === 'true';
+  // Check if we're in offline mode (prevents onboarding on offline page or fallback pages)
+  const isOfflineMode = typeof window !== 'undefined' && (
+    sessionStorage.getItem('riverwalks_offline_mode') === 'true' ||
+    !navigator.onLine
+  );
 
   // Should show welcome only if user is genuinely new AND we're sure they have no river walks
   // Be conservative - only show welcome for truly new users to prevent welcome spam
