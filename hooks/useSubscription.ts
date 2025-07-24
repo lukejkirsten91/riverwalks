@@ -151,16 +151,24 @@ export function useSubscription() {
         return;
       }
       try {
-        const { data: { user } } = await supabase.auth.getUser();
-        
+        // Always attempt to load the session locally first so we can operate
+        // offline without clearing subscription state.
+        const { data: { session } } = await supabase.auth.getSession();
+        let user = session?.user || null;
+
+        // If online and no session user (rare), fall back to a network request.
+        if (!user && isOnlineState) {
+          const { data: { user: fetchedUser }, error: userError } = await supabase.auth.getUser();
+          if (userError) {
+            console.warn('Failed to fetch user while online:', userError);
+          }
+          user = fetchedUser ?? null;
+        }
+
         if (!user) {
-          console.log('👤 No authenticated user found');
-          setStatus({
-            isSubscribed: false,
-            hasLifetimeAccess: false,
-            subscriptionType: 'free',
-            loading: false,
-          });
+          console.log('👤 No authenticated user found - preserving subscription state');
+          // Preserve the current subscription so we don't suddenly become basic
+          setStatus(prev => ({ ...prev, loading: false }));
           setHasInitialized(true);
           return;
         }
@@ -282,15 +290,18 @@ export function useSubscription() {
         console.error('Error checking subscription status:', error);
         
         // Try to use cached data if available, otherwise preserve current status
-        const { data: { user } } = await supabase.auth.getUser();
+        const { data: { session } } = await supabase.auth.getSession();
+        const user = session?.user;
+
         if (user) {
           const cachedStatus = getCachedSubscription(user.id);
           if (cachedStatus) {
             console.log('⚠️ Using cached subscription status due to error:', cachedStatus);
             setStatus({
               ...cachedStatus,
-              loading: false
+              loading: false,
             });
+            setHasInitialized(true);
             return;
           }
         }

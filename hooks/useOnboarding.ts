@@ -79,7 +79,22 @@ export function useOnboarding(): OnboardingStatus {
         .eq('user_id', user?.id)
         .limit(1);
 
-      if (!error && riverWalks && riverWalks.length > 0) {
+      if (error) {
+        console.warn('Failed to load river walks - assuming existing user to prevent welcome flow spam:', error);
+        // When query fails (typically offline), assume existing user to prevent welcome flow
+        const state: OnboardingState = {
+          hasSeenWelcome: true,
+          hasCreatedFirstRiverWalk: true,
+          hasAddedFirstSite: true,
+          hasGeneratedFirstReport: true,
+          lastUpdated: new Date().toISOString()
+        };
+        setOnboardingState(state);
+        setLoading(false);
+        return;
+      }
+
+      if (riverWalks && riverWalks.length > 0) {
         // User has river walks - they're an existing user, mark as fully onboarded
         const state: OnboardingState = {
           hasSeenWelcome: true,
