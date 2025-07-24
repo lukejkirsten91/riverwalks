@@ -137,9 +137,15 @@ export function useOnboarding(): OnboardingStatus {
     await updateUserMetadata({ hasGeneratedFirstReport: true });
   };
 
+  // Check if we're in offline mode (prevents onboarding on offline page)
+  const isOfflineMode = typeof window !== 'undefined' && 
+    sessionStorage.getItem('riverwalks_offline_mode') === 'true';
+
   // Should show welcome only if user is genuinely new AND we're sure they have no river walks
   // Be conservative - only show welcome for truly new users to prevent welcome spam
+  // Never show onboarding when in offline mode
   const shouldShowWelcome = !loading && 
+    !isOfflineMode &&
     !onboardingState.hasSeenWelcome && 
     !onboardingState.hasCreatedFirstRiverWalk && 
     !onboardingState.hasAddedFirstSite && 
@@ -147,7 +153,9 @@ export function useOnboarding(): OnboardingStatus {
   
   // Should show tutorial after welcome is complete but no first river walk created
   // Also be conservative here to prevent tutorial spam
+  // Never show tutorial when in offline mode
   const shouldShowTutorial = !loading && 
+    !isOfflineMode &&
     onboardingState.hasSeenWelcome && 
     !onboardingState.hasCreatedFirstRiverWalk &&
     !onboardingState.hasAddedFirstSite;

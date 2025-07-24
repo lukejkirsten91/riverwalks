@@ -815,18 +815,39 @@ export class OfflineDataService {
     const retryDelay = [1000, 2000, 4000][retryCount] || 4000; // Exponential backoff
     
     try {
+      console.log(`Attempting data download (attempt ${retryCount + 1}/${maxRetries + 1})...`);
+      
+      // Dispatch event to inform UI about download progress
+      window.dispatchEvent(new CustomEvent('riverwalks-data-download-started', {
+        detail: { attempt: retryCount + 1, maxAttempts: maxRetries + 1 }
+      }));
+      
       await this.downloadLatestData();
-      console.log('Latest data downloaded successfully');
+      console.log(`✅ Data download successful on attempt ${retryCount + 1}`);
+      
+      // Dispatch success event
+      window.dispatchEvent(new CustomEvent('riverwalks-data-download-success'));
+      
       return true;
     } catch (error) {
-      console.error(`Data download attempt ${retryCount + 1} failed:`, error);
+      console.error(`❌ Data download attempt ${retryCount + 1} failed:`, error);
+      
+      // Dispatch progress event
+      window.dispatchEvent(new CustomEvent('riverwalks-data-download-failed', {
+        detail: { 
+          attempt: retryCount + 1, 
+          maxAttempts: maxRetries + 1,
+          error: error instanceof Error ? error.message : 'Unknown error',
+          willRetry: retryCount < maxRetries
+        }
+      }));
       
       if (retryCount < maxRetries) {
-        console.log(`Retrying data download in ${retryDelay}ms...`);
+        console.log(`⏳ Retrying data download in ${retryDelay}ms...`);
         await new Promise(resolve => setTimeout(resolve, retryDelay));
         return await this.downloadLatestDataWithRetry(retryCount + 1);
       } else {
-        console.error('All data download attempts failed');
+        console.error('💥 All data download attempts failed');
         return false;
       }
     }
@@ -1984,6 +2005,10 @@ export class OfflineDataService {
             window.dispatchEvent(new CustomEvent('riverwalks-init-warning', {
               detail: { message: 'Using cached data - some data may be outdated' }
             }));
+          } else {
+            // If download succeeded, clean up stale records on every launch
+            console.log('Running stale record cleanup after successful data download');
+            await this.cleanupStaleRecords();
           }
         }
         
@@ -2107,6 +2132,91 @@ export class OfflineDataService {
       console.log('All offline data cleared successfully');
     } catch (error) {
       console.error('Error clearing offline data:', error);
+    }
+  }
+
+  // Clean up stale records that no longer exist on server
+  private async cleanupStaleRecords(): Promise<void> {
+    try {
+      console.log('Starting stale record cleanup...');
+      
+      // Get user ID
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      // Fetch current server data
+      const { data: serverRiverWalks } = await supabase
+        .from('river_walks')
+        .select('id')
+        .eq('user_id', user.id);
+
+      if (!serverRiverWalks) return;
+
+      const serverRiverWalkIds = new Set(serverRiverWalks.map(rw => rw.id));
+      
+      // Get all cached river walks
+      const cachedRiverWalks = await offlineDB.getRiverWalks();
+      
+      // Remove river walks that no longer exist on server
+      let cleanedRiverWalks = 0;
+      for (const cachedRw of cachedRiverWalks) {
+        if (cachedRw.id && 
+            !cachedRw.id.startsWith('local_') && 
+            !serverRiverWalkIds.has(cachedRw.id)) {
+          console.log('Cleaning up stale river walk:', cachedRw.id);
+          await offlineDB.deleteRiverWalk(cachedRw.localId);
+          cleanedRiverWalks++;
+        }
+      }
+
+      // Get server sites and clean up stale ones
+      const { data: serverSites } = await supabase
+        .from('sites')
+        .select('id')
+        .in('river_walk_id', Array.from(serverRiverWalkIds));
+
+      if (serverSites) {
+        const serverSiteIds = new Set(serverSites.map(s => s.id));
+        const cachedSites = await offlineDB.getSites();
+        
+        let cleanedSites = 0;
+        for (const cachedSite of cachedSites) {
+          if (cachedSite.id && 
+              !cachedSite.id.startsWith('local_') && 
+              !serverSiteIds.has(cachedSite.id)) {
+            console.log('Cleaning up stale site:', cachedSite.id);
+            await offlineDB.deleteSite(cachedSite.localId);
+            cleanedSites++;
+          }
+        }
+
+        // Get server measurement points and clean up stale ones
+        const { data: serverMeasurementPoints } = await supabase
+          .from('measurement_points')
+          .select('id')
+          .in('site_id', Array.from(serverSiteIds));
+
+        if (serverMeasurementPoints) {
+          const serverMpIds = new Set(serverMeasurementPoints.map(mp => mp.id));
+          const cachedMps = await offlineDB.getAll<OfflineMeasurementPoint>('measurementPoints');
+          
+          let cleanedMeasurementPoints = 0;
+          for (const cachedMp of cachedMps) {
+            if (cachedMp.id && 
+                !cachedMp.id.startsWith('local_') && 
+                !serverMpIds.has(cachedMp.id)) {
+              console.log('Cleaning up stale measurement point:', cachedMp.id);
+              await offlineDB.deleteMeasurementPoint(cachedMp.localId);
+              cleanedMeasurementPoints++;
+            }
+          }
+
+          console.log(`Stale record cleanup complete: ${cleanedRiverWalks} river walks, ${cleanedSites} sites, ${cleanedMeasurementPoints} measurement points`);
+        }
+      }
+    } catch (error) {
+      console.error('Error during stale record cleanup:', error);
+      // Don't throw - this is a cleanup operation that shouldn't break initialization
     }
   }
 

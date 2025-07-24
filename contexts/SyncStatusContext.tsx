@@ -129,12 +129,28 @@ export function SyncStatusProvider({ children }: SyncStatusProviderProps) {
       showError(event.detail?.error || 'Failed to initialize offline features');
     };
 
+    const handleDownloadStarted = (event: CustomEvent) => {
+      if (event.detail?.attempt > 1) {
+        showError(`Retrying data download (attempt ${event.detail.attempt}/${event.detail.maxAttempts})`);
+      }
+    };
+
+    const handleDownloadFailed = (event: CustomEvent) => {
+      if (event.detail?.willRetry) {
+        showError(`Download failed, retrying... (${event.detail.attempt}/${event.detail.maxAttempts})`);
+      } else {
+        showError('Failed to download latest data - using cached data');
+      }
+    };
+
     window.addEventListener('riverwalks-sync-started', handleSyncStarted);
     window.addEventListener('riverwalks-sync-completed', handleSyncCompleted);
     window.addEventListener('riverwalks-sync-failed', handleSyncFailed as EventListener);
     window.addEventListener('riverwalks-data-changed', handleDataChanged);
     window.addEventListener('riverwalks-init-warning', handleInitWarning as EventListener);
     window.addEventListener('riverwalks-init-error', handleInitError as EventListener);
+    window.addEventListener('riverwalks-data-download-started', handleDownloadStarted as EventListener);
+    window.addEventListener('riverwalks-data-download-failed', handleDownloadFailed as EventListener);
 
     return () => {
       window.removeEventListener('riverwalks-sync-started', handleSyncStarted);
@@ -143,6 +159,8 @@ export function SyncStatusProvider({ children }: SyncStatusProviderProps) {
       window.removeEventListener('riverwalks-data-changed', handleDataChanged);
       window.removeEventListener('riverwalks-init-warning', handleInitWarning as EventListener);
       window.removeEventListener('riverwalks-init-error', handleInitError as EventListener);
+      window.removeEventListener('riverwalks-data-download-started', handleDownloadStarted as EventListener);
+      window.removeEventListener('riverwalks-data-download-failed', handleDownloadFailed as EventListener);
     };
   }, [showSuccess, showError, updateSyncStatus]);
 

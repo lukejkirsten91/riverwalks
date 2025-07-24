@@ -1,7 +1,7 @@
 // Riverwalks Service Worker for Offline Capabilities
-const CACHE_NAME = 'riverwalks-v4';
-const STATIC_CACHE_NAME = 'riverwalks-static-v4';
-const DYNAMIC_CACHE_NAME = 'riverwalks-dynamic-v4';
+const CACHE_NAME = 'riverwalks-v5';
+const STATIC_CACHE_NAME = 'riverwalks-static-v5';
+const DYNAMIC_CACHE_NAME = 'riverwalks-dynamic-v5';
 
 // App shell - critical files for offline functionality
 const APP_SHELL = [
@@ -84,8 +84,11 @@ self.addEventListener('fetch', (event) => {
   } else if (url.pathname.match(/\.(png|jpg|jpeg|gif|svg|ico)$/)) {
     // Images and static files - cache first with long expiry
     event.respondWith(handleImageAssets(request));
+  } else if (url.pathname.match(/^\/river-walks\/[^/]+\/(sites|report|edit|share)$/)) {
+    // Dynamic river-walks pages - special handling for offline
+    event.respondWith(handleRiverWalksPageRequest(request));
   } else {
-    // Pages - network first, fallback to cache
+    // Other pages - network first, fallback to cache
     event.respondWith(handlePageRequest(request));
   }
 });
@@ -212,6 +215,53 @@ async function handleImageAssets(request) {
           'Cache-Control': 'no-cache'
         }
       });
+    }
+    
+    throw error;
+  }
+}
+
+// Handle river-walks dynamic pages with smart offline fallback
+async function handleRiverWalksPageRequest(request) {
+  try {
+    const response = await fetch(request);
+    
+    if (response.ok) {
+      const cache = await caches.open(DYNAMIC_CACHE_NAME);
+      cache.put(request, response.clone());
+    }
+    
+    return response;
+  } catch (error) {
+    console.log('Service Worker: River-walks page request failed, checking cache');
+    
+    // First try to serve from cache
+    const cachedResponse = await caches.match(request);
+    if (cachedResponse) {
+      console.log('Service Worker: Serving cached river-walks page');
+      return cachedResponse;
+    }
+    
+    // If not cached, create a generic river-walks page that can handle the route client-side
+    console.log('Service Worker: Creating generic river-walks page for offline access');
+    const genericRiverWalksResponse = await caches.match('/river-walks');
+    if (genericRiverWalksResponse) {
+      // Clone and modify the response to preserve the original URL
+      const clonedResponse = genericRiverWalksResponse.clone();
+      return new Response(await clonedResponse.text(), {
+        status: 200,
+        statusText: 'OK',
+        headers: {
+          'Content-Type': 'text/html',
+          'Cache-Control': 'no-cache'
+        }
+      });
+    }
+    
+    // Final fallback to offline page
+    const offlineResponse = await caches.match('/offline');
+    if (offlineResponse) {
+      return offlineResponse;
     }
     
     throw error;

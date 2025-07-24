@@ -17,6 +17,11 @@ export default function OfflinePage() {
     const currentPath = window.location.pathname;
     setAttemptedRoute(currentPath);
 
+    // Prevent onboarding/welcome flows from triggering on offline page
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem('riverwalks_offline_mode', 'true');
+    }
+
     // Listen for online/offline events
     window.addEventListener('online', checkOnlineStatus);
     window.addEventListener('offline', checkOnlineStatus);
@@ -27,6 +32,8 @@ export default function OfflinePage() {
     // If we come back online, try to navigate to the original route
     const handleOnline = () => {
       if (navigator.onLine && currentPath !== '/offline') {
+        // Clear offline mode flag
+        sessionStorage.removeItem('riverwalks_offline_mode');
         // Small delay to ensure network is ready
         setTimeout(() => {
           window.location.href = currentPath;
@@ -45,6 +52,8 @@ export default function OfflinePage() {
 
   const handleRetry = () => {
     if (navigator.onLine) {
+      // Clear offline mode flag
+      sessionStorage.removeItem('riverwalks_offline_mode');
       // If we're online, try to navigate to the attempted route
       if (attemptedRoute && attemptedRoute !== '/offline') {
         window.location.href = attemptedRoute;
@@ -55,6 +64,8 @@ export default function OfflinePage() {
   };
 
   const goToRiverWalks = () => {
+    // Clear offline mode flag
+    sessionStorage.removeItem('riverwalks_offline_mode');
     router.push('/river-walks');
   };
 
