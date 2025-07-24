@@ -809,56 +809,96 @@ export class OfflineDataService {
     }
   }
 
+  // Download latest data with retry logic
+  private async downloadLatestDataWithRetry(retryCount: number = 0): Promise<boolean> {
+    const maxRetries = 3;
+    const retryDelay = [1000, 2000, 4000][retryCount] || 4000; // Exponential backoff
+    
+    try {
+      await this.downloadLatestData();
+      console.log('Latest data downloaded successfully');
+      return true;
+    } catch (error) {
+      console.error(`Data download attempt ${retryCount + 1} failed:`, error);
+      
+      if (retryCount < maxRetries) {
+        console.log(`Retrying data download in ${retryDelay}ms...`);
+        await new Promise(resolve => setTimeout(resolve, retryDelay));
+        return await this.downloadLatestDataWithRetry(retryCount + 1);
+      } else {
+        console.error('All data download attempts failed');
+        return false;
+      }
+    }
+  }
+
   // Download latest data from server and update local storage
   private async downloadLatestData(): Promise<void> {
-    if (!this.checkOnline()) return;
-
-    try {
-      // Get user ID
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      // Download river walks
-      const { data: riverWalks } = await supabase
-        .from('river_walks')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
-
-      if (riverWalks) {
-        for (const rw of riverWalks) {
-          await offlineDB.addRiverWalk(toOfflineRiverWalk(rw));
-        }
-      }
-
-      // Download sites
-      const { data: sites } = await supabase
-        .from('sites')
-        .select('*')
-        .in('river_walk_id', riverWalks?.map(rw => rw.id) || []);
-
-      if (sites) {
-        for (const site of sites) {
-          await offlineDB.addSite(toOfflineSite(site));
-        }
-      }
-
-      // Download measurement points
-      const { data: measurementPoints } = await supabase
-        .from('measurement_points')
-        .select('*')
-        .in('site_id', sites?.map(s => s.id) || []);
-
-      if (measurementPoints) {
-        for (const mp of measurementPoints) {
-          await offlineDB.addMeasurementPoint(toOfflineMeasurementPoint(mp));
-        }
-      }
-
-      console.log('Latest data downloaded and cached');
-    } catch (error) {
-      console.error('Failed to download latest data:', error);
+    if (!this.checkOnline()) {
+      throw new Error('Cannot download data while offline');
     }
+
+    // Get user ID
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      throw new Error('User not authenticated');
+    }
+
+    console.log('Downloading latest data for user:', user.id);
+
+    // Download river walks
+    const { data: riverWalks, error: riverWalksError } = await supabase
+      .from('river_walks')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false });
+
+    if (riverWalksError) {
+      throw new Error(`Failed to download river walks: ${riverWalksError.message}`);
+    }
+
+    if (riverWalks) {
+      for (const rw of riverWalks) {
+        await offlineDB.addRiverWalk(toOfflineRiverWalk(rw));
+      }
+      console.log(`Downloaded ${riverWalks.length} river walks`);
+    }
+
+    // Download sites
+    const { data: sites, error: sitesError } = await supabase
+      .from('sites')
+      .select('*')
+      .in('river_walk_id', riverWalks?.map(rw => rw.id) || []);
+
+    if (sitesError) {
+      throw new Error(`Failed to download sites: ${sitesError.message}`);
+    }
+
+    if (sites) {
+      for (const site of sites) {
+        await offlineDB.addSite(toOfflineSite(site));
+      }
+      console.log(`Downloaded ${sites.length} sites`);
+    }
+
+    // Download measurement points
+    const { data: measurementPoints, error: measurementPointsError } = await supabase
+      .from('measurement_points')
+      .select('*')
+      .in('site_id', sites?.map(s => s.id) || []);
+
+    if (measurementPointsError) {
+      throw new Error(`Failed to download measurement points: ${measurementPointsError.message}`);
+    }
+
+    if (measurementPoints) {
+      for (const mp of measurementPoints) {
+        await offlineDB.addMeasurementPoint(toOfflineMeasurementPoint(mp));
+      }
+      console.log(`Downloaded ${measurementPoints.length} measurement points`);
+    }
+
+    console.log('Latest data downloaded and cached successfully');
   }
 
   // River Walks methods
@@ -1929,12 +1969,23 @@ export class OfflineDataService {
   // Initialize the service
   async init(): Promise<void> {
     try {
+      console.log('Initializing OfflineDataService...');
       await offlineDB.init();
       
       // Cache user ID if online
       if (this.checkOnline()) {
-        await this.cacheUserId();
-        await this.downloadLatestData();
+        const userId = await this.cacheUserId();
+        if (userId) {
+          // Try to download latest data with retry logic
+          const downloadSuccess = await this.downloadLatestDataWithRetry();
+          if (!downloadSuccess) {
+            console.warn('Failed to download initial data, but service will continue with cached data');
+            // Dispatch event to inform UI about data initialization issues
+            window.dispatchEvent(new CustomEvent('riverwalks-init-warning', {
+              detail: { message: 'Using cached data - some data may be outdated' }
+            }));
+          }
+        }
         
         // Auto-sync any pending items when coming online
         const syncQueue = await offlineDB.getSyncQueue();
@@ -1947,9 +1998,16 @@ export class OfflineDataService {
         }
       }
       
-      console.log('OfflineDataService initialized');
+      console.log('OfflineDataService initialized successfully');
+      // Dispatch successful initialization event
+      window.dispatchEvent(new CustomEvent('riverwalks-init-complete'));
     } catch (error) {
       console.error('Failed to initialize OfflineDataService:', error);
+      // Dispatch initialization error event
+      window.dispatchEvent(new CustomEvent('riverwalks-init-error', {
+        detail: { error: error instanceof Error ? error.message : 'Unknown error' }
+      }));
+      // Don't throw - we want the app to continue working with whatever data is available
     }
   }
 

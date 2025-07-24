@@ -5,6 +5,7 @@ import { supabase } from '../lib/supabase';
 import { useToast } from '../components/ui/ToastProvider';
 import { useSubscription } from '../hooks/useSubscription';
 import { SubscriptionBadge } from '../components/ui/SubscriptionBadge';
+import { offlineDataService } from '../lib/offlineDataService';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
 
 export default function AccountPage() {
@@ -197,6 +198,8 @@ export default function AccountPage() {
   };
 
   const handleSignOut = async () => {
+    // Clear all offline data before signing out to prevent stale data
+    await offlineDataService.clearAllOfflineData();
     await supabase.auth.signOut();
     router.push('/');
   };

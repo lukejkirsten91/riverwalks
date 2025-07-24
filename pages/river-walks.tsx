@@ -339,15 +339,15 @@ export default function RiverWalksPage() {
   };
 
   const handleSignOut = async () => {
-    // Clear offline cache before signing out
-    offlineDataService.clearUserCache();
+    // Clear all offline data before signing out to prevent stale data
+    await offlineDataService.clearAllOfflineData();
     await supabase.auth.signOut();
     router.push('/');
   };
 
   const handleSwitchAccount = async () => {
-    // Clear offline cache first
-    offlineDataService.clearUserCache();
+    // Clear all offline data first to prevent stale data
+    await offlineDataService.clearAllOfflineData();
     // Sign out current user
     await supabase.auth.signOut();
     // Force account selection on next sign in

@@ -4,6 +4,7 @@ import { InteractivePreview } from '../components/landing/InteractivePreview';
 import { MapPin, BarChart3, Users, Waves, ChevronDown } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabase';
+import { offlineDataService } from '../lib/offlineDataService';
 import type { User } from '@supabase/supabase-js';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/dist/ScrollTrigger';
@@ -131,6 +132,8 @@ export default function Home() {
   };
 
   const handleSignOut = async () => {
+    // Clear all offline data before signing out to prevent stale data
+    await offlineDataService.clearAllOfflineData();
     await supabase.auth.signOut();
     window.location.reload(); // Force page refresh to clear cache
   };

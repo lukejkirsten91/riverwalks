@@ -79,11 +79,12 @@ export function SyncStatusProvider({ children }: SyncStatusProviderProps) {
         updateSyncStatus();
       } catch (error) {
         console.error('Failed to initialize offline data service:', error);
+        showError('Failed to initialize offline features');
       }
     };
 
     initService();
-  }, [updateSyncStatus]);
+  }, [updateSyncStatus, showError]);
 
   // Listen for sync events and data changes
   useEffect(() => {
@@ -120,16 +121,28 @@ export function SyncStatusProvider({ children }: SyncStatusProviderProps) {
       updateSyncStatus();
     };
 
+    const handleInitWarning = (event: CustomEvent) => {
+      showError(event.detail?.message || 'Some data may be outdated');
+    };
+
+    const handleInitError = (event: CustomEvent) => {
+      showError(event.detail?.error || 'Failed to initialize offline features');
+    };
+
     window.addEventListener('riverwalks-sync-started', handleSyncStarted);
     window.addEventListener('riverwalks-sync-completed', handleSyncCompleted);
     window.addEventListener('riverwalks-sync-failed', handleSyncFailed as EventListener);
     window.addEventListener('riverwalks-data-changed', handleDataChanged);
+    window.addEventListener('riverwalks-init-warning', handleInitWarning as EventListener);
+    window.addEventListener('riverwalks-init-error', handleInitError as EventListener);
 
     return () => {
       window.removeEventListener('riverwalks-sync-started', handleSyncStarted);
       window.removeEventListener('riverwalks-sync-completed', handleSyncCompleted);
       window.removeEventListener('riverwalks-sync-failed', handleSyncFailed as EventListener);
       window.removeEventListener('riverwalks-data-changed', handleDataChanged);
+      window.removeEventListener('riverwalks-init-warning', handleInitWarning as EventListener);
+      window.removeEventListener('riverwalks-init-error', handleInitError as EventListener);
     };
   }, [showSuccess, showError, updateSyncStatus]);
 

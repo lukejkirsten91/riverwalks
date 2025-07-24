@@ -17,6 +17,7 @@ import { TermsGate } from './TermsGate';
 import { EmailAuthForm } from './EmailAuthForm';
 import { PasswordAuthForm } from './PasswordAuthForm';
 import { trackSignup, trackButtonClick, trackEvent } from '../../lib/analytics';
+import { offlineDataService } from '../../lib/offlineDataService';
 
 export default function AuthCard() {
   const router = useRouter();
@@ -146,6 +147,8 @@ export default function AuthCard() {
   const handleSignOut = async () => {
     trackButtonClick('sign_out', 'auth_card');
     
+    // Clear all offline data before signing out to prevent stale data
+    await offlineDataService.clearAllOfflineData();
     await supabase.auth.signOut();
     router.push('/');
   };
@@ -153,6 +156,8 @@ export default function AuthCard() {
   const handleSwitchAccount = async () => {
     trackButtonClick('switch_account', 'auth_card');
     
+    // Clear all offline data first to prevent stale data  
+    await offlineDataService.clearAllOfflineData();
     // Sign out current user
     await supabase.auth.signOut();
     // Force account selection on next sign in

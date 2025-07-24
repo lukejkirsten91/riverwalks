@@ -5,6 +5,7 @@ import { CheckCircle, XCircle, Loader2, Users, ArrowRight, AlertCircle } from 'l
 import { useCollaboration } from '../../hooks/useCollaboration';
 import { getInviteDetails } from '../../lib/api/collaboration';
 import { supabase } from '../../lib/supabase';
+import { offlineDataService } from '../../lib/offlineDataService';
 
 export default function AcceptInvitePage() {
   const router = useRouter();
@@ -207,6 +208,8 @@ export default function AcceptInvitePage() {
             <div className="space-y-3">
               <button 
                 onClick={async () => {
+                  // Clear all offline data before signing out to prevent stale data
+                  await offlineDataService.clearAllOfflineData();
                   await supabase.auth.signOut();
                   // Force account selection on next sign in
                   const redirectUrl = `https://www.riverwalks.co.uk/api/auth/callback?redirect_to=${encodeURIComponent('/invite/' + token)}`;
@@ -250,6 +253,8 @@ export default function AcceptInvitePage() {
             <div className="space-y-3">
               <button 
                 onClick={async () => {
+                  // Clear all offline data before signing out to prevent stale data
+                  await offlineDataService.clearAllOfflineData();
                   await supabase.auth.signOut();
                   // Force account selection on next sign in
                   const redirectUrl = `https://www.riverwalks.co.uk/api/auth/callback?redirect_to=${encodeURIComponent('/invite/' + token)}`;

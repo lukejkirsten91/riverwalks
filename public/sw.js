@@ -1,12 +1,14 @@
 // Riverwalks Service Worker for Offline Capabilities
-const CACHE_NAME = 'riverwalks-v3';
-const STATIC_CACHE_NAME = 'riverwalks-static-v3';
-const DYNAMIC_CACHE_NAME = 'riverwalks-dynamic-v3';
+const CACHE_NAME = 'riverwalks-v4';
+const STATIC_CACHE_NAME = 'riverwalks-static-v4';
+const DYNAMIC_CACHE_NAME = 'riverwalks-dynamic-v4';
 
 // App shell - critical files for offline functionality
 const APP_SHELL = [
   '/',
   '/river-walks',
+  '/river-walks/new',
+  '/offline',
   '/_next/static/css/app.css',
   '/favicon.ico',
   '/logo.png',
@@ -235,9 +237,9 @@ async function handlePageRequest(request) {
       return cachedResponse;
     }
     
-    // Fallback to main page for navigation requests
+    // Fallback to offline page for navigation requests
     if (request.destination === 'document') {
-      const fallbackResponse = await caches.match('/');
+      const fallbackResponse = await caches.match('/offline');
       if (fallbackResponse) {
         return fallbackResponse;
       }
