@@ -9,15 +9,44 @@ export interface SubscriptionStatus {
 }
 
 export function useSubscription() {
-  const [status, setStatus] = useState<SubscriptionStatus>({
-    isSubscribed: false,
-    hasLifetimeAccess: false,
-    subscriptionType: 'free',
-    loading: true,
+  const [status, setStatus] = useState<SubscriptionStatus>(() => {
+    // Try to initialize with cached subscription data to prevent brief "basic user" flash
+    if (typeof window !== 'undefined') {
+      try {
+        // Try to get cached subscription from localStorage
+        const lastKnownSubscription = localStorage.getItem('riverwalks_last_known_subscription');
+        if (lastKnownSubscription) {
+          const cached = JSON.parse(lastKnownSubscription);
+          const cacheAge = Date.now() - (cached.cachedAt || 0);
+          const maxAge = 7 * 24 * 60 * 60 * 1000; // 7 days
+          
+          if (cacheAge <= maxAge) {
+            console.log('🚀 Initializing useSubscription with cached data:', cached);
+            return {
+              isSubscribed: cached.isSubscribed || false,
+              hasLifetimeAccess: cached.hasLifetimeAccess || false,
+              subscriptionType: cached.subscriptionType || 'free',
+              loading: true, // Still loading to verify/update
+            };
+          }
+        }
+      } catch (error) {
+        console.warn('Failed to initialize with cached subscription:', error);
+      }
+    }
+    
+    // Default fallback
+    return {
+      isSubscribed: false,
+      hasLifetimeAccess: false,
+      subscriptionType: 'free',
+      loading: true,
+    };
   });
   const [isOnlineState, setIsOnlineState] = useState(() => 
     typeof navigator !== 'undefined' ? navigator.onLine : true
   );
+  const [hasInitialized, setHasInitialized] = useState(false);
 
   // Helper to get cached subscription status
   const getCachedSubscription = (userId: string): SubscriptionStatus | null => {
@@ -112,9 +141,15 @@ export function useSubscription() {
     };
   }, []);
 
-  // React to online/offline state changes
+  // React to online/offline state changes and initial mount
   useEffect(() => {
     const checkSubscription = async () => {
+      // Prevent redundant checks if we just initialized with good cached data
+      if (!hasInitialized && status.isSubscribed && !status.loading) {
+        console.log('⏭️ Skipping initial check - already have good cached data');
+        setHasInitialized(true);
+        return;
+      }
       try {
         const { data: { user } } = await supabase.auth.getUser();
         
@@ -126,6 +161,7 @@ export function useSubscription() {
             subscriptionType: 'free',
             loading: false,
           });
+          setHasInitialized(true);
           return;
         }
 
@@ -139,6 +175,7 @@ export function useSubscription() {
               ...cachedStatus,
               loading: false
             });
+            setHasInitialized(true);
             return;
           } else {
             console.log('⚠️ No cached subscription data available, preserving current status to avoid reset');
@@ -150,6 +187,7 @@ export function useSubscription() {
                 loading: false
               };
             });
+            setHasInitialized(true);
             return;
           }
         }
@@ -167,6 +205,7 @@ export function useSubscription() {
           });
           // Still cache it again to refresh the timestamp
           cacheSubscription(user.id, cachedStatus);
+          setHasInitialized(true);
           return;
         }
 
@@ -238,6 +277,7 @@ export function useSubscription() {
         cacheSubscription(user.id, finalStatus);
 
         setStatus(finalStatus);
+        setHasInitialized(true);
       } catch (error) {
         console.error('Error checking subscription status:', error);
         
@@ -261,6 +301,7 @@ export function useSubscription() {
           ...prevStatus,
           loading: false
         }));
+        setHasInitialized(true);
       }
     };
 
