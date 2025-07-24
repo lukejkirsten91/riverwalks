@@ -41,11 +41,14 @@ export function useOnboarding(): OnboardingStatus {
     if (typeof window === 'undefined') return;
 
     const handleOnline = () => {
-      // When coming back online, clear the offline mode flag if it was set by navigation
-      if (sessionStorage.getItem('riverwalks_offline_mode') === 'true') {
-        console.log('Back online - clearing offline mode flag');
-        sessionStorage.removeItem('riverwalks_offline_mode');
-      }
+      // When coming back online, wait a bit before clearing the offline mode flag
+      // This gives time for onboarding state to load and prevents welcome flow race condition
+      setTimeout(() => {
+        if (sessionStorage.getItem('riverwalks_offline_mode') === 'true') {
+          console.log('Back online - clearing offline mode flag after delay');
+          sessionStorage.removeItem('riverwalks_offline_mode');
+        }
+      }, 1000); // 1 second delay to let onboarding state load
     };
 
     const handleOffline = () => {
@@ -179,10 +182,12 @@ export function useOnboarding(): OnboardingStatus {
     await updateUserMetadata({ hasGeneratedFirstReport: true });
   };
 
-  // Check if we're in offline mode (prevents onboarding on offline page or fallback pages)
+  // Check if we're in offline mode (prevents onboarding on offline page or fallback pages) 
+  // Be conservative - if we were recently offline or are currently loading, don't show welcome
   const isOfflineMode = typeof window !== 'undefined' && (
     sessionStorage.getItem('riverwalks_offline_mode') === 'true' ||
-    !navigator.onLine
+    !navigator.onLine ||
+    loading // Don't show welcome while still loading onboarding state
   );
 
   // Should show welcome only if user is genuinely new AND we're sure they have no river walks
