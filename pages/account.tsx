@@ -46,6 +46,19 @@ export default function AccountPage() {
 
   const loadAccountStats = async () => {
     try {
+      // Check if we're online before making database queries
+      if (!navigator.onLine) {
+        console.log('📊 Offline - skipping account stats loading');
+        // Set default offline stats
+        setAccountStats({
+          riverWalks: 0,
+          totalSites: 0,
+          collaboratedWalks: 0,
+          memberSince: 'Offline mode',
+        });
+        return;
+      }
+
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
@@ -88,6 +101,16 @@ export default function AccountPage() {
 
   const loadEmailPreferences = async () => {
     try {
+      // Skip email preferences loading when offline
+      if (!navigator.onLine) {
+        console.log('📧 Offline - skipping email preferences loading');
+        setEmailPreferences({
+          marketing: false,
+          loading: false,
+        });
+        return;
+      }
+
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
@@ -162,6 +185,11 @@ export default function AccountPage() {
   };
 
   const handleDeleteAccount = async () => {
+    if (!navigator.onLine) {
+      showError('Offline', 'Account deletion requires an internet connection.');
+      return;
+    }
+
     if (deleteConfirmationText !== 'DELETE MY ACCOUNT') {
       showError('Confirmation Failed', 'Please type "DELETE MY ACCOUNT" exactly as shown');
       return;
@@ -205,6 +233,11 @@ export default function AccountPage() {
   };
 
   const handleExportData = async () => {
+    if (!navigator.onLine) {
+      showError('Offline', 'Data export requires an internet connection.');
+      return;
+    }
+
     try {
       const { data: { session } } = await supabase.auth.getSession();
       const response = await fetch('/api/export-user-data', {
@@ -278,6 +311,19 @@ export default function AccountPage() {
             </div>
           </div>
         </div>
+
+        {/* Offline Mode Indicator */}
+        {typeof window !== 'undefined' && !navigator.onLine && (
+          <div className="glass rounded-xl p-4 mb-6 border border-amber-200/50 bg-amber-50">
+            <div className="flex items-center gap-3">
+              <div className="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></div>
+              <div>
+                <h3 className="font-medium text-amber-800">Offline Mode</h3>
+                <p className="text-sm text-amber-700">Some features are limited while offline. Account stats and preferences require an internet connection.</p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Account Information */}
         <div className="glass rounded-2xl p-4 sm:p-6 mb-6 sm:mb-8 border border-white/20">
