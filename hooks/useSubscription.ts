@@ -119,6 +119,7 @@ export function useSubscription() {
         const { data: { user } } = await supabase.auth.getUser();
         
         if (!user) {
+          console.log('👤 No authenticated user found');
           setStatus({
             isSubscribed: false,
             hasLifetimeAccess: false,
@@ -130,7 +131,7 @@ export function useSubscription() {
 
         // If offline, try to use cached subscription data
         if (!isOnlineState) {
-          console.log('🔌 Offline - checking for cached subscription data');
+          console.log('🔌 Offline - checking for cached subscription data for user:', user.id);
           const cachedStatus = getCachedSubscription(user.id);
           if (cachedStatus) {
             console.log('✅ Using cached subscription status:', cachedStatus);
@@ -142,16 +143,35 @@ export function useSubscription() {
           } else {
             console.log('⚠️ No cached subscription data available, preserving current status to avoid reset');
             // Don't reset to free when offline - preserve current status to avoid losing premium access
-            setStatus(prevStatus => ({
-              ...prevStatus,
-              loading: false
-            }));
+            setStatus(prevStatus => {
+              console.log('📋 Preserving current status:', prevStatus);
+              return {
+                ...prevStatus,
+                loading: false
+              };
+            });
             return;
           }
         }
 
+        // When coming back online, check cache first to avoid unnecessary API calls
+        console.log('🟢 Online - checking subscription for user:', user.id);
+        
+        // First check if we have valid cached data to avoid API calls
+        const cachedStatus = getCachedSubscription(user.id);
+        if (cachedStatus && cachedStatus.isSubscribed) {
+          console.log('✅ Found valid cached premium subscription, using it:', cachedStatus);
+          setStatus({
+            ...cachedStatus,
+            loading: false
+          });
+          // Still cache it again to refresh the timestamp
+          cacheSubscription(user.id, cachedStatus);
+          return;
+        }
+
         // Check if user has a subscription record
-        console.log('🔍 Checking subscription for authenticated user');
+        console.log('🔍 Checking subscription for authenticated user via API');
         
         // Try to get subscription using the database function to bypass RLS
         let subscription = null;
