@@ -6,6 +6,7 @@ import { CollaboratorAvatars } from '../ui/CollaboratorAvatars';
 import { UpgradePrompt } from '../ui/UpgradePrompt';
 import { useCollaboratorInfo } from '../../hooks/useCollaboratorInfo';
 import { useSubscription, canAccessReports, canAccessAdvancedFeatures } from '../../hooks/useSubscription';
+import { useToast } from '../ui/ToastProvider';
 import type { RiverWalk } from '../../types';
 
 interface RiverWalkListProps {
@@ -55,6 +56,19 @@ export function RiverWalkList({
   
   // Get subscription status
   const subscription = useSubscription();
+  const { showError } = useToast();
+
+  // Helper function to check if user is online
+  const isOnline = () => {
+    return typeof navigator !== 'undefined' ? navigator.onLine : true;
+  };
+
+  // Show offline error for collaboration features
+  const showOfflineError = () => {
+    showError(
+      'This feature requires an internet connection. Please check your connection and try again.'
+    );
+  };
 
   const renderRiverWalk = (riverWalk: RiverWalk, isArchived: boolean = false, index: number = 0) => {
     // Permission checks for button visibility
@@ -256,7 +270,13 @@ export function RiverWalkList({
         {canShare && (
           canAccessAdvancedFeatures(subscription) ? (
             <button
-              onClick={tutorialActive ? undefined : () => onShare(riverWalk)}
+              onClick={tutorialActive ? undefined : () => {
+                if (!isOnline()) {
+                  showOfflineError();
+                  return;
+                }
+                onShare(riverWalk);
+              }}
               disabled={tutorialActive}
               className="bg-blue-50 hover:bg-blue-100 text-blue-600 px-3 py-2 sm:px-4 sm:py-3 rounded-lg font-medium transition-all duration-200 border border-blue-200 shadow-modern hover:shadow-modern-lg touch-manipulation flex-1 sm:flex-none flex items-center justify-center text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed"
               data-tutorial="collaborate"
@@ -266,7 +286,13 @@ export function RiverWalkList({
             </button>
           ) : (
             <button
-              onClick={tutorialActive ? undefined : () => onUpgradePrompt('advanced')}
+              onClick={tutorialActive ? undefined : () => {
+                if (!isOnline()) {
+                  showOfflineError();
+                  return;
+                }
+                onUpgradePrompt('advanced');
+              }}
               disabled={tutorialActive}
               className="bg-gradient-to-r from-blue-50 to-teal-50 hover:from-blue-100 hover:to-teal-100 text-blue-700 px-3 py-2 sm:px-4 sm:py-3 rounded-lg font-medium transition-all duration-200 border-2 border-blue-200 shadow-modern hover:shadow-modern-lg touch-manipulation flex-1 sm:flex-none flex items-center justify-center text-sm sm:text-base relative disabled:opacity-50 disabled:cursor-not-allowed"
               data-tutorial="collaborate"

@@ -10,6 +10,7 @@ import { UpgradePrompt } from '../ui/UpgradePrompt';
 import { useSubscription, canAccessReports, canExportData } from '../../hooks/useSubscription';
 import type { RiverWalk, Site, MeasurementPoint } from '../../types';
 import { useScrollLock } from '../../hooks/useScrollLock';
+import { useToast } from '../ui/ToastProvider';
 
 // Dynamically import Plotly to avoid SSR issues
 const Plot = dynamic(() => import('react-plotly.js'), { 
@@ -30,8 +31,12 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
   const [showUpgradePrompt, setShowUpgradePrompt] = useState<'reports' | 'export' | null>(null);
   const reportRef = useRef<HTMLDivElement>(null);
   
-  // Get subscription status
+  // Get subscription status and toast functions
   const subscription = useSubscription();
+  const { showError, showSuccess } = useToast();
+  
+  // Check if we're online
+  const isOnline = () => typeof navigator !== 'undefined' && navigator.onLine;
   
   // Detect if user is on mobile device
   const [isMobile, setIsMobile] = useState(false);
@@ -428,6 +433,12 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
     console.log('🎯 Starting PDF export process...');
     console.log('📊 River walk data:', { id: riverWalk.id, name: riverWalk.name });
     
+    // Check if we're online - PDF export requires server connection
+    if (!isOnline()) {
+      showError('PDF export requires an internet connection. Please go online and try again.');
+      return;
+    }
+    
     setIsExporting(true);
 
     try {
@@ -807,8 +818,9 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
                 {canAccessReports(subscription) ? (
                   <button
                     onClick={exportToPDF}
-                    disabled={isExporting}
-                    className="btn-primary flex items-center gap-1 sm:gap-2 disabled:opacity-50 text-xs sm:text-sm lg:text-base px-2 py-1 sm:px-3 sm:py-2 lg:px-4 lg:py-3 shrink-0"
+                    disabled={isExporting || !isOnline()}
+                    className={`btn-primary flex items-center gap-1 sm:gap-2 disabled:opacity-50 text-xs sm:text-sm lg:text-base px-2 py-1 sm:px-3 sm:py-2 lg:px-4 lg:py-3 shrink-0 ${!isOnline() ? 'cursor-not-allowed' : ''}`}
+                    title={!isOnline() ? 'PDF export requires an internet connection' : 'Generate PDF report'}
                   >
                     {isExporting ? (
                       <>
@@ -819,8 +831,8 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
                     ) : (
                       <>
                         <FileText className="w-3 h-3 sm:w-4 sm:h-4" />
-                        <span className="hidden sm:inline">Visualise Report</span>
-                        <span className="sm:hidden">Report</span>
+                        <span className="hidden sm:inline">{!isOnline() ? 'Requires Internet' : 'Visualise Report'}</span>
+                        <span className="sm:hidden">{!isOnline() ? 'Offline' : 'Report'}</span>
                       </>
                     )}
                   </button>

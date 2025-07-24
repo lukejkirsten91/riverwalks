@@ -15,6 +15,9 @@ export function useSubscription() {
     subscriptionType: 'free',
     loading: true,
   });
+  const [isOnlineState, setIsOnlineState] = useState(() => 
+    typeof navigator !== 'undefined' ? navigator.onLine : true
+  );
 
   // Helper to get cached subscription status
   const getCachedSubscription = (userId: string): SubscriptionStatus | null => {
@@ -40,11 +43,33 @@ export function useSubscription() {
     }
   };
 
-  // Helper to check if we're online
-  const isOnline = () => {
-    return typeof navigator !== 'undefined' && navigator.onLine;
-  };
+  // Monitor online/offline state changes
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
 
+    const handleOnline = () => {
+      console.log('🟢 Subscription hook: Back online');
+      setIsOnlineState(true);
+    };
+
+    const handleOffline = () => {
+      console.log('🔴 Subscription hook: Gone offline');
+      setIsOnlineState(false);
+    };
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    // Initial state check
+    setIsOnlineState(navigator.onLine);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
+
+  // React to online/offline state changes
   useEffect(() => {
     const checkSubscription = async () => {
       try {
@@ -61,7 +86,7 @@ export function useSubscription() {
         }
 
         // If offline, try to use cached subscription data
-        if (!isOnline()) {
+        if (!isOnlineState) {
           console.log('🔌 Offline - checking for cached subscription data');
           const cachedStatus = getCachedSubscription(user.id);
           if (cachedStatus) {
@@ -179,7 +204,7 @@ export function useSubscription() {
     };
 
     checkSubscription();
-  }, []);
+  }, [isOnlineState]);
 
   return status;
 }
