@@ -24,8 +24,24 @@ export function useSubscription() {
     if (typeof window === 'undefined') return null;
     try {
       const cached = localStorage.getItem(`riverwalks_subscription_${userId}`);
-      return cached ? JSON.parse(cached) : null;
-    } catch {
+      if (!cached) return null;
+      
+      const parsedCache = JSON.parse(cached);
+      // Check if cache is less than 7 days old (longer for offline scenarios)
+      const cacheAge = Date.now() - (parsedCache.cachedAt || 0);
+      const maxAge = 7 * 24 * 60 * 60 * 1000; // 7 days
+      
+      if (cacheAge > maxAge) {
+        console.log('🗑️ Cached subscription data expired, removing');
+        localStorage.removeItem(`riverwalks_subscription_${userId}`);
+        return null;
+      }
+      
+      return parsedCache;
+    } catch (error) {
+      console.warn('Failed to parse cached subscription:', error);
+      // Remove corrupted cache
+      localStorage.removeItem(`riverwalks_subscription_${userId}`);
       return null;
     }
   };
@@ -97,13 +113,12 @@ export function useSubscription() {
             });
             return;
           } else {
-            console.log('⚠️ No cached subscription data available, defaulting to free');
-            setStatus({
-              isSubscribed: false,
-              hasLifetimeAccess: false,
-              subscriptionType: 'free',
-              loading: false,
-            });
+            console.log('⚠️ No cached subscription data available, preserving current status to avoid reset');
+            // Don't reset to free when offline - preserve current status to avoid losing premium access
+            setStatus(prevStatus => ({
+              ...prevStatus,
+              loading: false
+            }));
             return;
           }
         }
@@ -179,7 +194,7 @@ export function useSubscription() {
       } catch (error) {
         console.error('Error checking subscription status:', error);
         
-        // Try to use cached data if available, otherwise default to free
+        // Try to use cached data if available, otherwise preserve current status
         const { data: { user } } = await supabase.auth.getUser();
         if (user) {
           const cachedStatus = getCachedSubscription(user.id);
@@ -193,13 +208,12 @@ export function useSubscription() {
           }
         }
         
-        // No cached data available, default to free
-        setStatus({
-          isSubscribed: false,
-          hasLifetimeAccess: false,
-          subscriptionType: 'free',
-          loading: false,
-        });
+        // No cached data available - preserve current status instead of defaulting to free
+        console.log('⚠️ No cached data available, preserving current subscription status');
+        setStatus(prevStatus => ({
+          ...prevStatus,
+          loading: false
+        }));
       }
     };
 
