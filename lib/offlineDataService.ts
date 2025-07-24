@@ -2131,6 +2131,13 @@ export class OfflineDataService {
       // Clear any relevant localStorage items
       if (typeof window !== 'undefined') {
         localStorage.removeItem('riverwalks_sync_queue_cleared');
+        // Clear existing user flags for all users
+        const keys = Object.keys(localStorage);
+        keys.forEach(key => {
+          if (key.startsWith('riverwalks_existing_user_')) {
+            localStorage.removeItem(key);
+          }
+        });
       }
       
       console.log('All offline data cleared successfully');
@@ -2144,9 +2151,24 @@ export class OfflineDataService {
     try {
       console.log('Starting stale record cleanup...');
       
-      // Get user ID
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      // Get user ID - use session first for better offline resilience
+      const { data: { session } } = await supabase.auth.getSession();
+      let user = session?.user || null;
+      
+      // Fallback to getUser only if session doesn't have user
+      if (!user) {
+        const { data: { user: fetchedUser }, error } = await supabase.auth.getUser();
+        if (error) {
+          console.warn('Failed to get user during cleanup, skipping stale record cleanup:', error);
+          return;
+        }
+        user = fetchedUser || null;
+      }
+      
+      if (!user) {
+        console.log('No user found during cleanup, skipping stale record cleanup');
+        return;
+      }
 
       // Fetch current server data
       const { data: serverRiverWalks } = await supabase

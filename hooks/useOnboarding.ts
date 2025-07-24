@@ -75,6 +75,23 @@ export function useOnboarding(): OnboardingStatus {
         return;
       }
 
+      // Extra protection: Check if user has been marked as existing user in localStorage
+      // This prevents sync processes from triggering welcome flow for existing users
+      const existingUserFlag = localStorage.getItem(`riverwalks_existing_user_${user.id}`);
+      if (existingUserFlag === 'true') {
+        console.log('User already marked as existing - skipping database check');
+        const state: OnboardingState = {
+          hasSeenWelcome: true,
+          hasCreatedFirstRiverWalk: true,
+          hasAddedFirstSite: true,
+          hasGeneratedFirstReport: true,
+          lastUpdated: new Date().toISOString()
+        };
+        setOnboardingState(state);
+        setLoading(false);
+        return;
+      }
+
       // Check if user has any river walks first (most reliable indicator)
       const { data: riverWalks, error } = await supabase
         .from('river_walks')
@@ -93,6 +110,8 @@ export function useOnboarding(): OnboardingStatus {
           lastUpdated: new Date().toISOString()
         };
         setOnboardingState(state);
+        // Mark user as existing to prevent future issues
+        localStorage.setItem(`riverwalks_existing_user_${user.id}`, 'true');
         setLoading(false);
         return;
       }
@@ -108,6 +127,8 @@ export function useOnboarding(): OnboardingStatus {
         };
         
         setOnboardingState(state);
+        // Mark user as existing to prevent future sync issues
+        localStorage.setItem(`riverwalks_existing_user_${user.id}`, 'true');
         // Always update metadata for existing users to prevent future issues
         await updateUserMetadata(state);
         setLoading(false);
