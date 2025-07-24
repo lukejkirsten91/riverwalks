@@ -36,6 +36,41 @@ export function useOnboarding(): OnboardingStatus {
     loadOnboardingState();
   }, []);
 
+  // Check if user has ever been definitively marked as existing
+  const checkPermanentExistingUserFlag = async (): Promise<boolean> => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const user = session?.user;
+      if (!user) return false;
+
+      // Check permanent flag in localStorage
+      const permanentFlag = localStorage.getItem(`riverwalks_permanent_existing_user_${user.id}`);
+      if (permanentFlag === 'true') {
+        console.log('🔒 User permanently marked as existing - no welcome flow ever');
+        return true;
+      }
+
+      return false;
+    } catch (error) {
+      console.warn('Error checking permanent existing user flag:', error);
+      return false;
+    }
+  };
+
+  // Mark user as permanently existing (never show welcome flow again)
+  const markUserAsPermanentlyExisting = async (): Promise<void> => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const user = session?.user;
+      if (!user) return;
+
+      localStorage.setItem(`riverwalks_permanent_existing_user_${user.id}`, 'true');
+      console.log('🔒 User permanently marked as existing');
+    } catch (error) {
+      console.warn('Error marking user as permanently existing:', error);
+    }
+  };
+
   // Monitor online/offline state changes
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -68,26 +103,24 @@ export function useOnboarding(): OnboardingStatus {
 
   const loadOnboardingState = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user) {
-        setLoading(false);
-        return;
-      }
-
-      // Extra protection: Check if user has been marked as existing user in localStorage
-      // This prevents sync processes from triggering welcome flow for existing users
-      const existingUserFlag = localStorage.getItem(`riverwalks_existing_user_${user.id}`);
-      if (existingUserFlag === 'true') {
-        console.log('User already marked as existing - skipping database check');
-        const state: OnboardingState = {
+      // FIRST: Check if user is permanently marked as existing - this overrides everything
+      const isPermanentlyExisting = await checkPermanentExistingUserFlag();
+      if (isPermanentlyExisting) {
+        const existingUserState: OnboardingState = {
           hasSeenWelcome: true,
           hasCreatedFirstRiverWalk: true,
           hasAddedFirstSite: true,
           hasGeneratedFirstReport: true,
           lastUpdated: new Date().toISOString()
         };
-        setOnboardingState(state);
+        setOnboardingState(existingUserState);
+        setLoading(false);
+        return;
+      }
+
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
         setLoading(false);
         return;
       }
@@ -110,8 +143,8 @@ export function useOnboarding(): OnboardingStatus {
           lastUpdated: new Date().toISOString()
         };
         setOnboardingState(state);
-        // Mark user as existing to prevent future issues
-        localStorage.setItem(`riverwalks_existing_user_${user.id}`, 'true');
+        // Mark user as permanently existing to prevent future issues
+        await markUserAsPermanentlyExisting();
         setLoading(false);
         return;
       }
@@ -127,8 +160,8 @@ export function useOnboarding(): OnboardingStatus {
         };
         
         setOnboardingState(state);
-        // Mark user as existing to prevent future sync issues
-        localStorage.setItem(`riverwalks_existing_user_${user.id}`, 'true');
+        // Mark user as PERMANENTLY existing to prevent future sync issues
+        await markUserAsPermanentlyExisting();
         // Always update metadata for existing users to prevent future issues
         await updateUserMetadata(state);
         setLoading(false);
@@ -189,6 +222,8 @@ export function useOnboarding(): OnboardingStatus {
 
   const markWelcomeComplete = async () => {
     await updateUserMetadata({ hasSeenWelcome: true });
+    // Once welcome is completed, user is permanently existing
+    await markUserAsPermanentlyExisting();
   };
 
   const markFirstRiverWalkCreated = async () => {

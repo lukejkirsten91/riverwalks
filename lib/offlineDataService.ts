@@ -2134,7 +2134,7 @@ export class OfflineDataService {
         // Clear existing user flags for all users
         const keys = Object.keys(localStorage);
         keys.forEach(key => {
-          if (key.startsWith('riverwalks_existing_user_')) {
+          if (key.startsWith('riverwalks_existing_user_') || key.startsWith('riverwalks_permanent_existing_user_')) {
             localStorage.removeItem(key);
           }
         });
