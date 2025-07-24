@@ -22,38 +22,65 @@ export function useSubscription() {
   // Helper to get cached subscription status
   const getCachedSubscription = (userId: string): SubscriptionStatus | null => {
     if (typeof window === 'undefined') return null;
+    
+    // First try user-specific cache
     try {
       const cached = localStorage.getItem(`riverwalks_subscription_${userId}`);
-      if (!cached) return null;
-      
-      const parsedCache = JSON.parse(cached);
-      // Check if cache is less than 7 days old (longer for offline scenarios)
-      const cacheAge = Date.now() - (parsedCache.cachedAt || 0);
-      const maxAge = 7 * 24 * 60 * 60 * 1000; // 7 days
-      
-      if (cacheAge > maxAge) {
-        console.log('🗑️ Cached subscription data expired, removing');
-        localStorage.removeItem(`riverwalks_subscription_${userId}`);
-        return null;
+      if (cached) {
+        const parsedCache = JSON.parse(cached);
+        // Check if cache is less than 7 days old (longer for offline scenarios)
+        const cacheAge = Date.now() - (parsedCache.cachedAt || 0);
+        const maxAge = 7 * 24 * 60 * 60 * 1000; // 7 days
+        
+        if (cacheAge <= maxAge) {
+          console.log('✅ Found valid user-specific cached subscription:', parsedCache);
+          return parsedCache;
+        } else {
+          console.log('🗑️ User-specific cached subscription expired, removing');
+          localStorage.removeItem(`riverwalks_subscription_${userId}`);
+        }
       }
-      
-      return parsedCache;
     } catch (error) {
-      console.warn('Failed to parse cached subscription:', error);
-      // Remove corrupted cache
+      console.warn('Failed to parse user-specific cached subscription:', error);
       localStorage.removeItem(`riverwalks_subscription_${userId}`);
-      return null;
     }
+    
+    // Fallback to backup cache if user-specific cache failed
+    try {
+      const backupCached = localStorage.getItem('riverwalks_last_known_subscription');
+      if (backupCached) {
+        const parsedBackup = JSON.parse(backupCached);
+        // Verify it's for the same user and not too old
+        if (parsedBackup.userId === userId) {
+          const cacheAge = Date.now() - (parsedBackup.cachedAt || 0);
+          const maxAge = 7 * 24 * 60 * 60 * 1000; // 7 days
+          
+          if (cacheAge <= maxAge) {
+            console.log('✅ Using backup cached subscription:', parsedBackup);
+            return parsedBackup;
+          }
+        }
+      }
+    } catch (error) {
+      console.warn('Failed to parse backup cached subscription:', error);
+    }
+    
+    return null;
   };
 
   // Helper to cache subscription status
   const cacheSubscription = (userId: string, subscription: SubscriptionStatus) => {
     if (typeof window === 'undefined') return;
     try {
-      localStorage.setItem(`riverwalks_subscription_${userId}`, JSON.stringify({
+      const cacheData = {
         ...subscription,
-        cachedAt: Date.now()
-      }));
+        cachedAt: Date.now(),
+        userId: userId // Store user ID for validation
+      };
+      localStorage.setItem(`riverwalks_subscription_${userId}`, JSON.stringify(cacheData));
+      // Also store as a backup with a generic key
+      localStorage.setItem('riverwalks_last_known_subscription', JSON.stringify(cacheData));
+      console.log('✅ Cached subscription status:', cacheData);
     } catch (error) {
       console.warn('Failed to cache subscription status:', error);
     }

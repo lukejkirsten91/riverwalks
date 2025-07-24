@@ -10,7 +10,6 @@ import { UpgradePrompt } from '../ui/UpgradePrompt';
 import { useSubscription, canAccessReports, canExportData } from '../../hooks/useSubscription';
 import type { RiverWalk, Site, MeasurementPoint } from '../../types';
 import { useScrollLock } from '../../hooks/useScrollLock';
-import { useToast } from '../ui/ToastProvider';
 
 // Dynamically import Plotly to avoid SSR issues
 const Plot = dynamic(() => import('react-plotly.js'), { 
@@ -31,9 +30,8 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
   const [showUpgradePrompt, setShowUpgradePrompt] = useState<'reports' | 'export' | null>(null);
   const reportRef = useRef<HTMLDivElement>(null);
   
-  // Get subscription status and toast functions
+  // Get subscription status
   const subscription = useSubscription();
-  const { showError, showSuccess } = useToast();
   
   // Check if we're online
   const isOnline = () => typeof navigator !== 'undefined' && navigator.onLine;
@@ -433,9 +431,9 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
     console.log('🎯 Starting PDF export process...');
     console.log('📊 River walk data:', { id: riverWalk.id, name: riverWalk.name });
     
-    // Check if we're online - PDF export requires server connection
+    // Safety check - don't attempt export when offline
     if (!isOnline()) {
-      showError('PDF export requires an internet connection. Please go online and try again.');
+      console.log('⚠️ Cannot export PDF while offline');
       return;
     }
     
@@ -819,7 +817,7 @@ export function ReportGenerator({ riverWalk, sites, onClose }: ReportGeneratorPr
                   <button
                     onClick={exportToPDF}
                     disabled={isExporting || !isOnline()}
-                    className={`btn-primary flex items-center gap-1 sm:gap-2 disabled:opacity-50 text-xs sm:text-sm lg:text-base px-2 py-1 sm:px-3 sm:py-2 lg:px-4 lg:py-3 shrink-0 ${!isOnline() ? 'cursor-not-allowed' : ''}`}
+                    className="btn-primary flex items-center gap-1 sm:gap-2 disabled:opacity-50 text-xs sm:text-sm lg:text-base px-2 py-1 sm:px-3 sm:py-2 lg:px-4 lg:py-3 shrink-0"
                     title={!isOnline() ? 'PDF export requires an internet connection' : 'Generate PDF report'}
                   >
                     {isExporting ? (
