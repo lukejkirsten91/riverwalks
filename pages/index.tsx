@@ -421,11 +421,11 @@ export default function Home() {
               <div className="mb-8">
                 <div className="text-center mb-6">
                   <h2 className="text-2xl sm:text-3xl font-bold text-white mb-3">
-                    <span className="text-cyan-300">Manage</span> your Riverwalks
+                    <span className="text-cyan-300 font-bold">Manage</span> your Riverwalks
                   </h2>
                   <p className="text-white/80 text-base max-w-xl mx-auto">
                     Access your river studies anywhere with our mobile-optimized interface. 
-                    View sites, collect <span className="text-blue-200 font-medium">data</span>, and track progress all from your phone.
+                    View sites, collect <span className="text-blue-200 font-bold">data</span>, and track progress all from your phone.
                   </p>
                 </div>
                 <div className="flex justify-center">
@@ -440,23 +440,23 @@ export default function Home() {
 
             {/* Data Collection Preview Section */}
             {!user && (
-              <div className="mb-8">
-                <div className="text-center mb-6">
+              <div className="mb-12">
+                <div className="text-center mb-8">
                   <h2 className="text-2xl sm:text-3xl font-bold text-white mb-3">
-                    <span className="text-teal-300">Collect</span> comprehensive river data
+                    <span className="text-teal-300 font-bold">Collect</span> comprehensive river data
                   </h2>
                   <p className="text-white/80 text-base max-w-2xl mx-auto">
                     Gather detailed measurements for site information, cross-sections, 
-                    <span className="text-cyan-200 font-medium"> velocity</span>, and 
-                    <span className="text-blue-200 font-medium"> sediment analysis</span>. 
+                    <span className="text-cyan-200 font-bold"> velocity</span>, and 
+                    <span className="text-blue-200 font-bold"> sediment analysis</span>. 
                     Everything you need for professional river studies.
                   </p>
                 </div>
-                <div className="flex justify-center px-4">
+                <div className="flex justify-center px-2">
                   <img 
                     src="/mockup3.png" 
                     alt="Three phone screens showing data collection interfaces for site info, cross-sections, velocity and sediment" 
-                    className="max-w-full sm:max-w-2xl lg:max-w-3xl w-full h-auto"
+                    className="w-full max-w-4xl h-auto min-h-[300px] sm:min-h-[400px] object-contain"
                   />
                 </div>
               </div>
