@@ -356,8 +356,29 @@ export function IntroJsTutorial({
         }
         
         // Add special class for ALL steps on mobile to prevent any overflow
+        // Use multiple delays to ensure proper positioning
         if (typeof window !== 'undefined' && window.innerWidth <= 768) {
+          // Apply immediately
           tooltip.classList.add('force-center-mobile');
+          
+          // Also apply after short delays to handle timing issues
+          setTimeout(() => {
+            const tooltip = document.querySelector('.introjs-tooltip') as HTMLElement;
+            if (tooltip) {
+              tooltip.classList.add('force-center-mobile');
+              // Force a repaint to ensure positioning takes effect
+              tooltip.style.display = 'none';
+              tooltip.offsetHeight; // Force reflow
+              tooltip.style.display = '';
+            }
+          }, 50);
+          
+          setTimeout(() => {
+            const tooltip = document.querySelector('.introjs-tooltip');
+            if (tooltip) {
+              tooltip.classList.add('force-center-mobile');
+            }
+          }, 200);
         } else {
           tooltip.classList.remove('force-center-mobile');
         }
