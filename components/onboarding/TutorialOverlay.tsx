@@ -48,23 +48,6 @@ const Spotlight: React.FC<SpotlightProps> = ({ targetElement, overlayRef }) => {
       return;
     }
 
-    // Check if this is a problematic element and disable spotlight for it
-    const tutorialAttr = targetElement.getAttribute('data-tutorial');
-    console.log('Spotlight debug - data-tutorial attribute:', tutorialAttr, 'element:', targetElement);
-    
-    const isProblematicElement = tutorialAttr === 'generate-report' || 
-                                 tutorialAttr === 'print-template';
-    
-    console.log('Is problematic element:', isProblematicElement);
-    
-    if (isProblematicElement) {
-      console.log('DISABLING SPOTLIGHT for problematic element');
-      // For problematic elements, just show a simple full overlay without spotlight
-      setOverlayElements([
-        <div key="full-overlay-problematic" className="fixed inset-0 bg-black/50 z-[10000] pointer-events-none" />
-      ]);
-      return;
-    }
 
     const updateSpotlight = () => {
       const rect = targetElement.getBoundingClientRect();
@@ -212,12 +195,8 @@ const TutorialTooltip: React.FC<{
         const safeWidth = window.innerWidth - (padding * 2);
         const tooltipWidth = Math.min(safeWidth, 350); // Conservative max width
         
-        // Special handling for problematic right-side buttons
-        const isProblematicStep = step.id === 'export' || step.id === 'print-template';
-        console.log('Tooltip debug - step.id:', step.id, 'isProblematicStep:', isProblematicStep);
-        
-        if (!targetElement || isProblematicStep) {
-          // Center for steps without target OR for problematic steps
+        if (!targetElement) {
+          // Center for steps without target
           top = safeAreaTop + (availableHeight - tooltipRect.height) / 2;
         } else {
           const targetRect = targetElement.getBoundingClientRect();
@@ -243,39 +222,22 @@ const TutorialTooltip: React.FC<{
         }
         
         // Always center horizontally on mobile to avoid any edge issues
-        // Use smaller width for problematic steps
-        const finalTooltipWidth = isProblematicStep ? Math.min(safeWidth, 320) : tooltipWidth;
-        left = (window.innerWidth - finalTooltipWidth) / 2;
+        left = (window.innerWidth - tooltipWidth) / 2;
         
         // Ensure tooltip never goes off-screen with strict bounds
         const finalTop = Math.max(safeAreaTop, Math.min(top, window.innerHeight - tooltipRect.height - safeAreaBottom));
-        const finalLeft = Math.max(padding, Math.min(left, window.innerWidth - finalTooltipWidth - padding));
+        const finalLeft = Math.max(padding, Math.min(left, window.innerWidth - tooltipWidth - padding));
         
-        if (isProblematicStep) {
-          // For problematic steps, use absolute minimal approach
-          setTooltipStyle({
-            position: 'fixed',
-            top: '20px',
-            left: '16px',
-            right: '16px',
-            zIndex: 10002,
-            maxWidth: 'none',
-            width: 'auto',
-            boxSizing: 'border-box',
-            overflow: 'hidden',
-          });
-        } else {
-          setTooltipStyle({
-            position: 'fixed',
-            top: `${finalTop}px`,
-            left: `${finalLeft}px`,
-            zIndex: 10002,
-            width: `${finalTooltipWidth}px`,
-            maxWidth: 'none', // Override any inherited max-width
-            boxSizing: 'border-box', // Ensure padding doesn't add to width
-            overflow: 'hidden', // Prevent any content from extending beyond bounds
-          });
-        }
+        setTooltipStyle({
+          position: 'fixed',
+          top: `${finalTop}px`,
+          left: `${finalLeft}px`,
+          zIndex: 10002,
+          width: `${tooltipWidth}px`,
+          maxWidth: 'none', // Override any inherited max-width
+          boxSizing: 'border-box', // Ensure padding doesn't add to width
+          overflow: 'hidden', // Prevent any content from extending beyond bounds
+        });
         return;
       }
 

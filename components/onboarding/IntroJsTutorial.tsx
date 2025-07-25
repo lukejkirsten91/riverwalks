@@ -226,9 +226,9 @@ export function IntroJsTutorial({
       
       @media (max-width: 768px) {
         .introjs-tooltip {
-          max-width: calc(100vw - 24px);
-          min-width: calc(100vw - 48px);
-          margin: 12px;
+          max-width: calc(100vw - 32px);
+          min-width: 280px;
+          margin: 16px;
           border-radius: 8px;
           padding: 12px 14px 0;
         }
@@ -298,7 +298,9 @@ export function IntroJsTutorial({
     tooltipPosition: 'auto',
     overlayOpacity: 0.5,
     autoPosition: true,
-    positionPrecedence: ['bottom', 'top', 'right', 'left'],
+    positionPrecedence: typeof window !== 'undefined' && window.innerWidth <= 768 
+      ? ['bottom', 'top'] // Mobile: only top/bottom positioning
+      : ['bottom', 'top', 'right', 'left'], // Desktop: all positions
     tooltipClass: 'custom-introjs-tooltip',
     helperElementPadding: 10,
     highlightClass: 'introjs-custom-highlight'
