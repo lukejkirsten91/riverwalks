@@ -440,8 +440,8 @@ export default function Home() {
 
             {/* Data Collection Preview Section */}
             {!user && (
-              <div className="mb-12">
-                <div className="text-center mb-8">
+              <div className="mb-8">
+                <div className="text-center mb-6">
                   <h2 className="text-2xl sm:text-3xl font-bold text-white mb-3">
                     <span className="text-teal-300 font-bold">Collect</span> comprehensive river data
                   </h2>
@@ -452,13 +452,12 @@ export default function Home() {
                     Everything you need for professional river studies.
                   </p>
                 </div>
-                <div className="flex justify-center px-1 overflow-hidden">
-                  <div className="w-full max-w-full relative">
+                <div className="flex justify-center px-4">
+                  <div className="w-full max-w-4xl relative">
                     <img 
-                      src="/mockup3_no_background.png" 
+                      src="/mockup3_no_background_1920X1920.png" 
                       alt="Three phone screens showing data collection interfaces for site info, cross-sections, velocity and sediment" 
-                      className="w-full h-auto transform scale-200 sm:scale-250 md:scale-300 lg:scale-350 xl:scale-400 object-contain"
-                      style={{ minHeight: '600px', maxWidth: 'none' }}
+                      className="w-full h-auto object-contain"
                     />
                   </div>
                 </div>
