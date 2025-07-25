@@ -187,43 +187,55 @@ const TutorialTooltip: React.FC<{
       let left = 0;
 
       if (isMobile) {
-        // On mobile, position tooltip intelligently based on target element
+        // On mobile, always use intelligent positioning to prevent going off-screen
+        const safeAreaTop = padding + 20; // Account for notch/status bar
+        const safeAreaBottom = padding + 80; // Account for mobile bottom bar/home indicator
+        const availableHeight = window.innerHeight - safeAreaTop - safeAreaBottom;
+        const availableWidth = window.innerWidth - (padding * 2);
+        
         if (!targetElement) {
           // Center for steps without target
-          top = window.innerHeight / 2 - tooltipRect.height / 2;
+          top = safeAreaTop + (availableHeight - tooltipRect.height) / 2;
           left = padding;
         } else {
           const targetRect = targetElement.getBoundingClientRect();
-          const availableSpaceAbove = targetRect.top;
-          const availableSpaceBelow = window.innerHeight - targetRect.bottom;
+          const availableSpaceAbove = targetRect.top - safeAreaTop;
+          const availableSpaceBelow = window.innerHeight - targetRect.bottom - safeAreaBottom;
           
-          // If target is in bottom half of screen, position tooltip above target
-          if (targetRect.top > window.innerHeight / 2 && availableSpaceAbove > tooltipRect.height + padding) {
+          // Try to position tooltip above target if there's enough space
+          if (availableSpaceAbove >= tooltipRect.height + padding) {
             top = targetRect.top - tooltipRect.height - padding;
-          } 
-          // If target is in top half, position tooltip below target  
-          else if (targetRect.bottom < window.innerHeight / 2 && availableSpaceBelow > tooltipRect.height + padding) {
+          }
+          // Try to position tooltip below target if there's enough space
+          else if (availableSpaceBelow >= tooltipRect.height + padding) {
             top = targetRect.bottom + padding;
           }
-          // Otherwise, position at top of screen if target is at bottom
-          else if (targetRect.top > window.innerHeight / 2) {
-            top = padding;
+          // If target is in bottom 2/3 of screen, position at top
+          else if (targetRect.top > window.innerHeight * 0.33) {
+            top = safeAreaTop;
           }
-          // Or at bottom of screen if target is at top
+          // Otherwise position at bottom
           else {
-            top = window.innerHeight - tooltipRect.height - padding - 80; // Account for mobile bottom bar
+            top = window.innerHeight - tooltipRect.height - safeAreaBottom;
           }
           
           left = padding;
         }
         
+        // Ensure tooltip never goes off-screen with strict bounds
+        const finalTop = Math.max(safeAreaTop, Math.min(top, window.innerHeight - tooltipRect.height - safeAreaBottom));
+        const finalLeft = padding;
+        const finalRight = padding;
+        const maxWidth = Math.min(availableWidth, 400); // Cap max width on mobile
+        
         setTooltipStyle({
           position: 'fixed',
-          top: `${Math.max(padding, Math.min(top, window.innerHeight - tooltipRect.height - padding - 80))}px`,
-          left: `${left}px`,
-          right: `${padding}px`,
+          top: `${finalTop}px`,
+          left: `${finalLeft}px`,
+          right: `${finalRight}px`,
           zIndex: 10002,
-          maxWidth: `${window.innerWidth - padding * 2}px`,
+          maxWidth: `${maxWidth}px`,
+          width: `calc(100vw - ${padding * 2}px)`, // Ensure it never exceeds viewport
         });
         return;
       }
