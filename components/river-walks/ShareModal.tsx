@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { X, Link, Copy, Trash2, Users, Plus, Check } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { X, Link, Copy, Trash2, Users, Plus, Check, QrCode } from 'lucide-react';
+import QRCode from 'qrcode';
 import { useCollaboration } from '../../hooks/useCollaboration';
 import type { CollaboratorAccess } from '../../lib/api/collaboration';
 import type { RiverWalk } from '../../types';
@@ -30,6 +31,8 @@ export function ShareModal({ riverWalk, isOpen, onClose }: ShareModalProps) {
   const [specificEmail, setSpecificEmail] = useState('');
   const [useSpecificEmail, setUseSpecificEmail] = useState(false);
   const [copiedToken, setCopiedToken] = useState<string | null>(null);
+  const [showQRCode, setShowQRCode] = useState(false);
+  const [qrCodeData, setQrCodeData] = useState<string | null>(null);
 
   // Don't render if collaboration is disabled
   if (!collaborationEnabled) {
@@ -100,6 +103,34 @@ export function ShareModal({ riverWalk, isOpen, onClose }: ShareModalProps) {
     const copySuccess = await copyToClipboard(url);
     setCopiedToken(token);
     setTimeout(() => setCopiedToken(null), 3000);
+  };
+
+  const generateQRCode = async (url: string) => {
+    try {
+      const qr = await QRCode.toDataURL(url, {
+        width: 200,
+        margin: 2,
+        color: {
+          dark: '#000000',
+          light: '#ffffff'
+        }
+      });
+      setQrCodeData(qr);
+    } catch (error) {
+      console.error('Error generating QR code:', error);
+    }
+  };
+
+  const handleToggleQRCode = async (url: string, token: string) => {
+    if (showQRCode) {
+      setShowQRCode(false);
+      setQrCodeData(null);
+    } else {
+      await generateQRCode(url);
+      setShowQRCode(true);
+      setCopiedToken(token);
+      setTimeout(() => setCopiedToken(null), 3000);
+    }
   };
 
   const handleRevokeAccess = async (collaboratorId: string) => {
@@ -317,20 +348,32 @@ export function ShareModal({ riverWalk, isOpen, onClose }: ShareModalProps) {
                           </div>
                           <div className="flex items-center space-x-2">
                             {invite.invite_token && status.type !== 'expired' && (
-                              <button
-                                onClick={() => handleCopyLink(
-                                  `https://riverwalks.co.uk/invite/${invite.invite_token}`,
-                                  invite.invite_token!
-                                )}
-                                className="p-2 hover:bg-background rounded transition-colors"
-                                title="Copy link"
-                              >
-                                {copiedToken === invite.invite_token ? (
-                                  <Check className="w-4 h-4 text-green-600" />
-                                ) : (
-                                  <Copy className="w-4 h-4" />
-                                )}
-                              </button>
+                              <>
+                                <button
+                                  onClick={() => handleCopyLink(
+                                    `https://riverwalks.co.uk/invite/${invite.invite_token}`,
+                                    invite.invite_token!
+                                  )}
+                                  className="p-2 hover:bg-background rounded transition-colors"
+                                  title="Copy link"
+                                >
+                                  {copiedToken === invite.invite_token ? (
+                                    <Check className="w-4 h-4 text-green-600" />
+                                  ) : (
+                                    <Copy className="w-4 h-4" />
+                                  )}
+                                </button>
+                                <button
+                                  onClick={() => handleToggleQRCode(
+                                    `https://riverwalks.co.uk/invite/${invite.invite_token}`,
+                                    invite.invite_token!
+                                  )}
+                                  className="p-2 hover:bg-background rounded transition-colors"
+                                  title={showQRCode && copiedToken === invite.invite_token ? "Hide QR code" : "Show QR code"}
+                                >
+                                  <QrCode className={`w-4 h-4 ${showQRCode && copiedToken === invite.invite_token ? 'text-blue-600' : ''}`} />
+                                </button>
+                              </>
                             )}
                             {status.type === 'expired' && (
                               <div className="p-2 text-gray-400" title="Link expired">
@@ -351,6 +394,26 @@ export function ShareModal({ riverWalk, isOpen, onClose }: ShareModalProps) {
                       );
                     })}
                   </div>
+                </div>
+              )}
+
+              {/* QR Code Display */}
+              {showQRCode && qrCodeData && (
+                <div className="bg-white border border-gray-200 rounded-lg p-4 text-center">
+                  <h3 className="text-sm font-medium text-foreground mb-3 flex items-center justify-center gap-2">
+                    <QrCode className="w-4 h-4" />
+                    QR Code for Quick Sharing
+                  </h3>
+                  <div className="flex justify-center mb-3">
+                    <img 
+                      src={qrCodeData} 
+                      alt="QR Code for sharing link" 
+                      className="border border-gray-200 rounded-lg"
+                    />
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Scan this QR code with a phone camera to quickly access the invitation link
+                  </p>
                 </div>
               )}
             </div>

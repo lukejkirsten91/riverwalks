@@ -265,6 +265,26 @@ export function RiverWalkList({
               </button>
             )}
 
+            <button
+              onClick={tutorialActive ? undefined : () => onGeneratePrintTemplate(riverWalk)}
+              disabled={templateLoading === riverWalk.id || tutorialActive || !isOnline()}
+              className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-2 rounded-lg font-medium transition-colors border border-slate-200 shadow-modern hover:shadow-modern-lg touch-manipulation flex-1 sm:flex-none flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+              data-tutorial="print-template"
+              title={!isOnline() ? "Print templates require an internet connection" : ""}
+            >
+              {templateLoading === riverWalk.id ? (
+                <>
+                  <div className="w-4 h-4 mr-1 animate-spin rounded-full border-2 border-slate-300 border-t-slate-600"></div>
+                  <span className="truncate">Generating...</span>
+                </>
+              ) : (
+                <>
+                  <FileText className="w-4 h-4 mr-1" />
+                  <span className="truncate">Print Template</span>
+                </>
+              )}
+            </button>
+
             {canAccessReports(subscription) ? (
               <button
                 onClick={tutorialActive ? undefined : () => onGenerateReport(riverWalk)}
@@ -289,26 +309,6 @@ export function RiverWalkList({
                 <span className="truncate">Generate Report</span>
               </button>
             )}
-
-            <button
-              onClick={tutorialActive ? undefined : () => onGeneratePrintTemplate(riverWalk)}
-              disabled={templateLoading === riverWalk.id || tutorialActive || !isOnline()}
-              className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-2 rounded-lg font-medium transition-colors border border-slate-200 shadow-modern hover:shadow-modern-lg touch-manipulation flex-1 sm:flex-none flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed text-sm"
-              data-tutorial="print-template"
-              title={!isOnline() ? "Print templates require an internet connection" : ""}
-            >
-              {templateLoading === riverWalk.id ? (
-                <>
-                  <div className="w-4 h-4 mr-1 animate-spin rounded-full border-2 border-slate-300 border-t-slate-600"></div>
-                  <span className="truncate">Generating...</span>
-                </>
-              ) : (
-                <>
-                  <FileText className="w-4 h-4 mr-1" />
-                  <span className="truncate">Print Template</span>
-                </>
-              )}
-            </button>
 
             {canShare && canAccessAdvancedFeatures(subscription) && (
               <button
