@@ -299,7 +299,7 @@ export function IntroJsTutorial({
     tooltipPosition: 'auto',
     overlayOpacity: 0.5,
     autoPosition: true,
-    positionPrecedence: ['bottom', 'top', 'right', 'left']
+    positionPrecedence: ['bottom', 'top', 'right', 'left'],
     tooltipClass: 'custom-introjs-tooltip',
     helperElementPadding: 10,
     highlightClass: 'introjs-custom-highlight'
