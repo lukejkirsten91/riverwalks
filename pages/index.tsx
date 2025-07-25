@@ -1,6 +1,7 @@
 import AuthCard from '../components/auth/auth-card';
 import { LiveMetrics } from '../components/landing/LiveMetrics';
 import { InteractivePreview } from '../components/landing/InteractivePreview';
+import { PWAInstallButton } from '../components/pwa/PWAInstallButton';
 import { MapPin, BarChart3, Users, Waves, ChevronDown } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/router';
@@ -329,6 +330,7 @@ export default function Home() {
             </div>
             
             <div className="flex items-center gap-1 sm:gap-3 pointer-events-auto">
+              <PWAInstallButton className="pointer-events-auto" />
               {user ? (
                 <div className="flex items-center gap-1 sm:gap-3">
                   <div className="flex items-center gap-2 text-white/90 text-sm bg-black/20 backdrop-blur-sm rounded-lg px-3 py-1">
@@ -422,6 +424,13 @@ export default function Home() {
                 <p className="text-green-100 text-sm">
                   Collect data on-site with our print templates, then digitise when you're back. Perfect for field trips where mobiles aren't allowed.
                 </p>
+              </div>
+            )}
+
+            {/* PWA Install Prompt */}
+            {!user && (
+              <div className="flex justify-center mb-8">
+                <PWAInstallButton variant="standalone" />
               </div>
             )}
 

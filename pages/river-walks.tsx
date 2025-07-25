@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { createPortal } from 'react-dom';
 import { supabase } from '../lib/supabase';
 import { isPWAMode } from '../lib/pwaUtils';
+import { PWAInstallButton } from '../components/pwa/PWAInstallButton';
 import { LogOut, MapPin, User as UserIcon, Users, UserCheck, Crown, Settings, MessageCircle, Lightbulb } from 'lucide-react';
 import { isCurrentUserAdmin } from '../lib/client-auth';
 import {
@@ -485,6 +486,7 @@ export default function RiverWalksPage() {
 
             {/* Right side: Navigation and Profile */}
             <div className="flex items-center gap-3">
+              <PWAInstallButton />
               {user && (
                 <div className="relative flex-shrink-0" data-profile-dropdown>
                 {/* Profile button */}
