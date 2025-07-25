@@ -126,7 +126,7 @@ export function RiverWalkList({
             {/* Collaborator Avatars */}
             {collaborators?.hasCollaborators && (
               <CollaboratorAvatars 
-                collaborators={collaborators.collaborators} 
+                collaboratorInfo={collaborators} 
                 maxVisible={2}
                 size="sm"
               />
