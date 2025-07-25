@@ -454,9 +454,9 @@ export default function Home() {
                 </div>
                 <div className="flex justify-center px-2">
                   <img 
-                    src="/mockup3.png" 
+                    src="/mockup3_no_background.png" 
                     alt="Three phone screens showing data collection interfaces for site info, cross-sections, velocity and sediment" 
-                    className="w-full max-w-4xl h-auto min-h-[300px] sm:min-h-[400px] object-contain"
+                    className="w-full max-w-6xl h-auto min-h-[400px] sm:min-h-[500px] lg:min-h-[600px] object-contain scale-110 sm:scale-125 lg:scale-150"
                   />
                 </div>
               </div>
