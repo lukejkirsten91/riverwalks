@@ -232,15 +232,31 @@ const TutorialTooltip: React.FC<{
         const finalTop = Math.max(safeAreaTop, Math.min(top, window.innerHeight - tooltipRect.height - safeAreaBottom));
         const finalLeft = Math.max(padding, Math.min(left, window.innerWidth - finalTooltipWidth - padding));
         
-        setTooltipStyle({
-          position: 'fixed',
-          top: `${finalTop}px`,
-          left: `${finalLeft}px`,
-          zIndex: 10002,
-          width: `${finalTooltipWidth}px`,
-          maxWidth: 'none', // Override any inherited max-width
-          boxSizing: 'border-box', // Ensure padding doesn't add to width
-        });
+        if (isProblematicStep) {
+          // For problematic steps, use a completely different approach
+          setTooltipStyle({
+            position: 'fixed',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            zIndex: 10002,
+            width: 'calc(100vw - 32px)', // Full width minus 16px padding on each side
+            maxWidth: '320px',
+            boxSizing: 'border-box',
+            overflow: 'hidden',
+          });
+        } else {
+          setTooltipStyle({
+            position: 'fixed',
+            top: `${finalTop}px`,
+            left: `${finalLeft}px`,
+            zIndex: 10002,
+            width: `${finalTooltipWidth}px`,
+            maxWidth: 'none', // Override any inherited max-width
+            boxSizing: 'border-box', // Ensure padding doesn't add to width
+            overflow: 'hidden', // Prevent any content from extending beyond bounds
+          });
+        }
         return;
       }
 
