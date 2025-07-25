@@ -16,31 +16,59 @@ function TabButton({ id, label, count, icon, isActive, onClick }: TabButtonProps
     <button
       onClick={onClick}
       className={`
-        relative rounded-lg font-medium transition-all duration-300 flex items-center justify-center min-w-0 flex-shrink-0
+        relative rounded-lg font-medium transition-all duration-300 ease-out flex items-center justify-center min-w-0 flex-shrink-0 overflow-hidden
         ${isActive 
           ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/25' 
           : 'text-gray-600 hover:text-gray-800 hover:bg-gray-100'
         }
-        /* Mobile: Icon only with fixed size */
-        w-12 h-12 sm:w-auto sm:h-auto sm:px-4 sm:py-2.5 sm:gap-2
+        /* Mobile: Dynamic width based on active state */
+        ${isActive ? 'w-auto px-3' : 'w-12'} h-12 
+        /* Desktop: Always full width */
+        sm:w-auto sm:px-4 sm:py-2.5 sm:h-auto
       `}
     >
-      <div className="flex items-center gap-2">
-        {icon}
-        {/* Label: Hidden on mobile, visible on desktop */}
-        <span className="hidden sm:inline truncate">{label}</span>
-        {/* Count badge: Hidden on mobile unless active, always visible on desktop */}
-        {count > 0 && (
-          <span className={`
-            rounded-full text-xs font-semibold min-w-[1.5rem] text-center
-            ${isActive 
-              ? 'bg-white/20 text-white px-2 py-0.5' 
-              : 'bg-gray-200 text-gray-600 px-2 py-0.5'
-            }
-            ${isActive ? 'sm:inline' : 'hidden sm:inline'}
-          `}>
-            {count}
+      <div className="flex items-center gap-2 whitespace-nowrap">
+        {/* Icon - always visible */}
+        <div className="flex-shrink-0">
+          {icon}
+        </div>
+        
+        {/* Label with drawer animation on mobile */}
+        <div className={`
+          overflow-hidden transition-all duration-300 ease-out
+          ${isActive 
+            ? 'max-w-[120px] opacity-100' 
+            : 'max-w-0 opacity-0'
+          }
+          /* Always visible on desktop */
+          sm:max-w-none sm:opacity-100
+        `}>
+          <span className="text-sm font-medium">
+            {label}
           </span>
+        </div>
+        
+        {/* Count badge with animation */}
+        {count > 0 && (
+          <div className={`
+            overflow-hidden transition-all duration-300 ease-out flex-shrink-0
+            ${isActive 
+              ? 'max-w-[40px] opacity-100 ml-1' 
+              : 'max-w-0 opacity-0 ml-0'
+            }
+            /* Always visible on desktop */
+            sm:max-w-none sm:opacity-100 sm:ml-0
+          `}>
+            <span className={`
+              rounded-full text-xs font-semibold min-w-[1.5rem] text-center px-2 py-0.5
+              ${isActive 
+                ? 'bg-white/20 text-white' 
+                : 'bg-gray-200 text-gray-600'
+              }
+            `}>
+              {count}
+            </span>
+          </div>
         )}
       </div>
     </button>
