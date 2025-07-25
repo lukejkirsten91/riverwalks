@@ -464,6 +464,71 @@ export default function Home() {
               </div>
             )}
 
+            {/* Report Preview Section */}
+            {!user && (
+              <div className="mb-8">
+                <div className="text-center mb-6">
+                  <h2 className="text-2xl sm:text-3xl font-bold text-white mb-3">
+                    <span className="text-cyan-300 font-bold">GCSE-ready</span> automated reports
+                  </h2>
+                  <p className="text-white/80 text-base max-w-2xl mx-auto">
+                    Skip the manual work. Get <span className="text-blue-200 font-bold">coursework-ready charts</span> and 
+                    <span className="text-teal-200 font-bold"> analysis</span> that would take hours to create by hand.
+                  </p>
+                </div>
+                
+                {/* Interactive Stacked Images */}
+                <div className="relative flex justify-center mb-6">
+                  <div className="relative w-72 sm:w-80 md:w-96 h-auto">
+                    <div className="report-stack cursor-pointer" onClick={() => {
+                      const front = document.querySelector('.report-front') as HTMLImageElement;
+                      if (front?.src.includes('scatter1')) {
+                        front.src = '/scatter2.jpg';
+                        front.alt = 'River data visualization report';
+                      } else if (front?.src.includes('scatter2')) {
+                        front.src = '/scatter3.jpg';
+                        front.alt = 'River analysis scatter plot report';
+                      } else {
+                        front.src = '/scatter1.jpg';
+                        front.alt = 'Professional river study report';
+                      }
+                    }}>
+                      {/* Back image */}
+                      <img 
+                        src="/scatter3.jpg" 
+                        alt="River analysis report" 
+                        className="report-image absolute top-4 left-4 w-full h-auto rounded-lg shadow-lg transform rotate-3 opacity-80 transition-all duration-300"
+                      />
+                      {/* Middle image */}
+                      <img 
+                        src="/scatter2.jpg" 
+                        alt="River data report" 
+                        className="report-image absolute top-2 left-2 w-full h-auto rounded-lg shadow-lg transform -rotate-2 opacity-90 transition-all duration-300"
+                      />
+                      {/* Front image */}
+                      <img 
+                        src="/scatter1.jpg" 
+                        alt="Professional river study report" 
+                        className="report-image report-front relative w-full h-auto rounded-lg shadow-xl transform hover:scale-105 transition-all duration-300 z-10"
+                      />
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Download CTA */}
+                <div className="text-center">
+                  <a
+                    href="/report_to_download.pdf"
+                    download
+                    className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-500 to-teal-500 hover:from-blue-600 hover:to-teal-600 text-white px-6 py-3 rounded-lg font-medium transition-all hover:scale-105 shadow-lg"
+                  >
+                    📊 Download Example Report
+                  </a>
+                  <p className="text-white/60 text-sm mt-2">See what your data becomes with premium reports</p>
+                </div>
+              </div>
+            )}
+
             {/* No Mobile, No Problem section - after data collection */}
             {!user && (
               <div className="bg-green-600/90 backdrop-blur-sm border border-green-400/60 rounded-xl p-4 mb-8 max-w-2xl mx-auto">
@@ -510,59 +575,6 @@ export default function Home() {
         {!user && (
           <div ref={metricsRef} className="pt-4 pb-12 px-4 sm:px-6 lg:px-8">
             <LiveMetrics />
-          </div>
-        )}
-
-        {/* Report Preview Section */}
-        {!user && (
-          <div className="pt-8 pb-12 px-4 sm:px-6 lg:px-8">
-            <div className="max-w-4xl mx-auto">
-              <div className="text-center mb-12">
-                <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
-                  <span className="text-cyan-300 font-bold">Professional</span> automated reports
-                </h2>
-                <p className="text-white/80 text-lg max-w-2xl mx-auto">
-                  Skip the manual work. Get <span className="text-blue-200 font-bold">publication-ready charts</span> and 
-                  <span className="text-teal-200 font-bold"> analysis</span> that would take hours to create by hand.
-                </p>
-              </div>
-              
-              {/* Stacked Images */}
-              <div className="relative flex justify-center">
-                <div className="relative">
-                  {/* Back image */}
-                  <img 
-                    src="/scatter3.jpg" 
-                    alt="River analysis scatter plot report" 
-                    className="absolute top-4 left-4 w-72 sm:w-80 md:w-96 h-auto rounded-lg shadow-lg transform rotate-3 opacity-80"
-                  />
-                  {/* Middle image */}
-                  <img 
-                    src="/scatter2.jpg" 
-                    alt="River data visualization report" 
-                    className="absolute top-2 left-2 w-72 sm:w-80 md:w-96 h-auto rounded-lg shadow-lg transform -rotate-2 opacity-90"
-                  />
-                  {/* Front image */}
-                  <img 
-                    src="/scatter1.jpg" 
-                    alt="Professional river study report" 
-                    className="relative w-72 sm:w-80 md:w-96 h-auto rounded-lg shadow-xl transform hover:scale-105 transition-transform z-10"
-                  />
-                </div>
-              </div>
-              
-              {/* Download CTA */}
-              <div className="text-center mt-8">
-                <a
-                  href="/report_to_download.pdf"
-                  download
-                  className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-500 to-teal-500 hover:from-blue-600 hover:to-teal-600 text-white px-6 py-3 rounded-lg font-medium transition-all hover:scale-105 shadow-lg"
-                >
-                  📊 Download Example Report
-                </a>
-                <p className="text-white/60 text-sm mt-2">See what your data becomes with premium reports</p>
-              </div>
-            </div>
           </div>
         )}
 
