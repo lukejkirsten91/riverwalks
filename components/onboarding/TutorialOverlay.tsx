@@ -297,7 +297,7 @@ const TutorialTooltip: React.FC<{
   }, [targetElement, step.position, isMobile]);
 
   const tooltipClasses = isMobile 
-    ? "w-full bg-white rounded-lg shadow-2xl border border-gray-200 p-3 animate-in slide-in-from-bottom-4 fade-in-0 duration-500 ease-out"
+    ? "bg-white rounded-lg shadow-2xl border border-gray-200 p-3 animate-in slide-in-from-bottom-4 fade-in-0 duration-500 ease-out"
     : "max-w-sm bg-white rounded-xl shadow-xl border border-gray-200 p-6 animate-in fade-in-0 zoom-in-95 duration-500 ease-out transform";
 
   return (
