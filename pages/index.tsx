@@ -421,24 +421,49 @@ export default function Home() {
               <div className="mb-8">
                 <div className="text-center mb-6">
                   <h2 className="text-2xl sm:text-3xl font-bold text-white mb-3">
-                    Manage your Riverwalks
+                    <span className="text-blue-300">Manage</span> your <span className="text-green-300">Riverwalks</span>
                   </h2>
                   <p className="text-white/80 text-base max-w-xl mx-auto">
-                    Access your river studies anywhere with our mobile-optimized interface. 
-                    View sites, collect data, and track progress all from your phone.
+                    Access your <span className="text-blue-200 font-medium">river studies</span> anywhere with our mobile-optimized interface. 
+                    View <span className="text-green-200 font-medium">sites</span>, collect <span className="text-purple-200 font-medium">data</span>, and track <span className="text-yellow-200 font-medium">progress</span> all from your phone.
                   </p>
                 </div>
                 <div className="flex justify-center">
                   <img 
                     src="/mockup1.png" 
                     alt="Riverwalks mobile app interface showing riverwalk management" 
-                    className="max-w-sm w-full h-auto rounded-xl shadow-modern drop-shadow-lg"
+                    className="max-w-sm w-full h-auto"
                   />
                 </div>
               </div>
             )}
 
-            {/* No Mobile, No Problem section - after CTA */}
+            {/* Data Collection Preview Section */}
+            {!user && (
+              <div className="mb-8">
+                <div className="text-center mb-6">
+                  <h2 className="text-2xl sm:text-3xl font-bold text-white mb-3">
+                    <span className="text-purple-300">Collect</span> comprehensive <span className="text-blue-300">river data</span>
+                  </h2>
+                  <p className="text-white/80 text-base max-w-2xl mx-auto">
+                    Gather detailed measurements for <span className="text-green-200 font-medium">site information</span>, 
+                    <span className="text-blue-200 font-medium"> cross-sections</span>, 
+                    <span className="text-purple-200 font-medium"> velocity</span>, and 
+                    <span className="text-yellow-200 font-medium"> sediment analysis</span>. 
+                    Everything you need for professional river studies.
+                  </p>
+                </div>
+                <div className="flex justify-center">
+                  <img 
+                    src="/mockup3.png" 
+                    alt="Three phone screens showing data collection interfaces for site info, cross-sections, velocity and sediment" 
+                    className="max-w-2xl w-full h-auto"
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* No Mobile, No Problem section - after data collection */}
             {!user && (
               <div className="bg-green-600/90 backdrop-blur-sm border border-green-400/60 rounded-xl p-4 mb-8 max-w-2xl mx-auto">
                 <p className="text-green-50 text-lg font-bold mb-1">📱 No Mobile, No Problem!</p>
