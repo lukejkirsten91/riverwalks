@@ -1,6 +1,5 @@
 import AuthCard from '../components/auth/auth-card';
 import { LiveMetrics } from '../components/landing/LiveMetrics';
-import { InteractivePreview } from '../components/landing/InteractivePreview';
 import { PWAInstallButton } from '../components/pwa/PWAInstallButton';
 import { MapPin, BarChart3, Users, Waves, ChevronDown } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
@@ -466,19 +465,25 @@ export default function Home() {
           </div>
         )}
 
-        {/* Interactive Preview Section */}
+        {/* Mobile App Preview Section */}
         {!user && (
           <div ref={previewRef} className="pt-12 pb-8 px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
               <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
-                Experience it Yourself
+                Manage your Riverwalks
               </h2>
               <p className="text-white/80 text-lg max-w-2xl mx-auto">
-                Jump in with real data from the River Dart. Add your own measurements 
-                and watch professional reports generate in real-time. Or generate print templates for offline data collection.
+                Access your river studies anywhere with our mobile-optimized interface. 
+                View sites, collect data, and track progress all from your phone.
               </p>
             </div>
-            <InteractivePreview onSignIn={handleSignIn} />
+            <div className="flex justify-center">
+              <img 
+                src="/mockup1.png" 
+                alt="Riverwalks mobile app interface showing riverwalk management" 
+                className="max-w-sm w-full h-auto rounded-xl shadow-modern drop-shadow-lg"
+              />
+            </div>
           </div>
         )}
 
