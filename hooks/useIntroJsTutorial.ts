@@ -77,7 +77,7 @@ const INTRO_JS_STEPS: TutorialStep[] = [
   },
   {
     id: 'print-template',
-    element: '[data-tutorial="export-template"]',
+    element: '[data-tutorial="print-template"]',
     intro: `
       <div class="tutorial-step">
         <h3>Print Template</h3>
@@ -90,7 +90,7 @@ const INTRO_JS_STEPS: TutorialStep[] = [
   },
   {
     id: 'export',
-    element: '[data-tutorial="export"]',
+    element: '[data-tutorial="generate-report"]',
     intro: `
       <div class="tutorial-step">
         <h3>Export Data</h3>
