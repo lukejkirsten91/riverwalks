@@ -225,17 +225,15 @@ const TutorialTooltip: React.FC<{
         // Ensure tooltip never goes off-screen with strict bounds
         const finalTop = Math.max(safeAreaTop, Math.min(top, window.innerHeight - tooltipRect.height - safeAreaBottom));
         const finalLeft = padding;
-        const finalRight = padding;
-        const maxWidth = Math.min(availableWidth, 400); // Cap max width on mobile
+        const calculatedWidth = window.innerWidth - (padding * 2);
+        const maxWidth = Math.min(calculatedWidth, 400); // Cap max width on mobile
         
         setTooltipStyle({
           position: 'fixed',
           top: `${finalTop}px`,
           left: `${finalLeft}px`,
-          right: `${finalRight}px`,
           zIndex: 10002,
-          maxWidth: `${maxWidth}px`,
-          width: `calc(100vw - ${padding * 2}px)`, // Ensure it never exceeds viewport
+          width: `${maxWidth}px`, // Use exact pixel width instead of calc()
         });
         return;
       }
