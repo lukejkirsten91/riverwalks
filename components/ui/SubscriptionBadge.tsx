@@ -56,14 +56,24 @@ export function SubscriptionBadge({ subscription, userEmail, compact = false }: 
   // Calculate days remaining for annual subscriptions
   const getDaysRemaining = () => {
     if (!subscription.currentPeriodEnd) {
-      return 0;
+      // If no end date available for annual subscription, assume it's valid for now
+      console.warn('No currentPeriodEnd available for annual subscription');
+      return 365; // Default to showing as active
     }
     
     const endDate = new Date(subscription.currentPeriodEnd);
     const now = new Date();
+    
+    // Check if the date is valid
+    if (isNaN(endDate.getTime())) {
+      console.warn('Invalid currentPeriodEnd date:', subscription.currentPeriodEnd);
+      return 365; // Default to showing as active
+    }
+    
     const timeDiff = endDate.getTime() - now.getTime();
     const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
     
+    console.log('Subscription end date:', endDate, 'Days remaining:', daysDiff);
     return Math.max(0, daysDiff);
   };
 

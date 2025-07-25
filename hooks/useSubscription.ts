@@ -269,12 +269,18 @@ export function useSubscription() {
 
         // Check if subscription is expired for annual subscriptions
         let isSubscribed = !!subscription;
-        if (subscription?.subscription_type === 'annual' && subscription?.current_period_end) {
-          const endDate = new Date(subscription.current_period_end);
-          const now = new Date();
-          if (endDate < now) {
-            console.log('⚠️ Annual subscription has expired:', subscription.current_period_end);
-            isSubscribed = false;
+        if (subscription?.subscription_type === 'annual') {
+          if (subscription?.current_period_end) {
+            const endDate = new Date(subscription.current_period_end);
+            const now = new Date();
+            // Only mark as expired if we have a valid end date and it's in the past
+            if (!isNaN(endDate.getTime()) && endDate < now) {
+              console.log('⚠️ Annual subscription has expired:', subscription.current_period_end);
+              isSubscribed = false;
+            }
+          } else {
+            console.log('⚠️ Annual subscription missing end date, treating as active');
+            // If no end date available, assume subscription is still active
           }
         }
         

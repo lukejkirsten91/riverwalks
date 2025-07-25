@@ -257,7 +257,7 @@ export function RiverWalkList({
               <button
                 onClick={tutorialActive ? undefined : () => onManageSites(riverWalk)}
                 disabled={tutorialActive}
-                className="bg-primary/10 hover:bg-primary/20 text-primary px-3 py-2 rounded-lg font-medium transition-colors border border-primary/20 shadow-modern hover:shadow-modern-lg touch-manipulation flex-1 sm:flex-none flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-2 rounded-lg font-medium transition-colors border border-slate-200 shadow-modern hover:shadow-modern-lg touch-manipulation flex-1 sm:flex-none flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed text-sm"
                 data-tutorial="manage-sites"
               >
                 <MapPin className="w-4 h-4 mr-1" />
@@ -269,7 +269,7 @@ export function RiverWalkList({
               <button
                 onClick={tutorialActive ? undefined : () => onGenerateReport(riverWalk)}
                 disabled={tutorialActive}
-                className="bg-primary/10 hover:bg-primary/20 text-primary px-3 py-2 rounded-lg font-medium transition-colors border border-primary/20 shadow-modern hover:shadow-modern-lg touch-manipulation flex-1 sm:flex-none flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-2 rounded-lg font-medium transition-colors border border-slate-200 shadow-modern hover:shadow-modern-lg touch-manipulation flex-1 sm:flex-none flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed text-sm"
                 data-tutorial="generate-report"
               >
                 <BarChart3 className="w-4 h-4 mr-1" />
@@ -282,7 +282,8 @@ export function RiverWalkList({
                   onUpgradePrompt('reports');
                 }}
                 disabled={tutorialActive}
-                className="bg-primary/10 hover:bg-primary/20 text-primary px-3 py-2 rounded-lg font-medium transition-colors border border-primary/20 shadow-modern hover:shadow-modern-lg touch-manipulation flex-1 sm:flex-none flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-2 rounded-lg font-medium transition-colors border border-slate-200 shadow-modern hover:shadow-modern-lg touch-manipulation flex-1 sm:flex-none flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                data-tutorial="generate-report"
               >
                 <BarChart3 className="w-4 h-4 mr-1" />
                 <span className="truncate">Generate Report</span>
@@ -298,7 +299,7 @@ export function RiverWalkList({
             >
               {templateLoading === riverWalk.id ? (
                 <>
-                  <div className="w-4 h-4 mr-1 animate-spin rounded-full border-2 border-primary/30 border-t-primary"></div>
+                  <div className="w-4 h-4 mr-1 animate-spin rounded-full border-2 border-slate-300 border-t-slate-600"></div>
                   <span className="truncate">Generating...</span>
                 </>
               ) : (
@@ -313,7 +314,8 @@ export function RiverWalkList({
               <button
                 onClick={tutorialActive ? undefined : () => onShare?.(riverWalk)}
                 disabled={tutorialActive}
-                className="bg-primary/10 hover:bg-primary/20 text-primary px-3 py-2 rounded-lg font-medium transition-colors border border-primary/20 shadow-modern hover:shadow-modern-lg touch-manipulation flex-1 sm:flex-none flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-2 rounded-lg font-medium transition-colors border border-slate-200 shadow-modern hover:shadow-modern-lg touch-manipulation flex-1 sm:flex-none flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                data-tutorial="collaborate"
               >
                 <Share className="w-4 h-4 mr-1" />
                 <span className="truncate">Share</span>
