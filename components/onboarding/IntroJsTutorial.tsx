@@ -273,17 +273,6 @@ export function IntroJsTutorial({
           padding: 0 4px;
         }
         
-        /* Force problematic tutorial steps to use safe positioning on mobile */
-        .introjs-tooltip.force-center-mobile {
-          left: 16px !important;
-          right: 16px !important;
-          top: 20px !important;
-          bottom: auto !important;
-          transform: none !important;
-          width: auto !important;
-          max-width: none !important;
-          margin: 0 !important;
-        }
       }
     `;
     
@@ -310,9 +299,7 @@ export function IntroJsTutorial({
     tooltipPosition: 'auto',
     overlayOpacity: 0.5,
     autoPosition: true,
-    positionPrecedence: typeof window !== 'undefined' && window.innerWidth <= 768 
-      ? ['bottom', 'top'] // Mobile: only top/bottom positioning
-      : ['bottom', 'top', 'right', 'left'], // Desktop: all positions
+    positionPrecedence: ['bottom', 'top', 'right', 'left']
     tooltipClass: 'custom-introjs-tooltip',
     helperElementPadding: 10,
     highlightClass: 'introjs-custom-highlight'
@@ -355,33 +342,6 @@ export function IntroJsTutorial({
           tooltip.removeAttribute('data-action-required');
         }
         
-        // Add special class for ALL steps on mobile to prevent any overflow
-        // Use multiple delays to ensure proper positioning
-        if (typeof window !== 'undefined' && window.innerWidth <= 768) {
-          // Apply immediately
-          tooltip.classList.add('force-center-mobile');
-          
-          // Also apply after short delays to handle timing issues
-          setTimeout(() => {
-            const tooltip = document.querySelector('.introjs-tooltip') as HTMLElement;
-            if (tooltip) {
-              tooltip.classList.add('force-center-mobile');
-              // Force a repaint to ensure positioning takes effect
-              tooltip.style.display = 'none';
-              tooltip.offsetHeight; // Force reflow
-              tooltip.style.display = '';
-            }
-          }, 50);
-          
-          setTimeout(() => {
-            const tooltip = document.querySelector('.introjs-tooltip');
-            if (tooltip) {
-              tooltip.classList.add('force-center-mobile');
-            }
-          }, 200);
-        } else {
-          tooltip.classList.remove('force-center-mobile');
-        }
       }
     }
     

@@ -220,7 +220,7 @@ export function RiverWalkList({
       </div>
 
       {/* Action Buttons */}
-      <div className="flex gap-2 flex-wrap">
+      <div className="flex gap-2 flex-col sm:flex-row sm:flex-wrap">
         {isArchived ? (
           // Archived view: Restore and Delete buttons
           archiveLoading === riverWalk.id ? null : (
