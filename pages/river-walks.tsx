@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { createPortal } from 'react-dom';
 import { supabase } from '../lib/supabase';
+import { isPWAMode } from '../lib/pwaUtils';
 import { LogOut, MapPin, User as UserIcon, Users, UserCheck, Crown, Settings, MessageCircle, Lightbulb } from 'lucide-react';
 import { isCurrentUserAdmin } from '../lib/client-auth';
 import {
@@ -92,25 +93,57 @@ export default function RiverWalksPage() {
   // Check if user is authenticated
   useEffect(() => {
     const checkUser = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
+      try {
+        const {
+          data: { session },
+          error
+        } = await supabase.auth.getSession();
 
-      if (!session) {
-        router.push('/');
-        return;
-      }
+        // Handle offline authentication for PWA
+        if (error && isPWAMode()) {
+          console.warn('🔒 PWA offline mode - checking cached auth state');
+          
+          // Try to get cached user data from localStorage
+          const cachedAuth = localStorage.getItem('riverwalks-pwa-auth');
+          if (cachedAuth) {
+            try {
+              const authData = JSON.parse(cachedAuth);
+              if (authData && authData.user) {
+                console.log('🔒 Using cached authentication for PWA offline mode');
+                setUser(authData.user);
+                setIsAdmin(false); // Cannot check admin status offline
+                return;
+              }
+            } catch (e) {
+              console.warn('Failed to parse cached auth data');
+            }
+          }
+        }
 
-      setUser(session.user);
-      
-      // Check admin status
-      const adminStatus = await isCurrentUserAdmin();
-      setIsAdmin(adminStatus);
+        if (!session) {
+          // For PWA mode, show a more app-like offline message
+          if (isPWAMode()) {
+            console.log('🔒 PWA mode requires authentication - redirecting to sign-in');
+          }
+          router.push('/');
+          return;
+        }
 
-      // Check for pending invite token from OAuth flow
-      const storedToken = localStorage.getItem('pending_invite_token');
-      if (storedToken && collaborationEnabled && acceptInvite) {
-        localStorage.removeItem('pending_invite_token');
+        setUser(session.user);
+        
+        // Check admin status (skip if offline to prevent errors)
+        try {
+          const adminStatus = await isCurrentUserAdmin();
+          setIsAdmin(adminStatus);
+        } catch (adminError) {
+          console.warn('Could not check admin status:', adminError);
+          setIsAdmin(false);
+        }
+
+        // Check for pending invite token from OAuth flow
+        const storedToken = localStorage.getItem('pending_invite_token');
+        if (storedToken && collaborationEnabled && acceptInvite) {
+          localStorage.removeItem('pending_invite_token');
         
         try {
           const result = await acceptInvite(storedToken);
@@ -158,6 +191,16 @@ export default function RiverWalksPage() {
         const userTutorial = user?.user_metadata?.tutorial;
         if (!userTutorial?.hasSeenTutorial) {
           setTimeout(() => startTutorial(), 1000);
+        }
+      }
+      } catch (authError) {
+        console.error('Authentication check failed:', authError);
+        // In PWA mode, try to gracefully handle auth errors
+        if (isPWAMode()) {
+          console.warn('🔒 PWA auth error - may be offline or auth expired');
+        } else {
+          // For web mode, redirect to login
+          router.push('/');
         }
       }
     };

@@ -3,15 +3,19 @@ import { LiveMetrics } from '../components/landing/LiveMetrics';
 import { InteractivePreview } from '../components/landing/InteractivePreview';
 import { MapPin, BarChart3, Users, Waves, ChevronDown } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
+import { useRouter } from 'next/router';
 import { supabase } from '../lib/supabase';
 import { offlineDataService } from '../lib/offlineDataService';
+import { isPWAMode, shouldRedirectAuthenticatedUser } from '../lib/pwaUtils';
 import type { User } from '@supabase/supabase-js';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/dist/ScrollTrigger';
 
 export default function Home() {
+  const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [showInteractiveDemo, setShowInteractiveDemo] = useState(false);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const heroRef = useRef(null);
   const metricsRef = useRef(null);
   const previewRef = useRef(null);
@@ -24,11 +28,22 @@ export default function Home() {
     const { data: authListener } = supabase.auth.onAuthStateChange(
       (event, session) => {
         if (!isMounted) return;
-        setUser(session?.user || null);
+        
+        const newUser = session?.user || null;
+        setUser(newUser);
+        
+        // Handle PWA redirect for authenticated users
+        if (newUser && shouldRedirectAuthenticatedUser(newUser)) {
+          console.log('🚀 PWA mode detected - redirecting authenticated user to river-walks');
+          router.push('/river-walks');
+          return;
+        }
+        
+        setIsCheckingAuth(false);
       }
     );
 
-    // Initial session check with error handling
+    // Initial session check with error handling and PWA redirect
     const checkInitialSession = async () => {
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
@@ -37,14 +52,26 @@ export default function Home() {
         if (error) {
           console.error('Index page session check error:', error);
           setUser(null);
+          setIsCheckingAuth(false);
           return;
         }
         
-        setUser(session?.user || null);
+        const sessionUser = session?.user || null;
+        setUser(sessionUser);
+        
+        // Handle PWA redirect for authenticated users on initial load
+        if (sessionUser && shouldRedirectAuthenticatedUser(sessionUser)) {
+          console.log('🚀 PWA mode detected on initial load - redirecting to river-walks');
+          router.push('/river-walks');
+          return;
+        }
+        
+        setIsCheckingAuth(false);
       } catch (error) {
         console.error('Index page session check exception:', error);
         if (!isMounted) return;
         setUser(null);
+        setIsCheckingAuth(false);
       }
     };
 
@@ -54,7 +81,7 @@ export default function Home() {
       isMounted = false;
       authListener?.subscription.unsubscribe();
     };
-  }, []);
+  }, [router]);
 
   useEffect(() => {
     // Register ScrollTrigger plugin
@@ -119,10 +146,20 @@ export default function Home() {
     // Use the custom domain for OAuth callback to avoid domain mismatches
     const redirectUrl = 'https://www.riverwalks.co.uk/api/auth/callback';
     
+    // Add PWA context to the redirect for better handling
+    const redirectParams = new URLSearchParams();
+    if (isPWAMode()) {
+      redirectParams.set('pwa', 'true');
+    }
+    
+    const finalRedirectUrl = redirectParams.toString() 
+      ? `${redirectUrl}?${redirectParams.toString()}`
+      : redirectUrl;
+    
     await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: redirectUrl,
+        redirectTo: finalRedirectUrl,
         queryParams: {
           prompt: 'select_account',
           access_type: 'online'
@@ -137,6 +174,22 @@ export default function Home() {
     await supabase.auth.signOut();
     window.location.reload(); // Force page refresh to clear cache
   };
+
+  // Show loading state while checking authentication in PWA mode
+  if (isCheckingAuth && isPWAMode()) {
+    return (
+      <div className="gradient-hero flex items-center justify-center" style={{ minHeight: '100vh' }}>
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-white/30 border-t-white rounded-full animate-spin mx-auto mb-4"></div>
+          <div className="flex items-center gap-2 text-white">
+            <img src="/logo.png" alt="Riverwalks" className="h-8 w-8" />
+            <span className="text-xl font-semibold">Riverwalks</span>
+          </div>
+          <p className="text-white/80 text-sm mt-2">Loading your account...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="gradient-hero" style={{ minHeight: '100vh', overflow: 'visible' }}>

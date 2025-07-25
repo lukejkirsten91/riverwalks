@@ -73,9 +73,16 @@ export default async function handler(
     }
   }
 
-  // Check for redirect_to parameter, default to river-walks
-  const redirectTo = typeof req.query.redirect_to === 'string' ? req.query.redirect_to : '/river-walks';
+  // Check for redirect_to parameter and PWA context
+  let redirectTo = typeof req.query.redirect_to === 'string' ? req.query.redirect_to : '/river-walks';
   
-  logger.info('OAuth completed, redirecting user');
+  // If PWA context detected, ensure we go to river-walks
+  const isPWA = req.query.pwa === 'true';
+  if (isPWA) {
+    redirectTo = '/river-walks';
+    logger.info('PWA context detected, redirecting to river-walks');
+  }
+  
+  logger.info('OAuth completed, redirecting user', { redirectTo, isPWA });
   res.redirect(redirectTo);
 }
