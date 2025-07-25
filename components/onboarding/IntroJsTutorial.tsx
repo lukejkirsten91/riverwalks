@@ -272,6 +272,18 @@ export function IntroJsTutorial({
           font-size: 10px;
           padding: 0 4px;
         }
+        
+        /* Force problematic tutorial steps to use safe positioning on mobile */
+        .introjs-tooltip.force-center-mobile {
+          left: 16px !important;
+          right: 16px !important;
+          top: 20px !important;
+          bottom: auto !important;
+          transform: none !important;
+          width: auto !important;
+          max-width: none !important;
+          margin: 0 !important;
+        }
       }
     `;
     
@@ -341,6 +353,15 @@ export function IntroJsTutorial({
           tooltip.setAttribute('data-action-required', 'true');
         } else {
           tooltip.removeAttribute('data-action-required');
+        }
+        
+        // Add special class for problematic steps on mobile
+        if (typeof window !== 'undefined' && window.innerWidth <= 768) {
+          if (currentStep.id === 'export' || currentStep.id === 'print-template') {
+            tooltip.classList.add('force-center-mobile');
+          } else {
+            tooltip.classList.remove('force-center-mobile');
+          }
         }
       }
     }
