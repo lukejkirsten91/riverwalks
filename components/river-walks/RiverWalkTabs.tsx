@@ -16,26 +16,33 @@ function TabButton({ id, label, count, icon, isActive, onClick }: TabButtonProps
     <button
       onClick={onClick}
       className={`
-        relative px-4 py-2.5 rounded-lg font-medium text-sm transition-all duration-200 flex items-center gap-2 min-w-0 flex-shrink-0
+        relative rounded-lg font-medium transition-all duration-300 flex items-center justify-center min-w-0 flex-shrink-0
         ${isActive 
           ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/25' 
           : 'text-gray-600 hover:text-gray-800 hover:bg-gray-100'
         }
+        /* Mobile: Icon only with fixed size */
+        w-12 h-12 sm:w-auto sm:h-auto sm:px-4 sm:py-2.5 sm:gap-2
       `}
     >
-      {icon}
-      <span className="truncate">{label}</span>
-      {count > 0 && (
-        <span className={`
-          px-2 py-0.5 rounded-full text-xs font-semibold min-w-[1.5rem] text-center
-          ${isActive 
-            ? 'bg-white/20 text-white' 
-            : 'bg-gray-200 text-gray-600'
-          }
-        `}>
-          {count}
-        </span>
-      )}
+      <div className="flex items-center gap-2">
+        {icon}
+        {/* Label: Hidden on mobile, visible on desktop */}
+        <span className="hidden sm:inline truncate">{label}</span>
+        {/* Count badge: Hidden on mobile unless active, always visible on desktop */}
+        {count > 0 && (
+          <span className={`
+            rounded-full text-xs font-semibold min-w-[1.5rem] text-center
+            ${isActive 
+              ? 'bg-white/20 text-white px-2 py-0.5' 
+              : 'bg-gray-200 text-gray-600 px-2 py-0.5'
+            }
+            ${isActive ? 'sm:inline' : 'hidden sm:inline'}
+          `}>
+            {count}
+          </span>
+        )}
+      </div>
     </button>
   );
 }
@@ -116,10 +123,28 @@ export function RiverWalkTabs({
   // Filter out tabs with zero items (except "All")
   const visibleTabs = tabs.filter(tab => tab.id === 'all' || tab.count > 0);
 
+  // Get active tab info for mobile display
+  const activeTabInfo = visibleTabs.find(tab => tab.id === activeTab);
+
   return (
     <div className="mb-6">
+      {/* Mobile: Active tab label */}
+      <div className="sm:hidden mb-3 text-center">
+        <h2 className="text-lg font-semibold text-gray-800 flex items-center justify-center gap-2">
+          {activeTabInfo?.icon}
+          <span className="animate-in slide-in-from-left-2 duration-300">
+            {activeTabInfo?.label}
+          </span>
+          {activeTabInfo && activeTabInfo.count > 0 && (
+            <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-sm font-medium animate-in zoom-in-50 duration-300">
+              {activeTabInfo.count}
+            </span>
+          )}
+        </h2>
+      </div>
+
       {/* Tab Navigation */}
-      <div className="flex items-center gap-2 p-1 bg-gray-50 rounded-xl overflow-x-auto scrollbar-hide">
+      <div className="flex items-center justify-center sm:justify-start gap-1 sm:gap-2 p-1 bg-gray-50 rounded-xl">
         {visibleTabs.map((tab) => (
           <TabButton
             key={tab.id}

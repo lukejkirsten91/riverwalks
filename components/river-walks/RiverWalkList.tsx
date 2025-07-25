@@ -106,21 +106,41 @@ export function RiverWalkList({
           
           {/* Status and Collaboration Indicators */}
           <div className="flex items-center gap-2 flex-shrink-0">
-            {/* Collaboration Role Badge */}
-            {riverWalk.collaboration_role && (
-              <span className={`px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1 ${
-                riverWalk.collaboration_role === 'owner' 
-                  ? 'bg-blue-100 text-blue-700' 
-                  : riverWalk.collaboration_role === 'editor'
-                  ? 'bg-green-100 text-green-700'
-                  : 'bg-gray-100 text-gray-700'
-              }`}>
-                {riverWalk.collaboration_role === 'owner' && <Crown className="w-3 h-3" />}
-                {riverWalk.collaboration_role === 'editor' && <Edit className="w-3 h-3" />}
-                {riverWalk.collaboration_role === 'viewer' && <Eye className="w-3 h-3" />}
-                {riverWalk.collaboration_role}
-              </span>
-            )}
+            {/* Ownership/Collaboration Role Badge */}
+            {(() => {
+              // Determine ownership status
+              const isOwner = riverWalk.collaboration_role === 'owner' || 
+                             (!riverWalk.collaboration_role && riverWalk.access_type === 'owned') ||
+                             (!riverWalk.collaboration_role && !riverWalk.access_type);
+              
+              const isEditor = riverWalk.collaboration_role === 'editor';
+              const isViewer = riverWalk.collaboration_role === 'viewer';
+              
+              // Always show a role badge
+              if (isOwner) {
+                return (
+                  <span className="px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1 bg-blue-100 text-blue-700">
+                    <Crown className="w-3 h-3" />
+                    owner
+                  </span>
+                );
+              } else if (isEditor) {
+                return (
+                  <span className="px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1 bg-green-100 text-green-700">
+                    <Edit className="w-3 h-3" />
+                    editor
+                  </span>
+                );
+              } else if (isViewer) {
+                return (
+                  <span className="px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1 bg-gray-100 text-gray-700">
+                    <Eye className="w-3 h-3" />
+                    viewer
+                  </span>
+                );
+              }
+              return null;
+            })()}
             
             {/* Collaborator Avatars */}
             {collaborators?.hasCollaborators && (
