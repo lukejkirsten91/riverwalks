@@ -187,17 +187,16 @@ const TutorialTooltip: React.FC<{
       let left = 0;
 
       if (isMobile) {
-        // On mobile, always use intelligent positioning to prevent going off-screen
+        // On mobile, always center the tooltip horizontally to prevent any overflow issues
         const safeAreaTop = padding + 20; // Account for notch/status bar
         const safeAreaBottom = padding + 80; // Account for mobile bottom bar/home indicator
         const availableHeight = window.innerHeight - safeAreaTop - safeAreaBottom;
-        const availableWidth = window.innerWidth - (padding * 2);
-        const maxWidth = Math.min(availableWidth, 400); // Cap max width on mobile
+        const safeWidth = window.innerWidth - (padding * 2);
+        const tooltipWidth = Math.min(safeWidth, 350); // Conservative max width
         
         if (!targetElement) {
           // Center for steps without target
           top = safeAreaTop + (availableHeight - tooltipRect.height) / 2;
-          left = padding;
         } else {
           const targetRect = targetElement.getBoundingClientRect();
           const availableSpaceAbove = targetRect.top - safeAreaTop;
@@ -219,28 +218,22 @@ const TutorialTooltip: React.FC<{
           else {
             top = window.innerHeight - tooltipRect.height - safeAreaBottom;
           }
-          
-          // For horizontal positioning, check if target is on the right side
-          // If target is on the right half of screen, align tooltip to right edge
-          if (targetRect.left > window.innerWidth * 0.5) {
-            // Position tooltip so its right edge aligns with screen right edge minus padding
-            left = window.innerWidth - maxWidth - padding;
-          } else {
-            // Normal left alignment
-            left = padding;
-          }
         }
+        
+        // Always center horizontally on mobile to avoid any edge issues
+        left = (window.innerWidth - tooltipWidth) / 2;
         
         // Ensure tooltip never goes off-screen with strict bounds
         const finalTop = Math.max(safeAreaTop, Math.min(top, window.innerHeight - tooltipRect.height - safeAreaBottom));
-        const finalLeft = Math.max(padding, Math.min(left, window.innerWidth - maxWidth - padding));
+        const finalLeft = Math.max(padding, Math.min(left, window.innerWidth - tooltipWidth - padding));
         
         setTooltipStyle({
           position: 'fixed',
           top: `${finalTop}px`,
           left: `${finalLeft}px`,
           zIndex: 10002,
-          width: `${maxWidth}px`, // Use exact pixel width instead of calc()
+          width: `${tooltipWidth}px`,
+          maxWidth: 'none', // Override any inherited max-width
         });
         return;
       }
