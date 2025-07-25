@@ -97,8 +97,8 @@ const Spotlight: React.FC<SpotlightProps> = ({ targetElement, overlayRef }) => {
           className="fixed bg-black/50 z-[10000] pointer-events-auto transition-all duration-300 ease-out"
           style={{
             top: `${Math.max(0, rect.top - padding)}px`,
-            left: `${Math.min(window.innerWidth, rect.right + padding)}px`,
-            right: 0,
+            left: `${Math.max(0, Math.min(window.innerWidth - 1, rect.right + padding))}px`,
+            width: `${Math.max(0, window.innerWidth - Math.max(0, Math.min(window.innerWidth - 1, rect.right + padding)))}px`,
             height: `${Math.min(window.innerHeight, rect.bottom + padding) - Math.max(0, rect.top - padding)}px`,
           }}
         />,
@@ -107,10 +107,10 @@ const Spotlight: React.FC<SpotlightProps> = ({ targetElement, overlayRef }) => {
           key="highlight-ring"
           className="fixed border-2 border-blue-400 rounded-lg z-[9999] pointer-events-none animate-pulse"
           style={{
-            top: `${rect.top - padding}px`,
-            left: `${rect.left - padding}px`,
-            width: `${rect.width + padding * 2}px`,
-            height: `${rect.height + padding * 2}px`,
+            top: `${Math.max(0, rect.top - padding)}px`,
+            left: `${Math.max(0, rect.left - padding)}px`,
+            width: `${Math.min(rect.width + padding * 2, window.innerWidth - Math.max(0, rect.left - padding))}px`,
+            height: `${Math.min(rect.height + padding * 2, window.innerHeight - Math.max(0, rect.top - padding))}px`,
             boxShadow: '0 0 20px rgba(59, 130, 246, 0.5), 0 0 40px rgba(59, 130, 246, 0.3)',
             animation: 'tutorial-glow 2s ease-in-out infinite',
           }}
