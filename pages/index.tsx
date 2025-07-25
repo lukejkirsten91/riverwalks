@@ -519,7 +519,9 @@ export default function Home() {
                 <div className="text-center">
                   <a
                     href="/report_to_download.pdf"
-                    download
+                    download="riverwalks-example-report.pdf"
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-500 to-teal-500 hover:from-blue-600 hover:to-teal-600 text-white px-6 py-3 rounded-lg font-medium transition-all hover:scale-105 shadow-lg"
                   >
                     📊 Download Example Report
