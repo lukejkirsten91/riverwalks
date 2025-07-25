@@ -452,12 +452,15 @@ export default function Home() {
                     Everything you need for professional river studies.
                   </p>
                 </div>
-                <div className="flex justify-center px-2">
-                  <img 
-                    src="/mockup3_no_background.png" 
-                    alt="Three phone screens showing data collection interfaces for site info, cross-sections, velocity and sediment" 
-                    className="w-full max-w-6xl h-auto min-h-[400px] sm:min-h-[500px] lg:min-h-[600px] object-contain scale-110 sm:scale-125 lg:scale-150"
-                  />
+                <div className="flex justify-center px-2 overflow-hidden">
+                  <div className="w-full max-w-7xl relative">
+                    <img 
+                      src="/mockup3_no_background.png" 
+                      alt="Three phone screens showing data collection interfaces for site info, cross-sections, velocity and sediment" 
+                      className="w-full h-auto transform scale-150 sm:scale-175 md:scale-200 lg:scale-250 object-contain"
+                      style={{ minHeight: '500px' }}
+                    />
+                  </div>
                 </div>
               </div>
             )}
