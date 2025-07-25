@@ -48,6 +48,18 @@ const Spotlight: React.FC<SpotlightProps> = ({ targetElement, overlayRef }) => {
       return;
     }
 
+    // Check if this is a problematic element and disable spotlight for it
+    const isProblematicElement = targetElement.getAttribute('data-tutorial') === 'generate-report' || 
+                                 targetElement.getAttribute('data-tutorial') === 'print-template';
+    
+    if (isProblematicElement) {
+      // For problematic elements, just show a simple full overlay without spotlight
+      setOverlayElements([
+        <div key="full-overlay-problematic" className="fixed inset-0 bg-black/50 z-[10000] pointer-events-none" />
+      ]);
+      return;
+    }
+
     const updateSpotlight = () => {
       const rect = targetElement.getBoundingClientRect();
       const padding = 12;
@@ -233,15 +245,15 @@ const TutorialTooltip: React.FC<{
         const finalLeft = Math.max(padding, Math.min(left, window.innerWidth - finalTooltipWidth - padding));
         
         if (isProblematicStep) {
-          // For problematic steps, use a completely different approach
+          // For problematic steps, use absolute minimal approach
           setTooltipStyle({
             position: 'fixed',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
+            top: '20px',
+            left: '16px',
+            right: '16px',
             zIndex: 10002,
-            width: 'calc(100vw - 32px)', // Full width minus 16px padding on each side
-            maxWidth: '320px',
+            maxWidth: 'none',
+            width: 'auto',
             boxSizing: 'border-box',
             overflow: 'hidden',
           });
