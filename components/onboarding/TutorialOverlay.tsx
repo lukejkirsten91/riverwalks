@@ -192,6 +192,7 @@ const TutorialTooltip: React.FC<{
         const safeAreaBottom = padding + 80; // Account for mobile bottom bar/home indicator
         const availableHeight = window.innerHeight - safeAreaTop - safeAreaBottom;
         const availableWidth = window.innerWidth - (padding * 2);
+        const maxWidth = Math.min(availableWidth, 400); // Cap max width on mobile
         
         if (!targetElement) {
           // Center for steps without target
@@ -219,14 +220,20 @@ const TutorialTooltip: React.FC<{
             top = window.innerHeight - tooltipRect.height - safeAreaBottom;
           }
           
-          left = padding;
+          // For horizontal positioning, check if target is on the right side
+          // If target is on the right half of screen, align tooltip to right edge
+          if (targetRect.left > window.innerWidth * 0.5) {
+            // Position tooltip so its right edge aligns with screen right edge minus padding
+            left = window.innerWidth - maxWidth - padding;
+          } else {
+            // Normal left alignment
+            left = padding;
+          }
         }
         
         // Ensure tooltip never goes off-screen with strict bounds
         const finalTop = Math.max(safeAreaTop, Math.min(top, window.innerHeight - tooltipRect.height - safeAreaBottom));
-        const finalLeft = padding;
-        const calculatedWidth = window.innerWidth - (padding * 2);
-        const maxWidth = Math.min(calculatedWidth, 400); // Cap max width on mobile
+        const finalLeft = Math.max(padding, Math.min(left, window.innerWidth - maxWidth - padding));
         
         setTooltipStyle({
           position: 'fixed',
