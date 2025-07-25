@@ -355,13 +355,11 @@ export function IntroJsTutorial({
           tooltip.removeAttribute('data-action-required');
         }
         
-        // Add special class for problematic steps on mobile
+        // Add special class for ALL steps on mobile to prevent any overflow
         if (typeof window !== 'undefined' && window.innerWidth <= 768) {
-          if (currentStep.id === 'export' || currentStep.id === 'print-template') {
-            tooltip.classList.add('force-center-mobile');
-          } else {
-            tooltip.classList.remove('force-center-mobile');
-          }
+          tooltip.classList.add('force-center-mobile');
+        } else {
+          tooltip.classList.remove('force-center-mobile');
         }
       }
     }
