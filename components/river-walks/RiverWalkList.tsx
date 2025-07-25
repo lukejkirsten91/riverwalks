@@ -1,9 +1,10 @@
-import { MapPin, Calendar, Globe, Trash2, Archive, RotateCcw, BarChart3, ChevronUp, ChevronDown, CheckCircle, Clock, Link, Users, User, Edit, Eye, Crown, Share, FileSpreadsheet, FileText } from 'lucide-react';
+import { MapPin, Calendar, Globe, Trash2, Archive, RotateCcw, BarChart3, CheckCircle, Clock, Link, Users, User, Edit, Eye, Crown, Share, FileSpreadsheet, FileText } from 'lucide-react';
 import { useState } from 'react';
 import { formatDate } from '../../lib/utils';
 import { InlineEdit } from '../ui/InlineEdit';
 import { CollaboratorAvatars } from '../ui/CollaboratorAvatars';
 import { UpgradePrompt } from '../ui/UpgradePrompt';
+import { RiverWalkTabs } from './RiverWalkTabs';
 import { useCollaboratorInfo } from '../../hooks/useCollaboratorInfo';
 import { useSubscription, canAccessReports, canAccessAdvancedFeatures } from '../../hooks/useSubscription';
 import type { RiverWalk } from '../../types';
@@ -45,10 +46,7 @@ export function RiverWalkList({
   templateLoading,
   tutorialActive = false,
 }: RiverWalkListProps) {
-  const [showArchived, setShowArchived] = useState(false);
-  const [showMyRiverWalks, setShowMyRiverWalks] = useState(true);
-  const [showSharedWithMe, setShowSharedWithMe] = useState(true);
-  const [showSharedByMe, setShowSharedByMe] = useState(true);
+  const [activeTab, setActiveTab] = useState('all');
   
   // Get collaborator information for all river walks
   const { collaboratorInfo, getCollaboratorInfo } = useCollaboratorInfo(riverWalks);
@@ -81,7 +79,7 @@ export function RiverWalkList({
     return (
     <div
       key={riverWalk.id}
-      className="card-modern-xl p-4 sm:p-6 hover:scale-[1.02] transition-transform duration-200"
+      className="card-modern-xl p-3 sm:p-4 hover:scale-[1.01] transition-all duration-200"
       data-tutorial={(() => {
         // For tutorial, target the first river walk in the "My River Walks" section
         const isInMyRiverWalks = riverWalk.collaboration_role === 'owner' || 
@@ -95,251 +93,233 @@ export function RiverWalkList({
       })()}
     >
       {/* Header with inline editing - disable editing for archived items */}
-      <div className="flex-1 min-w-0 mb-4">
-        <div className="flex items-start sm:items-center gap-2 mb-3 flex-col sm:flex-row">
-          <div className="flex-1 min-w-0 w-full">
-            {isArchived || riverWalk.collaboration_role === 'viewer' ? (
-              <h2 className="text-lg sm:text-xl lg:text-2xl font-semibold text-foreground break-words">{riverWalk.name}</h2>
-            ) : (
-              <InlineEdit
-                value={riverWalk.name}
-                onSave={(value) => onUpdateField(riverWalk.id, 'name', value)}
-                className="text-lg sm:text-xl lg:text-2xl font-semibold text-foreground"
-                inputClassName="text-lg sm:text-xl lg:text-2xl font-semibold w-full"
-                placeholder="River walk name"
-              />
-            )}
+      <div className="flex-1 min-w-0 mb-3">
+        <div className="flex items-start sm:items-center gap-2 mb-2 flex-col sm:flex-row">
+          <div className="flex-1 min-w-0">
+            <InlineEdit
+              value={riverWalk.name}
+              onSave={(newValue) => onUpdateField(riverWalk.id, 'name', newValue)}
+              className="text-lg sm:text-xl font-bold text-foreground mb-1"
+              placeholder="Enter river walk name"
+              disabled={isArchived}
+            />
           </div>
           
-          {/* Access type, sync status icons, and collaborator avatars */}
-          <div className="flex-shrink-0 flex items-center gap-2 flex-wrap">
-            {/* Role-based access indicator */}
-            {riverWalk.collaboration_role === 'owner' || (!riverWalk.collaboration_role && riverWalk.access_type === 'owned') || (!riverWalk.collaboration_role && !riverWalk.access_type) ? (
-              <div className="flex items-center gap-1 text-blue-600 bg-blue-50 px-2 py-1 rounded-full">
-                <Crown className="w-3 h-3 sm:w-4 sm:h-4" />
-                <span className="text-xs font-medium hidden sm:inline">Owner</span>
-              </div>
-            ) : riverWalk.collaboration_role === 'editor' ? (
-              <div className="flex items-center gap-1 text-cyan-600 bg-cyan-50 px-2 py-1 rounded-full">
-                <Edit className="w-3 h-3 sm:w-4 sm:h-4" />
-                <span className="text-xs font-medium hidden sm:inline">Editor</span>
-              </div>
-            ) : riverWalk.collaboration_role === 'viewer' ? (
-              <div className="flex items-center gap-1 text-blue-600 bg-blue-50 px-2 py-1 rounded-full">
-                <Eye className="w-3 h-3 sm:w-4 sm:h-4" />
-                <span className="text-xs font-medium hidden sm:inline">Viewer</span>
-              </div>
-            ) : riverWalk.access_type === 'collaborated' ? (
-              <div className="flex items-center gap-1 text-cyan-600 bg-cyan-50 px-2 py-1 rounded-full">
-                <Edit className="w-3 h-3 sm:w-4 sm:h-4" />
-                <span className="text-xs font-medium hidden sm:inline">Editor</span>
-              </div>
-            ) : (
-              <div className="flex items-center gap-1 text-gray-600 bg-gray-50 px-2 py-1 rounded-full">
-                <User className="w-3 h-3 sm:w-4 sm:h-4" />
-                <span className="text-xs font-medium hidden sm:inline">Owner</span>
-              </div>
+          {/* Status and Collaboration Indicators */}
+          <div className="flex items-center gap-2 flex-shrink-0">
+            {/* Collaboration Role Badge */}
+            {riverWalk.collaboration_role && (
+              <span className={`px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1 ${
+                riverWalk.collaboration_role === 'owner' 
+                  ? 'bg-blue-100 text-blue-700' 
+                  : riverWalk.collaboration_role === 'editor'
+                  ? 'bg-green-100 text-green-700'
+                  : 'bg-gray-100 text-gray-700'
+              }`}>
+                {riverWalk.collaboration_role === 'owner' && <Crown className="w-3 h-3" />}
+                {riverWalk.collaboration_role === 'editor' && <Edit className="w-3 h-3" />}
+                {riverWalk.collaboration_role === 'viewer' && <Eye className="w-3 h-3" />}
+                {riverWalk.collaboration_role}
+              </span>
             )}
             
-            {/* Sync status icon */}
-            {isRiverWalkSynced(riverWalk) ? (
-              <div className="flex items-center gap-1 text-green-600">
-                <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4" />
-                <span className="text-xs font-medium hidden sm:inline">Synced</span>
-              </div>
-            ) : (
-              <div className="flex items-center gap-1 text-amber-600">
-                <Clock className="w-3 h-3 sm:w-4 sm:h-4" />
-                <span className="text-xs font-medium hidden sm:inline">Pending</span>
-              </div>
-            )}
-
-            {/* Collaborator avatars - now inline with other indicators and clickable */}
-            {collaborators && (
+            {/* Collaborator Avatars */}
+            {collaborators?.hasCollaborators && (
               <CollaboratorAvatars 
-                collaboratorInfo={collaborators} 
-                size="sm" 
-                maxVisible={3} 
-                onClick={onManageCollaborators ? () => onManageCollaborators(riverWalk) : undefined}
+                collaborators={collaborators.collaborators} 
+                maxVisible={2}
+                size="sm"
               />
             )}
+            
+            {/* Sync Status */}
+            <div className="flex items-center">
+              {isRiverWalkSynced(riverWalk) ? (
+                <CheckCircle className="w-4 h-4 text-success" title="Synced" />
+              ) : (
+                <Clock className="w-4 h-4 text-warning" title="Pending sync" />
+              )}
+            </div>
           </div>
         </div>
-        
-        {/* Metadata with inline editing */}
-        <div className="space-y-2">
-          <div className="flex items-center gap-2 text-muted-foreground">
-            <Calendar className="w-4 h-4 shrink-0" />
-            {isArchived || riverWalk.collaboration_role === 'viewer' ? (
-              <span className="text-sm">{riverWalk.date}</span>
-            ) : (
+
+        {/* Details */}
+        <div className="space-y-1 text-sm text-muted-foreground">
+          <div className="flex items-center gap-4 flex-wrap">
+            <div className="flex items-center gap-1">
+              <Calendar className="w-3 h-3" />
               <InlineEdit
                 value={riverWalk.date}
-                onSave={(value) => onUpdateField(riverWalk.id, 'date', value)}
+                onSave={(newValue) => onUpdateField(riverWalk.id, 'date', newValue)}
                 type="date"
-                className="text-sm"
+                className="text-muted-foreground hover:text-foreground"
+                disabled={isArchived}
               />
-            )}
-          </div>
-          <div className="flex items-center gap-2 text-muted-foreground">
-            <Globe className="w-4 h-4 shrink-0" />
-            <div className="flex items-center gap-1 text-sm flex-wrap">
-              {isArchived || riverWalk.collaboration_role === 'viewer' ? (
-                <span className="break-words">{riverWalk.county ? `${riverWalk.county}, ` : ''}{riverWalk.country || 'UK'}</span>
-              ) : (
+            </div>
+            
+            <div className="flex items-center gap-1">
+              <Globe className="w-3 h-3" />
+              <InlineEdit
+                value={riverWalk.country}
+                onSave={(newValue) => onUpdateField(riverWalk.id, 'country', newValue)}
+                className="text-muted-foreground hover:text-foreground"
+                placeholder="Country"
+                disabled={isArchived}
+              />
+              {riverWalk.county && (
                 <>
+                  <span className="text-muted-foreground/50">,</span>
                   <InlineEdit
-                    value={riverWalk.county || ''}
-                    onSave={(value) => onUpdateField(riverWalk.id, 'county', value)}
-                    placeholder="County (optional)"
-                    className="text-sm"
-                  />
-                  <span>,</span>
-                  <InlineEdit
-                    value={riverWalk.country || 'UK'}
-                    onSave={(value) => onUpdateField(riverWalk.id, 'country', value)}
-                    placeholder="Country"
-                    className="text-sm"
+                    value={riverWalk.county}
+                    onSave={(newValue) => onUpdateField(riverWalk.id, 'county', newValue)}
+                    className="text-muted-foreground hover:text-foreground"
+                    placeholder="County"
+                    disabled={isArchived}
                   />
                 </>
               )}
             </div>
           </div>
+          
+          {riverWalk.notes && (
+            <div className="mt-2">
+              <InlineEdit
+                value={riverWalk.notes}
+                onSave={(newValue) => onUpdateField(riverWalk.id, 'notes', newValue)}
+                multiline
+                className="text-muted-foreground hover:text-foreground"
+                placeholder="Add notes..."
+                disabled={isArchived}
+              />
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Action buttons */}
-      <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 pt-4 border-t border-border">
-        {canManageSites && (
-          <button
-            onClick={() => onManageSites(riverWalk)}
-            title="Create measurement locations along your river where you'll collect field data"
-            className="btn-primary touch-manipulation flex-1 sm:flex-none text-sm sm:text-base px-3 py-2 sm:px-4 sm:py-3"
-            data-tutorial="manage-sites"
-          >
-            <MapPin className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
-            <span className="truncate">Sites & Measurements</span>
-          </button>
-        )}
-        
-        {!isArchived && (
-          /* Print Template - Always available for all users */
-          <button
-            onClick={tutorialActive ? undefined : () => onGeneratePrintTemplate(riverWalk)}
-            disabled={templateLoading === riverWalk.id || tutorialActive}
-            className="bg-orange-50 hover:bg-orange-100 text-orange-700 px-3 py-2 sm:px-4 sm:py-3 rounded-lg font-medium transition-all duration-200 border border-orange-200 shadow-modern hover:shadow-modern-lg touch-manipulation flex-1 sm:flex-none flex items-center justify-center text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed"
-            title="Generate a print template for offline data collection"
-            data-tutorial="export-template"
-          >
-            {templateLoading === riverWalk.id ? (
-              <>
-                <div className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2 animate-spin rounded-full border-2 border-orange-700/30 border-t-orange-700"></div>
-                <span className="truncate">Generating...</span>
-              </>
-            ) : (
-              <>
-                <FileText className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
-                <span className="truncate">Print Template</span>
-              </>
-            )}
-          </button>
-        )}
-        
-        {!isArchived && (
-          /* Export - Always available (basic users get data export, premium users get full report) */
-          <button
-            onClick={tutorialActive ? undefined : () => onGenerateReport(riverWalk)}
-            disabled={tutorialActive || !isOnline()}
-            className="bg-green-50 hover:bg-green-100 text-green-700 px-3 py-2 sm:px-4 sm:py-3 rounded-lg font-medium transition-all duration-200 border border-green-200 shadow-modern hover:shadow-modern-lg touch-manipulation flex-1 sm:flex-none flex items-center justify-center text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed"
-            data-tutorial="export"
-            title={!isOnline() ? 'Requires internet connection' : ''}
-          >
-            <FileSpreadsheet className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
-            <span className="truncate">Export</span>
-          </button>
-        )}
-        
-        {canShare && (
-          canAccessAdvancedFeatures(subscription) ? (
-            <button
-              onClick={tutorialActive ? undefined : () => onShare(riverWalk)}
-              disabled={tutorialActive || !isOnline()}
-              className="bg-blue-50 hover:bg-blue-100 text-blue-600 px-3 py-2 sm:px-4 sm:py-3 rounded-lg font-medium transition-all duration-200 border border-blue-200 shadow-modern hover:shadow-modern-lg touch-manipulation flex-1 sm:flex-none flex items-center justify-center text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed"
-              data-tutorial="collaborate"
-              title={!isOnline() ? 'Requires internet connection' : ''}
-            >
-              <Users className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
-              <span className="truncate">Collaborate</span>
-            </button>
-          ) : (
-            <button
-              onClick={tutorialActive ? undefined : () => onUpgradePrompt('advanced')}
-              disabled={tutorialActive || !isOnline()}
-              className="bg-gradient-to-r from-blue-50 to-teal-50 hover:from-blue-100 hover:to-teal-100 text-blue-700 px-3 py-2 sm:px-4 sm:py-3 rounded-lg font-medium transition-all duration-200 border-2 border-blue-200 shadow-modern hover:shadow-modern-lg touch-manipulation flex-1 sm:flex-none flex items-center justify-center text-sm sm:text-base relative disabled:opacity-50 disabled:cursor-not-allowed"
-              data-tutorial="collaborate"
-              title={!isOnline() ? 'Requires internet connection' : ''}
-            >
-              <Crown className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
-              <span className="truncate">Collaborate</span>
-              <div className="absolute -top-1 -right-1 bg-blue-600 text-white text-xs px-1.5 py-0.5 rounded-full">
-                Pro
-              </div>
-            </button>
-          )
-        )}
-        
+      {/* Action Buttons */}
+      <div className="flex gap-2 flex-wrap">
         {isArchived ? (
-          // Archived view: Restore and Delete buttons (only for owners)
-          riverWalk.collaboration_role === 'owner' || (!riverWalk.collaboration_role && riverWalk.access_type === 'owned') || (!riverWalk.collaboration_role && !riverWalk.access_type) ? (
+          // Archived view: Restore and Delete buttons
+          archiveLoading === riverWalk.id ? null : (
             <>
               <button
                 onClick={() => onRestore(riverWalk.id)}
-                disabled={archiveLoading === riverWalk.id}
-                className="bg-success/10 hover:bg-success/20 text-success px-3 py-2 sm:px-4 sm:py-3 rounded-lg font-medium transition-all duration-200 border border-success/20 shadow-modern hover:shadow-modern-lg touch-manipulation flex-1 sm:flex-none flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
+                className="bg-success/10 hover:bg-success/20 text-success px-3 py-2 rounded-lg font-medium transition-colors border border-success/20 shadow-modern hover:shadow-modern-lg touch-manipulation flex-1 sm:flex-none flex items-center justify-center text-sm"
               >
                 {archiveLoading === riverWalk.id ? (
                   <>
-                    <div className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2 animate-spin rounded-full border-2 border-success/30 border-t-success"></div>
+                    <div className="w-4 h-4 mr-1 animate-spin rounded-full border-2 border-success/30 border-t-success"></div>
                     <span className="truncate">Restoring...</span>
                   </>
                 ) : (
                   <>
-                    <RotateCcw className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
+                    <RotateCcw className="w-4 h-4 mr-1" />
                     <span className="truncate">Restore</span>
                   </>
                 )}
               </button>
               <button
                 onClick={() => onDelete(riverWalk.id)}
-                className="bg-destructive/10 hover:bg-destructive/20 text-destructive px-3 py-2 sm:px-4 sm:py-3 rounded-lg font-medium transition-all duration-200 border border-destructive/20 shadow-modern hover:shadow-modern-lg touch-manipulation flex-1 sm:flex-none flex items-center justify-center text-sm sm:text-base"
+                className="bg-destructive/10 hover:bg-destructive/20 text-destructive px-3 py-2 rounded-lg font-medium transition-colors border border-destructive/20 shadow-modern hover:shadow-modern-lg touch-manipulation flex-1 sm:flex-none flex items-center justify-center text-sm"
               >
-                <Trash2 className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
+                <Trash2 className="w-4 h-4 mr-1" />
                 <span className="truncate">Delete Forever</span>
               </button>
             </>
-          ) : null
+          )
         ) : (
-          // Active view: Archive button (only for owners)
-          canArchive && (
+          // Active view: Management buttons
+          <>
+            {canManageSites && (
+              <button
+                onClick={tutorialActive ? undefined : () => onManageSites(riverWalk)}
+                disabled={tutorialActive}
+                className="bg-primary/10 hover:bg-primary/20 text-primary px-3 py-2 rounded-lg font-medium transition-colors border border-primary/20 shadow-modern hover:shadow-modern-lg touch-manipulation flex-1 sm:flex-none flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                data-tutorial="manage-sites"
+              >
+                <MapPin className="w-4 h-4 mr-1" />
+                <span className="truncate">Manage Sites</span>
+              </button>
+            )}
+
+            {canAccessReports(subscription) ? (
+              <button
+                onClick={tutorialActive ? undefined : () => onGenerateReport(riverWalk)}
+                disabled={tutorialActive}
+                className="bg-accent/10 hover:bg-accent/20 text-accent px-3 py-2 rounded-lg font-medium transition-colors border border-accent/20 shadow-modern hover:shadow-modern-lg touch-manipulation flex-1 sm:flex-none flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                data-tutorial="generate-report"
+              >
+                <BarChart3 className="w-4 h-4 mr-1" />
+                <span className="truncate">Generate Report</span>
+              </button>
+            ) : (
+              <UpgradePrompt feature="report generation">
+                <button
+                  onClick={() => {
+                    if (tutorialActive) return;
+                    onUpgradePrompt('reports');
+                  }}
+                  disabled={tutorialActive}
+                  className="bg-accent/10 hover:bg-accent/20 text-accent px-3 py-2 rounded-lg font-medium transition-colors border border-accent/20 shadow-modern hover:shadow-modern-lg touch-manipulation flex-1 sm:flex-none flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                >
+                  <BarChart3 className="w-4 h-4 mr-1" />
+                  <span className="truncate">Generate Report</span>
+                </button>
+              </UpgradePrompt>
+            )}
+
             <button
-              onClick={tutorialActive ? undefined : () => onArchive(riverWalk.id)}
-              disabled={archiveLoading === riverWalk.id || tutorialActive}
-              className="bg-warning/10 hover:bg-warning/20 text-warning px-3 py-2 sm:px-4 sm:py-3 rounded-lg font-medium transition-all duration-200 border border-warning/20 shadow-modern hover:shadow-modern-lg touch-manipulation flex-1 sm:flex-none flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
-              data-tutorial="archive"
+              onClick={tutorialActive ? undefined : () => onGeneratePrintTemplate(riverWalk)}
+              disabled={templateLoading === riverWalk.id || tutorialActive || !isOnline()}
+              className="bg-secondary/10 hover:bg-secondary/20 text-secondary px-3 py-2 rounded-lg font-medium transition-colors border border-secondary/20 shadow-modern hover:shadow-modern-lg touch-manipulation flex-1 sm:flex-none flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+              data-tutorial="print-template"
+              title={!isOnline() ? "Print templates require an internet connection" : ""}
             >
-              {archiveLoading === riverWalk.id ? (
+              {templateLoading === riverWalk.id ? (
                 <>
-                  <div className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2 animate-spin rounded-full border-2 border-warning/30 border-t-warning"></div>
-                  <span className="truncate">Archiving...</span>
+                  <div className="w-4 h-4 mr-1 animate-spin rounded-full border-2 border-secondary/30 border-t-secondary"></div>
+                  <span className="truncate">Generating...</span>
                 </>
               ) : (
                 <>
-                  <Archive className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
-                  <span className="truncate">Archive</span>
+                  <FileText className="w-4 h-4 mr-1" />
+                  <span className="truncate">Print Template</span>
                 </>
               )}
             </button>
-          )
+
+            {canShare && canAccessAdvancedFeatures(subscription) && (
+              <button
+                onClick={tutorialActive ? undefined : () => onShare?.(riverWalk)}
+                disabled={tutorialActive}
+                className="bg-info/10 hover:bg-info/20 text-info px-3 py-2 rounded-lg font-medium transition-colors border border-info/20 shadow-modern hover:shadow-modern-lg touch-manipulation flex-1 sm:flex-none flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+              >
+                <Share className="w-4 h-4 mr-1" />
+                <span className="truncate">Share</span>
+              </button>
+            )}
+
+            {canArchive && (
+              <button
+                onClick={tutorialActive ? undefined : () => onArchive(riverWalk.id)}
+                disabled={archiveLoading === riverWalk.id || tutorialActive}
+                className="bg-warning/10 hover:bg-warning/20 text-warning px-3 py-2 rounded-lg font-medium transition-colors border border-warning/20 shadow-modern hover:shadow-modern-lg touch-manipulation flex-1 sm:flex-none flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                data-tutorial="archive"
+              >
+                {archiveLoading === riverWalk.id ? (
+                  <>
+                    <div className="w-4 h-4 mr-1 animate-spin rounded-full border-2 border-warning/30 border-t-warning"></div>
+                    <span className="truncate">Archiving...</span>
+                  </>
+                ) : (
+                  <>
+                    <Archive className="w-4 h-4 mr-1" />
+                    <span className="truncate">Archive</span>
+                  </>
+                )}
+              </button>
+            )}
+          </>
         )}
       </div>
     </div>
@@ -360,7 +340,7 @@ export function RiverWalkList({
     );
   }
 
-  // Group river walks into three categories
+  // Group river walks into categories for tab filtering
   const myRiverWalks = riverWalks.filter(rw => {
     const isOwned = rw.collaboration_role === 'owner' || 
                    (!rw.collaboration_role && rw.access_type === 'owned') ||
@@ -383,128 +363,61 @@ export function RiverWalkList({
     return isOwned && hasCollaborators; // Owned and shared with others
   });
 
+  // Get the river walks to display based on active tab
+  const getFilteredRiverWalks = () => {
+    switch (activeTab) {
+      case 'my-walks':
+        return myRiverWalks;
+      case 'shared-with-me':
+        return sharedWithMe;
+      case 'shared-by-me':
+        return sharedByMe;
+      case 'archived':
+        return archivedRiverWalks;
+      case 'all':
+      default:
+        return riverWalks;
+    }
+  };
+
+  const isShowingArchived = activeTab === 'archived';
+  const displayedRiverWalks = getFilteredRiverWalks();
+
   return (
-    <div className="space-y-6 sm:space-y-8">
-      {/* My River Walks Section - Private ones not shared with others */}
-      {myRiverWalks.length > 0 && (
-        <div>
-          <button
-            onClick={() => setShowMyRiverWalks(!showMyRiverWalks)}
-            className="w-full flex items-center justify-between p-3 sm:p-4 text-left bg-gradient-to-r from-blue-50 to-blue-100 hover:from-blue-100 hover:to-blue-150 rounded-lg border border-blue-200 transition-all duration-200 touch-manipulation mb-3 sm:mb-4"
-          >
-            <div className="flex items-center gap-2">
-              <Crown className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
-              <h2 className="text-base sm:text-lg font-semibold text-foreground">My River Walks</h2>
-              <span className="text-xs sm:text-sm text-muted-foreground">({myRiverWalks.length})</span>
-            </div>
-            {showMyRiverWalks ? (
-              <ChevronUp className="w-4 h-4 text-blue-600" />
-            ) : (
-              <ChevronDown className="w-4 h-4 text-blue-600" />
-            )}
-          </button>
-          <div className={`accordion-content ${showMyRiverWalks ? 'accordion-content-visible' : 'accordion-content-hidden'}`}>
-            <div className="space-y-3 sm:space-y-4 pl-3 sm:pl-4 border-l-2 border-blue-200">
-              {myRiverWalks.map((riverWalk, index) => renderRiverWalk(riverWalk, false, index))}
-            </div>
-          </div>
-        </div>
-      )}
+    <div className="space-y-4">
+      {/* Tab Navigation */}
+      <RiverWalkTabs
+        riverWalks={riverWalks}
+        archivedRiverWalks={archivedRiverWalks}
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        getCollaboratorInfo={getCollaboratorInfo}
+      />
 
-      {/* Shared with Me Section */}
-      {sharedWithMe.length > 0 && (
-        <div>
-          <button
-            onClick={() => setShowSharedWithMe(!showSharedWithMe)}
-            className="w-full flex items-center justify-between p-3 sm:p-4 text-left bg-gradient-to-r from-blue-50 to-blue-100 hover:from-blue-100 hover:to-blue-150 rounded-lg border border-blue-200 transition-all duration-200 touch-manipulation mb-3 sm:mb-4"
-          >
-            <div className="flex items-center gap-2">
-              <Users className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
-              <h2 className="text-base sm:text-lg font-semibold text-foreground">Shared with Me</h2>
-              <span className="text-xs sm:text-sm text-muted-foreground">({sharedWithMe.length})</span>
-            </div>
-            {showSharedWithMe ? (
-              <ChevronUp className="w-4 h-4 text-blue-600" />
-            ) : (
-              <ChevronDown className="w-4 h-4 text-blue-600" />
-            )}
-          </button>
-          <div className={`accordion-content ${showSharedWithMe ? 'accordion-content-visible' : 'accordion-content-hidden'}`}>
-            <div className="space-y-3 sm:space-y-4 pl-3 sm:pl-4 border-l-2 border-blue-200">
-              {sharedWithMe.map((riverWalk, index) => renderRiverWalk(riverWalk, false, index))}
-            </div>
-          </div>
+      {/* River Walks List */}
+      {displayedRiverWalks.length > 0 ? (
+        <div className="space-y-3">
+          {displayedRiverWalks.map((riverWalk, index) => renderRiverWalk(riverWalk, isShowingArchived, index))}
         </div>
-      )}
-
-      {/* River Walks I've Shared Section */}
-      {sharedByMe.length > 0 && (
-        <div>
-          <button
-            onClick={() => setShowSharedByMe(!showSharedByMe)}
-            className="w-full flex items-center justify-between p-3 sm:p-4 text-left bg-gradient-to-r from-cyan-50 to-cyan-100 hover:from-cyan-100 hover:to-cyan-150 rounded-lg border border-cyan-200 transition-all duration-200 touch-manipulation mb-3 sm:mb-4"
-          >
-            <div className="flex items-center gap-2">
-              <Share className="w-4 h-4 sm:w-5 sm:h-5 text-cyan-600" />
-              <h2 className="text-base sm:text-lg font-semibold text-foreground">River Walks I've Shared</h2>
-              <span className="text-xs sm:text-sm text-muted-foreground">({sharedByMe.length})</span>
-            </div>
-            {showSharedByMe ? (
-              <ChevronUp className="w-4 h-4 text-cyan-600" />
-            ) : (
-              <ChevronDown className="w-4 h-4 text-cyan-600" />
-            )}
-          </button>
-          <div className={`accordion-content ${showSharedByMe ? 'accordion-content-visible' : 'accordion-content-hidden'}`}>
-            <div className="space-y-3 sm:space-y-4 pl-3 sm:pl-4 border-l-2 border-cyan-200">
-              {sharedByMe.map((riverWalk, index) => renderRiverWalk(riverWalk, false, index))}
-            </div>
+      ) : (
+        <div className="card-modern-xl p-8 text-center">
+          <div className="w-12 h-12 rounded-xl gradient-muted flex items-center justify-center mx-auto mb-4">
+            <MapPin className="w-6 h-6 text-muted-foreground" />
           </div>
-        </div>
-      )}
-
-      {/* Empty State */}
-      {riverWalks.length === 0 && (
-        <div className="card-modern-xl p-12 text-center">
-          <div className="w-16 h-16 rounded-xl gradient-muted flex items-center justify-center mx-auto mb-6">
-            <MapPin className="w-8 h-8 text-muted-foreground" />
-          </div>
-          <h3 className="text-xl font-semibold text-foreground mb-2">No Active River Walks</h3>
-          <p className="text-muted-foreground">
-            Create your first river study to get started with documentation and analysis.
+          <h3 className="text-lg font-semibold text-foreground mb-2">
+            {activeTab === 'all' && riverWalks.length === 0 
+              ? 'No River Walks Yet' 
+              : `No ${activeTab === 'my-walks' ? 'Personal' : activeTab === 'shared-with-me' ? 'Shared with Me' : activeTab === 'shared-by-me' ? 'Shared by Me' : 'Archived'} River Walks`
+            }
+          </h3>
+          <p className="text-muted-foreground text-sm">
+            {activeTab === 'all' && riverWalks.length === 0
+              ? 'Create your first river study to get started with documentation and analysis.'
+              : `You don't have any ${activeTab === 'my-walks' ? 'personal' : activeTab === 'shared-with-me' ? 'shared with you' : activeTab === 'shared-by-me' ? 'shared by you' : 'archived'} river walks yet.`
+            }
           </p>
         </div>
       )}
-
-      {/* Archived Section - Microsoft Style */}
-      {archivedRiverWalks.length > 0 && (
-        <div className="mt-6 sm:mt-8">
-          <button
-            onClick={() => setShowArchived(!showArchived)}
-            className="w-full flex items-center justify-between p-3 sm:p-4 text-left text-muted-foreground hover:text-foreground bg-gray-50/50 hover:bg-gray-100/50 rounded-lg border border-gray-200/50 transition-all duration-200 touch-manipulation"
-          >
-            <div className="flex items-center gap-2 sm:gap-3">
-              <Archive className="w-4 h-4" />
-              <span className="text-xs sm:text-sm font-medium">
-                View archived ({archivedRiverWalks.length})
-              </span>
-            </div>
-            {showArchived ? (
-              <ChevronUp className="w-4 h-4" />
-            ) : (
-              <ChevronDown className="w-4 h-4" />
-            )}
-          </button>
-
-          {/* Archived Items - Expandable */}
-          <div className={`accordion-content ${showArchived ? 'accordion-content-visible' : 'accordion-content-hidden'}`}>
-            <div className="mt-3 sm:mt-4 space-y-3 sm:space-y-4 pl-3 sm:pl-4 border-l-2 border-gray-200">
-              {archivedRiverWalks.map((riverWalk, index) => renderRiverWalk(riverWalk, true, index))}
-            </div>
-          </div>
-        </div>
-      )}
-
     </div>
   );
 }

@@ -35,19 +35,59 @@ export default function NewRiverWalkPage() {
 
   useEffect(() => {
     const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session) {
-        router.push('/');
-        return;
-      }
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        // Handle offline authentication similar to main page
+        if (error && typeof window !== 'undefined') {
+          console.warn('🔒 New river walk page offline mode - checking cached auth state');
+          
+          // Try to get cached user data from localStorage
+          const cachedAuth = localStorage.getItem('riverwalks-pwa-auth');
+          if (cachedAuth) {
+            try {
+              const authData = JSON.parse(cachedAuth);
+              if (authData && authData.user) {
+                console.log('🔒 Using cached authentication for new river walk page');
+                setUser(authData.user);
+                return;
+              }
+            } catch (e) {
+              console.warn('Failed to parse cached auth data');
+            }
+          }
+        }
+        
+        if (!session) {
+          router.push('/');
+          return;
+        }
 
-      setUser(session.user);
-      
-      // Check if we're in tutorial mode
-      const isTutorial = router.query.tutorial === 'true';
-      setIsTutorialMode(isTutorial);
-      setFormTutorialActive(isTutorial);
+        setUser(session.user);
+        
+        // Check if we're in tutorial mode
+        const isTutorial = router.query.tutorial === 'true';
+        setIsTutorialMode(isTutorial);
+        setFormTutorialActive(isTutorial);
+      } catch (authError) {
+        console.error('Authentication check failed on new river walk page:', authError);
+        // Try to use cached auth data as fallback
+        const cachedAuth = localStorage.getItem('riverwalks-pwa-auth');
+        if (cachedAuth) {
+          try {
+            const authData = JSON.parse(cachedAuth);
+            if (authData && authData.user) {
+              console.log('🔒 Using cached authentication fallback for new river walk page');
+              setUser(authData.user);
+              return;
+            }
+          } catch (e) {
+            console.warn('Failed to parse cached auth data in fallback');
+          }
+        }
+        // If all fails, redirect to login
+        router.push('/');
+      }
     };
 
     checkAuth();
