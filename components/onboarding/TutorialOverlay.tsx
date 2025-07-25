@@ -49,10 +49,16 @@ const Spotlight: React.FC<SpotlightProps> = ({ targetElement, overlayRef }) => {
     }
 
     // Check if this is a problematic element and disable spotlight for it
-    const isProblematicElement = targetElement.getAttribute('data-tutorial') === 'generate-report' || 
-                                 targetElement.getAttribute('data-tutorial') === 'print-template';
+    const tutorialAttr = targetElement.getAttribute('data-tutorial');
+    console.log('Spotlight debug - data-tutorial attribute:', tutorialAttr, 'element:', targetElement);
+    
+    const isProblematicElement = tutorialAttr === 'generate-report' || 
+                                 tutorialAttr === 'print-template';
+    
+    console.log('Is problematic element:', isProblematicElement);
     
     if (isProblematicElement) {
+      console.log('DISABLING SPOTLIGHT for problematic element');
       // For problematic elements, just show a simple full overlay without spotlight
       setOverlayElements([
         <div key="full-overlay-problematic" className="fixed inset-0 bg-black/50 z-[10000] pointer-events-none" />
@@ -208,6 +214,7 @@ const TutorialTooltip: React.FC<{
         
         // Special handling for problematic right-side buttons
         const isProblematicStep = step.id === 'export' || step.id === 'print-template';
+        console.log('Tooltip debug - step.id:', step.id, 'isProblematicStep:', isProblematicStep);
         
         if (!targetElement || isProblematicStep) {
           // Center for steps without target OR for problematic steps
