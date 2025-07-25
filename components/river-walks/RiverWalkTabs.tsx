@@ -151,26 +151,8 @@ export function RiverWalkTabs({
   // Filter out tabs with zero items (except "All")
   const visibleTabs = tabs.filter(tab => tab.id === 'all' || tab.count > 0);
 
-  // Get active tab info for mobile display
-  const activeTabInfo = visibleTabs.find(tab => tab.id === activeTab);
-
   return (
     <div className="mb-6">
-      {/* Mobile: Active tab label */}
-      <div className="sm:hidden mb-3 text-center">
-        <h2 className="text-lg font-semibold text-gray-800 flex items-center justify-center gap-2">
-          {activeTabInfo?.icon}
-          <span className="animate-in slide-in-from-left-2 duration-300">
-            {activeTabInfo?.label}
-          </span>
-          {activeTabInfo && activeTabInfo.count > 0 && (
-            <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-sm font-medium animate-in zoom-in-50 duration-300">
-              {activeTabInfo.count}
-            </span>
-          )}
-        </h2>
-      </div>
-
       {/* Tab Navigation */}
       <div className="flex items-center justify-center sm:justify-start gap-1 sm:gap-2 p-1 bg-gray-50 rounded-xl">
         {visibleTabs.map((tab) => (
