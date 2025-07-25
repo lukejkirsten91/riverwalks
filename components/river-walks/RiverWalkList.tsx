@@ -269,7 +269,7 @@ export function RiverWalkList({
               <button
                 onClick={tutorialActive ? undefined : () => onGenerateReport(riverWalk)}
                 disabled={tutorialActive}
-                className="bg-accent/10 hover:bg-accent/20 text-accent px-3 py-2 rounded-lg font-medium transition-colors border border-accent/20 shadow-modern hover:shadow-modern-lg touch-manipulation flex-1 sm:flex-none flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                className="bg-primary/10 hover:bg-primary/20 text-primary px-3 py-2 rounded-lg font-medium transition-colors border border-primary/20 shadow-modern hover:shadow-modern-lg touch-manipulation flex-1 sm:flex-none flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed text-sm"
                 data-tutorial="generate-report"
               >
                 <BarChart3 className="w-4 h-4 mr-1" />
@@ -282,7 +282,7 @@ export function RiverWalkList({
                   onUpgradePrompt('reports');
                 }}
                 disabled={tutorialActive}
-                className="bg-accent/10 hover:bg-accent/20 text-accent px-3 py-2 rounded-lg font-medium transition-colors border border-accent/20 shadow-modern hover:shadow-modern-lg touch-manipulation flex-1 sm:flex-none flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                className="bg-primary/10 hover:bg-primary/20 text-primary px-3 py-2 rounded-lg font-medium transition-colors border border-primary/20 shadow-modern hover:shadow-modern-lg touch-manipulation flex-1 sm:flex-none flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed text-sm"
               >
                 <BarChart3 className="w-4 h-4 mr-1" />
                 <span className="truncate">Generate Report</span>
@@ -292,13 +292,13 @@ export function RiverWalkList({
             <button
               onClick={tutorialActive ? undefined : () => onGeneratePrintTemplate(riverWalk)}
               disabled={templateLoading === riverWalk.id || tutorialActive || !isOnline()}
-              className="bg-secondary/10 hover:bg-secondary/20 text-secondary px-3 py-2 rounded-lg font-medium transition-colors border border-secondary/20 shadow-modern hover:shadow-modern-lg touch-manipulation flex-1 sm:flex-none flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+              className="bg-primary/10 hover:bg-primary/20 text-primary px-3 py-2 rounded-lg font-medium transition-colors border border-primary/20 shadow-modern hover:shadow-modern-lg touch-manipulation flex-1 sm:flex-none flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed text-sm"
               data-tutorial="print-template"
               title={!isOnline() ? "Print templates require an internet connection" : ""}
             >
               {templateLoading === riverWalk.id ? (
                 <>
-                  <div className="w-4 h-4 mr-1 animate-spin rounded-full border-2 border-secondary/30 border-t-secondary"></div>
+                  <div className="w-4 h-4 mr-1 animate-spin rounded-full border-2 border-primary/30 border-t-primary"></div>
                   <span className="truncate">Generating...</span>
                 </>
               ) : (
@@ -313,7 +313,7 @@ export function RiverWalkList({
               <button
                 onClick={tutorialActive ? undefined : () => onShare?.(riverWalk)}
                 disabled={tutorialActive}
-                className="bg-info/10 hover:bg-info/20 text-info px-3 py-2 rounded-lg font-medium transition-colors border border-info/20 shadow-modern hover:shadow-modern-lg touch-manipulation flex-1 sm:flex-none flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                className="bg-primary/10 hover:bg-primary/20 text-primary px-3 py-2 rounded-lg font-medium transition-colors border border-primary/20 shadow-modern hover:shadow-modern-lg touch-manipulation flex-1 sm:flex-none flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed text-sm"
               >
                 <Share className="w-4 h-4 mr-1" />
                 <span className="truncate">Share</span>

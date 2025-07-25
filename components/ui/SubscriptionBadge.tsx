@@ -55,9 +55,16 @@ export function SubscriptionBadge({ subscription, userEmail, compact = false }: 
 
   // Calculate days remaining for annual subscriptions
   const getDaysRemaining = () => {
-    // This would come from the subscription end date in a real implementation
-    // For now, returning a placeholder
-    return 365; // Replace with actual calculation
+    if (!subscription.currentPeriodEnd) {
+      return 0;
+    }
+    
+    const endDate = new Date(subscription.currentPeriodEnd);
+    const now = new Date();
+    const timeDiff = endDate.getTime() - now.getTime();
+    const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
+    
+    return Math.max(0, daysDiff);
   };
 
   // Tooltip component for portals
@@ -166,8 +173,54 @@ export function SubscriptionBadge({ subscription, userEmail, compact = false }: 
     );
   }
 
-  // Annual Pro user
+  // Annual Pro user - check if subscription has expired
   const daysRemaining = getDaysRemaining();
+  
+  // If subscription has expired, show as basic user
+  if (daysRemaining <= 0 && subscription.subscriptionType === 'annual') {
+    return (
+      <>
+        <Link href="/subscription">
+          <div 
+            ref={badgeRef}
+            className={`flex items-center gap-2 bg-red-50 hover:bg-red-100 border border-red-200 rounded-lg transition-colors cursor-pointer ${compact ? 'px-2 py-1' : 'px-3 py-1.5'}`}
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
+          >
+            <div className="w-4 h-4 bg-red-400 rounded-full flex items-center justify-center flex-shrink-0">
+              <span className="text-xs text-white font-bold">!</span>
+            </div>
+            {compact ? (
+              <>
+                <span className="text-xs font-medium text-red-700 hover:text-red-800 truncate">
+                  Expired
+                </span>
+                <Info className="w-3 h-3 text-red-500 opacity-60 flex-shrink-0" />
+              </>
+            ) : (
+              <>
+                <span className="text-sm font-medium text-red-700 hover:text-red-800">
+                  Subscription Expired
+                </span>
+                <Info className="w-3 h-3 text-red-500 opacity-60" />
+              </>
+            )}
+          </div>
+        </Link>
+        
+        <TooltipContent>
+          <div className="text-sm">
+            <p className="font-semibold text-gray-900 mb-1">Subscription Expired</p>
+            <p className="text-gray-600 mb-2">Your Pro subscription has ended</p>
+            <p className="text-gray-600 mb-2">✓ You can still create unlimited river walks</p>
+            <p className="text-gray-600 mb-2">✓ Basic data export available</p>
+            <p className="text-red-600 font-medium">Click to renew for premium features!</p>
+          </div>
+        </TooltipContent>
+      </>
+    );
+  }
+  
   return (
     <>
       <div 

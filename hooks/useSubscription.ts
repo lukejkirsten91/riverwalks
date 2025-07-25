@@ -6,6 +6,7 @@ export interface SubscriptionStatus {
   hasLifetimeAccess: boolean;
   subscriptionType: 'free' | 'annual' | 'lifetime';
   loading: boolean;
+  currentPeriodEnd?: string;
 }
 
 export function useSubscription() {
@@ -27,6 +28,7 @@ export function useSubscription() {
               hasLifetimeAccess: cached.hasLifetimeAccess || false,
               subscriptionType: cached.subscriptionType || 'free',
               loading: true, // Still loading to verify/update
+              currentPeriodEnd: cached.currentPeriodEnd,
             };
           }
         }
@@ -41,6 +43,7 @@ export function useSubscription() {
       hasLifetimeAccess: false,
       subscriptionType: 'free',
       loading: true,
+      currentPeriodEnd: undefined,
     };
   });
   const [isOnlineState, setIsOnlineState] = useState(() => 
@@ -244,7 +247,7 @@ export function useSubscription() {
           try {
             const fallbackResult = await supabase
               .from('subscriptions')
-              .select('*')
+              .select('*, current_period_end')
               .eq('user_id', user.id)
               .eq('status', 'active')
               .limit(1);
@@ -264,7 +267,17 @@ export function useSubscription() {
           console.error('❌ Error checking subscription:', error);
         }
 
-        const isSubscribed = !!subscription;
+        // Check if subscription is expired for annual subscriptions
+        let isSubscribed = !!subscription;
+        if (subscription?.subscription_type === 'annual' && subscription?.current_period_end) {
+          const endDate = new Date(subscription.current_period_end);
+          const now = new Date();
+          if (endDate < now) {
+            console.log('⚠️ Annual subscription has expired:', subscription.current_period_end);
+            isSubscribed = false;
+          }
+        }
+        
         const hasLifetimeAccess = subscription?.subscription_type === 'lifetime';
         const subscriptionType = subscription?.subscription_type || 'free';
 
@@ -279,6 +292,7 @@ export function useSubscription() {
           hasLifetimeAccess,
           subscriptionType: subscriptionType as 'free' | 'annual' | 'lifetime',
           loading: false,
+          currentPeriodEnd: subscription?.current_period_end,
         };
 
         // Cache the subscription status for offline use
