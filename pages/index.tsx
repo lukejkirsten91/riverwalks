@@ -416,6 +416,28 @@ export default function Home() {
               </div>
             )}
 
+            {/* Mobile App Preview Section */}
+            {!user && (
+              <div className="mb-8">
+                <div className="text-center mb-6">
+                  <h2 className="text-2xl sm:text-3xl font-bold text-white mb-3">
+                    Manage your Riverwalks
+                  </h2>
+                  <p className="text-white/80 text-base max-w-xl mx-auto">
+                    Access your river studies anywhere with our mobile-optimized interface. 
+                    View sites, collect data, and track progress all from your phone.
+                  </p>
+                </div>
+                <div className="flex justify-center">
+                  <img 
+                    src="/mockup1.png" 
+                    alt="Riverwalks mobile app interface showing riverwalk management" 
+                    className="max-w-sm w-full h-auto rounded-xl shadow-modern drop-shadow-lg"
+                  />
+                </div>
+              </div>
+            )}
+
             {/* No Mobile, No Problem section - after CTA */}
             {!user && (
               <div className="bg-green-600/90 backdrop-blur-sm border border-green-400/60 rounded-xl p-4 mb-8 max-w-2xl mx-auto">
@@ -465,27 +487,6 @@ export default function Home() {
           </div>
         )}
 
-        {/* Mobile App Preview Section */}
-        {!user && (
-          <div ref={previewRef} className="pt-12 pb-8 px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
-                Manage your Riverwalks
-              </h2>
-              <p className="text-white/80 text-lg max-w-2xl mx-auto">
-                Access your river studies anywhere with our mobile-optimized interface. 
-                View sites, collect data, and track progress all from your phone.
-              </p>
-            </div>
-            <div className="flex justify-center">
-              <img 
-                src="/mockup1.png" 
-                alt="Riverwalks mobile app interface showing riverwalk management" 
-                className="max-w-sm w-full h-auto rounded-xl shadow-modern drop-shadow-lg"
-              />
-            </div>
-          </div>
-        )}
 
         {/* Why Riverwalks Section */}
         {!user && (
