@@ -194,8 +194,11 @@ const TutorialTooltip: React.FC<{
         const safeWidth = window.innerWidth - (padding * 2);
         const tooltipWidth = Math.min(safeWidth, 350); // Conservative max width
         
-        if (!targetElement) {
-          // Center for steps without target
+        // Special handling for problematic right-side buttons
+        const isProblematicStep = step.id === 'export' || step.id === 'print-template';
+        
+        if (!targetElement || isProblematicStep) {
+          // Center for steps without target OR for problematic steps
           top = safeAreaTop + (availableHeight - tooltipRect.height) / 2;
         } else {
           const targetRect = targetElement.getBoundingClientRect();
@@ -221,19 +224,22 @@ const TutorialTooltip: React.FC<{
         }
         
         // Always center horizontally on mobile to avoid any edge issues
-        left = (window.innerWidth - tooltipWidth) / 2;
+        // Use smaller width for problematic steps
+        const finalTooltipWidth = isProblematicStep ? Math.min(safeWidth, 320) : tooltipWidth;
+        left = (window.innerWidth - finalTooltipWidth) / 2;
         
         // Ensure tooltip never goes off-screen with strict bounds
         const finalTop = Math.max(safeAreaTop, Math.min(top, window.innerHeight - tooltipRect.height - safeAreaBottom));
-        const finalLeft = Math.max(padding, Math.min(left, window.innerWidth - tooltipWidth - padding));
+        const finalLeft = Math.max(padding, Math.min(left, window.innerWidth - finalTooltipWidth - padding));
         
         setTooltipStyle({
           position: 'fixed',
           top: `${finalTop}px`,
           left: `${finalLeft}px`,
           zIndex: 10002,
-          width: `${tooltipWidth}px`,
+          width: `${finalTooltipWidth}px`,
           maxWidth: 'none', // Override any inherited max-width
+          boxSizing: 'border-box', // Ensure padding doesn't add to width
         });
         return;
       }
