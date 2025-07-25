@@ -3,7 +3,6 @@ import { useState } from 'react';
 import { formatDate } from '../../lib/utils';
 import { InlineEdit } from '../ui/InlineEdit';
 import { CollaboratorAvatars } from '../ui/CollaboratorAvatars';
-import { UpgradePrompt } from '../ui/UpgradePrompt';
 import { RiverWalkTabs } from './RiverWalkTabs';
 import { useCollaboratorInfo } from '../../hooks/useCollaboratorInfo';
 import { useSubscription, canAccessReports, canAccessAdvancedFeatures } from '../../hooks/useSubscription';
@@ -135,9 +134,13 @@ export function RiverWalkList({
             {/* Sync Status */}
             <div className="flex items-center">
               {isRiverWalkSynced(riverWalk) ? (
-                <CheckCircle className="w-4 h-4 text-success" title="Synced" />
+                <div title="Synced">
+                  <CheckCircle className="w-4 h-4 text-success" />
+                </div>
               ) : (
-                <Clock className="w-4 h-4 text-warning" title="Pending sync" />
+                <div title="Pending sync">
+                  <Clock className="w-4 h-4 text-warning" />
+                </div>
               )}
             </div>
           </div>
@@ -253,19 +256,17 @@ export function RiverWalkList({
                 <span className="truncate">Generate Report</span>
               </button>
             ) : (
-              <UpgradePrompt feature="report generation">
-                <button
-                  onClick={() => {
-                    if (tutorialActive) return;
-                    onUpgradePrompt('reports');
-                  }}
-                  disabled={tutorialActive}
-                  className="bg-accent/10 hover:bg-accent/20 text-accent px-3 py-2 rounded-lg font-medium transition-colors border border-accent/20 shadow-modern hover:shadow-modern-lg touch-manipulation flex-1 sm:flex-none flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed text-sm"
-                >
-                  <BarChart3 className="w-4 h-4 mr-1" />
-                  <span className="truncate">Generate Report</span>
-                </button>
-              </UpgradePrompt>
+              <button
+                onClick={() => {
+                  if (tutorialActive) return;
+                  onUpgradePrompt('reports');
+                }}
+                disabled={tutorialActive}
+                className="bg-accent/10 hover:bg-accent/20 text-accent px-3 py-2 rounded-lg font-medium transition-colors border border-accent/20 shadow-modern hover:shadow-modern-lg touch-manipulation flex-1 sm:flex-none flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+              >
+                <BarChart3 className="w-4 h-4 mr-1" />
+                <span className="truncate">Generate Report</span>
+              </button>
             )}
 
             <button
