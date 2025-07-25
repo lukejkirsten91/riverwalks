@@ -78,7 +78,7 @@ export function RiverWalkList({
     return (
     <div
       key={riverWalk.id}
-      className="card-modern-xl p-3 sm:p-4 hover:scale-[1.01] transition-all duration-200"
+      className="card-modern-xl p-2 sm:p-3 hover:scale-[1.01] transition-all duration-200"
       data-tutorial={(() => {
         // For tutorial, target the first river walk in the "My River Walks" section
         const isInMyRiverWalks = riverWalk.collaboration_role === 'owner' || 
@@ -92,13 +92,13 @@ export function RiverWalkList({
       })()}
     >
       {/* Header with inline editing - disable editing for archived items */}
-      <div className="flex-1 min-w-0 mb-3">
-        <div className="flex items-start sm:items-center gap-2 mb-2 flex-col sm:flex-row">
+      <div className="flex-1 min-w-0 mb-2">
+        <div className="flex items-start sm:items-center gap-2 mb-1 flex-col sm:flex-row">
           <div className="flex-1 min-w-0">
             <InlineEdit
               value={riverWalk.name}
               onSave={(newValue) => onUpdateField(riverWalk.id, 'name', newValue)}
-              className="text-lg sm:text-xl font-bold text-foreground mb-1"
+              className="text-lg sm:text-xl font-bold text-foreground mb-0.5"
               placeholder="Enter river walk name"
               disabled={isArchived}
             />
@@ -167,8 +167,8 @@ export function RiverWalkList({
         </div>
 
         {/* Details */}
-        <div className="space-y-1 text-sm text-muted-foreground">
-          <div className="flex items-center gap-4 flex-wrap">
+        <div className="space-y-0.5 text-sm text-muted-foreground">
+          <div className="flex items-center gap-3 flex-wrap">
             <div className="flex items-center gap-1">
               <Calendar className="w-3 h-3" />
               <InlineEdit
@@ -205,7 +205,7 @@ export function RiverWalkList({
           </div>
           
           {riverWalk.notes && (
-            <div className="mt-2">
+            <div className="mt-1">
               <InlineEdit
                 value={riverWalk.notes}
                 onSave={(newValue) => onUpdateField(riverWalk.id, 'notes', newValue)}
@@ -220,14 +220,14 @@ export function RiverWalkList({
       </div>
 
       {/* Action Buttons */}
-      <div className="flex gap-2 flex-col sm:flex-row sm:flex-wrap">
+      <div className="flex gap-1.5 flex-col sm:flex-row sm:flex-wrap">
         {isArchived ? (
           // Archived view: Restore and Delete buttons
           archiveLoading === riverWalk.id ? null : (
             <>
               <button
                 onClick={() => onRestore(riverWalk.id)}
-                className="bg-success/10 hover:bg-success/20 text-success px-3 py-2 rounded-lg font-medium transition-colors border border-success/20 shadow-modern hover:shadow-modern-lg touch-manipulation flex-1 sm:flex-none flex items-center justify-center text-sm"
+                className="bg-success/10 hover:bg-success/20 text-success px-2.5 py-1.5 rounded-lg font-medium transition-colors border border-success/20 shadow-modern hover:shadow-modern-lg touch-manipulation flex-1 sm:flex-none flex items-center justify-center text-sm"
               >
                 {archiveLoading === riverWalk.id ? (
                   <>
@@ -243,7 +243,7 @@ export function RiverWalkList({
               </button>
               <button
                 onClick={() => onDelete(riverWalk.id)}
-                className="bg-destructive/10 hover:bg-destructive/20 text-destructive px-3 py-2 rounded-lg font-medium transition-colors border border-destructive/20 shadow-modern hover:shadow-modern-lg touch-manipulation flex-1 sm:flex-none flex items-center justify-center text-sm"
+                className="bg-destructive/10 hover:bg-destructive/20 text-destructive px-2.5 py-1.5 rounded-lg font-medium transition-colors border border-destructive/20 shadow-modern hover:shadow-modern-lg touch-manipulation flex-1 sm:flex-none flex items-center justify-center text-sm"
               >
                 <Trash2 className="w-4 h-4 mr-1" />
                 <span className="truncate">Delete Forever</span>
@@ -257,7 +257,7 @@ export function RiverWalkList({
               <button
                 onClick={tutorialActive ? undefined : () => onManageSites(riverWalk)}
                 disabled={tutorialActive}
-                className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-2 rounded-lg font-medium transition-colors border border-slate-200 shadow-modern hover:shadow-modern-lg touch-manipulation flex-1 sm:flex-none flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-2.5 py-1.5 rounded-lg font-medium transition-colors border border-slate-200 shadow-modern hover:shadow-modern-lg touch-manipulation flex-1 sm:flex-none flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed text-sm"
                 data-tutorial="manage-sites"
               >
                 <MapPin className="w-4 h-4 mr-1" />
@@ -289,7 +289,7 @@ export function RiverWalkList({
               <button
                 onClick={tutorialActive ? undefined : () => onGenerateReport(riverWalk)}
                 disabled={tutorialActive}
-                className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-2 rounded-lg font-medium transition-colors border border-slate-200 shadow-modern hover:shadow-modern-lg touch-manipulation flex-1 sm:flex-none flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-2.5 py-1.5 rounded-lg font-medium transition-colors border border-slate-200 shadow-modern hover:shadow-modern-lg touch-manipulation flex-1 sm:flex-none flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed text-sm"
                 data-tutorial="generate-report"
               >
                 <BarChart3 className="w-4 h-4 mr-1" />
@@ -302,7 +302,7 @@ export function RiverWalkList({
                   onUpgradePrompt('reports');
                 }}
                 disabled={tutorialActive}
-                className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-2 rounded-lg font-medium transition-colors border border-slate-200 shadow-modern hover:shadow-modern-lg touch-manipulation flex-1 sm:flex-none flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-2.5 py-1.5 rounded-lg font-medium transition-colors border border-slate-200 shadow-modern hover:shadow-modern-lg touch-manipulation flex-1 sm:flex-none flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed text-sm"
                 data-tutorial="generate-report"
               >
                 <BarChart3 className="w-4 h-4 mr-1" />
@@ -314,7 +314,7 @@ export function RiverWalkList({
               <button
                 onClick={tutorialActive ? undefined : () => onShare?.(riverWalk)}
                 disabled={tutorialActive}
-                className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-2 rounded-lg font-medium transition-colors border border-slate-200 shadow-modern hover:shadow-modern-lg touch-manipulation flex-1 sm:flex-none flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-2.5 py-1.5 rounded-lg font-medium transition-colors border border-slate-200 shadow-modern hover:shadow-modern-lg touch-manipulation flex-1 sm:flex-none flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed text-sm"
                 data-tutorial="collaborate"
               >
                 <Share className="w-4 h-4 mr-1" />
@@ -326,7 +326,7 @@ export function RiverWalkList({
               <button
                 onClick={tutorialActive ? undefined : () => onArchive(riverWalk.id)}
                 disabled={archiveLoading === riverWalk.id || tutorialActive}
-                className="bg-warning/10 hover:bg-warning/20 text-warning px-3 py-2 rounded-lg font-medium transition-colors border border-warning/20 shadow-modern hover:shadow-modern-lg touch-manipulation flex-1 sm:flex-none flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                className="bg-warning/10 hover:bg-warning/20 text-warning px-2.5 py-1.5 rounded-lg font-medium transition-colors border border-warning/20 shadow-modern hover:shadow-modern-lg touch-manipulation flex-1 sm:flex-none flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed text-sm"
                 data-tutorial="archive"
               >
                 {archiveLoading === riverWalk.id ? (
@@ -351,8 +351,8 @@ export function RiverWalkList({
 
   if (riverWalks.length === 0 && archivedRiverWalks.length === 0) {
     return (
-      <div className="card-modern-xl p-12 text-center">
-        <div className="w-16 h-16 rounded-xl gradient-muted flex items-center justify-center mx-auto mb-6">
+      <div className="card-modern-xl p-8 text-center">
+        <div className="w-16 h-16 rounded-xl gradient-muted flex items-center justify-center mx-auto mb-4">
           <MapPin className="w-8 h-8 text-muted-foreground" />
         </div>
         <h3 className="text-xl font-semibold text-foreground mb-2">No River Walks Yet</h3>
@@ -407,7 +407,7 @@ export function RiverWalkList({
   const displayedRiverWalks = getFilteredRiverWalks();
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {/* Tab Navigation */}
       <RiverWalkTabs
         riverWalks={riverWalks}
@@ -419,15 +419,15 @@ export function RiverWalkList({
 
       {/* River Walks List */}
       {displayedRiverWalks.length > 0 ? (
-        <div className="space-y-3">
+        <div className="space-y-2">
           {displayedRiverWalks.map((riverWalk, index) => renderRiverWalk(riverWalk, isShowingArchived, index))}
         </div>
       ) : (
-        <div className="card-modern-xl p-8 text-center">
-          <div className="w-12 h-12 rounded-xl gradient-muted flex items-center justify-center mx-auto mb-4">
+        <div className="card-modern-xl p-6 text-center">
+          <div className="w-12 h-12 rounded-xl gradient-muted flex items-center justify-center mx-auto mb-3">
             <MapPin className="w-6 h-6 text-muted-foreground" />
           </div>
-          <h3 className="text-lg font-semibold text-foreground mb-2">
+          <h3 className="text-lg font-semibold text-foreground mb-1">
             {activeTab === 'all' && riverWalks.length === 0 
               ? 'No River Walks Yet' 
               : `No ${activeTab === 'my-walks' ? 'Personal' : activeTab === 'shared-with-me' ? 'Shared with Me' : activeTab === 'shared-by-me' ? 'Shared by Me' : 'Archived'} River Walks`

@@ -462,9 +462,9 @@ export default function RiverWalksPage() {
   return (
     <TermsGate user={user!}>
       <div className="min-h-screen gradient-muted">
-      <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
+      <div className="p-3 sm:p-4 lg:p-6 max-w-7xl mx-auto">
         {/* Compact header with logo and profile */}
-        <div className="glass rounded-2xl p-4 sm:p-6 mb-8 border border-white/20">
+        <div className="glass rounded-2xl p-3 sm:p-4 mb-4 border border-white/20">
           <div className="flex items-center justify-between gap-4">
             {/* Left side: Logo and title */}
             <div className="flex items-center gap-4 flex-1 min-w-0">
@@ -517,7 +517,7 @@ export default function RiverWalksPage() {
 
         {/* Pending Invites Notification */}
         {collaborationEnabled && pendingInvites && pendingInvites.length > 0 && (
-          <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-8">
+          <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-4">
             <div className="flex items-start gap-3">
               <div className="bg-blue-100 rounded-full p-2 flex-shrink-0">
                 <Users className="w-5 h-5 text-blue-600" />
@@ -570,7 +570,7 @@ export default function RiverWalksPage() {
 
         {/* Error display */}
         {error && (
-          <div className="bg-destructive/10 border border-destructive/20 text-destructive px-6 py-4 rounded-xl mb-8 flex items-center justify-between">
+          <div className="bg-destructive/10 border border-destructive/20 text-destructive px-6 py-4 rounded-xl mb-4 flex items-center justify-between">
             <span className="font-medium">{error}</span>
             <button 
               className="text-destructive hover:text-destructive/80 text-xl font-bold"
@@ -582,7 +582,7 @@ export default function RiverWalksPage() {
         )}
 
         {/* Action Buttons / Form */}
-        <div className={`morph-container ${showForm || showJoinCollaboration ? 'morph-form-state' : 'morph-button-state'} mb-8`}>
+        <div className={`morph-container ${showForm || showJoinCollaboration ? 'morph-form-state' : 'morph-button-state'} mb-4`}>
           {/* Button State */}
           <div className={`add-button-morph ${showForm || showJoinCollaboration ? 'add-button-hidden' : 'add-button-visible'}`}>
             <div className="flex gap-4">

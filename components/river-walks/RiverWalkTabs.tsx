@@ -152,7 +152,7 @@ export function RiverWalkTabs({
   const visibleTabs = tabs.filter(tab => tab.id === 'all' || tab.count > 0);
 
   return (
-    <div className="mb-6">
+    <div className="mb-3">
       {/* Tab Navigation */}
       <div className="flex items-center justify-center sm:justify-start gap-1 sm:gap-2 p-1 bg-gray-50 rounded-xl">
         {visibleTabs.map((tab) => (
