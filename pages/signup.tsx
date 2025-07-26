@@ -112,7 +112,7 @@ export default function Signup() {
               Start Your <span className="text-cyan-200">River Study</span> Journey
             </h1>
             <p className="text-white/80 text-lg mb-6">
-              Join thousands of students creating <span className="text-blue-100 font-semibold">professional GCSE reports</span> 
+              Join thousands of students creating <span className="text-blue-100 font-semibold">professional GCSE reports</span>{' '}
               without the hours of work.
             </p>
           </div>

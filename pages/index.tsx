@@ -627,6 +627,16 @@ export default function Home() {
                     />
                   </div>
                 </div>
+                
+                {/* No Mobile, No Problem section - after manage section */}
+                {!user && (
+                  <div className="bg-green-600/90 backdrop-blur-sm border border-green-400/60 rounded-xl p-4 mb-8 max-w-2xl mx-auto">
+                    <p className="text-green-50 text-lg font-bold mb-1">📱 No Mobile, No Problem!</p>
+                    <p className="text-green-100 text-sm">
+                      Collect data on-site with our print templates, then digitise when you're back. Perfect for field trips where mobiles aren't allowed.
+                    </p>
+                  </div>
+                )}
 
                 {/* Step 2: Collect */}
                 <div className="journey-step mb-8">
@@ -671,15 +681,6 @@ export default function Home() {
             )}
 
 
-            {/* No Mobile, No Problem section - after data collection */}
-            {!user && (
-              <div className="bg-green-600/90 backdrop-blur-sm border border-green-400/60 rounded-xl p-4 mb-12 max-w-2xl mx-auto">
-                <p className="text-green-50 text-lg font-bold mb-1">📱 No Mobile, No Problem!</p>
-                <p className="text-green-100 text-sm">
-                  Collect data on-site with our print templates, then digitise when you're back. Perfect for field trips where mobiles aren't allowed.
-                </p>
-              </div>
-            )}
 
             {/* PWA Install Prompt */}
             {!user && (
@@ -688,21 +689,6 @@ export default function Home() {
               </div>
             )}
 
-            {/* Explanatory content after CTA */}
-            <div className="mb-6">
-              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-white mb-4">
-                Turn your river adventures into beautiful data stories
-              </h1>
-            </div>
-
-
-            {/* Scroll indicator */}
-            {!user && (
-              <div className="flex flex-col items-center animate-bounce">
-                <p className="text-white/70 text-sm mb-2">See what the community is discovering</p>
-                <ChevronDown className="w-6 h-6 text-white/70" />
-              </div>
-            )}
           </div>
         </div>
 
@@ -746,6 +732,15 @@ export default function Home() {
           </div>
         )}
 
+        {/* Final CTA Divider */}
+        {!user && (
+          <div className="flex items-center justify-center mb-12">
+            <div className="h-px bg-white/20 flex-1 max-w-xs"></div>
+            <div className="mx-4 text-white/40 text-sm">Get Started</div>
+            <div className="h-px bg-white/20 flex-1 max-w-xs"></div>
+          </div>
+        )}
+        
         {/* Final CTA */}
         {!user && (
           <div ref={ctaRef} className="py-12 px-4 sm:px-6 lg:px-8 text-center">
@@ -763,7 +758,7 @@ export default function Home() {
                 onClick={() => window.location.href = '/signup'}
                 className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white px-8 py-3 rounded-lg font-semibold text-lg transition-all hover:scale-105 shadow-lg"
               >
-                Start Your Journey →
+                Start Your Riverwalk Journey →
               </button>
             </div>
           </div>
