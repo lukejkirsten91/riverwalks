@@ -489,7 +489,16 @@ export default function Home() {
                 </div>
                 
                 {/* Interactive Report Images */}
-                <div className="flex justify-center mb-8 gap-4 flex-wrap">
+                <div className="flex justify-center mb-8 gap-4 flex-wrap" onClick={(e) => {
+                  // Reset all images if clicking outside any image
+                  if (e.target === e.currentTarget) {
+                    const allImages = document.querySelectorAll('.report-image');
+                    allImages.forEach((img: any) => {
+                      img.style.transform = 'scale(1)';
+                      img.style.zIndex = '10';
+                    });
+                  }
+                }}>
                   <img 
                     src="/scatter1.jpg" 
                     alt="Professional river study report" 
@@ -524,6 +533,7 @@ export default function Home() {
                       }
                     }}
                     onClick={(e) => {
+                      e.stopPropagation(); // Prevent event bubbling to parent
                       const allImages = document.querySelectorAll('.report-image');
                       const currentImage = e.currentTarget;
                       
@@ -584,6 +594,7 @@ export default function Home() {
                       }
                     }}
                     onClick={(e) => {
+                      e.stopPropagation(); // Prevent event bubbling to parent
                       const allImages = document.querySelectorAll('.report-image');
                       const currentImage = e.currentTarget;
                       
@@ -644,6 +655,7 @@ export default function Home() {
                       }
                     }}
                     onClick={(e) => {
+                      e.stopPropagation(); // Prevent event bubbling to parent
                       const allImages = document.querySelectorAll('.report-image');
                       const currentImage = e.currentTarget;
                       
