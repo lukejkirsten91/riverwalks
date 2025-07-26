@@ -493,85 +493,181 @@ export default function Home() {
                   <img 
                     src="/scatter1.jpg" 
                     alt="Professional river study report" 
-                    className="report-image w-32 sm:w-40 md:w-48 h-auto rounded-lg shadow-xl transform transition-all duration-300 relative z-10"
+                    className="report-image w-32 sm:w-40 md:w-48 h-auto rounded-lg shadow-xl transform transition-all duration-300 relative z-10 cursor-pointer"
                     onMouseEnter={(e) => {
+                      // Only apply hover effect on non-touch devices
+                      if (window.matchMedia("(hover: hover)").matches) {
+                        const allImages = document.querySelectorAll('.report-image');
+                        const currentImage = e.currentTarget;
+                        
+                        // Zoom this one and shrink others
+                        allImages.forEach((img: any) => {
+                          if (img === currentImage) {
+                            img.style.transform = 'scale(1.4)';
+                            img.style.zIndex = '20';
+                          } else {
+                            img.style.transform = 'scale(0.8)';
+                            img.style.zIndex = '5';
+                          }
+                        });
+                      }
+                    }}
+                    onMouseLeave={() => {
+                      // Only apply hover effect on non-touch devices
+                      if (window.matchMedia("(hover: hover)").matches) {
+                        const allImages = document.querySelectorAll('.report-image');
+                        // Reset all to normal
+                        allImages.forEach((img: any) => {
+                          img.style.transform = 'scale(1)';
+                          img.style.zIndex = '10';
+                        });
+                      }
+                    }}
+                    onClick={(e) => {
                       const allImages = document.querySelectorAll('.report-image');
                       const currentImage = e.currentTarget;
                       
-                      // Zoom this one and shrink others
-                      allImages.forEach((img: any) => {
-                        if (img === currentImage) {
-                          img.style.transform = 'scale(1.4)';
-                          img.style.zIndex = '20';
-                        } else {
-                          img.style.transform = 'scale(0.8)';
-                          img.style.zIndex = '5';
-                        }
-                      });
-                    }}
-                    onMouseLeave={() => {
-                      const allImages = document.querySelectorAll('.report-image');
-                      // Reset all to normal
-                      allImages.forEach((img: any) => {
-                        img.style.transform = 'scale(1)';
-                        img.style.zIndex = '10';
-                      });
+                      // Check if this image is already zoomed
+                      const isZoomed = currentImage.style.transform === 'scale(1.4)';
+                      
+                      if (isZoomed) {
+                        // Reset all to normal
+                        allImages.forEach((img: any) => {
+                          img.style.transform = 'scale(1)';
+                          img.style.zIndex = '10';
+                        });
+                      } else {
+                        // Zoom this one and shrink others
+                        allImages.forEach((img: any) => {
+                          if (img === currentImage) {
+                            img.style.transform = 'scale(1.4)';
+                            img.style.zIndex = '20';
+                          } else {
+                            img.style.transform = 'scale(0.8)';
+                            img.style.zIndex = '5';
+                          }
+                        });
+                      }
                     }}
                   />
                   <img 
                     src="/scatter2.jpg" 
                     alt="River data visualisation report" 
-                    className="report-image w-32 sm:w-40 md:w-48 h-auto rounded-lg shadow-xl transform transition-all duration-300 relative z-10"
+                    className="report-image w-32 sm:w-40 md:w-48 h-auto rounded-lg shadow-xl transform transition-all duration-300 relative z-10 cursor-pointer"
                     onMouseEnter={(e) => {
+                      // Only apply hover effect on non-touch devices
+                      if (window.matchMedia("(hover: hover)").matches) {
+                        const allImages = document.querySelectorAll('.report-image');
+                        const currentImage = e.currentTarget;
+                        
+                        // Zoom this one and shrink others
+                        allImages.forEach((img: any) => {
+                          if (img === currentImage) {
+                            img.style.transform = 'scale(1.4)';
+                            img.style.zIndex = '20';
+                          } else {
+                            img.style.transform = 'scale(0.8)';
+                            img.style.zIndex = '5';
+                          }
+                        });
+                      }
+                    }}
+                    onMouseLeave={() => {
+                      // Only apply hover effect on non-touch devices
+                      if (window.matchMedia("(hover: hover)").matches) {
+                        const allImages = document.querySelectorAll('.report-image');
+                        // Reset all to normal
+                        allImages.forEach((img: any) => {
+                          img.style.transform = 'scale(1)';
+                          img.style.zIndex = '10';
+                        });
+                      }
+                    }}
+                    onClick={(e) => {
                       const allImages = document.querySelectorAll('.report-image');
                       const currentImage = e.currentTarget;
                       
-                      // Zoom this one and shrink others
-                      allImages.forEach((img: any) => {
-                        if (img === currentImage) {
-                          img.style.transform = 'scale(1.4)';
-                          img.style.zIndex = '20';
-                        } else {
-                          img.style.transform = 'scale(0.8)';
-                          img.style.zIndex = '5';
-                        }
-                      });
-                    }}
-                    onMouseLeave={() => {
-                      const allImages = document.querySelectorAll('.report-image');
-                      // Reset all to normal
-                      allImages.forEach((img: any) => {
-                        img.style.transform = 'scale(1)';
-                        img.style.zIndex = '10';
-                      });
+                      // Check if this image is already zoomed
+                      const isZoomed = currentImage.style.transform === 'scale(1.4)';
+                      
+                      if (isZoomed) {
+                        // Reset all to normal
+                        allImages.forEach((img: any) => {
+                          img.style.transform = 'scale(1)';
+                          img.style.zIndex = '10';
+                        });
+                      } else {
+                        // Zoom this one and shrink others
+                        allImages.forEach((img: any) => {
+                          if (img === currentImage) {
+                            img.style.transform = 'scale(1.4)';
+                            img.style.zIndex = '20';
+                          } else {
+                            img.style.transform = 'scale(0.8)';
+                            img.style.zIndex = '5';
+                          }
+                        });
+                      }
                     }}
                   />
                   <img 
                     src="/scatter3.jpg" 
                     alt="River analysis scatter plot report" 
-                    className="report-image w-32 sm:w-40 md:w-48 h-auto rounded-lg shadow-xl transform transition-all duration-300 relative z-10"
+                    className="report-image w-32 sm:w-40 md:w-48 h-auto rounded-lg shadow-xl transform transition-all duration-300 relative z-10 cursor-pointer"
                     onMouseEnter={(e) => {
+                      // Only apply hover effect on non-touch devices
+                      if (window.matchMedia("(hover: hover)").matches) {
+                        const allImages = document.querySelectorAll('.report-image');
+                        const currentImage = e.currentTarget;
+                        
+                        // Zoom this one and shrink others
+                        allImages.forEach((img: any) => {
+                          if (img === currentImage) {
+                            img.style.transform = 'scale(1.4)';
+                            img.style.zIndex = '20';
+                          } else {
+                            img.style.transform = 'scale(0.8)';
+                            img.style.zIndex = '5';
+                          }
+                        });
+                      }
+                    }}
+                    onMouseLeave={() => {
+                      // Only apply hover effect on non-touch devices
+                      if (window.matchMedia("(hover: hover)").matches) {
+                        const allImages = document.querySelectorAll('.report-image');
+                        // Reset all to normal
+                        allImages.forEach((img: any) => {
+                          img.style.transform = 'scale(1)';
+                          img.style.zIndex = '10';
+                        });
+                      }
+                    }}
+                    onClick={(e) => {
                       const allImages = document.querySelectorAll('.report-image');
                       const currentImage = e.currentTarget;
                       
-                      // Zoom this one and shrink others
-                      allImages.forEach((img: any) => {
-                        if (img === currentImage) {
-                          img.style.transform = 'scale(1.4)';
-                          img.style.zIndex = '20';
-                        } else {
-                          img.style.transform = 'scale(0.8)';
-                          img.style.zIndex = '5';
-                        }
-                      });
-                    }}
-                    onMouseLeave={() => {
-                      const allImages = document.querySelectorAll('.report-image');
-                      // Reset all to normal
-                      allImages.forEach((img: any) => {
-                        img.style.transform = 'scale(1)';
-                        img.style.zIndex = '10';
-                      });
+                      // Check if this image is already zoomed
+                      const isZoomed = currentImage.style.transform === 'scale(1.4)';
+                      
+                      if (isZoomed) {
+                        // Reset all to normal
+                        allImages.forEach((img: any) => {
+                          img.style.transform = 'scale(1)';
+                          img.style.zIndex = '10';
+                        });
+                      } else {
+                        // Zoom this one and shrink others
+                        allImages.forEach((img: any) => {
+                          if (img === currentImage) {
+                            img.style.transform = 'scale(1.4)';
+                            img.style.zIndex = '20';
+                          } else {
+                            img.style.transform = 'scale(0.8)';
+                            img.style.zIndex = '5';
+                          }
+                        });
+                      }
                     }}
                   />
                 </div>
