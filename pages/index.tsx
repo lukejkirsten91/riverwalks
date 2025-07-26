@@ -736,9 +736,7 @@ export default function Home() {
 
             {/* PWA Install Prompt */}
             {!user && (
-              <div className="flex justify-center mb-8">
-                <PWAInstallButton variant="standalone" />
-              </div>
+              <PWAInstallButton variant="standalone" />
             )}
 
           </div>

@@ -98,16 +98,19 @@ export function PWAInstallButton({ className = '', variant = 'header' }: PWAInst
     );
   }
 
+  // Standalone variant (default)
   return (
-    <button
-      onClick={handleInstallClick}
-      className={`flex items-center gap-3 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors shadow-sm ${className}`}
-    >
-      <Smartphone className="w-5 h-5" />
-      <div className="text-left">
-        <div className="text-sm font-semibold">Install Riverwalks</div>
-        <div className="text-xs text-blue-100">Add to your device for quick access</div>
-      </div>
-    </button>
+    <div className="flex justify-center mb-8">
+      <button
+        onClick={handleInstallClick}
+        className={`flex items-center gap-3 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors shadow-sm ${className}`}
+      >
+        <Smartphone className="w-5 h-5" />
+        <div className="text-left">
+          <div className="text-sm font-semibold">Install Riverwalks</div>
+          <div className="text-xs text-blue-100">Add to your device for quick access</div>
+        </div>
+      </button>
+    </div>
   );
 }
