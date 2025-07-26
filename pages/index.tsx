@@ -499,11 +499,11 @@ export default function Home() {
               <div className="reports-section mb-8">
                 <div className="text-center mb-8">
                   <h2 className="text-3xl sm:text-4xl font-bold text-white mb-3">
-                    Get <span className="text-blue-300 font-bold">top grades</span> without the grind
+                    Get <span className="text-blue-900 font-bold">top grades</span> without the grind
                   </h2>
                   <p className="text-white/80 text-lg max-w-2xl mx-auto mb-8">
-                    Skip the tedious work. Get <span className="text-blue-200 font-bold">professional charts</span> and 
-                    <span className="text-blue-200 font-bold"> analysis</span> without the hours of manual formatting.
+                    Skip the tedious work. Get a <span className="text-blue-800 font-bold">GCSE-ready report</span> with 
+                    <span className="text-blue-700 font-bold">professional charts</span> and <span className="text-blue-600 font-bold">metrics</span> without the hours of manual formatting.
                   </p>
                 </div>
                 
@@ -609,22 +609,20 @@ export default function Home() {
                   />
                 </div>
                 
-                {/* See exactly what you'll get */}
+                {/* See exactly what you'll get with download link */}
                 <div className="text-center mb-8">
-                  <p className="text-white/90 text-lg font-medium">See exactly what you'll get - Download the full report</p>
-                </div>
-                
-                {/* Download CTA */}
-                <div className="text-center mb-8">
-                  <a
-                    href="/report_to_download.pdf"
-                    download="riverwalks-example-report.pdf"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 text-blue-200 hover:text-white border border-blue-300 hover:border-blue-200 px-4 py-2 rounded-lg text-sm font-medium transition-colors underline-offset-4 hover:underline"
-                  >
-                    📊 Download the Full Report
-                  </a>
+                  <p className="text-white/90 text-lg font-medium">
+                    See exactly what you'll get - 
+                    <a
+                      href="/report_to_download.pdf"
+                      download="riverwalks-example-report.pdf"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-300 hover:text-white underline underline-offset-4 font-semibold"
+                    >
+                      📊 Download the full report
+                    </a>
+                  </p>
                 </div>
               </div>
             )}
@@ -636,7 +634,7 @@ export default function Home() {
                   onClick={() => window.location.href = '/signup'}
                   className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white px-8 py-3 rounded-lg font-semibold text-lg transition-all hover:scale-105 shadow-lg"
                 >
-                  Start Your Journey →
+                  🤿 Dive in 🌊
                 </button>
                 <p className="text-white/70 text-sm mt-2">Create your account in under 30 seconds</p>
               </div>
@@ -664,11 +662,11 @@ export default function Home() {
                 <div className="journey-step mb-8">
                   <div className="text-center mb-8">
                     <h3 className="text-2xl sm:text-3xl font-bold text-white mb-3">
-                      <span className="text-blue-400 font-bold">Manage</span> your Riverwalks
+                      Manage your Riverwalks
                     </h3>
                     <p className="text-white/80 text-base max-w-xl mx-auto">
                       Access your river studies anywhere with our mobile-optimised interface. 
-                      <span className="text-blue-400 font-bold">View sites</span>, <span className="text-green-600 font-bold">collect data</span> all from your phone.
+                      <span className="text-blue-700 font-bold">View sites</span> and <span className="text-green-700 font-bold">collect data</span> all from your <span className="text-blue-600 font-bold">phone</span>.
                     </p>
                   </div>
                   <div className="flex justify-center">
@@ -694,10 +692,10 @@ export default function Home() {
                 <div className="journey-step mb-8">
                   <div className="text-center mb-8">
                     <h3 className="text-2xl sm:text-3xl font-bold text-white mb-3">
-                      <span className="text-slate-600 font-bold">Collect</span> comprehensive river data
+                      Collect comprehensive river data
                     </h3>
                     <p className="text-white/80 text-base max-w-2xl mx-auto">
-                      Gather detailed measurements for site information, cross-sections, velocity, and sediment analysis. Everything you need for your Geography fieldwork.
+                      Gather detailed <span className="text-blue-600 font-bold">measurements</span> for <span className="text-blue-700 font-bold">site information</span>, <span className="text-blue-600 font-bold">cross-sections</span>, <span className="text-blue-700 font-bold">velocity</span>, and <span className="text-blue-600 font-bold">sediment analysis</span>. Everything you need for your <span className="text-blue-800 font-bold">Geography fieldwork</span>.
                     </p>
                   </div>
                   <div className="flex justify-center px-4">
@@ -707,6 +705,22 @@ export default function Home() {
                         alt="Three phone screens showing data collection interfaces for site info, cross-sections, velocity and sediment" 
                         className="w-full h-auto object-contain"
                       />
+                    </div>
+                  </div>
+                  
+                  {/* Offline Functionality Box */}
+                  <div className="text-center mt-8 mb-6">
+                    <div className="bg-blue-900/30 border border-blue-600/40 rounded-xl p-6 max-w-xl mx-auto backdrop-blur-sm">
+                      <div className="flex justify-center mb-3">
+                        {/* Mini Toast Popup Demo */}
+                        <div className="bg-green-600/90 border border-green-500/60 rounded-lg px-3 py-2 text-xs text-green-100 shadow-lg">
+                          📱 Working offline - data will sync when connected
+                        </div>
+                      </div>
+                      <p className="text-blue-100 text-lg font-medium mb-2">📶 No Signal? No Problem!</p>
+                      <p className="text-blue-200 text-sm">
+                        Collect data offline at remote sites. Everything syncs automatically when you're back online.
+                      </p>
                     </div>
                   </div>
                   
