@@ -508,12 +508,13 @@ export default function Home() {
                 </div>
                 
                 {/* Interactive Report Images */}
-                <div className="flex justify-center mb-8 gap-4 flex-wrap" onClick={(e) => {
+                <div className="flex justify-center mb-8 gap-4 flex-wrap overflow-hidden px-4" onClick={(e) => {
                   // Reset all images if clicking outside
                   if (e.target === e.currentTarget) {
                     document.querySelectorAll('.report-image').forEach((img: any) => {
                       img.style.transform = 'scale(1)';
                       img.style.zIndex = '10';
+                      img.style.transformOrigin = 'center';
                     });
                   }
                 }}>
@@ -527,22 +528,25 @@ export default function Home() {
                       const currentImage = e.currentTarget;
                       
                       // Check if this image is already zoomed
-                      const isZoomed = currentImage.style.transform === 'scale(2.2)';
+                      const isZoomed = currentImage.style.transform === 'scale(1.8)';
                       
                       if (isZoomed) {
                         // Reset all to normal
                         allImages.forEach((img: any) => {
                           img.style.transform = 'scale(1)';
+                          img.style.transformOrigin = 'center';
                           img.style.zIndex = '10';
                         });
                       } else {
                         // Zoom this one and shrink others
                         allImages.forEach((img: any) => {
                           if (img === currentImage) {
-                            img.style.transform = 'scale(2.2)';
+                            img.style.transform = 'scale(1.8)';
+                            img.style.transformOrigin = 'center';
                             img.style.zIndex = '20';
                           } else {
-                            img.style.transform = 'scale(0.6)';
+                            img.style.transform = 'scale(0.7)';
+                            img.style.transformOrigin = 'center';
                             img.style.zIndex = '5';
                           }
                         });
@@ -558,7 +562,7 @@ export default function Home() {
                       const allImages = document.querySelectorAll('.report-image');
                       const currentImage = e.currentTarget;
                       
-                      const isZoomed = currentImage.style.transform === 'scale(2.2)';
+                      const isZoomed = currentImage.style.transform === 'scale(1.8)';
                       
                       if (isZoomed) {
                         allImages.forEach((img: any) => {
@@ -587,7 +591,7 @@ export default function Home() {
                       const allImages = document.querySelectorAll('.report-image');
                       const currentImage = e.currentTarget;
                       
-                      const isZoomed = currentImage.style.transform === 'scale(2.2)';
+                      const isZoomed = currentImage.style.transform === 'scale(1.8)';
                       
                       if (isZoomed) {
                         allImages.forEach((img: any) => {
