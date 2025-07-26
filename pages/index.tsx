@@ -483,9 +483,9 @@ export default function Home() {
 
         {/* Hero Section */}
         <div ref={heroRef} className="flex flex-col items-center justify-center py-16 p-4 sm:p-6 lg:p-8">
-          <div className={`text-center max-w-5xl mx-auto ${user ? 'mb-8' : 'mb-12'}`}>
+          <div className={`text-center max-w-5xl mx-auto mb-8`}>
             <div className="mb-8">
-              <div className="hero-badge bg-blue-600/90 backdrop-blur-sm border border-blue-400/60 rounded-xl p-4 mb-6 max-w-2xl mx-auto">
+              <div className="hero-badge bg-blue-600/90 backdrop-blur-sm border border-blue-400/60 rounded-xl p-4 mb-8 max-w-2xl mx-auto">
                 <p className="text-blue-50 text-lg font-bold mb-1">🎓 #1 Tool for GCSE Geography Coursework</p>
                 <p className="text-blue-100 text-sm">
                   The complete river study platform trusted by students and teachers across the UK
@@ -497,18 +497,18 @@ export default function Home() {
             {/* What You Get - Reports Section */}
             {!user && (
               <div className="reports-section mb-8">
-                <div className="text-center mb-6">
+                <div className="text-center mb-8">
                   <h2 className="text-3xl sm:text-4xl font-bold text-white mb-3">
                     Get <span className="text-cyan-200 font-bold">top grades</span> without the grind
                   </h2>
-                  <p className="text-white/80 text-lg max-w-2xl mx-auto mb-4">
+                  <p className="text-white/80 text-lg max-w-2xl mx-auto mb-8">
                     Skip the tedious work. Get <span className="text-blue-100 font-bold">professional charts</span> and 
                     <span className="text-teal-100 font-bold"> analysis</span> without the hours of manual formatting.
                   </p>
                 </div>
                 
                 {/* Interactive Report Images */}
-                <div className="flex justify-center mb-6 gap-4 flex-wrap" onClick={(e) => {
+                <div className="flex justify-center mb-8 gap-4 flex-wrap" onClick={(e) => {
                   // Reset all images if clicking outside
                   if (e.target === e.currentTarget) {
                     document.querySelectorAll('.report-image').forEach((img: any) => {
@@ -610,7 +610,7 @@ export default function Home() {
                 </div>
                 
                 {/* See exactly what you'll get */}
-                <div className="text-center mb-4">
+                <div className="text-center mb-8">
                   <p className="text-white/90 text-lg font-medium">See exactly what you'll get</p>
                 </div>
                 
@@ -631,7 +631,7 @@ export default function Home() {
 
             {/* Smaller Journey CTA */}
             {!user && (
-              <div className="text-center mb-12">
+              <div className="text-center mb-8">
                 <button
                   onClick={() => window.location.href = '/signup'}
                   className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white px-8 py-3 rounded-lg font-semibold text-lg transition-all hover:scale-105 shadow-lg"
@@ -644,7 +644,7 @@ export default function Home() {
             
             {/* Section Divider */}
             {!user && (
-              <div className="flex items-center justify-center mb-12">
+              <div className="flex items-center justify-center mb-8">
                 <div className="h-px bg-white/20 flex-1 max-w-xs"></div>
                 <div className="mx-4 text-white/40 text-sm">Your Journey</div>
                 <div className="h-px bg-white/20 flex-1 max-w-xs"></div>
@@ -653,16 +653,16 @@ export default function Home() {
 
             {/* Journey: How to Get There */}
             {!user && (
-              <div className="mb-16">
-                <div className="text-center mb-12">
-                  <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
+              <div className="mb-8">
+                <div className="text-center mb-8">
+                  <h2 className="text-3xl sm:text-4xl font-bold text-white mb-8">
                     Your Journey to <span className="text-cyan-100 font-bold">Success</span>
                   </h2>
                 </div>
 
                 {/* Step 1: Manage */}
                 <div className="journey-step mb-8">
-                  <div className="text-center mb-6">
+                  <div className="text-center mb-8">
                     <h3 className="text-2xl sm:text-3xl font-bold text-white mb-3">
                       <span className="text-cyan-100 font-bold">Manage</span> your Riverwalks
                     </h3>
@@ -692,7 +692,7 @@ export default function Home() {
 
                 {/* Step 2: Collect */}
                 <div className="journey-step mb-8">
-                  <div className="text-center mb-6">
+                  <div className="text-center mb-8">
                     <h3 className="text-2xl sm:text-3xl font-bold text-white mb-3">
                       <span className="text-teal-100 font-bold">Collect</span> comprehensive river data
                     </h3>
@@ -755,7 +755,7 @@ export default function Home() {
         {!user && (
           <div ref={featuresRef} className="pt-8 pb-12 px-4 sm:px-6 lg:px-8">
             <div className="max-w-4xl mx-auto">
-              <div className="text-center mb-12">
+              <div className="text-center mb-8">
                 <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
                   Why River Enthusiasts Love Riverwalks
                 </h2>
@@ -786,7 +786,7 @@ export default function Home() {
 
         {/* Final CTA Divider */}
         {!user && (
-          <div className="flex items-center justify-center mb-12">
+          <div className="flex items-center justify-center mb-8">
             <div className="h-px bg-white/20 flex-1 max-w-lg"></div>
           </div>
         )}
