@@ -499,11 +499,11 @@ export default function Home() {
               <div className="reports-section mb-8">
                 <div className="text-center mb-8">
                   <h2 className="text-3xl sm:text-4xl font-bold text-white mb-3">
-                    Get <span className="text-cyan-200 font-bold">top grades</span> without the grind
+                    Get <span className="text-blue-300 font-bold">top grades</span> without the grind
                   </h2>
                   <p className="text-white/80 text-lg max-w-2xl mx-auto mb-8">
-                    Skip the tedious work. Get <span className="text-blue-100 font-bold">professional charts</span> and 
-                    <span className="text-teal-100 font-bold"> analysis</span> without the hours of manual formatting.
+                    Skip the tedious work. Get <span className="text-blue-200 font-bold">professional charts</span> and 
+                    <span className="text-blue-200 font-bold"> analysis</span> without the hours of manual formatting.
                   </p>
                 </div>
                 
@@ -611,7 +611,7 @@ export default function Home() {
                 
                 {/* See exactly what you'll get */}
                 <div className="text-center mb-8">
-                  <p className="text-white/90 text-lg font-medium">See exactly what you'll get</p>
+                  <p className="text-white/90 text-lg font-medium">See exactly what you'll get - Download the full report</p>
                 </div>
                 
                 {/* Download CTA */}
@@ -646,7 +646,7 @@ export default function Home() {
             {!user && (
               <div className="flex items-center justify-center mb-8">
                 <div className="h-px bg-white/20 flex-1 max-w-xs"></div>
-                <div className="mx-4 text-white/40 text-sm">Your Journey</div>
+                <div className="mx-4 text-white/40 text-sm">The Journey</div>
                 <div className="h-px bg-white/20 flex-1 max-w-xs"></div>
               </div>
             )}
@@ -656,7 +656,7 @@ export default function Home() {
               <div className="mb-8">
                 <div className="text-center mb-8">
                   <h2 className="text-3xl sm:text-4xl font-bold text-white mb-8">
-                    Your Journey to <span className="text-cyan-100 font-bold">Success</span>
+                    Your Journey to <span className="text-yellow-300 font-bold">Success</span>
                   </h2>
                 </div>
 
@@ -664,11 +664,11 @@ export default function Home() {
                 <div className="journey-step mb-8">
                   <div className="text-center mb-8">
                     <h3 className="text-2xl sm:text-3xl font-bold text-white mb-3">
-                      <span className="text-cyan-100 font-bold">Manage</span> your Riverwalks
+                      <span className="text-blue-400 font-bold">Manage</span> your Riverwalks
                     </h3>
                     <p className="text-white/80 text-base max-w-xl mx-auto">
                       Access your river studies anywhere with our mobile-optimised interface. 
-                      View sites, collect <span className="text-blue-100 font-bold">data</span>, and track progress all from your phone.
+                      <span className="text-blue-400 font-bold">View sites</span>, <span className="text-green-600 font-bold">collect data</span> all from your phone.
                     </p>
                   </div>
                   <div className="flex justify-center">
@@ -694,13 +694,10 @@ export default function Home() {
                 <div className="journey-step mb-8">
                   <div className="text-center mb-8">
                     <h3 className="text-2xl sm:text-3xl font-bold text-white mb-3">
-                      <span className="text-teal-100 font-bold">Collect</span> comprehensive river data
+                      <span className="text-slate-600 font-bold">Collect</span> comprehensive river data
                     </h3>
                     <p className="text-white/80 text-base max-w-2xl mx-auto">
-                      Gather detailed measurements for site information, cross-sections, 
-                      <span className="text-cyan-100 font-bold"> velocity</span>, and 
-                      <span className="text-blue-100 font-bold"> sediment analysis</span>. 
-                      Everything you need for your Geography fieldwork.
+                      Gather detailed measurements for site information, cross-sections, velocity, and sediment analysis. Everything you need for your Geography fieldwork.
                     </p>
                   </div>
                   <div className="flex justify-center px-4">
