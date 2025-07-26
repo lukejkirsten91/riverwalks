@@ -751,7 +751,7 @@ export default function Home() {
 
         {/* Why Riverwalks Section */}
         {!user && (
-          <div ref={featuresRef} className="pt-8 pb-12 px-4 sm:px-6 lg:px-8">
+          <div ref={featuresRef} className="px-4 sm:px-6 lg:px-8">
             <div className="max-w-4xl mx-auto">
               <div className="text-center mb-8">
                 <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
@@ -791,7 +791,7 @@ export default function Home() {
         
         {/* Final CTA */}
         {!user && (
-          <div ref={ctaRef} className="py-12 px-4 sm:px-6 lg:px-8 text-center">
+          <div ref={ctaRef} className="px-4 sm:px-6 lg:px-8 text-center">
             <div className="glass rounded-2xl p-8 max-w-2xl mx-auto bg-gray-900/80 backdrop-blur-md">
               <h2 className="text-2xl sm:text-3xl font-bold text-white mb-4">
                 Ready to explore rivers like never before?
