@@ -456,7 +456,7 @@ export default function Home() {
                   className="bg-white/20 hover:bg-white/30 backdrop-blur-sm border border-white/30 text-white px-2 py-1.5 sm:px-4 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors"
                 >
                   <span className="hidden sm:inline">Dive</span>
-                  <span className="sm:hidden">🤿</span>
+                  <span className="sm:hidden">Dive in</span>
                 </button>
               )}
             </div>
@@ -705,6 +705,16 @@ export default function Home() {
                       <p className="text-green-100 text-xl font-medium mb-2">💰 Just £1.99/year or £3.49 lifetime</p>
                       <p className="text-green-200 text-base">One payment. Unlimited reports. No hidden fees.</p>
                     </div>
+                  </div>
+                  
+                  {/* Dive in CTA after pricing */}
+                  <div className="text-center mt-6">
+                    <button
+                      onClick={() => window.location.href = '/signup'}
+                      className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white px-6 py-2.5 rounded-lg font-semibold text-base transition-all hover:scale-105 shadow-lg"
+                    >
+                      🤿 Dive in 🌊
+                    </button>
                   </div>
                   
                   {/* Section Divider */}
