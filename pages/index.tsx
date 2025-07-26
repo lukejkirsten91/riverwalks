@@ -453,10 +453,10 @@ export default function Home() {
               ) : (
                 <button
                   onClick={() => window.location.href = '/signup'}
-                  className="bg-white/20 hover:bg-white/30 backdrop-blur-sm border border-white/30 text-white px-2 py-1.5 sm:px-4 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors"
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 backdrop-blur-sm border border-cyan-400/50 text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all hover:scale-105 shadow-lg"
                 >
-                  <span className="hidden sm:inline">Dive</span>
-                  <span className="sm:hidden">Dive in</span>
+                  <span className="hidden sm:inline">🤿 Dive</span>
+                  <span className="sm:hidden">🤿 Dive in</span>
                 </button>
               )}
             </div>
@@ -709,6 +709,7 @@ export default function Home() {
                   
                   {/* Dive in CTA after pricing */}
                   <div className="text-center mt-6">
+                    <p className="text-white/70 text-sm mb-3">Ready to start your river study?</p>
                     <button
                       onClick={() => window.location.href = '/signup'}
                       className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white px-6 py-2.5 rounded-lg font-semibold text-base transition-all hover:scale-105 shadow-lg"
