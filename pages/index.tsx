@@ -453,7 +453,7 @@ export default function Home() {
               ) : (
                 <button
                   onClick={() => window.location.href = '/signup'}
-                  className="bg-gradient-to-r from-pink-500 to-red-500 hover:from-pink-600 hover:to-red-600 backdrop-blur-sm border border-pink-400/50 text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all hover:scale-105 shadow-lg"
+                  className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 backdrop-blur-sm border border-purple-400/50 text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all hover:scale-105 shadow-lg"
                 >
                   <span className="hidden sm:inline">🤿 Dive in</span>
                   <span className="sm:hidden">🤿 Dive in</span>
@@ -599,7 +599,7 @@ export default function Home() {
               <div className="text-center mb-8">
                 <button
                   onClick={() => window.location.href = '/signup'}
-                  className="bg-gradient-to-r from-pink-500 to-red-500 hover:from-pink-600 hover:to-red-600 text-white px-8 py-3 rounded-lg font-semibold text-lg transition-all hover:scale-105 shadow-lg"
+                  className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white px-8 py-3 rounded-lg font-semibold text-lg transition-all hover:scale-105 shadow-lg"
                 >
                   🤿 Dive in 🌊
                 </button>
@@ -698,7 +698,7 @@ export default function Home() {
                     <p className="text-white/70 text-sm mb-3">Ready to start your river study?</p>
                     <button
                       onClick={() => window.location.href = '/signup'}
-                      className="bg-gradient-to-r from-pink-500 to-red-500 hover:from-pink-600 hover:to-red-600 text-white px-6 py-2.5 rounded-lg font-semibold text-base transition-all hover:scale-105 shadow-lg"
+                      className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white px-6 py-2.5 rounded-lg font-semibold text-base transition-all hover:scale-105 shadow-lg"
                     >
                       🤿 Dive in 🌊
                     </button>
@@ -787,7 +787,7 @@ export default function Home() {
               </p>
               <button
                 onClick={() => window.location.href = '/signup'}
-                className="bg-gradient-to-r from-pink-500 to-red-500 hover:from-pink-600 hover:to-red-600 text-white px-8 py-3 rounded-lg font-semibold text-lg transition-all hover:scale-105 shadow-lg"
+                className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white px-8 py-3 rounded-lg font-semibold text-lg transition-all hover:scale-105 shadow-lg"
               >
                 🤿 Dive in 🌊
               </button>
