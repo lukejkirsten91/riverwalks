@@ -496,7 +496,7 @@ export default function Home() {
                     className="report-image w-32 sm:w-40 md:w-48 h-auto rounded-lg shadow-xl transform transition-all duration-300 relative z-10 cursor-pointer"
                     onMouseEnter={(e) => {
                       // Only apply hover effect on non-touch devices
-                      if (window.matchMedia("(hover: hover)").matches) {
+                      if (window.matchMedia("(hover: hover)").matches && !('ontouchstart' in window)) {
                         const allImages = document.querySelectorAll('.report-image');
                         const currentImage = e.currentTarget;
                         
@@ -514,7 +514,7 @@ export default function Home() {
                     }}
                     onMouseLeave={() => {
                       // Only apply hover effect on non-touch devices
-                      if (window.matchMedia("(hover: hover)").matches) {
+                      if (window.matchMedia("(hover: hover)").matches && !('ontouchstart' in window)) {
                         const allImages = document.querySelectorAll('.report-image');
                         // Reset all to normal
                         allImages.forEach((img: any) => {
@@ -556,7 +556,7 @@ export default function Home() {
                     className="report-image w-32 sm:w-40 md:w-48 h-auto rounded-lg shadow-xl transform transition-all duration-300 relative z-10 cursor-pointer"
                     onMouseEnter={(e) => {
                       // Only apply hover effect on non-touch devices
-                      if (window.matchMedia("(hover: hover)").matches) {
+                      if (window.matchMedia("(hover: hover)").matches && !('ontouchstart' in window)) {
                         const allImages = document.querySelectorAll('.report-image');
                         const currentImage = e.currentTarget;
                         
@@ -574,7 +574,7 @@ export default function Home() {
                     }}
                     onMouseLeave={() => {
                       // Only apply hover effect on non-touch devices
-                      if (window.matchMedia("(hover: hover)").matches) {
+                      if (window.matchMedia("(hover: hover)").matches && !('ontouchstart' in window)) {
                         const allImages = document.querySelectorAll('.report-image');
                         // Reset all to normal
                         allImages.forEach((img: any) => {
@@ -616,7 +616,7 @@ export default function Home() {
                     className="report-image w-32 sm:w-40 md:w-48 h-auto rounded-lg shadow-xl transform transition-all duration-300 relative z-10 cursor-pointer"
                     onMouseEnter={(e) => {
                       // Only apply hover effect on non-touch devices
-                      if (window.matchMedia("(hover: hover)").matches) {
+                      if (window.matchMedia("(hover: hover)").matches && !('ontouchstart' in window)) {
                         const allImages = document.querySelectorAll('.report-image');
                         const currentImage = e.currentTarget;
                         
@@ -634,7 +634,7 @@ export default function Home() {
                     }}
                     onMouseLeave={() => {
                       // Only apply hover effect on non-touch devices
-                      if (window.matchMedia("(hover: hover)").matches) {
+                      if (window.matchMedia("(hover: hover)").matches && !('ontouchstart' in window)) {
                         const allImages = document.querySelectorAll('.report-image');
                         // Reset all to normal
                         allImages.forEach((img: any) => {
