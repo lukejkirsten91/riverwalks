@@ -413,23 +413,13 @@ export default function Home() {
       )}
       
       <div className="relative" style={{ overflow: 'visible' }}>
-        {/* Top Header with SVG Banner */}
+        {/* Top Header */}
         <header className="absolute top-0 left-0 right-0 z-50 p-4 pointer-events-none">
-          <div className="max-w-7xl mx-auto">
-            {/* Header SVG Banner */}
-            <div className="flex justify-center mb-4">
-              <img 
-                src="/riverwalks-feature.png" 
-                alt="Riverwalks platform overview" 
-                className="hero-svg max-w-md w-full h-auto rounded-xl shadow-modern drop-shadow-lg"
-              />
+          <div className="max-w-7xl mx-auto flex justify-between items-center">
+            <div className="flex items-center gap-2">
+              <img src="/logo.png" alt="Riverwalks" className="h-8 w-8" />
+              <span className="text-white font-semibold text-lg">Riverwalks</span>
             </div>
-            
-            <div className="flex justify-between items-center">
-              <div className="flex items-center gap-2">
-                <img src="/logo.png" alt="Riverwalks" className="h-8 w-8" />
-                <span className="text-white font-semibold text-lg">Riverwalks</span>
-              </div>
             
             <div className="flex items-center gap-1 sm:gap-3 pointer-events-auto">
               <PWAInstallButton className="pointer-events-auto" />
@@ -489,7 +479,6 @@ export default function Home() {
               )}
             </div>
           </div>
-        </div>
         </header>
 
         {/* Hero Section */}
@@ -518,50 +507,33 @@ export default function Home() {
                   </p>
                 </div>
                 
-                {/* Fanned Out Report Images */}
-                <div className="relative flex justify-center mb-6">
-                  <div className="relative w-72 sm:w-80 md:w-96 h-auto">
-                    <div className="report-stack">
-                      {/* Back image - more fanned out */}
-                      <img 
-                        src="/scatter3.jpg" 
-                        alt="River analysis report" 
-                        className="report-image absolute top-6 left-8 w-full h-auto rounded-lg shadow-lg transform rotate-6 opacity-70 hover:opacity-90 hover:scale-105 hover:rotate-3 transition-all duration-300 cursor-pointer"
-                        onClick={() => {
-                          const front = document.querySelector('.report-front') as HTMLImageElement;
-                          front.src = '/scatter3.jpg';
-                          front.alt = 'River analysis scatter plot report';
-                        }}
-                      />
-                      {/* Middle image - moderate fan */}
-                      <img 
-                        src="/scatter2.jpg" 
-                        alt="River data report" 
-                        className="report-image absolute top-3 left-4 w-full h-auto rounded-lg shadow-lg transform -rotate-3 opacity-80 hover:opacity-95 hover:scale-105 hover:-rotate-1 transition-all duration-300 cursor-pointer"
-                        onClick={() => {
-                          const front = document.querySelector('.report-front') as HTMLImageElement;
-                          front.src = '/scatter2.jpg';
-                          front.alt = 'River data visualization report';
-                        }}
-                      />
-                      {/* Front image - slight tilt */}
-                      <img 
-                        src="/scatter1.jpg" 
-                        alt="Professional river study report" 
-                        className="report-image report-front relative w-full h-auto rounded-lg shadow-xl transform rotate-1 hover:scale-110 hover:rotate-0 transition-all duration-300 z-10 cursor-pointer"
-                        onClick={() => {
-                          const img = document.querySelector('.report-front') as HTMLImageElement;
-                          if (img?.src.includes('scatter1')) {
-                            img.src = '/scatter2.jpg';
-                          } else if (img?.src.includes('scatter2')) {
-                            img.src = '/scatter3.jpg';
-                          } else {
-                            img.src = '/scatter1.jpg';
-                          }
-                        }}
-                      />
-                    </div>
-                  </div>
+                {/* Side by Side Report Images */}
+                <div className="flex justify-center mb-6 gap-4 flex-wrap">
+                  <img 
+                    src="/scatter1.jpg" 
+                    alt="Professional river study report" 
+                    className="report-image w-32 sm:w-40 md:w-48 h-auto rounded-lg shadow-xl transform hover:scale-110 transition-all duration-300 cursor-pointer"
+                    onClick={() => {
+                      // Show enlarged version or cycle through reports
+                      window.open('/scatter1.jpg', '_blank');
+                    }}
+                  />
+                  <img 
+                    src="/scatter2.jpg" 
+                    alt="River data visualization report" 
+                    className="report-image w-32 sm:w-40 md:w-48 h-auto rounded-lg shadow-xl transform hover:scale-110 transition-all duration-300 cursor-pointer"
+                    onClick={() => {
+                      window.open('/scatter2.jpg', '_blank');
+                    }}
+                  />
+                  <img 
+                    src="/scatter3.jpg" 
+                    alt="River analysis scatter plot report" 
+                    className="report-image w-32 sm:w-40 md:w-48 h-auto rounded-lg shadow-xl transform hover:scale-110 transition-all duration-300 cursor-pointer"
+                    onClick={() => {
+                      window.open('/scatter3.jpg', '_blank');
+                    }}
+                  />
                 </div>
                 
                 {/* See exactly what you'll get */}
@@ -604,9 +576,6 @@ export default function Home() {
                   <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
                     Your Journey to <span className="text-cyan-100 font-bold">Success</span>
                   </h2>
-                  <p className="text-white/80 text-lg max-w-2xl mx-auto">
-                    From data collection to final report in 3 simple steps
-                  </p>
                 </div>
 
                 {/* Step 1: Manage */}
@@ -765,6 +734,15 @@ export default function Home() {
           </div>
         )}
 
+        {/* SVG at bottom of page */}
+        <div className="flex justify-center mb-8">
+          <img 
+            src="/riverwalks-feature.png" 
+            alt="Riverwalks platform overview" 
+            className="max-w-lg w-full h-auto rounded-xl shadow-modern drop-shadow-lg"
+          />
+        </div>
+        
         {/* Footer */}
         <footer className="mt-16 text-center text-sm text-white/70 pb-8">
           <p>© 2025 Riverwalks. All rights reserved.</p>
