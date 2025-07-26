@@ -89,14 +89,83 @@ export default function Home() {
 
     // Only run animations if user is not logged in (showing landing page)
     if (!user) {
-      // Hero section animation
-      gsap.fromTo(heroRef.current, 
-        { opacity: 0, y: 30 },
-        { opacity: 1, y: 0, duration: 1, ease: "power2.out" }
+      // Hero section entrance animation
+      gsap.timeline()
+        .fromTo(heroRef.current, 
+          { opacity: 0, y: 30 },
+          { opacity: 1, y: 0, duration: 1, ease: "power2.out" }
+        )
+        .fromTo(".hero-badge", 
+          { opacity: 0, scale: 0.9, y: 20 },
+          { opacity: 1, scale: 1, y: 0, duration: 0.6, ease: "back.out(1.7)" }, "-=0.5"
+        )
+        .fromTo(".hero-svg", 
+          { opacity: 0, scale: 0.95 },
+          { opacity: 1, scale: 1, duration: 0.8, ease: "power2.out" }, "-=0.3"
+        )
+        .fromTo(".reports-section", 
+          { opacity: 0, y: 20 },
+          { opacity: 1, y: 0, duration: 0.8, ease: "power2.out" }, "-=0.2"
+        );
+
+      // Report stack interactive animation
+      gsap.fromTo(".report-image", 
+        { opacity: 0, scale: 0.8, rotation: 0 },
+        { 
+          opacity: 1, 
+          scale: 1, 
+          rotation: (index) => index === 0 ? 3 : index === 1 ? -2 : 0,
+          duration: 0.8, 
+          stagger: 0.2, 
+          ease: "back.out(1.7)",
+          scrollTrigger: {
+            trigger: ".reports-section",
+            start: "top 80%",
+            toggleActions: "play none none reverse"
+          }
+        }
       );
 
-      // Staggered animations for sections
-      const sections = [metricsRef.current, previewRef.current, featuresRef.current, ctaRef.current];
+      // Journey steps animation
+      gsap.utils.toArray(".journey-step").forEach((step: any, index) => {
+        gsap.fromTo(step,
+          { opacity: 0, y: 50, scale: 0.9 },
+          {
+            opacity: 1,
+            y: 0,
+            scale: 1,
+            duration: 0.8,
+            ease: "power2.out",
+            scrollTrigger: {
+              trigger: step,
+              start: "top 85%",
+              toggleActions: "play none none reverse"
+            }
+          }
+        );
+
+        // Animate step numbers
+        const stepNumber = step.querySelector(".step-number");
+        if (stepNumber) {
+          gsap.fromTo(stepNumber,
+            { scale: 0, rotation: -180 },
+            {
+              scale: 1,
+              rotation: 0,
+              duration: 0.6,
+              ease: "back.out(2)",
+              scrollTrigger: {
+                trigger: step,
+                start: "top 85%",
+                toggleActions: "play none none reverse"
+              }
+            }
+          );
+        }
+      });
+
+      // Staggered animations for main sections
+      const sections = [metricsRef.current, featuresRef.current, ctaRef.current];
       sections.forEach((section, index) => {
         if (section) {
           gsap.fromTo(section,
@@ -117,16 +186,17 @@ export default function Home() {
         }
       });
 
-      // Feature cards animation
+      // Feature cards animation with enhanced effects
       const featureCards = document.querySelectorAll('.feature-card');
       gsap.fromTo(featureCards,
-        { opacity: 0, y: 30, scale: 0.9 },
+        { opacity: 0, y: 30, scale: 0.9, rotationY: 15 },
         {
           opacity: 1,
           y: 0,
           scale: 1,
-          duration: 0.6,
-          stagger: 0.2,
+          rotationY: 0,
+          duration: 0.8,
+          stagger: 0.15,
           ease: "power2.out",
           scrollTrigger: {
             trigger: featuresRef.current,
@@ -135,6 +205,29 @@ export default function Home() {
           }
         }
       );
+
+      // Floating animation for report stack
+      gsap.to(".report-front", {
+        y: -5,
+        duration: 2,
+        repeat: -1,
+        yoyo: true,
+        ease: "power2.inOut"
+      });
+
+      // Parallax effect for background elements
+      gsap.utils.toArray(".parallax-element").forEach((element: any) => {
+        gsap.to(element, {
+          yPercent: -50,
+          ease: "none",
+          scrollTrigger: {
+            trigger: element,
+            start: "top bottom",
+            end: "bottom top",
+            scrub: true
+          }
+        });
+      });
     }
 
     return () => {
@@ -392,7 +485,7 @@ export default function Home() {
         <div ref={heroRef} className="flex flex-col items-center justify-center py-16 p-4 sm:p-6 lg:p-8">
           <div className={`text-center max-w-5xl mx-auto ${user ? 'mb-8' : 'mb-12'}`}>
             <div className="mb-8">
-              <div className="bg-blue-600/90 backdrop-blur-sm border border-blue-400/60 rounded-xl p-4 mb-6 max-w-2xl mx-auto">
+              <div className="hero-badge bg-blue-600/90 backdrop-blur-sm border border-blue-400/60 rounded-xl p-4 mb-6 max-w-2xl mx-auto">
                 <p className="text-blue-50 text-lg font-bold mb-1">🎓 #1 Tool for GCSE Geography Coursework</p>
                 <p className="text-blue-100 text-sm">
                   The complete river study platform trusted by students and teachers across the UK
@@ -400,84 +493,33 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Hero Image - First thing users see */}
+            {/* Header SVG - Platform Overview */}
             <div className="mb-8 flex justify-center">
               <img 
                 src="/riverwalks-feature.png" 
-                alt="Riverwalks features visualization" 
-                className="max-w-lg w-full h-auto rounded-xl shadow-modern drop-shadow-lg"
+                alt="Riverwalks platform overview" 
+                className="hero-svg max-w-lg w-full h-auto rounded-xl shadow-modern drop-shadow-lg"
               />
             </div>
 
-            {/* Primary CTA - Immediately after hero image */}
+            {/* What You Get - Reports Section */}
             {!user && (
-              <div className="w-full max-w-md mx-auto mb-8">
-                <AuthCard />
-              </div>
-            )}
-
-            {/* Mobile App Preview Section */}
-            {!user && (
-              <div className="mb-8">
+              <div className="reports-section mb-8">
                 <div className="text-center mb-6">
-                  <h2 className="text-2xl sm:text-3xl font-bold text-white mb-3">
-                    <span className="text-cyan-300 font-bold">Manage</span> your Riverwalks
+                  <h2 className="text-3xl sm:text-4xl font-bold text-white mb-3">
+                    <span className="text-cyan-200 font-bold">GCSE-ready</span> reports in minutes
                   </h2>
-                  <p className="text-white/80 text-base max-w-xl mx-auto">
-                    Access your river studies anywhere with our mobile-optimized interface. 
-                    View sites, collect <span className="text-blue-200 font-bold">data</span>, and track progress all from your phone.
+                  <p className="text-white/80 text-lg max-w-2xl mx-auto mb-4">
+                    Skip hours of manual work. Get <span className="text-blue-100 font-bold">professional charts</span> and 
+                    <span className="text-teal-100 font-bold"> analysis</span> that would take hours to create by hand.
                   </p>
-                </div>
-                <div className="flex justify-center">
-                  <img 
-                    src="/mockup1.png" 
-                    alt="Riverwalks mobile app interface showing riverwalk management" 
-                    className="max-w-sm w-full h-auto"
-                  />
-                </div>
-              </div>
-            )}
-
-            {/* Data Collection Preview Section */}
-            {!user && (
-              <div className="mb-8">
-                <div className="text-center mb-6">
-                  <h2 className="text-2xl sm:text-3xl font-bold text-white mb-3">
-                    <span className="text-teal-300 font-bold">Collect</span> comprehensive river data
-                  </h2>
-                  <p className="text-white/80 text-base max-w-2xl mx-auto">
-                    Gather detailed measurements for site information, cross-sections, 
-                    <span className="text-cyan-200 font-bold"> velocity</span>, and 
-                    <span className="text-blue-200 font-bold"> sediment analysis</span>. 
-                    Everything you need for professional river studies.
-                  </p>
-                </div>
-                <div className="flex justify-center px-4">
-                  <div className="w-full max-w-4xl relative">
-                    <img 
-                      src="/mockup3_no_background_1920X1920.png" 
-                      alt="Three phone screens showing data collection interfaces for site info, cross-sections, velocity and sediment" 
-                      className="w-full h-auto object-contain"
-                    />
+                  <div className="bg-green-600/20 border border-green-400/40 rounded-xl p-4 max-w-xl mx-auto backdrop-blur-sm mb-6">
+                    <p className="text-green-100 text-base font-medium">💰 Just £1.99/year or £3.49 lifetime</p>
+                    <p className="text-green-200 text-sm">One payment. Unlimited reports. No hidden fees.</p>
                   </div>
                 </div>
-              </div>
-            )}
-
-            {/* Report Preview Section */}
-            {!user && (
-              <div className="mb-8">
-                <div className="text-center mb-6">
-                  <h2 className="text-2xl sm:text-3xl font-bold text-white mb-3">
-                    <span className="text-cyan-300 font-bold">GCSE-ready</span> automated reports
-                  </h2>
-                  <p className="text-white/80 text-base max-w-2xl mx-auto">
-                    Skip the manual work. Get <span className="text-blue-200 font-bold">coursework-ready charts</span> and 
-                    <span className="text-teal-200 font-bold"> analysis</span> that would take hours to create by hand.
-                  </p>
-                </div>
                 
-                {/* Interactive Stacked Images */}
+                {/* Interactive Stacked Report Images */}
                 <div className="relative flex justify-center mb-6">
                   <div className="relative w-72 sm:w-80 md:w-96 h-auto">
                     <div className="report-stack cursor-pointer" onClick={() => {
@@ -516,20 +558,114 @@ export default function Home() {
                 </div>
                 
                 {/* Download CTA */}
-                <div className="text-center">
+                <div className="text-center mb-8">
                   <a
                     href="/report_to_download.pdf"
                     download="riverwalks-example-report.pdf"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-500 to-teal-500 hover:from-blue-600 hover:to-teal-600 text-white px-6 py-3 rounded-lg font-medium transition-all hover:scale-105 shadow-lg"
+                    className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-500 to-teal-500 hover:from-blue-600 hover:to-teal-600 text-white px-6 py-3 rounded-lg font-medium transition-all hover:scale-105 shadow-lg mb-4"
                   >
                     📊 Download Example Report
                   </a>
-                  <p className="text-white/60 text-sm mt-2">See what your data becomes with premium reports</p>
+                  <p className="text-white/60 text-sm">See exactly what you'll get</p>
                 </div>
               </div>
             )}
+
+            {/* Smaller Journey CTA */}
+            {!user && (
+              <div className="text-center mb-8">
+                <button
+                  onClick={() => window.location.href = '/signup'}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white px-8 py-3 rounded-lg font-semibold text-lg transition-all hover:scale-105 shadow-lg"
+                >
+                  Start Your Journey →
+                </button>
+                <p className="text-white/70 text-sm mt-2">Create your account in under 30 seconds</p>
+              </div>
+            )}
+
+            {/* Journey: How to Get There */}
+            {!user && (
+              <div className="mb-12">
+                <div className="text-center mb-12">
+                  <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
+                    Your Journey to <span className="text-cyan-100 font-bold">Success</span>
+                  </h2>
+                  <p className="text-white/80 text-lg max-w-2xl mx-auto">
+                    From data collection to final report in 3 simple steps
+                  </p>
+                </div>
+
+                {/* Step 1: Manage */}
+                <div className="journey-step mb-12">
+                  <div className="text-center mb-8">
+                    <div className="step-number inline-flex items-center justify-center w-12 h-12 bg-cyan-500 text-white rounded-full font-bold text-lg mb-4">1</div>
+                    <h3 className="text-2xl sm:text-3xl font-bold text-white mb-3">
+                      <span className="text-cyan-100 font-bold">Manage</span> your Riverwalks
+                    </h3>
+                    <p className="text-white/80 text-base max-w-xl mx-auto">
+                      Access your river studies anywhere with our mobile-optimized interface. 
+                      View sites, collect <span className="text-blue-100 font-bold">data</span>, and track progress all from your phone.
+                    </p>
+                  </div>
+                  <div className="flex justify-center">
+                    <img 
+                      src="/mockup1.png" 
+                      alt="Riverwalks mobile app interface showing riverwalk management" 
+                      className="max-w-sm w-full h-auto"
+                    />
+                  </div>
+                </div>
+
+                {/* Step 2: Collect */}
+                <div className="journey-step mb-12">
+                  <div className="text-center mb-8">
+                    <div className="step-number inline-flex items-center justify-center w-12 h-12 bg-teal-500 text-white rounded-full font-bold text-lg mb-4">2</div>
+                    <h3 className="text-2xl sm:text-3xl font-bold text-white mb-3">
+                      <span className="text-teal-100 font-bold">Collect</span> comprehensive river data
+                    </h3>
+                    <p className="text-white/80 text-base max-w-2xl mx-auto">
+                      Gather detailed measurements for site information, cross-sections, 
+                      <span className="text-cyan-100 font-bold"> velocity</span>, and 
+                      <span className="text-blue-100 font-bold"> sediment analysis</span>. 
+                      Everything you need for professional river studies.
+                    </p>
+                  </div>
+                  <div className="flex justify-center px-4">
+                    <div className="w-full max-w-4xl relative">
+                      <img 
+                        src="/mockup3_no_background_1920X1920.png" 
+                        alt="Three phone screens showing data collection interfaces for site info, cross-sections, velocity and sediment" 
+                        className="w-full h-auto object-contain"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Step 3: Get Reports */}
+                <div className="journey-step mb-12">
+                  <div className="text-center mb-8">
+                    <div className="step-number inline-flex items-center justify-center w-12 h-12 bg-blue-500 text-white rounded-full font-bold text-lg mb-4">3</div>
+                    <h3 className="text-2xl sm:text-3xl font-bold text-white mb-3">
+                      Get your <span className="text-blue-100 font-bold">GCSE-ready</span> reports
+                    </h3>
+                    <p className="text-white/80 text-base max-w-2xl mx-auto">
+                      Automatically generated reports with <span className="text-green-100 font-bold">professional charts</span> 
+                      and <span className="text-teal-100 font-bold">detailed analysis</span> ready for your coursework.
+                    </p>
+                  </div>
+                  <div className="text-center">
+                    <div className="inline-block bg-green-600/20 border border-green-400/40 rounded-xl p-6 backdrop-blur-sm">
+                      <p className="text-green-100 text-lg font-semibold mb-2">✨ Premium Reports Available</p>
+                      <p className="text-green-200 text-sm">Upgrade for just £1.99/year or £3.49 lifetime</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
 
             {/* No Mobile, No Problem section - after data collection */}
             {!user && (
