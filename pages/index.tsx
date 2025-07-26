@@ -507,51 +507,103 @@ export default function Home() {
                   </p>
                 </div>
                 
-                {/* Side by Side Report Images */}
-                <div className="flex justify-center mb-6 gap-4 flex-wrap">
+                {/* Interactive Report Images */}
+                <div className="flex justify-center mb-6 gap-4 flex-wrap" onClick={(e) => {
+                  // Reset all images if clicking outside
+                  if (e.target === e.currentTarget) {
+                    document.querySelectorAll('.report-image').forEach((img: any) => {
+                      img.style.transform = 'scale(1)';
+                      img.style.zIndex = '10';
+                    });
+                  }
+                }}>
                   <img 
                     src="/scatter1.jpg" 
                     alt="Professional river study report" 
-                    className="report-image w-32 sm:w-40 md:w-48 h-auto rounded-lg shadow-xl transform hover:scale-110 transition-all duration-300 cursor-pointer"
+                    className="report-image w-32 sm:w-40 md:w-48 h-auto rounded-lg shadow-xl transform hover:scale-110 transition-all duration-300 cursor-pointer relative z-10"
                     onClick={(e) => {
-                      // On mobile, just show hover effect, on desktop open in new tab
-                      if (window.innerWidth < 768) {
-                        e.currentTarget.style.transform = 'scale(1.2)';
-                        setTimeout(() => {
-                          e.currentTarget.style.transform = 'scale(1)';
-                        }, 300);
+                      e.stopPropagation();
+                      const allImages = document.querySelectorAll('.report-image');
+                      const currentImage = e.currentTarget;
+                      
+                      // Check if this image is already zoomed
+                      const isZoomed = currentImage.style.transform === 'scale(1.4)';
+                      
+                      if (isZoomed) {
+                        // Reset all to normal
+                        allImages.forEach((img: any) => {
+                          img.style.transform = 'scale(1)';
+                          img.style.zIndex = '10';
+                        });
                       } else {
-                        window.open('/scatter1.jpg', '_blank');
+                        // Zoom this one and shrink others
+                        allImages.forEach((img: any) => {
+                          if (img === currentImage) {
+                            img.style.transform = 'scale(1.4)';
+                            img.style.zIndex = '20';
+                          } else {
+                            img.style.transform = 'scale(0.8)';
+                            img.style.zIndex = '5';
+                          }
+                        });
                       }
                     }}
                   />
                   <img 
                     src="/scatter2.jpg" 
-                    alt="River data visualization report" 
-                    className="report-image w-32 sm:w-40 md:w-48 h-auto rounded-lg shadow-xl transform hover:scale-110 transition-all duration-300 cursor-pointer"
+                    alt="River data visualisation report" 
+                    className="report-image w-32 sm:w-40 md:w-48 h-auto rounded-lg shadow-xl transform hover:scale-110 transition-all duration-300 cursor-pointer relative z-10"
                     onClick={(e) => {
-                      if (window.innerWidth < 768) {
-                        e.currentTarget.style.transform = 'scale(1.2)';
-                        setTimeout(() => {
-                          e.currentTarget.style.transform = 'scale(1)';
-                        }, 300);
+                      e.stopPropagation();
+                      const allImages = document.querySelectorAll('.report-image');
+                      const currentImage = e.currentTarget;
+                      
+                      const isZoomed = currentImage.style.transform === 'scale(1.4)';
+                      
+                      if (isZoomed) {
+                        allImages.forEach((img: any) => {
+                          img.style.transform = 'scale(1)';
+                          img.style.zIndex = '10';
+                        });
                       } else {
-                        window.open('/scatter2.jpg', '_blank');
+                        allImages.forEach((img: any) => {
+                          if (img === currentImage) {
+                            img.style.transform = 'scale(1.4)';
+                            img.style.zIndex = '20';
+                          } else {
+                            img.style.transform = 'scale(0.8)';
+                            img.style.zIndex = '5';
+                          }
+                        });
                       }
                     }}
                   />
                   <img 
                     src="/scatter3.jpg" 
                     alt="River analysis scatter plot report" 
-                    className="report-image w-32 sm:w-40 md:w-48 h-auto rounded-lg shadow-xl transform hover:scale-110 transition-all duration-300 cursor-pointer"
+                    className="report-image w-32 sm:w-40 md:w-48 h-auto rounded-lg shadow-xl transform hover:scale-110 transition-all duration-300 cursor-pointer relative z-10"
                     onClick={(e) => {
-                      if (window.innerWidth < 768) {
-                        e.currentTarget.style.transform = 'scale(1.2)';
-                        setTimeout(() => {
-                          e.currentTarget.style.transform = 'scale(1)';
-                        }, 300);
+                      e.stopPropagation();
+                      const allImages = document.querySelectorAll('.report-image');
+                      const currentImage = e.currentTarget;
+                      
+                      const isZoomed = currentImage.style.transform === 'scale(1.4)';
+                      
+                      if (isZoomed) {
+                        allImages.forEach((img: any) => {
+                          img.style.transform = 'scale(1)';
+                          img.style.zIndex = '10';
+                        });
                       } else {
-                        window.open('/scatter3.jpg', '_blank');
+                        allImages.forEach((img: any) => {
+                          if (img === currentImage) {
+                            img.style.transform = 'scale(1.4)';
+                            img.style.zIndex = '20';
+                          } else {
+                            img.style.transform = 'scale(0.8)';
+                            img.style.zIndex = '5';
+                          }
+                        });
                       }
                     }}
                   />
@@ -615,7 +667,7 @@ export default function Home() {
                       <span className="text-cyan-100 font-bold">Manage</span> your Riverwalks
                     </h3>
                     <p className="text-white/80 text-base max-w-xl mx-auto">
-                      Access your river studies anywhere with our mobile-optimized interface. 
+                      Access your river studies anywhere with our mobile-optimised interface. 
                       View sites, collect <span className="text-blue-100 font-bold">data</span>, and track progress all from your phone.
                     </p>
                   </div>
@@ -648,7 +700,7 @@ export default function Home() {
                       Gather detailed measurements for site information, cross-sections, 
                       <span className="text-cyan-100 font-bold"> velocity</span>, and 
                       <span className="text-blue-100 font-bold"> sediment analysis</span>. 
-                      Everything you need for professional river studies.
+                      Everything you need for your Geography fieldwork.
                     </p>
                   </div>
                   <div className="flex justify-center px-4">
@@ -670,9 +722,9 @@ export default function Home() {
                   </div>
                   
                   {/* Section Divider */}
-                  <div className="flex items-center justify-center mt-16 mb-12">
+                  <div className="flex items-center justify-center mt-8 mb-8">
                     <div className="h-px bg-white/20 flex-1 max-w-xs"></div>
-                    <div className="mx-4 text-white/40 text-sm">Features</div>
+                    <div className="mx-4 text-white/40 text-sm">The Community</div>
                     <div className="h-px bg-white/20 flex-1 max-w-xs"></div>
                   </div>
                 </div>
@@ -694,7 +746,7 @@ export default function Home() {
 
         {/* Live Metrics Section */}
         {!user && (
-          <div ref={metricsRef} className="pt-2 pb-8 px-4 sm:px-6 lg:px-8">
+          <div ref={metricsRef} className="px-4 sm:px-6 lg:px-8">
             <LiveMetrics />
           </div>
         )}
@@ -735,9 +787,7 @@ export default function Home() {
         {/* Final CTA Divider */}
         {!user && (
           <div className="flex items-center justify-center mb-12">
-            <div className="h-px bg-white/20 flex-1 max-w-xs"></div>
-            <div className="mx-4 text-white/40 text-sm">Get Started</div>
-            <div className="h-px bg-white/20 flex-1 max-w-xs"></div>
+            <div className="h-px bg-white/20 flex-1 max-w-lg"></div>
           </div>
         )}
         
