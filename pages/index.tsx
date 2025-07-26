@@ -499,7 +499,7 @@ export default function Home() {
               <div className="reports-section mb-8">
                 <div className="text-center mb-6">
                   <h2 className="text-3xl sm:text-4xl font-bold text-white mb-3">
-                    Create <span className="text-cyan-200 font-bold">GCSE-ready</span> reports easily
+                    Get <span className="text-cyan-200 font-bold">top grades</span> without the grind
                   </h2>
                   <p className="text-white/80 text-lg max-w-2xl mx-auto mb-4">
                     Skip the tedious work. Get <span className="text-blue-100 font-bold">professional charts</span> and 
@@ -513,25 +513,46 @@ export default function Home() {
                     src="/scatter1.jpg" 
                     alt="Professional river study report" 
                     className="report-image w-32 sm:w-40 md:w-48 h-auto rounded-lg shadow-xl transform hover:scale-110 transition-all duration-300 cursor-pointer"
-                    onClick={() => {
-                      // Show enlarged version or cycle through reports
-                      window.open('/scatter1.jpg', '_blank');
+                    onClick={(e) => {
+                      // On mobile, just show hover effect, on desktop open in new tab
+                      if (window.innerWidth < 768) {
+                        e.currentTarget.style.transform = 'scale(1.2)';
+                        setTimeout(() => {
+                          e.currentTarget.style.transform = 'scale(1)';
+                        }, 300);
+                      } else {
+                        window.open('/scatter1.jpg', '_blank');
+                      }
                     }}
                   />
                   <img 
                     src="/scatter2.jpg" 
                     alt="River data visualization report" 
                     className="report-image w-32 sm:w-40 md:w-48 h-auto rounded-lg shadow-xl transform hover:scale-110 transition-all duration-300 cursor-pointer"
-                    onClick={() => {
-                      window.open('/scatter2.jpg', '_blank');
+                    onClick={(e) => {
+                      if (window.innerWidth < 768) {
+                        e.currentTarget.style.transform = 'scale(1.2)';
+                        setTimeout(() => {
+                          e.currentTarget.style.transform = 'scale(1)';
+                        }, 300);
+                      } else {
+                        window.open('/scatter2.jpg', '_blank');
+                      }
                     }}
                   />
                   <img 
                     src="/scatter3.jpg" 
                     alt="River analysis scatter plot report" 
                     className="report-image w-32 sm:w-40 md:w-48 h-auto rounded-lg shadow-xl transform hover:scale-110 transition-all duration-300 cursor-pointer"
-                    onClick={() => {
-                      window.open('/scatter3.jpg', '_blank');
+                    onClick={(e) => {
+                      if (window.innerWidth < 768) {
+                        e.currentTarget.style.transform = 'scale(1.2)';
+                        setTimeout(() => {
+                          e.currentTarget.style.transform = 'scale(1)';
+                        }, 300);
+                      } else {
+                        window.open('/scatter3.jpg', '_blank');
+                      }
                     }}
                   />
                 </div>
@@ -548,7 +569,7 @@ export default function Home() {
                     download="riverwalks-example-report.pdf"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-500 to-teal-500 hover:from-blue-600 hover:to-teal-600 text-white px-6 py-3 rounded-lg font-medium transition-all hover:scale-105 shadow-lg mb-4"
+                    className="inline-flex items-center gap-2 text-blue-200 hover:text-white border border-blue-300 hover:border-blue-200 px-4 py-2 rounded-lg text-sm font-medium transition-colors underline-offset-4 hover:underline"
                   >
                     📊 Download the Full Report
                   </a>
@@ -558,7 +579,7 @@ export default function Home() {
 
             {/* Smaller Journey CTA */}
             {!user && (
-              <div className="text-center mb-8">
+              <div className="text-center mb-12">
                 <button
                   onClick={() => window.location.href = '/signup'}
                   className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white px-8 py-3 rounded-lg font-semibold text-lg transition-all hover:scale-105 shadow-lg"
@@ -568,10 +589,19 @@ export default function Home() {
                 <p className="text-white/70 text-sm mt-2">Create your account in under 30 seconds</p>
               </div>
             )}
+            
+            {/* Section Divider */}
+            {!user && (
+              <div className="flex items-center justify-center mb-12">
+                <div className="h-px bg-white/20 flex-1 max-w-xs"></div>
+                <div className="mx-4 text-white/40 text-sm">Your Journey</div>
+                <div className="h-px bg-white/20 flex-1 max-w-xs"></div>
+              </div>
+            )}
 
             {/* Journey: How to Get There */}
             {!user && (
-              <div className="mb-12">
+              <div className="mb-16">
                 <div className="text-center mb-12">
                   <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
                     Your Journey to <span className="text-cyan-100 font-bold">Success</span>
@@ -628,6 +658,13 @@ export default function Home() {
                       <p className="text-green-200 text-base">One payment. Unlimited reports. No hidden fees.</p>
                     </div>
                   </div>
+                  
+                  {/* Section Divider */}
+                  <div className="flex items-center justify-center mt-16 mb-12">
+                    <div className="h-px bg-white/20 flex-1 max-w-xs"></div>
+                    <div className="mx-4 text-white/40 text-sm">Features</div>
+                    <div className="h-px bg-white/20 flex-1 max-w-xs"></div>
+                  </div>
                 </div>
 
               </div>
@@ -636,7 +673,7 @@ export default function Home() {
 
             {/* No Mobile, No Problem section - after data collection */}
             {!user && (
-              <div className="bg-green-600/90 backdrop-blur-sm border border-green-400/60 rounded-xl p-4 mb-8 max-w-2xl mx-auto">
+              <div className="bg-green-600/90 backdrop-blur-sm border border-green-400/60 rounded-xl p-4 mb-12 max-w-2xl mx-auto">
                 <p className="text-green-50 text-lg font-bold mb-1">📱 No Mobile, No Problem!</p>
                 <p className="text-green-100 text-sm">
                   Collect data on-site with our print templates, then digitise when you're back. Perfect for field trips where mobiles aren't allowed.
@@ -658,13 +695,6 @@ export default function Home() {
               </h1>
             </div>
 
-            {/* Transparent pricing messaging */}
-            <div className="bg-green-600/40 border border-green-400/60 rounded-xl p-4 mb-8 max-w-2xl mx-auto backdrop-blur-sm">
-              <p className="text-green-50 text-sm font-medium mb-2">💡 Transparent Pricing - No Surprises</p>
-              <p className="text-green-100 text-sm">
-                Create your account and use basic features - input data and export to a basic excel template for free. Premium PDF reports and collaboration require a small one-off payment (£1.99/year or £3.49 lifetime) to support development.
-              </p>
-            </div>
 
             {/* Scroll indicator */}
             {!user && (
@@ -729,7 +759,12 @@ export default function Home() {
               <p className="text-gray-300 text-sm mb-6">
                 Use basic features for free, then pay just £1.99/year or £3.49 lifetime (one-off payment) for reports and data export.
               </p>
-              <AuthCard />
+              <button
+                onClick={() => window.location.href = '/signup'}
+                className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white px-8 py-3 rounded-lg font-semibold text-lg transition-all hover:scale-105 shadow-lg"
+              >
+                Start Your Journey →
+              </button>
             </div>
           </div>
         )}
@@ -739,7 +774,7 @@ export default function Home() {
           <img 
             src="/riverwalks-feature.png" 
             alt="Riverwalks platform overview" 
-            className="max-w-lg w-full h-auto rounded-xl shadow-modern drop-shadow-lg"
+            className="max-w-2xl w-full h-auto rounded-xl shadow-modern drop-shadow-lg"
           />
         </div>
         
