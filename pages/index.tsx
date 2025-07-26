@@ -473,7 +473,7 @@ export default function Home() {
                       d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
                     />
                   </svg>
-                  <span className="hidden sm:inline">Sign In</span>
+                  <span className="hidden sm:inline">🤿 Dive in</span>
                   <span className="sm:hidden">🔑</span>
                 </button>
               )}
@@ -499,11 +499,10 @@ export default function Home() {
               <div className="reports-section mb-8">
                 <div className="text-center mb-8">
                   <h2 className="text-3xl sm:text-4xl font-bold text-white mb-3">
-                    Get <span className="text-blue-900 font-bold">top grades</span> without the grind
+                    <span className="text-blue-900 font-bold">Get Top Grades</span> <span className="text-blue-700 font-bold">without the Grind</span>
                   </h2>
                   <p className="text-white/80 text-lg max-w-2xl mx-auto mb-8">
-                    Skip the tedious work. Get a <span className="text-blue-800 font-bold">GCSE-ready report</span> with 
-                    <span className="text-blue-700 font-bold">professional charts</span> and <span className="text-blue-600 font-bold">metrics</span> without the hours of manual formatting.
+                    Skip the tedious work. Get a GCSE-ready report with professional charts and metrics without the hours of manual formatting.
                   </p>
                 </div>
                 
@@ -662,11 +661,11 @@ export default function Home() {
                 <div className="journey-step mb-8">
                   <div className="text-center mb-8">
                     <h3 className="text-2xl sm:text-3xl font-bold text-white mb-3">
-                      Manage your Riverwalks
+                      <span className="text-blue-800 font-bold">Access your Riverwalks</span> <span className="text-blue-600 font-bold">anywhere</span>
                     </h3>
                     <p className="text-white/80 text-base max-w-xl mx-auto">
                       Access your river studies anywhere with our mobile-optimised interface. 
-                      <span className="text-blue-700 font-bold">View sites</span> and <span className="text-green-700 font-bold">collect data</span> all from your <span className="text-blue-600 font-bold">phone</span>.
+                      View sites and collect data all from your phone.
                     </p>
                   </div>
                   <div className="flex justify-center">
@@ -695,7 +694,7 @@ export default function Home() {
                       Collect comprehensive river data
                     </h3>
                     <p className="text-white/80 text-base max-w-2xl mx-auto">
-                      Gather detailed <span className="text-blue-600 font-bold">measurements</span> for <span className="text-blue-700 font-bold">site information</span>, <span className="text-blue-600 font-bold">cross-sections</span>, <span className="text-blue-700 font-bold">velocity</span>, and <span className="text-blue-600 font-bold">sediment analysis</span>. Everything you need for your <span className="text-blue-800 font-bold">Geography fieldwork</span>.
+                      <span className="text-blue-700 font-bold">Gather detailed measurements</span> for site information, cross-sections, velocity, and sediment analysis. <span className="text-blue-600 font-bold">Everything you need for your Geography fieldwork</span>.
                     </p>
                   </div>
                   <div className="flex justify-center px-4">
@@ -711,13 +710,7 @@ export default function Home() {
                   {/* Offline Functionality Box */}
                   <div className="text-center mt-8 mb-6">
                     <div className="bg-blue-900/30 border border-blue-600/40 rounded-xl p-6 max-w-xl mx-auto backdrop-blur-sm">
-                      <div className="flex justify-center mb-3">
-                        {/* Mini Toast Popup Demo */}
-                        <div className="bg-green-600/90 border border-green-500/60 rounded-lg px-3 py-2 text-xs text-green-100 shadow-lg">
-                          📱 Working offline - data will sync when connected
-                        </div>
-                      </div>
-                      <p className="text-blue-100 text-lg font-medium mb-2">📶 No Signal? No Problem!</p>
+                      <p className="text-blue-100 text-lg font-medium mb-2">🌐 Works Offline!</p>
                       <p className="text-blue-200 text-sm">
                         Collect data offline at remote sites. Everything syncs automatically when you're back online.
                       </p>
@@ -817,7 +810,7 @@ export default function Home() {
                 onClick={() => window.location.href = '/signup'}
                 className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white px-8 py-3 rounded-lg font-semibold text-lg transition-all hover:scale-105 shadow-lg"
               >
-                Start Your Riverwalk Journey →
+                🤿 Dive in 🌊
               </button>
             </div>
           </div>
