@@ -413,13 +413,23 @@ export default function Home() {
       )}
       
       <div className="relative" style={{ overflow: 'visible' }}>
-        {/* Top Header */}
+        {/* Top Header with SVG Banner */}
         <header className="absolute top-0 left-0 right-0 z-50 p-4 pointer-events-none">
-          <div className="max-w-7xl mx-auto flex justify-between items-center">
-            <div className="flex items-center gap-2">
-              <img src="/logo.png" alt="Riverwalks" className="h-8 w-8" />
-              <span className="text-white font-semibold text-lg">Riverwalks</span>
+          <div className="max-w-7xl mx-auto">
+            {/* Header SVG Banner */}
+            <div className="flex justify-center mb-4">
+              <img 
+                src="/riverwalks-feature.png" 
+                alt="Riverwalks platform overview" 
+                className="hero-svg max-w-md w-full h-auto rounded-xl shadow-modern drop-shadow-lg"
+              />
             </div>
+            
+            <div className="flex justify-between items-center">
+              <div className="flex items-center gap-2">
+                <img src="/logo.png" alt="Riverwalks" className="h-8 w-8" />
+                <span className="text-white font-semibold text-lg">Riverwalks</span>
+              </div>
             
             <div className="flex items-center gap-1 sm:gap-3 pointer-events-auto">
               <PWAInstallButton className="pointer-events-auto" />
@@ -479,6 +489,7 @@ export default function Home() {
               )}
             </div>
           </div>
+        </div>
         </header>
 
         {/* Hero Section */}
@@ -493,68 +504,69 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Header SVG - Platform Overview */}
-            <div className="mb-8 flex justify-center">
-              <img 
-                src="/riverwalks-feature.png" 
-                alt="Riverwalks platform overview" 
-                className="hero-svg max-w-lg w-full h-auto rounded-xl shadow-modern drop-shadow-lg"
-              />
-            </div>
 
             {/* What You Get - Reports Section */}
             {!user && (
               <div className="reports-section mb-8">
                 <div className="text-center mb-6">
                   <h2 className="text-3xl sm:text-4xl font-bold text-white mb-3">
-                    <span className="text-cyan-200 font-bold">GCSE-ready</span> reports in minutes
+                    Create <span className="text-cyan-200 font-bold">GCSE-ready</span> reports easily
                   </h2>
                   <p className="text-white/80 text-lg max-w-2xl mx-auto mb-4">
-                    Skip hours of manual work. Get <span className="text-blue-100 font-bold">professional charts</span> and 
-                    <span className="text-teal-100 font-bold"> analysis</span> that would take hours to create by hand.
+                    Skip the tedious work. Get <span className="text-blue-100 font-bold">professional charts</span> and 
+                    <span className="text-teal-100 font-bold"> analysis</span> without the hours of manual formatting.
                   </p>
-                  <div className="bg-green-600/20 border border-green-400/40 rounded-xl p-4 max-w-xl mx-auto backdrop-blur-sm mb-6">
-                    <p className="text-green-100 text-base font-medium">💰 Just £1.99/year or £3.49 lifetime</p>
-                    <p className="text-green-200 text-sm">One payment. Unlimited reports. No hidden fees.</p>
-                  </div>
                 </div>
                 
-                {/* Interactive Stacked Report Images */}
+                {/* Fanned Out Report Images */}
                 <div className="relative flex justify-center mb-6">
                   <div className="relative w-72 sm:w-80 md:w-96 h-auto">
-                    <div className="report-stack cursor-pointer" onClick={() => {
-                      const front = document.querySelector('.report-front') as HTMLImageElement;
-                      if (front?.src.includes('scatter1')) {
-                        front.src = '/scatter2.jpg';
-                        front.alt = 'River data visualization report';
-                      } else if (front?.src.includes('scatter2')) {
-                        front.src = '/scatter3.jpg';
-                        front.alt = 'River analysis scatter plot report';
-                      } else {
-                        front.src = '/scatter1.jpg';
-                        front.alt = 'Professional river study report';
-                      }
-                    }}>
-                      {/* Back image */}
+                    <div className="report-stack">
+                      {/* Back image - more fanned out */}
                       <img 
                         src="/scatter3.jpg" 
                         alt="River analysis report" 
-                        className="report-image absolute top-4 left-4 w-full h-auto rounded-lg shadow-lg transform rotate-3 opacity-80 transition-all duration-300"
+                        className="report-image absolute top-6 left-8 w-full h-auto rounded-lg shadow-lg transform rotate-6 opacity-70 hover:opacity-90 hover:scale-105 hover:rotate-3 transition-all duration-300 cursor-pointer"
+                        onClick={() => {
+                          const front = document.querySelector('.report-front') as HTMLImageElement;
+                          front.src = '/scatter3.jpg';
+                          front.alt = 'River analysis scatter plot report';
+                        }}
                       />
-                      {/* Middle image */}
+                      {/* Middle image - moderate fan */}
                       <img 
                         src="/scatter2.jpg" 
                         alt="River data report" 
-                        className="report-image absolute top-2 left-2 w-full h-auto rounded-lg shadow-lg transform -rotate-2 opacity-90 transition-all duration-300"
+                        className="report-image absolute top-3 left-4 w-full h-auto rounded-lg shadow-lg transform -rotate-3 opacity-80 hover:opacity-95 hover:scale-105 hover:-rotate-1 transition-all duration-300 cursor-pointer"
+                        onClick={() => {
+                          const front = document.querySelector('.report-front') as HTMLImageElement;
+                          front.src = '/scatter2.jpg';
+                          front.alt = 'River data visualization report';
+                        }}
                       />
-                      {/* Front image */}
+                      {/* Front image - slight tilt */}
                       <img 
                         src="/scatter1.jpg" 
                         alt="Professional river study report" 
-                        className="report-image report-front relative w-full h-auto rounded-lg shadow-xl transform hover:scale-105 transition-all duration-300 z-10"
+                        className="report-image report-front relative w-full h-auto rounded-lg shadow-xl transform rotate-1 hover:scale-110 hover:rotate-0 transition-all duration-300 z-10 cursor-pointer"
+                        onClick={() => {
+                          const img = document.querySelector('.report-front') as HTMLImageElement;
+                          if (img?.src.includes('scatter1')) {
+                            img.src = '/scatter2.jpg';
+                          } else if (img?.src.includes('scatter2')) {
+                            img.src = '/scatter3.jpg';
+                          } else {
+                            img.src = '/scatter1.jpg';
+                          }
+                        }}
                       />
                     </div>
                   </div>
+                </div>
+                
+                {/* See exactly what you'll get */}
+                <div className="text-center mb-4">
+                  <p className="text-white/90 text-lg font-medium">See exactly what you'll get</p>
                 </div>
                 
                 {/* Download CTA */}
@@ -566,9 +578,8 @@ export default function Home() {
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-500 to-teal-500 hover:from-blue-600 hover:to-teal-600 text-white px-6 py-3 rounded-lg font-medium transition-all hover:scale-105 shadow-lg mb-4"
                   >
-                    📊 Download Example Report
+                    📊 Download the Full Report
                   </a>
-                  <p className="text-white/60 text-sm">See exactly what you'll get</p>
                 </div>
               </div>
             )}
@@ -599,9 +610,8 @@ export default function Home() {
                 </div>
 
                 {/* Step 1: Manage */}
-                <div className="journey-step mb-12">
-                  <div className="text-center mb-8">
-                    <div className="step-number inline-flex items-center justify-center w-12 h-12 bg-cyan-500 text-white rounded-full font-bold text-lg mb-4">1</div>
+                <div className="journey-step mb-8">
+                  <div className="text-center mb-6">
                     <h3 className="text-2xl sm:text-3xl font-bold text-white mb-3">
                       <span className="text-cyan-100 font-bold">Manage</span> your Riverwalks
                     </h3>
@@ -620,9 +630,8 @@ export default function Home() {
                 </div>
 
                 {/* Step 2: Collect */}
-                <div className="journey-step mb-12">
-                  <div className="text-center mb-8">
-                    <div className="step-number inline-flex items-center justify-center w-12 h-12 bg-teal-500 text-white rounded-full font-bold text-lg mb-4">2</div>
+                <div className="journey-step mb-8">
+                  <div className="text-center mb-6">
                     <h3 className="text-2xl sm:text-3xl font-bold text-white mb-3">
                       <span className="text-teal-100 font-bold">Collect</span> comprehensive river data
                     </h3>
@@ -642,27 +651,16 @@ export default function Home() {
                       />
                     </div>
                   </div>
-                </div>
-
-                {/* Step 3: Get Reports */}
-                <div className="journey-step mb-12">
-                  <div className="text-center mb-8">
-                    <div className="step-number inline-flex items-center justify-center w-12 h-12 bg-blue-500 text-white rounded-full font-bold text-lg mb-4">3</div>
-                    <h3 className="text-2xl sm:text-3xl font-bold text-white mb-3">
-                      Get your <span className="text-blue-100 font-bold">GCSE-ready</span> reports
-                    </h3>
-                    <p className="text-white/80 text-base max-w-2xl mx-auto">
-                      Automatically generated reports with <span className="text-green-100 font-bold">professional charts</span> 
-                      and <span className="text-teal-100 font-bold">detailed analysis</span> ready for your coursework.
-                    </p>
-                  </div>
-                  <div className="text-center">
-                    <div className="inline-block bg-green-600/20 border border-green-400/40 rounded-xl p-6 backdrop-blur-sm">
-                      <p className="text-green-100 text-lg font-semibold mb-2">✨ Premium Reports Available</p>
-                      <p className="text-green-200 text-sm">Upgrade for just £1.99/year or £3.49 lifetime</p>
+                  
+                  {/* Payment section underneath mockup3 */}
+                  <div className="text-center mt-8">
+                    <div className="bg-green-600/20 border border-green-400/40 rounded-xl p-6 max-w-xl mx-auto backdrop-blur-sm">
+                      <p className="text-green-100 text-xl font-medium mb-2">💰 Just £1.99/year or £3.49 lifetime</p>
+                      <p className="text-green-200 text-base">One payment. Unlimited reports. No hidden fees.</p>
                     </div>
                   </div>
                 </div>
+
               </div>
             )}
 
@@ -711,7 +709,7 @@ export default function Home() {
 
         {/* Live Metrics Section */}
         {!user && (
-          <div ref={metricsRef} className="pt-4 pb-12 px-4 sm:px-6 lg:px-8">
+          <div ref={metricsRef} className="pt-2 pb-8 px-4 sm:px-6 lg:px-8">
             <LiveMetrics />
           </div>
         )}

@@ -113,24 +113,8 @@ export default function Signup() {
             </h1>
             <p className="text-white/80 text-lg mb-6">
               Join thousands of students creating <span className="text-blue-100 font-semibold">professional GCSE reports</span> 
-              in minutes, not hours.
+              without the hours of work.
             </p>
-            
-            {/* Benefits */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-              <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
-                <div className="text-2xl mb-2">⚡</div>
-                <p className="text-white text-sm font-medium">Setup in 30 seconds</p>
-              </div>
-              <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
-                <div className="text-2xl mb-2">📊</div>
-                <p className="text-white text-sm font-medium">Professional charts</p>
-              </div>
-              <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
-                <div className="text-2xl mb-2">🎓</div>
-                <p className="text-white text-sm font-medium">GCSE-ready reports</p>
-              </div>
-            </div>
           </div>
 
           {/* Auth Card */}
