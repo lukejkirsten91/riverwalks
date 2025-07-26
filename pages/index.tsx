@@ -453,9 +453,9 @@ export default function Home() {
               ) : (
                 <button
                   onClick={() => window.location.href = '/signup'}
-                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 backdrop-blur-sm border border-cyan-400/50 text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all hover:scale-105 shadow-lg"
+                  className="bg-gradient-to-r from-pink-500 to-red-500 hover:from-pink-600 hover:to-red-600 backdrop-blur-sm border border-pink-400/50 text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all hover:scale-105 shadow-lg"
                 >
-                  <span className="hidden sm:inline">🤿 Dive</span>
+                  <span className="hidden sm:inline">🤿 Dive in</span>
                   <span className="sm:hidden">🤿 Dive in</span>
                 </button>
               )}
@@ -489,103 +489,89 @@ export default function Home() {
                 </div>
                 
                 {/* Interactive Report Images */}
-                <div className="flex justify-center mb-8 gap-4 flex-wrap" onClick={(e) => {
-                  // Reset all images if clicking outside
-                  if (e.target === e.currentTarget) {
-                    document.querySelectorAll('.report-image').forEach((img: any) => {
-                      img.style.transform = 'scale(1)';
-                      img.style.zIndex = '10';
-                    });
-                  }
-                }}>
+                <div className="flex justify-center mb-8 gap-4 flex-wrap">
                   <img 
                     src="/scatter1.jpg" 
                     alt="Professional river study report" 
-                    className="report-image w-32 sm:w-40 md:w-48 h-auto rounded-lg shadow-xl transform hover:scale-110 transition-all duration-300 cursor-pointer relative z-10"
-                    onClick={(e) => {
-                      e.stopPropagation();
+                    className="report-image w-32 sm:w-40 md:w-48 h-auto rounded-lg shadow-xl transform transition-all duration-300 relative z-10"
+                    onMouseEnter={(e) => {
                       const allImages = document.querySelectorAll('.report-image');
                       const currentImage = e.currentTarget;
                       
-                      // Check if this image is already zoomed
-                      const isZoomed = currentImage.style.transform === 'scale(1.4)';
-                      
-                      if (isZoomed) {
-                        // Reset all to normal
-                        allImages.forEach((img: any) => {
-                          img.style.transform = 'scale(1)';
-                          img.style.zIndex = '10';
-                        });
-                      } else {
-                        // Zoom this one and shrink others
-                        allImages.forEach((img: any) => {
-                          if (img === currentImage) {
-                            img.style.transform = 'scale(1.4)';
-                            img.style.zIndex = '20';
-                          } else {
-                            img.style.transform = 'scale(0.8)';
-                            img.style.zIndex = '5';
-                          }
-                        });
-                      }
+                      // Zoom this one and shrink others
+                      allImages.forEach((img: any) => {
+                        if (img === currentImage) {
+                          img.style.transform = 'scale(1.4)';
+                          img.style.zIndex = '20';
+                        } else {
+                          img.style.transform = 'scale(0.8)';
+                          img.style.zIndex = '5';
+                        }
+                      });
+                    }}
+                    onMouseLeave={() => {
+                      const allImages = document.querySelectorAll('.report-image');
+                      // Reset all to normal
+                      allImages.forEach((img: any) => {
+                        img.style.transform = 'scale(1)';
+                        img.style.zIndex = '10';
+                      });
                     }}
                   />
                   <img 
                     src="/scatter2.jpg" 
                     alt="River data visualisation report" 
-                    className="report-image w-32 sm:w-40 md:w-48 h-auto rounded-lg shadow-xl transform hover:scale-110 transition-all duration-300 cursor-pointer relative z-10"
-                    onClick={(e) => {
-                      e.stopPropagation();
+                    className="report-image w-32 sm:w-40 md:w-48 h-auto rounded-lg shadow-xl transform transition-all duration-300 relative z-10"
+                    onMouseEnter={(e) => {
                       const allImages = document.querySelectorAll('.report-image');
                       const currentImage = e.currentTarget;
                       
-                      const isZoomed = currentImage.style.transform === 'scale(1.4)';
-                      
-                      if (isZoomed) {
-                        allImages.forEach((img: any) => {
-                          img.style.transform = 'scale(1)';
-                          img.style.zIndex = '10';
-                        });
-                      } else {
-                        allImages.forEach((img: any) => {
-                          if (img === currentImage) {
-                            img.style.transform = 'scale(1.4)';
-                            img.style.zIndex = '20';
-                          } else {
-                            img.style.transform = 'scale(0.8)';
-                            img.style.zIndex = '5';
-                          }
-                        });
-                      }
+                      // Zoom this one and shrink others
+                      allImages.forEach((img: any) => {
+                        if (img === currentImage) {
+                          img.style.transform = 'scale(1.4)';
+                          img.style.zIndex = '20';
+                        } else {
+                          img.style.transform = 'scale(0.8)';
+                          img.style.zIndex = '5';
+                        }
+                      });
+                    }}
+                    onMouseLeave={() => {
+                      const allImages = document.querySelectorAll('.report-image');
+                      // Reset all to normal
+                      allImages.forEach((img: any) => {
+                        img.style.transform = 'scale(1)';
+                        img.style.zIndex = '10';
+                      });
                     }}
                   />
                   <img 
                     src="/scatter3.jpg" 
                     alt="River analysis scatter plot report" 
-                    className="report-image w-32 sm:w-40 md:w-48 h-auto rounded-lg shadow-xl transform hover:scale-110 transition-all duration-300 cursor-pointer relative z-10"
-                    onClick={(e) => {
-                      e.stopPropagation();
+                    className="report-image w-32 sm:w-40 md:w-48 h-auto rounded-lg shadow-xl transform transition-all duration-300 relative z-10"
+                    onMouseEnter={(e) => {
                       const allImages = document.querySelectorAll('.report-image');
                       const currentImage = e.currentTarget;
                       
-                      const isZoomed = currentImage.style.transform === 'scale(1.4)';
-                      
-                      if (isZoomed) {
-                        allImages.forEach((img: any) => {
-                          img.style.transform = 'scale(1)';
-                          img.style.zIndex = '10';
-                        });
-                      } else {
-                        allImages.forEach((img: any) => {
-                          if (img === currentImage) {
-                            img.style.transform = 'scale(1.4)';
-                            img.style.zIndex = '20';
-                          } else {
-                            img.style.transform = 'scale(0.8)';
-                            img.style.zIndex = '5';
-                          }
-                        });
-                      }
+                      // Zoom this one and shrink others
+                      allImages.forEach((img: any) => {
+                        if (img === currentImage) {
+                          img.style.transform = 'scale(1.4)';
+                          img.style.zIndex = '20';
+                        } else {
+                          img.style.transform = 'scale(0.8)';
+                          img.style.zIndex = '5';
+                        }
+                      });
+                    }}
+                    onMouseLeave={() => {
+                      const allImages = document.querySelectorAll('.report-image');
+                      // Reset all to normal
+                      allImages.forEach((img: any) => {
+                        img.style.transform = 'scale(1)';
+                        img.style.zIndex = '10';
+                      });
                     }}
                   />
                 </div>
@@ -613,7 +599,7 @@ export default function Home() {
               <div className="text-center mb-8">
                 <button
                   onClick={() => window.location.href = '/signup'}
-                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white px-8 py-3 rounded-lg font-semibold text-lg transition-all hover:scale-105 shadow-lg"
+                  className="bg-gradient-to-r from-pink-500 to-red-500 hover:from-pink-600 hover:to-red-600 text-white px-8 py-3 rounded-lg font-semibold text-lg transition-all hover:scale-105 shadow-lg"
                 >
                   🤿 Dive in 🌊
                 </button>
@@ -712,7 +698,7 @@ export default function Home() {
                     <p className="text-white/70 text-sm mb-3">Ready to start your river study?</p>
                     <button
                       onClick={() => window.location.href = '/signup'}
-                      className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white px-6 py-2.5 rounded-lg font-semibold text-base transition-all hover:scale-105 shadow-lg"
+                      className="bg-gradient-to-r from-pink-500 to-red-500 hover:from-pink-600 hover:to-red-600 text-white px-6 py-2.5 rounded-lg font-semibold text-base transition-all hover:scale-105 shadow-lg"
                     >
                       🤿 Dive in 🌊
                     </button>
@@ -801,7 +787,7 @@ export default function Home() {
               </p>
               <button
                 onClick={() => window.location.href = '/signup'}
-                className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white px-8 py-3 rounded-lg font-semibold text-lg transition-all hover:scale-105 shadow-lg"
+                className="bg-gradient-to-r from-pink-500 to-red-500 hover:from-pink-600 hover:to-red-600 text-white px-8 py-3 rounded-lg font-semibold text-lg transition-all hover:scale-105 shadow-lg"
               >
                 🤿 Dive in 🌊
               </button>
