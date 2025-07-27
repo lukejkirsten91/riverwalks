@@ -478,7 +478,17 @@ export default function Home() {
 
             {/* What You Get - Reports Section */}
             {!user && (
-              <div className="reports-section mb-8">
+              <div className="reports-section mb-8" onClick={(e) => {
+                // Reset all images if clicking outside any image (but not on buttons/links)
+                const target = e.target as Element;
+                if (!target.closest('.report-image') && !target.closest('a') && !target.closest('button')) {
+                  const allImages = document.querySelectorAll('.report-image');
+                  allImages.forEach((img: any) => {
+                    img.style.transform = 'scale(1)';
+                    img.style.zIndex = '10';
+                  });
+                }
+              }}>
                 <div className="text-center mb-8">
                   <h2 className="text-3xl sm:text-4xl font-bold text-white mb-3">
                     <span className="text-blue-900 font-bold">Get Top Grades</span> <span className="text-blue-700 font-bold">without the Grind</span>
@@ -489,16 +499,7 @@ export default function Home() {
                 </div>
                 
                 {/* Interactive Report Images */}
-                <div className="flex justify-center mb-8 gap-4 flex-wrap" onClick={(e) => {
-                  // Reset all images if clicking outside any image
-                  if (e.target === e.currentTarget) {
-                    const allImages = document.querySelectorAll('.report-image');
-                    allImages.forEach((img: any) => {
-                      img.style.transform = 'scale(1)';
-                      img.style.zIndex = '10';
-                    });
-                  }
-                }}>
+                <div className="flex justify-center mb-8 gap-4 flex-wrap">
                   <img 
                     src="/scatter1.jpg" 
                     alt="Professional river study report" 
